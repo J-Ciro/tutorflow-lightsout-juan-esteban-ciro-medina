@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using TutorFlow.Core.Autorizacion;
 using TutorFlow.Core.Conocimiento;
 
@@ -5,8 +6,15 @@ namespace TutorFlow.Core.Asistente;
 
 public sealed record SalidaVerificada(string Respuesta, IReadOnlyList<Cita> Citas, ResultadoAuditoria Resultado);
 
-public sealed class VerificadorSalida
+public sealed partial class VerificadorSalida
 {
+    private const string DocumentoDerogado = "reglamento_academico_2023.md";
+
+    private readonly HashSet<string> _documentosDerogados = new HashSet<string> { DocumentoDerogado };
+    private readonly Regex _numero = Numero();
+    private readonly Regex _notaOPorcentaje = NotaOPorcentaje();
+    private readonly Func<string, string> _normalizar = NormalizadorTexto.Normalizar;
+
     public SalidaVerificada Verificar(
         Usuario usuario,
         string respuesta,
@@ -14,11 +22,43 @@ public sealed class VerificadorSalida
         IReadOnlyCollection<string> idsPersonasAutorizadas,
         IReadOnlyCollection<string> textosFuente,
         IBaseConocimiento baseConocimiento,
-        DirectorioAcademico directorio) => throw new NotImplementedException();
+        DirectorioAcademico directorio)
+    {
+        if (ContienePersonaNoAutorizada(respuesta, idsPersonasAutorizadas, directorio))
+        {
+            return new SalidaVerificada(Textos.Negativa(usuario.Rol), [Textos.CitaNegativa()], ResultadoAuditoria.FugaBloqueada);
+        }
 
-    public IReadOnlyList<Cita> DescartarCitasInexistentes(IReadOnlyList<Cita> citas, IBaseConocimiento baseConocimiento) => throw new NotImplementedException();
+        if (!TodosLosNumerosSonVerificables(respuesta, textosFuente))
+        {
+            return new SalidaVerificada(Textos.NoVerificable, [], ResultadoAuditoria.NumeroNoVerificado);
+        }
 
-    public bool ContienePersonaNoAutorizada(string respuesta, IReadOnlyCollection<string> idsPersonasAutorizadas, DirectorioAcademico directorio) => throw new NotImplementedException();
+        return new SalidaVerificada(respuesta, DescartarCitasInexistentes(citas, baseConocimiento), ResultadoAuditoria.Respondida);
+    }
 
-    public bool TodosLosNumerosSonVerificables(string respuesta, IReadOnlyCollection<string> textosFuente) => throw new NotImplementedException();
+    public IReadOnlyList<Cita> DescartarCitasInexistentes(IReadOnlyList<Cita> citas, IBaseConocimiento baseConocimiento) =>
+        citas.Where(cita => !_documentosDerogados.Contains(cita.Documento) && baseConocimiento.ExisteCita(cita)).ToList();
+
+    public bool ContienePersonaNoAutorizada(string respuesta, IReadOnlyCollection<string> idsPersonasAutorizadas, DirectorioAcademico directorio) =>
+        DetectorTerceros.PersonasMencionadas(_normalizar(respuesta), directorio)
+            .Any(id => !idsPersonasAutorizadas.Contains(id));
+
+    public bool TodosLosNumerosSonVerificables(string respuesta, IReadOnlyCollection<string> textosFuente)
+    {
+        var numerosDeFuentes = textosFuente
+            .SelectMany(texto => _numero.Matches(texto).Select(coincidencia => coincidencia.Value))
+            .ToHashSet();
+        return NumerosAVerificar(respuesta).All(numerosDeFuentes.Contains);
+    }
+
+    private IEnumerable<string> NumerosAVerificar(string respuesta) =>
+        _notaOPorcentaje.Matches(respuesta)
+            .Select(coincidencia => coincidencia.Groups["numero"].Value);
+
+    [GeneratedRegex(@"(?<![0-9.])[0-9]+(\.[0-9]+)?")]
+    private static partial Regex Numero();
+
+    [GeneratedRegex(@"(?<![0-9.])(?<numero>[0-9]\.[0-9]{1,2})(?![0-9])|(?<![0-9.])(?<numero>[0-9]+(\.[0-9]+)?)(?=\s*%)")]
+    private static partial Regex NotaOPorcentaje();
 }
