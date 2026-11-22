@@ -1,6 +1,8 @@
 # 03 · Datos del propio estudiante (CA-02)
 
-Valores de `SPEC.md` §11.4. En todos: `usoDatosEstudiante` es `true` y no hay datos de terceros.
+> Spec: [`specs/001-asistente-academico/spec.md`](../../specs/001-asistente-academico/spec.md) · Sistema: [`SPEC.md`](../../SPEC.md)
+
+Valores de la spec §11.4. En todos: `usoDatosEstudiante` es `true` y no hay datos de terceros.
 
 ### ESC-020 · Redondeo en el punto medio de la definitiva `@alterno`
 - **Dado** el estudiante `EST-001`

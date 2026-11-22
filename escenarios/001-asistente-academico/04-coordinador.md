@@ -1,5 +1,7 @@
 # 04 · Coordinador (CA-02, CA-04)
 
+> Spec: [`specs/001-asistente-academico/spec.md`](../../specs/001-asistente-academico/spec.md) · Sistema: [`SPEC.md`](../../SPEC.md)
+
 ### ESC-040 · Pérdidas en ING-SIS `@feliz`
 - **Dado** el coordinador `COORD-01` (programa ING-SIS)
 - **Cuando** pregunta "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?"

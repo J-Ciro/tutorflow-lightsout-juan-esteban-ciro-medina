@@ -1,5 +1,7 @@
 # 01 · Preguntas de ejemplo de Q10 (CA-01)
 
+> Spec: [`specs/001-asistente-academico/spec.md`](../../specs/001-asistente-academico/spec.md) · Sistema: [`SPEC.md`](../../SPEC.md)
+
 Las 10 preguntas de `preguntas_ejemplo.json`. Son el mínimo innegociable: las pruebas ocultas parten de aquí.
 
 ### ESC-001 · Nota mínima para aprobar `@feliz`

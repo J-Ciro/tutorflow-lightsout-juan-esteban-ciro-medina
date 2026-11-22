@@ -7,7 +7,9 @@
 | Requisito original | (texto literal del cliente) |
 | Componentes en esta spec | backend / frontend / datos / QA |
 | Fuera de esta spec | (componentes que irán en otra spec) |
-| Afecta | RF, RN, SEG o CA de `SPEC.md` (o "nuevo") |
+| Spec del sistema | [`SPEC.md`](../../SPEC.md) |
+| Afecta | Features o reglas existentes (`specs/<feature-id>/spec.md`, IDs) o "nuevo" |
+| Escenarios | [`escenarios/NNN-<slug>/`](../../escenarios/) (bloque de IDs ESC-N00…ESC-N99) |
 | Rama | `feat/NNN-<slug>` |
 
 ## 1. Contexto y objetivo
@@ -18,6 +20,7 @@
 - **No incluye:**
 
 ## 3. Actores y roles
+Roles nuevos o cambios respecto a `SPEC.md` §2 (o "sin cambios").
 
 | Rol | Puede |
 | --- | --- |
@@ -47,7 +50,7 @@
 | --- | --- | --- | --- |
 | SEG-NNN-01 | | | 403 |
 
-Matriz de acceso (rol × recurso → permitido / denegado).
+Matriz de acceso de la feature: solo los recursos nuevos o cambiados respecto a `SPEC.md` §4. Ampliar la matriz global requiere aprobación humana.
 
 ## 8. Requerimientos no funcionales
 
@@ -55,7 +58,7 @@ Matriz de acceso (rol × recurso → permitido / denegado).
 | --- | --- | --- |
 
 ## 9. Backend
-Endpoints, cambios al contrato (**ninguno** o descripción marcada "requiere aprobación humana") y flujo.
+Endpoints nuevos, cambios al contrato de `SPEC.md` §3 (**ninguno** o descripción marcada "requiere aprobación humana") y flujo.
 
 ## 10. Frontend y UX/UI
 Pantallas, estados (carga, éxito, vacío, error, 403) y textos; o "fuera de esta spec".

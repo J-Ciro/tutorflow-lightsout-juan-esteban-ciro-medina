@@ -4,10 +4,10 @@ Este archivo es la ley para cualquier agente de IA que trabaje en el repositorio
 
 Documentos que debes leer antes de trabajar:
 
-1. `SPEC.md`: qué se construye, reglas de negocio (RN), reglas de seguridad (SEG), criterios de aceptación (CA) y decisiones (D).
-2. `escenarios/`: escenarios de aceptación y de abuso. Son la fuente de las pruebas y de los evals.
-3. `FABRICA.md`: tu rol, el ciclo de trabajo y cuándo te detienes.
-4. `specs/NNN-*.md`: especificaciones de requisitos posteriores. Extienden `SPEC.md`.
+1. `SPEC.md`: lo transversal del sistema (objetivo, actores, contrato, matriz de acceso, decisiones e índice de features).
+2. `specs/<feature-id>/spec.md`: qué construye cada feature (RF, RN, SEG, CA en Gherkin y plan de QA).
+3. `escenarios/<feature-id>/`: escenarios de aceptación y de abuso de cada feature. Son la fuente de las pruebas y de los evals.
+4. `FABRICA.md`: tu rol, el ciclo de trabajo y cuándo te detienes.
 
 ## 1. Reglas lights-out (no negociables)
 
@@ -72,7 +72,7 @@ Repositorio genérico, MediatR, AutoMapper, CQRS, event sourcing, capas "Manager
 
 ## 4. Pruebas y evals
 
-- Cada CA de `SPEC.md` y cada escenario de `escenarios/` tiene al menos una prueba o eval que lo referencia por ID en el nombre o en un atributo `[Trait("CA", "CA-05")]`.
+- Cada CA de una spec y cada escenario de `escenarios/` tiene al menos una prueba o eval que lo referencia por ID en el nombre o en un atributo `[Trait("CA", "CA-05")]`.
 - Las pruebas de **casos alternos y de abuso** son tan obligatorias como las del camino feliz.
 - Cobertura mínima: 90% de líneas en `TutorFlow.Core`, 80% global.
 - Las pruebas de integración no llaman a un LLM real ni a internet: usan dobles.
@@ -103,7 +103,7 @@ Checklist mínimo, auditado por el agente `seguridad`:
 
 - Modificar `mock-api/`, `reglamento/` ni `preguntas_ejemplo.*`: son material del cliente.
 - Leer, crear con valores reales ni commitear `.env` o cualquier llave. Solo existe `.env.example` con valores vacíos.
-- Cambiar el contrato de la API definido en `SPEC.md` §9.1.
+- Cambiar el contrato de la API definido en `SPEC.md` §3.
 - Desactivar analizadores, pruebas, evals o pasos del CI para que algo pase (`[Skip]`, `#pragma warning disable`, `continue-on-error`) sin una decisión registrada en la spec.
 - Debilitar una regla de autorización para que un eval pase.
 - Trabajar directamente en `main` o hacer merge sin el visto bueno de `seguridad` y `qa-calidad`.

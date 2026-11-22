@@ -1,11 +1,11 @@
 ---
 name: implementar-spec
-description: Ejecuta el ciclo completo de la fábrica sobre una spec aprobada - pruebas primero, implementación, CI local, auditorías paralelas y bucle de corrección con límite. Úsala con el número de spec (o "base" para SPEC.md) cuando la spec ya fue aprobada por el humano.
+description: Ejecuta el ciclo completo de la fábrica sobre una spec aprobada - pruebas primero, implementación, CI local, auditorías paralelas y bucle de corrección con límite. Úsala con el feature-id (p. ej. 001) cuando la spec ya fue aprobada por el humano.
 ---
 
 # Implementar una spec aprobada
 
-Entrada: `$ARGUMENTS` = `NNN` (de `specs/NNN-*.md`) o `base` (para `SPEC.md`).
+Entrada: `$ARGUMENTS` = `NNN`, el feature-id de `specs/NNN-<slug>/spec.md` (la feature base es `001`).
 
 Anota la hora de inicio y fin de cada paso: la necesitas para `REPORTE.md`.
 

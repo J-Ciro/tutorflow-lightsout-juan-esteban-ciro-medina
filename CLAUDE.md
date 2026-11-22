@@ -7,7 +7,7 @@ Asistente académico para estudiantes y coordinadores de una institución fictic
 Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*. El humano solo escribe Markdown y la configuración de agentes; el código, las pruebas, los evals, Docker y el CI los escriben agentes de IA. Se evalúa el producto con pruebas ocultas, la calidad de la spec, el arnés (CI y evals), la transparencia y el costo de la fábrica.
 
 ## Contexto clave
-- Contrato de la API fijo: `POST /api/asistente/preguntar` y `GET /api/salud`, en el puerto 8080 (`SPEC.md` §9.1).
+- Contrato de la API fijo: `POST /api/asistente/preguntar` y `GET /api/salud`, en el puerto 8080 (`SPEC.md` §3).
 - Vigentes: `reglamento_academico_2025.md` (deroga el 2023), `evaluacion_y_calificaciones.md` y `bienestar_y_becas.md`.
 - La API simulada entrega notas por corte; las definitivas, los promedios y la pérdida por inasistencia los calcula el backend.
 - Periodo 2026-2. Usuarios de prueba: `EST-001`…`EST-006`, `COORD-01` (ING-SIS) y `COORD-02` (ADM).
@@ -27,9 +27,9 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
 ## Mapa del repositorio
 | Ruta | Contenido |
 | --- | --- |
-| `SPEC.md` | Qué se construye: RF, reglas, seguridad, contrato, datos, CA en Gherkin y plan de QA |
-| `specs/` | Specs de requisitos posteriores (`NNN-*.md`) y plantilla (`_plantilla.md`) |
-| `escenarios/` | Escenarios de aceptación y de abuso (`ESC-NNN`) |
+| `SPEC.md` | Spec del sistema: objetivo, actores, contrato, matriz de acceso, decisiones e índice de features |
+| `specs/<feature-id>/spec.md` | Spec de cada feature (RF, reglas, seguridad, datos, CA en Gherkin y plan de QA); plantilla en `specs/_plantilla/spec.md` |
+| `escenarios/<feature-id>/` | Escenarios de aceptación y de abuso de cada feature (`ESC-NNN`) |
 | `AGENTS.md` | Reglas de trabajo para los agentes |
 | `FABRICA.md` | Cómo funciona la fábrica: agentes, ciclo y condiciones de parada |
 | `INTERVENCIONES.md` | Correcciones del humano sobre la fábrica |
@@ -66,4 +66,4 @@ docker compose up                            # sistema completo en :8080
 curl localhost:8080/api/salud                # salud
 ```
 
-En Claude Code: `/nueva-spec <requisito>`, `/implementar-spec <NNN|base>`, `/cerrar-corrida`.
+En Claude Code: `/nueva-spec <requisito>`, `/implementar-spec <NNN>`, `/cerrar-corrida`.
