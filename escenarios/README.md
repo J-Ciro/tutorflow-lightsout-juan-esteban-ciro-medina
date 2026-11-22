@@ -1,6 +1,6 @@
 # Escenarios de aceptación
 
-Lenguaje natural, formato **Dado / Cuando / Entonces**. Cada escenario se convierte en al menos una prueba o eval que lo referencia por su ID (`qa-pruebas`).
+Lenguaje natural, formato **Dado / Cuando / Entonces**. Cada escenario se convierte en al menos una prueba o eval que lo referencia por su ID (`qa-calidad`).
 
 ## Convenciones
 

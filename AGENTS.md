@@ -81,7 +81,7 @@ Repositorio genérico, MediatR, AutoMapper, CQRS, event sourcing, capas "Manager
 
 ## 5. Seguridad
 
-Checklist mínimo, auditado por `auditor-seguridad` y `auditor-autorizacion`:
+Checklist mínimo, auditado por el agente `seguridad`:
 
 - Validación de la entrada en el borde: tamaño máximo del cuerpo, longitud de `pregunta`, `rol` en lista cerrada, formato de `id`.
 - Nunca registrar ni devolver `LLM_API_KEY`. Nunca exponer stack traces, URLs internas ni respuestas crudas de la API simulada.
@@ -106,8 +106,8 @@ Checklist mínimo, auditado por `auditor-seguridad` y `auditor-autorizacion`:
 - Cambiar el contrato de la API definido en `SPEC.md` §4.
 - Desactivar analizadores, pruebas, evals o pasos del CI para que algo pase (`[Skip]`, `#pragma warning disable`, `continue-on-error`) sin una decisión registrada en la spec.
 - Debilitar una regla de autorización para que un eval pase.
-- Trabajar directamente en `main` o hacer merge sin el visto bueno de los auditores.
+- Trabajar directamente en `main` o hacer merge sin el visto bueno de `seguridad` y `qa-calidad`.
 
 ## 8. Definición de terminado
 
-Un cambio está terminado cuando: compila sin advertencias, todas las pruebas y evals pasan, cada CA nuevo tiene prueba trazable, los tres auditores (seguridad, autorización y código) no reportan hallazgos *altos* ni *críticos*, `REPORTE.md` está actualizado y los commits cumplen la sección 6.
+Un cambio está terminado cuando: compila sin advertencias, todas las pruebas y evals pasan, cada CA nuevo tiene prueba trazable, `seguridad` y `qa-calidad` (fase de revisión) no reportan hallazgos *altos* ni *críticos*, `REPORTE.md` está actualizado y los commits cumplen la sección 6.
