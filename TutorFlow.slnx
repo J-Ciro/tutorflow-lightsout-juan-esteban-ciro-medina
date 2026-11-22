@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TutorFlow.Core/TutorFlow.Core.csproj" />
+    <Project Path="src/TutorFlow.Infrastructure/TutorFlow.Infrastructure.csproj" />
+    <Project Path="src/TutorFlow.Api/TutorFlow.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TutorFlow.Core.Tests/TutorFlow.Core.Tests.csproj" />
+    <Project Path="tests/TutorFlow.Api.Tests/TutorFlow.Api.Tests.csproj" />
+  </Folder>
+  <Folder Name="/evals/">
+    <Project Path="evals/TutorFlow.Evals/TutorFlow.Evals.csproj" />
+  </Folder>
+</Solution>

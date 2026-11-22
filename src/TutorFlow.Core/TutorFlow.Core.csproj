@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>TutorFlow.Core</RootNamespace>
+  </PropertyGroup>
+</Project>
