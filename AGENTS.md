@@ -64,7 +64,7 @@ Dependencias permitidas entre proyectos: `Api → Core, Infrastructure`; `Infras
 - Errores esperados como resultados tipados (`Resultado`/discriminados). Excepciones solo para lo excepcional; el middleware las convierte en `ProblemDetails` sin stack trace.
 - `async` de punta a punta con `CancellationToken`. Nada de `.Result` ni `.Wait()`.
 - Configuración con `IOptions<T>` validadas al arrancar (`ValidateOnStart`).
-- Los comentarios explican el *porqué* y citan la regla: `// RN-07: más del 15% de inasistencia (Art. 11, 2025)`.
+- **Sin comentarios en el código** (ni `//`, ni `/* */`, ni documentación XML `///`, ni en scripts o archivos de proyecto). El código se explica solo con nombres claros: constantes con nombre (`PorcentajeMaximoInasistencia`), métodos con nombre de negocio y pruebas que citan la regla (`[Trait("RN", "RN-07")]`). El porqué va en la spec y en el cuerpo del commit.
 
 ### Antipatrones prohibidos (sobreingeniería incluida)
 
@@ -72,6 +72,7 @@ Repositorio genérico, MediatR, AutoMapper, CQRS, event sourcing, capas "Manager
 
 ## 4. Pruebas y evals
 
+- **TDD obligatorio antes de cualquier línea de código de producción** (skill `tdd`, `.claude/skills/tdd/SKILL.md`): primero la prueba que falla por la razón esperada, después el cambio mínimo que la pone en verde, y por último la ejecución que lo demuestra. Aplica a funcionalidades nuevas, a correcciones de bugs y a cada hallazgo de auditoría.
 - Cada CA de una spec y cada escenario de `escenarios/` tiene al menos una prueba o eval que lo referencia por ID en el nombre o en un atributo `[Trait("CA", "CA-05")]`.
 - Las pruebas de **casos alternos y de abuso** son tan obligatorias como las del camino feliz.
 - Cobertura mínima: 90% de líneas en `TutorFlow.Core`, 80% global.

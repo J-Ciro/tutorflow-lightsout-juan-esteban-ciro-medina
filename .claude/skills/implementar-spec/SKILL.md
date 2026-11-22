@@ -13,7 +13,7 @@ Anota la hora de inicio y fin de cada paso: la necesitas para `REPORTE.md`.
 - Confirma que la spec está aprobada (puerta humana de `nueva-spec`). Si no, detente.
 - Rama `feat/NNN-<slug>` desde `main`. Verifica `git config core.hooksPath` = `.githooks`.
 
-## 1. Pruebas primero (`qa-calidad`, fase A)
+## 1. Pruebas primero (`qa-calidad`, fase A) · skill `tdd`
 Delega la escritura de pruebas y evals para todos los CA y escenarios de la spec. Exige la evidencia de que fallan (rojo) y la matriz de trazabilidad. Commit `test(...)`.
 
 ## 2. Implementación (`backend-dotnet`; `devops-cicd` si toca Docker o CI)
@@ -27,7 +27,7 @@ Lanza **en el mismo mensaje** a `seguridad` y a `qa-calidad` (fase B, revisión)
 
 ## 5. Bucle de corrección (máximo 3 iteraciones)
 - Junta los hallazgos críticos y altos y envíalos a `backend-dotnet` (o al agente dueño del archivo).
-- Si un hallazgo revela un caso no cubierto, primero `qa-calidad` agrega la prueba que falla y luego se corrige.
+- Toda corrección sigue la skill `tdd`: primero `qa-calidad` agrega la prueba de regresión que falla, luego se corrige y se demuestra en verde.
 - Repite los pasos 3 y 4 solo con el agente que reportó hallazgos.
 
 ## 6. Condiciones de parada

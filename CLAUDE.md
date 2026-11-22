@@ -50,6 +50,7 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
 - **Skills:** `.claude/skills/`:
   - `nueva-spec`: requisito nuevo → spec + escenarios + aprobación humana.
   - `implementar-spec`: ciclo de pruebas, implementación y revisión.
+  - `tdd`: prueba en rojo antes de cualquier línea de código de producción.
   - `criterios-gherkin-smart`: cómo redactar los CA.
   - `registrar-intervencion`: anotar una corrección del humano.
   - `cerrar-corrida`: actualizar `REPORTE.md` y los logs.

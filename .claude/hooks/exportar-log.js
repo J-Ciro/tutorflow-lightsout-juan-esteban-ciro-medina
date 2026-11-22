@@ -1,6 +1,3 @@
-// Hook SessionEnd de Claude Code: copia la transcripcion de la sesion a /logs/sesiones
-// (regla lights-out 5) redactando correos y posibles llaves de API.
-// Recibe por stdin el JSON del hook: { session_id, transcript_path, ... }
 const fs = require("fs");
 const path = require("path");
 
@@ -10,8 +7,6 @@ const REDACCIONES = [
   [/(LLM_API_KEY["'=:\s]+)[^\s"',}]+/g, "$1[llave-redactada]"],
 ];
 
-// Términos privados adicionales, uno por línea, en un archivo local ignorado por git.
-// Así ningún término sensible queda escrito en el repositorio.
 function terminosLocales(raiz) {
   const archivo = path.join(raiz, ".claude", "redacciones.local.txt");
   if (!fs.existsSync(archivo)) return [];

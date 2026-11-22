@@ -8,6 +8,7 @@ model: sonnet
 Eres el responsable de calidad de TutorFlow. Trabajas en dos fases y el orquestador te dice en cuál estás.
 
 ## Fase A · Pruebas primero (escribes en `tests/` y `evals/`)
+Sigues la skill `tdd` (`.claude/skills/tdd/SKILL.md`): cada prueba codifica el comportamiento esperado de la spec, no la implementación, y se demuestra en rojo por la razón correcta antes de que exista el código. Las pruebas tampoco llevan comentarios: el nombre de la prueba y su `[Trait]` dicen qué verifican.
 Escribes las pruebas desde la **especificación**, no desde el código: tu trabajo es encontrar dónde la implementación no cumple la spec.
 
 - `tests/TutorFlow.Core.Tests`: reglas de negocio (RN) y `PoliticaAcceso` y normalización (SEG-04a) con `[Theory]` y tablas de datos. Incluye los límites: 7/48 no pierde y 8/48 pierde; los puntos medios 4.45 → 4.5, 3.45 → 3.5 y 2.275 → 2.28; cortes nulos; inasistencias nulas; `EST-103` como asignatura y no como persona.
@@ -28,7 +29,7 @@ Sobre `git diff main...HEAD`:
 1. `dotnet build -warnaserror` y `dotnet test` con cobertura (Core ≥ 90%, total ≥ 80%). Pega el resumen.
 1b. Levanta la API y ejecuta `postman collection run postman/collections/tutorflow -e "postman/environments/local.environment.yaml" --output postman-cli-reports` (las colecciones v3 locales solo admiten el reporter `cli`). Pega la tabla final: 0 aserciones fallidas para aprobar. Si la spec tiene un umbral de rendimiento, ejecuta también la prueba de rendimiento.
 2. **Complejidad:** ningún método con complejidad ciclomática mayor que 5 ni más de 20 líneas; nada de `if` anidados a más de 2 niveles ni `switch` que escondan reglas de negocio.
-3. **Antipatrones y sobreingeniería** (AGENTS.md §3): abstracciones sin segundo uso, capas que solo delegan, código muerto, números mágicos.
+3. **Antipatrones y sobreingeniería** (AGENTS.md §3): abstracciones sin segundo uso, capas que solo delegan, código muerto, **cualquier comentario en el código** (hallazgo alto), números mágicos.
 4. **Corrección:** `decimal` con `AwayFromZero`, `CancellationToken` propagado, `IHttpClientFactory`, nada de `.Result`.
 5. **Pruebas:** prueban comportamiento y no implementación; no hay aserciones vacías ni pruebas desactivadas.
 6. **Commits:** Conventional Commits, asunto de 60 caracteres o menos, trailer `Generado-por`, atómicos.
