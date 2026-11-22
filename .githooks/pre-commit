@@ -1,0 +1,10 @@
+#!/bin/sh
+# Bloquea commits directos en main: todo cambio entra por rama + merge --no-ff (AGENTS.md seccion 6).
+# Los merges no ejecutan este hook, asi que git merge --no-ff sigue funcionando.
+BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null)
+if [ "$BRANCH" = "main" ]; then
+  echo "ERROR pre-commit: no se permiten commits directos en main." >&2
+  echo "  Crea una rama: git switch -c <tipo>/<slug>" >&2
+  exit 1
+fi
+exit 0
