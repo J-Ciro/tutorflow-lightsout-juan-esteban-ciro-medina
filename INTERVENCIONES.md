@@ -41,3 +41,12 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué se cambió:** se reescribió `CLAUDE.md` (≈70 líneas) con qué es, para qué, contexto clave, stack, mapa, agentes y skills, y comandos. Se quitó la importación de `AGENTS.md`: queda como referencia.
 - **Costo:** ~2 min humanos.
 - **Prevención:** las reglas viven en `AGENTS.md`, los agentes y las skills; `CLAUDE.md` solo da contexto.
+
+### INT-005 · 2026-11-22 · Pruebas de API con Postman CLI
+- **Fase:** configuración de la fábrica
+- **Qué pasó:** los agentes de backend y QA solo tenían `curl` para validar la API levantada. Al pedir Postman, la fábrica eligió primero Newman (el runner open source).
+- **Qué hizo el humano:** pidió dar a los agentes de backend y QA acceso a la CLI de Postman *"para que también puedan validar no solo con curl"*. Ante la elección de Newman, preguntó *"¿pero por qué newman? postman tiene su CLI [...] y usa el comando npm install -g postman-cli"*.
+- **Por qué:** Postman CLI es la herramienta oficial y la que se mantiene activamente; Newman tiene mucho menos desarrollo.
+- **Qué se cambió:** `qa-calidad` escribe y ejecuta la colección `tests/postman/` (contrato, permisos y abuso deterministas, por ID de escenario); `backend-dotnet` la ejecuta antes de reportar (sin poder modificarla); `devops-cicd` la corre en el trabajo `docker` del CI con reporte JUnit; el orquestador la re-ejecuta en `implementar-spec`. Se agregaron los permisos `postman collection run` y `curl` solo a localhost, y la colección quedó en el plan de QA de la spec 001 y en `CLAUDE.md`.
+- **Costo:** ~2 min humanos.
+- **Prevención:** ante una herramienta pedida por nombre, usar la oficial que nombra el humano y preguntar si hay ambigüedad (se preguntó "podman" frente a "postman").

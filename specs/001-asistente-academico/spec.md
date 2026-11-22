@@ -647,7 +647,7 @@ Característica: Detectar la suplantación de identidad
 | Integración | Contrato HTTP, flujo completo, auditoría y denegaciones, con el LLM y la API académica como dobles espía | `WebApplicationFactory` | Cada push |
 | Evals offline | Todos los ESC con un LLM grabado o doble | `evals/TutorFlow.Evals` | Cada push |
 | Evals con LLM | Preguntas de ejemplo, reglamento, sin información e inyección contra el modelo real | `evals/TutorFlow.Evals` + `LLM_API_KEY` | PR con el secreto disponible |
-| Humo | Docker Compose, salud y un 403 | CI, trabajo `docker` | Cada PR |
+| API de punta a punta | Contrato, permisos, abuso determinista, cuerpo 403 idéntico y encabezados contra la API real levantada con Docker Compose | Colección de Postman (`tests/postman/`) ejecutada con Postman CLI | Cada PR (trabajo `docker`) y en local antes de reportar |
 
 ### 13.2 Matriz de verificación
 
