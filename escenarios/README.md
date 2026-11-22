@@ -23,5 +23,8 @@ Lenguaje natural, formato **Dado / Cuando / Entonces**. Cada escenario se convie
 | [06-inyeccion-y-abuso.md](06-inyeccion-y-abuso.md) | ESC-070…089 | CA-05 |
 | [07-sin-informacion.md](07-sin-informacion.md) | ESC-090…099 | CA-06 |
 | [08-contrato-y-operacion.md](08-contrato-y-operacion.md) | ESC-100…119 | CA-07…CA-11 |
+| [09-falsos-positivos-y-suplantacion.md](09-falsos-positivos-y-suplantacion.md) | ESC-120…149 | CA-04, CA-12, CA-13 |
+
+**Regla de determinismo:** cada escenario tiene un único resultado esperado. Si el texto libre del LLM no se puede fijar, se afirman el código HTTP, las citas, `usoDatosEstudiante` y la ausencia de datos de terceros (D-23).
 
 Requisitos nuevos: continúan la numeración en el siguiente bloque libre de 100 (ESC-200…, ESC-300…).

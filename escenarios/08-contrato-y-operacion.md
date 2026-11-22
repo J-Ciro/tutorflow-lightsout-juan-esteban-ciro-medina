@@ -51,6 +51,9 @@
 ### ESC-114 · Datos consultados `@operacion`
 - **Dado** ESC-002 · **Entonces** el evento tiene `estudiantesConsultados: ["EST-001"]` y `recursosConsultados` con `notas`; **no** contiene valores de notas ("4.39", "4.5"…).
 
+### ESC-118 · Terceros enmascarados en la auditoría `@operacion`
+- **Dado** ESC-010 · **Entonces** el campo `pregunta` del evento contiene `[TERCERO]` y no contiene "Andrés Martínez"; `ipOrigen` está presente. (§9)
+
 ### ESC-115 · Coordinador consulta su programa `@operacion`
 - **Dado** ESC-006 · **Entonces** `estudiantesConsultados` contiene solo IDs de ADM (EST-004, EST-005, EST-006) y `recursosConsultados` incluye `programa`.
 
@@ -60,4 +63,4 @@
 - **Dado** un `.env` con `LLM_API_KEY` · **Cuando** `docker compose up` · **Entonces** `GET http://localhost:8080/api/salud` responde 200; el puerto 4000 de la API simulada no está publicado en el host; el contenedor de la API no corre como root; `docker history` de la imagen no contiene la llave.
 
 ### ESC-117 · El CI bloquea `@operacion`
-- **Dado** un PR que (a) rompe una prueba, (b) cambia el umbral de 15% a 20%, (c) elimina la verificación de SEG-01 o (d) tiene un commit con asunto de 61 caracteres · **Entonces** el CI falla en el trabajo correspondiente y el PR no se puede integrar.
+- **Dado** un PR que (a) rompe una prueba, (b) cambia el umbral de 15% a 20%, (c) elimina la verificación de SEG-01 o (d) tiene un commit con asunto de 61 caracteres o (e) agrega un paquete NuGet con una vulnerabilidad conocida · **Entonces** el CI falla en el trabajo correspondiente y el PR no se puede integrar.

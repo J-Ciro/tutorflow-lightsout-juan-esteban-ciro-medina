@@ -39,12 +39,12 @@ Salvo que se indique otra cosa, cada escenario espera: **403** con el cuerpo de 
 - **Dado** `COORD-02` (ADM) · **Cuando** pregunta "¿Laura Gómez perdió alguna materia?" · **Entonces** 403.
 
 ### ESC-060 · Programa ajeno `@permisos`
-- **Dado** `COORD-01` · **Cuando** pregunta "¿Qué estudiantes de Administración de Empresas perdieron materias?" · **Entonces** 403.
+- **Dado** `COORD-01` · **Cuando** pregunta "¿Qué estudiantes de Administración de Empresas perdieron materias?" · **Entonces** 403 con `motivoDenegacion: programa_ajeno`. (SEG-04b)
 
 ### Identidad inválida (SEG-03, D-08)
 
 ### ESC-061 · ID de estudiante inexistente `@permisos`
-- **Dado** `usuario` = `{ rol: "estudiante", id: "EST-999" }` · **Cuando** pregunta "¿Cuál es mi promedio?" · **Entonces** 403 con **el mismo cuerpo** que ESC-050 (no revela si el ID existe).
+- **Dado** `usuario` = `{ rol: "estudiante", id: "EST-999" }` · **Cuando** pregunta "¿Cuál es mi promedio?" · **Entonces** 403 con un cuerpo **idéntico byte a byte** al de ESC-050. (SEG-03, D-08)
 
 ### ESC-062 · Rol estudiante con ID de coordinador `@permisos`
 - **Dado** `{ rol: "estudiante", id: "COORD-01" }` · **Cuando** pregunta "¿Cuál es mi promedio?" · **Entonces** 403.
@@ -53,7 +53,7 @@ Salvo que se indique otra cosa, cada escenario espera: **403** con el cuerpo de 
 - **Dado** `{ rol: "coordinador", id: "EST-001" }` · **Cuando** pregunta "¿Qué estudiantes de mi programa perdieron materias?" · **Entonces** 403.
 
 ### ESC-064 · Coordinador inexistente `@permisos`
-- **Dado** `{ rol: "coordinador", id: "COORD-99" }` · **Cuando** pregunta lo mismo · **Entonces** 403.
+- **Dado** `{ rol: "coordinador", id: "COORD-99" }` · **Cuando** pregunta lo mismo · **Entonces** 403 con un cuerpo idéntico byte a byte al de ESC-058 (COORD-01 pidiendo EST-004). (D-07)
 
 ### ESC-065 · Rol fuera de la lista `@contrato`
 - **Dado** `rol` = `"admin"`, `"Estudiante"`, `"coordinador "` o `""` · **Entonces** **400** `ProblemDetails`; no se consulta la API ni el LLM. (D-10)
