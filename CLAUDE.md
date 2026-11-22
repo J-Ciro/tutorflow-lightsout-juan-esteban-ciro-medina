@@ -16,7 +16,7 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
 | Capa | Tecnología |
 | --- | --- |
 | Backend | .NET 8 (C# 12), ASP.NET Core Minimal API |
-| Pruebas | xUnit, `WebApplicationFactory`; API de punta a punta con colecciones de Postman ejecutadas con Postman CLI |
+| Pruebas | xUnit, `WebApplicationFactory`; API de punta a punta, rendimiento y simulación con Postman CLI (colecciones v3) |
 | Evals | Runner propio en .NET (`evals/TutorFlow.Evals`) |
 | LLM | Proveedor configurable con `LLM_API_KEY` (decisión D-16 de la spec) |
 | API académica | Node 18+ (`mock-api/server.js`, puerto 4000) |
@@ -38,7 +38,8 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
 | `mock-api/` | API simulada y `datos.json` (material de Q10, solo lectura) |
 | `preguntas_ejemplo.*` | 10 preguntas con la respuesta y la cita esperadas |
 | `src/` | Backend: `TutorFlow.Core`, `TutorFlow.Infrastructure` y `TutorFlow.Api` (lo crean los agentes) |
-| `tests/` | Pruebas unitarias y de integración, y colección de Postman en `tests/postman/` (lo crean los agentes) |
+| `tests/` | Pruebas unitarias y de integración (lo crean los agentes) |
+| `postman/` | Colecciones v3 (`collections/tutorflow/`), entornos (`environments/`) y simulaciones (`simulations/`) de Postman (lo crean los agentes) |
 | `evals/` | Casos y runner de evals (lo crean los agentes) |
 | `web/` | Frontend opcional (spec futura) |
 | `logs/` | Transcripciones de las sesiones de agentes |
@@ -52,6 +53,7 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
   - `criterios-gherkin-smart`: cómo redactar los CA.
   - `registrar-intervencion`: anotar una corrección del humano.
   - `cerrar-corrida`: actualizar `REPORTE.md` y los logs.
+- **Plugin `postman`** (marketplace oficial, habilitado en `.claude/settings.json`): skills `postman:*` para validación local, entre ellas `api-testing`, `api-simulation`, `performance-testing` y `collection-schema-v3`.
 - **Hooks y permisos:** `.claude/settings.json`; scripts de hooks en `.claude/hooks/`.
 - **Reglas de trabajo:** `AGENTS.md`. **Funcionamiento de la fábrica:** `FABRICA.md`.
 
@@ -63,8 +65,9 @@ dotnet build -warnaserror                    # compilar
 dotnet test                                  # pruebas unitarias e integración
 dotnet run --project evals/TutorFlow.Evals   # evals (LLM real si existe LLM_API_KEY)
 docker compose up                            # sistema completo en :8080
-postman collection run tests/postman/tutorflow.postman_collection.json \
-  -e tests/postman/local.postman_environment.json   # pruebas de API (npm install -g postman-cli)
+npm install -g postman-cli                   # una vez (validación local; no se usa en el CI)
+postman collection run postman/collections/tutorflow \
+  -e "postman/environments/local.environment.yaml"   # pruebas de API locales
 curl localhost:8080/api/salud                # salud
 ```
 

@@ -76,7 +76,7 @@ Repositorio genérico, MediatR, AutoMapper, CQRS, event sourcing, capas "Manager
 - Las pruebas de **casos alternos y de abuso** son tan obligatorias como las del camino feliz.
 - Cobertura mínima: 90% de líneas en `TutorFlow.Core`, 80% global.
 - Las pruebas de integración no llaman a un LLM real ni a internet: usan dobles.
-- Las pruebas de API de punta a punta son una colección de Postman en `tests/postman/`, que se ejecuta con Postman CLI (`npm install -g postman-cli`) contra la API levantada. `curl` sirve para explorar; la evidencia es Postman CLI.
+- Las pruebas de API de punta a punta son una colección v3 de Postman en `postman/collections/tutorflow/` que los agentes ejecutan **en local** con Postman CLI (`npm install -g postman-cli`) contra la API levantada; no corre en el CI. Las simulaciones de dependencias van en `postman/simulations/`. Se usan las skills del plugin oficial `postman`. `curl` sirve para explorar; la evidencia es Postman CLI.
 - Los evals sí pueden usar el LLM real (requieren `LLM_API_KEY`). Las aserciones de los evals son deterministas: valores numéricos, citas, códigos HTTP y ausencia de datos de terceros. Nada de "LLM como juez" para lo que se puede verificar con código.
 - **Separación de roles:** el agente que implementa no modifica `tests/` ni `evals/`. Si cree que una prueba está mal, lo reporta; no la "arregla" para que pase.
 
@@ -108,6 +108,7 @@ Checklist mínimo, auditado por el agente `seguridad`:
 - Desactivar analizadores, pruebas, evals o pasos del CI para que algo pase (`[Skip]`, `#pragma warning disable`, `continue-on-error`) sin una decisión registrada en la spec.
 - Debilitar una regla de autorización para que un eval pase.
 - Trabajar directamente en `main` o hacer merge sin el visto bueno de `seguridad` y `qa-calidad`.
+- **Usar la nube de Postman sin aprobación humana:** `postman login`, sincronizar o publicar en workspaces, publicar mocks o documentación, crear monitores, usar runners `postman-cloud`, escribir mediante el servidor MCP remoto de Postman o ejecutar `postman application test` sin `--report-events=false`. Todo lo de Postman corre en local, salvo aprobación explícita.
 
 ## 8. Definición de terminado
 
