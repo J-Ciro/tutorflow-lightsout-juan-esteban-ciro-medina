@@ -30,7 +30,7 @@ src/
     Conocimiento/            Modelo de documento/sección y búsqueda de secciones
   TutorFlow.Infrastructure/  Adaptadores de los puertos
     ApiAcademica/            HttpClient tipado hacia la API simulada (mock-api)
-    Llm/                     Cliente del proveedor LLM (lee LLM_API_KEY)
+    Llm/                     Puerto IClienteLlm: adaptador Anthropic (SDK oficial) y adaptador compatible con OpenAI (OpenAI, Groq, OpenRouter, Gemini, Ollama…); resolución del proveedor por la llave (spec 001 §9.4)
     Conocimiento/            Carga e indexado de /reglamento por secciones
     Auditoria/               Registro de auditoría estructurado
   TutorFlow.Api/             Host: endpoints, DI, validación, middleware, ProblemDetails

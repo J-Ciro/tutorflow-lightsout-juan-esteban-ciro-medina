@@ -6,13 +6,14 @@ Se actualiza al cerrar cada corrida con la skill `cerrar-corrida`. Los tokens de
 
 | Fecha | Bloqueo | Impacto | Estado |
 | --- | --- | --- | --- |
-| 2026-11-22 | La máquina no tiene .NET 8 SDK, Docker ni GitHub CLI (`gh`). Sí tiene `git` 2.56 y `node` 26 | No se puede ejecutar `implementar-spec base`: sin el SDK no hay build ni pruebas, y la fábrica no declara éxito sin evidencia | Abierto: instalar el .NET 8 SDK y Docker Desktop |
+| 2026-11-22 | La máquina no tiene .NET 8 SDK, Docker ni GitHub CLI (`gh`). Sí tiene `git` 2.56 y `node` 26 | No se puede ejecutar `implementar-spec base`: sin el SDK no hay build ni pruebas, y la fábrica no declara éxito sin evidencia | Abierto. El humano reporta haber instalado el .NET 8 SDK, Docker y Ollama, pero la fábrica no encuentra `dotnet`, `docker` ni `ollama` (ni en el `PATH` ni en las rutas de instalación habituales). Pendiente de verificar tras reiniciar |
+| 2026-11-22 | Postman CLI | — | Resuelto: 1.93.0 instalado y verificado en local, sin login |
 
 ## 1. Corridas de la fábrica
 
 | # | Fecha | Spec / objetivo | Inicio–fin | Iteraciones | Intervenciones | Tokens | USD | Resultado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 2026-11-22 | Arranque: AGENTS, FABRICA, subagentes, skills, SPEC y escenarios; revisión adversarial de la spec (2 revisores: 30 hallazgos incorporados); CA en Gherkin; SPEC reestructurada (v1.1); CLAUDE.md de contexto | pendiente | 1 | INT-001…INT-006 | pendiente | pendiente | Fábrica configurada; spec endurecida; implementación bloqueada (§0) |
+| 0 | 2026-11-22 | Arranque: AGENTS, FABRICA, subagentes, skills, SPEC y escenarios; revisión adversarial de la spec (2 revisores: 30 hallazgos incorporados); CA en Gherkin; SPEC reestructurada (v1.1); CLAUDE.md de contexto | pendiente | 1 | INT-001…INT-007 | pendiente | pendiente | Fábrica configurada; spec endurecida; implementación bloqueada (§0) |
 
 ## 2. Totales
 
@@ -20,7 +21,7 @@ Se actualiza al cerrar cada corrida con la skill `cerrar-corrida`. Los tokens de
 | --- | --- |
 | Horas humanas | pendiente |
 | Corridas | 1 |
-| Intervenciones | 6 |
+| Intervenciones | 7 |
 | Tokens totales de la fábrica | pendiente |
 | Costo total de la fábrica (USD) | pendiente |
 

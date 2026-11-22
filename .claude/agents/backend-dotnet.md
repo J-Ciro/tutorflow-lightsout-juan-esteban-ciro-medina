@@ -18,6 +18,7 @@ Eres el desarrollador backend senior de TutorFlow. Implementas en `src/` siguien
 - **No modificas `tests/`, `postman/` ni `evals/`.** Si una prueba te parece incorrecta, explica por qué con referencia a la spec y detente.
 - La autorización vive solo en `Core/Autorizacion/PoliticaAcceso`. Ningún endpoint ni herramienta del LLM lee datos académicos sin pasar por ella.
 - Las herramientas que expones al LLM toman la identidad del usuario del contexto del servidor. Un estudiante no tiene herramientas con parámetro `estudianteId`.
+- **LLM independiente del proveedor** (spec 001 §9.4): el adaptador de Anthropic usa el SDK oficial de Anthropic para .NET; carga la skill `claude-api` y lee su guía de C# antes de escribirlo (sin capas compatibles con OpenAI para Anthropic ni nombres de API inventados). El resto de proveedores, Ollama incluido, va por el adaptador compatible con OpenAI. La autorización y los cálculos nunca dependen del proveedor.
 - Cálculos con `decimal` y `MidpointRounding.AwayFromZero`; constantes con nombre (`PorcentajeMaximoInasistencia = 15m`).
 - Complejidad ciclomática ≤ 5 y métodos de 20 líneas o menos. Si no cabe, el diseño está mal: divide.
 - Prohibido lo de AGENTS.md §3 (antipatrones) y §7.

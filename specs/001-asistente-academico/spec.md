@@ -2,8 +2,8 @@
 
 | Campo | Valor |
 | --- | --- |
-| Versión | 1.2 · 2026-11-22 |
-| Estado | Borrador para aprobación humana |
+| Versión | 1.3 · 2026-11-22 |
+| Estado | **Aprobada** por el humano (2026-11-22) |
 | Spec del sistema | [`SPEC.md`](../../SPEC.md): objetivo, actores, contrato, matriz de acceso y decisiones |
 | Componentes en esta spec | Backend .NET 8, datos, comportamiento conversacional y QA |
 | Fuera de esta spec | Interfaz web React (spec futura, §10) |
@@ -96,7 +96,7 @@ La autorización es **código determinista**, se evalúa **antes** de leer datos
 | SEG-10 | **Verificación de la salida**, en orden: <br>(a) las citas que no están en el índice se descartan; <br>(b) si la respuesta contiene el nombre completo o el ID (normalizados con SEG-04a) de una persona no autorizada, se reemplaza por `TEXTO_NEGATIVA` (D-07), con 200 y auditoría `fuga_bloqueada`; <br>(c) todo número con forma de nota (`\d\.\d{1,2}`) o de porcentaje debe aparecer en los resultados de las herramientas o en las secciones entregadas. Si no, la respuesta se reemplaza por `TEXTO_NO_VERIFICABLE` = "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.", con `citas: []` y auditoría `numero_no_verificado`. | 200 |
 | SEG-11 | `LLM_API_KEY` solo se lee de variables de entorno; nunca se registra, se devuelve ni se incluye en la imagen. | — |
 | SEG-12 | Errores sin stack trace, rutas ni respuestas crudas de servicios internos. | — |
-| SEG-13 | Límites (configurables): pregunta ≤ 1.000 caracteres; cuerpo ≤ 16 KB; **60 preguntas por minuto por IP** (IP de la conexión: `X-Forwarded-For` se ignora salvo con un proxy de confianza configurado; el límite se aplica antes de validar la identidad); como máximo 6 secciones recuperadas; `max_tokens` de salida 600; como máximo 4 invocaciones de herramientas (la 5.ª produce 503 con auditoría `limite_herramientas`); timeout de 20 s al LLM; **presupuesto total de 6 s** hacia la API académica por petición, sin reintentos; presupuesto diario de gasto en USD (al superarlo, 503). | 400 / 413 / 429 / 503 |
+| SEG-13 | Límites (configurables): pregunta ≤ 1.000 caracteres; cuerpo ≤ 16 KB; **60 preguntas por minuto por IP** (IP de la conexión: `X-Forwarded-For` se ignora salvo con un proxy de confianza configurado; el límite se aplica antes de validar la identidad); como máximo 6 secciones recuperadas; límite de tokens de salida configurable (2.000 por defecto; en los modelos con razonamiento interno ese límite también lo incluye); como máximo 4 invocaciones de herramientas (la 5.ª produce 503 con auditoría `limite_herramientas`); timeout de 20 s al LLM; **presupuesto total de 6 s** hacia la API académica por petición, sin reintentos; presupuesto diario de gasto en USD (al superarlo, 503). | 400 / 413 / 429 / 503 |
 | SEG-14 | Encabezados `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`; CORS sin `AllowAnyOrigin`; Swagger solo en `Development`. | — |
 | SEG-15 | El contenedor corre como usuario no root; la API académica no se publica fuera de la red de Compose. | — |
 | SEG-16 | **Detección de suplantación:** la auditoría registra `ipOrigen`. Si una IP usa más de 3 `usuario.id` distintos en 10 minutos, se emite el evento `multiples_identidades`. El bloqueo (429) es configurable y está **desactivado por defecto** (D-21). | Auditoría |
@@ -113,9 +113,9 @@ La matriz global está en [`SPEC.md` §4](../../SPEC.md). Esta feature la implem
 | --- | --- | --- |
 | RNF-01 | Rendimiento de las denegaciones | Un 403 del filtro previo responde en menos de 500 ms (p95) porque no llama al LLM |
 | RNF-02 | Tiempo máximo con dependencias | El LLM tiene un timeout de 20 s y la API académica un presupuesto de 6 s; al superarlos, 503 |
-| RNF-03 | Costo | Tokens y costo de cada respuesta medidos y publicados en `REPORTE.md` con el costo por 1.000 preguntas; modelo según D-16 |
+| RNF-03 | Costo | Tokens y costo de cada respuesta medidos con los precios configurados del modelo en uso (§9.4) y publicados en `REPORTE.md` con el costo por 1.000 preguntas por proveedor |
 | RNF-04 | Límites de consumo | Los de SEG-13 |
-| RNF-05 | Configuración | Modelo, precios, límites y URL de la API académica en `appsettings.json`; `LLM_API_KEY` solo como variable de entorno |
+| RNF-05 | Configuración | Proveedor, modelo, precios, límites y URL de la API académica en `appsettings.json`, sobreescribibles por variables de entorno (§9.4); `LLM_API_KEY` solo como variable de entorno |
 | RNF-06 | Observabilidad | Logs JSON estructurados por consola con `correlationId` (§11.3) |
 | RNF-07 | Portabilidad | Arranque con `docker compose up`, sin dependencias en el host salvo Docker |
 | RNF-08 | Mantenibilidad | Reglas de `AGENTS.md` §3: complejidad ciclomática ≤ 5 y métodos de 20 líneas o menos |
@@ -149,6 +149,30 @@ Fijo, definido en [`SPEC.md` §3](../../SPEC.md). Esta feature no lo modifica.
 | Estudiantes de un programa | `GET /programas/{id}/estudiantes` | Herramienta de coordinador y lista de nombres del filtro previo (uso interno, nunca se devuelve) |
 
 La API no valida permisos y no calcula definitivas: ambas cosas son responsabilidad del backend.
+
+### 9.4 Proveedor del LLM (D-16)
+
+El backend habla con el LLM a través del puerto `IClienteLlm`, con dos adaptadores: **Anthropic** (SDK oficial de Anthropic para .NET) y **compatible con la API de OpenAI** (Chat Completions con herramientas), que cubre OpenAI, Groq, OpenRouter, Google Gemini, DeepSeek, Mistral y Ollama.
+
+**Resolución del proveedor**, en este orden (determinista y registrada en el log de arranque, nunca la llave):
+
+1. `LLM_PROVEEDOR` explícito (`anthropic`, `openai`, `groq`, `openrouter`, `gemini`, `ollama` u `openai-compatible` con `LLM_URL_BASE`).
+2. Prefijo de `LLM_API_KEY`:
+
+| Prefijo | Proveedor | Adaptador |
+| --- | --- | --- |
+| `sk-ant-` | Anthropic | Anthropic |
+| `sk-or-` | OpenRouter | Compatible con OpenAI |
+| `gsk_` | Groq | Compatible con OpenAI |
+| `AIza` | Google Gemini | Compatible con OpenAI |
+| `sk-` (cualquier otro) | OpenAI | Compatible con OpenAI |
+
+3. Llave con un prefijo desconocido: requiere `LLM_URL_BASE`; sin ella, la app arranca y responde 503 a las preguntas que necesitan el LLM, con un log claro de configuración.
+4. Sin `LLM_API_KEY`: **Ollama** en `LLM_URL_BASE` (por defecto `http://host.docker.internal:11434`) con el modelo `qwen2.5:7b`.
+
+**Modelo y precio:** cada proveedor tiene en `appsettings.json` un modelo pequeño por defecto (Anthropic: `claude-haiku-5-5`, a 0.10 / 0.50 USD por millón de tokens de entrada / salida) y sus precios por modelo; `LLM_MODELO`, `LLM_PRECIO_ENTRADA` y `LLM_PRECIO_SALIDA` los sobreescriben. Ollama tiene costo 0. Un modelo sin precio configurado reporta `costoUsd: 0` y la auditoría marca `precio_desconocido`.
+
+**Comportamiento común a todos los proveedores:** la autorización y los cálculos no cambian con el proveedor; los límites de SEG-13 aplican igual; `tokens` suma entrada y salida según el uso que reporte el proveedor; una negativa del modelo (`refusal` u otro rechazo de seguridad) se responde con `TEXTO_NO_VERIFICABLE` y la auditoría `error`. Las pruebas y los evals offline no dependen del proveedor (LLM doble); los evals con LLM real se ejecutan con el proveedor configurado y `REPORTE.md` registra cuál fue.
 
 ## 10. Frontend y UX/UI
 
@@ -662,7 +686,7 @@ Característica: Detectar la suplantación de identidad
 | CA-04 | Acceso ajeno denegado | Integración con espías | ESC-050…066, ESC-130…139 | 100% → 403; 0 llamadas al LLM; 0 lecturas del tercero |
 | CA-05 | Inyección de prompts | Integración con LLM doble malicioso + evals con LLM | ESC-070…089 | 100% sin cadenas prohibidas |
 | CA-06 | Sin información | Evals con LLM | ESC-009, ESC-090…094 | 100% con el texto exacto en 3 corridas |
-| CA-07 | Contrato HTTP | Integración | ESC-100…112 | 100% contra el esquema; cada código de `SPEC.md` §3.1 con al menos un caso |
+| CA-07 | Contrato HTTP y resolución del proveedor del LLM | Integración | ESC-100…112, ESC-119 | 100% contra el esquema; cada código de `SPEC.md` §3.1 con al menos un caso |
 | CA-08 | Auditoría | Integración con un sink en memoria | ESC-113…118 | Exactamente 1 evento por petición; 0 valores de notas |
 | CA-09 | Docker Compose | Humo en el CI | ESC-116 | Salud en 200 en menos de 60 s |
 | CA-10 | CI bloqueante | PRs de sabotaje controlado | ESC-117 | 5/5 regresiones bloqueadas |

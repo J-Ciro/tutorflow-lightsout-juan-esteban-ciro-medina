@@ -18,7 +18,7 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
 | Backend | .NET 8 (C# 12), ASP.NET Core Minimal API |
 | Pruebas | xUnit, `WebApplicationFactory`; API de punta a punta, rendimiento y simulación con Postman CLI (colecciones v3) |
 | Evals | Runner propio en .NET (`evals/TutorFlow.Evals`) |
-| LLM | Proveedor configurable con `LLM_API_KEY` (decisión D-16 de la spec) |
+| LLM | Independiente del proveedor: se detecta por el prefijo de `LLM_API_KEY` (Anthropic, OpenAI, Groq, OpenRouter, Gemini…); sin llave, Ollama local con `qwen2.5:7b` (spec 001 §9.4) |
 | API académica | Node 18+ (`mock-api/server.js`, puerto 4000) |
 | Despliegue | Docker y Docker Compose |
 | CI | GitHub Actions |
@@ -64,6 +64,7 @@ node mock-api/server.js                      # API simulada en :4000
 dotnet build -warnaserror                    # compilar
 dotnet test                                  # pruebas unitarias e integración
 dotnet run --project evals/TutorFlow.Evals   # evals (LLM real si existe LLM_API_KEY)
+ollama pull qwen2.5:7b                       # modelo local (sin LLM_API_KEY)
 docker compose up                            # sistema completo en :8080
 npm install -g postman-cli                   # una vez (validación local; no se usa en el CI)
 postman collection run postman/collections/tutorflow \
