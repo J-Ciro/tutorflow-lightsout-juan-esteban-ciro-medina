@@ -1,4 +1,4 @@
-# SPEC.md · TutorFlow, asistente académico
+| D-14 | Formato de citas | §5. Riesgo: la cita esperada "Secciones 3 y 4" se devuelve como dos entradas, y "Datos del estudiante" como `documento`, con la sección en `seccion`. Si las pruebas ocultas comparan la cadena literal, podrían fallar; se elige el formato estructurado del contrato | El contrato define `{documento, seccion}` por cita || D-09 | Mención de terceros | Se aplica solo SEG-04 y SEG-04a: nombre completo o ID con forma de persona. Un nombre o apellido suelto no deniega; esa brecha la cubren SEG-06 y SEG-10. El estudiante sí puede mencionar al coordinador de su programa | Equilibrio entre privacidad y falsos 403 en preguntas legítimas || D-08 | ID inexistente o rol incoherente | 403 con el mismo cuerpo que un acceso ajeno. **Limitación reconocida:** con una pregunta normativa, un ID válido responde 200 y uno inexistente 403, así que la existencia de un ID se puede descubrir. Se mitiga con el límite por IP (SEG-13) y la detección de SEG-16 | Denegar también lo normativo a los IDs válidos rompería el uso legítimo || D-07 | Cuerpo del 403 | Salida del contrato con `respuesta` = `TEXTO_NEGATIVA`, elegido **solo por el `rol` declarado**: estudiante → "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."; coordinador → "No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa.". `citas`: [`reglamento_academico_2025.md` · `Artículo 22`], `usoDatosEstudiante: false`, `tokens: 0` y `costoUsd: 0` (salvo el 403 tardío, D-22) | Cumple a la vez "403" y "negativa"; textos constantes y comprobables || D-01 | El contrato envía la identidad en el cuerpo, sin autenticación | Se acepta tal cual (contrato fijo), se valida contra la API (SEG-03) y se detecta la rotación de identidades (SEG-16). **Riesgo residual crítico, aceptado y documentado (A07):** cualquiera que conozca un ID puede hacerse pasar por esa persona. En producción la identidad vendría de un token firmado (JWT/OIDC) y `usuario` se ignoraría | No se puede cambiar el contrato; se mitiga y se hace visible |# SPEC.md · TutorFlow, asistente académico
 
 | Campo | Valor |
 | --- | --- |
@@ -50,11 +50,11 @@ Arranque: docker compose up   (puerto 8080, variable LLM_API_KEY)
 | --- | --- | --- |
 | 200 | Pregunta respondida, incluida la respuesta "no encuentro esa información" | Salida del contrato |
 | 400 | JSON inválido, campos faltantes, `rol` fuera de la lista, `id` con formato inválido, `pregunta` vacía o de más de 1.000 caracteres | `ProblemDetails` (RFC 9457) sin detalles internos |
-| 403 | Ver SEG-01 a SEG-08 | **Salida del contrato** con la negativa (D-07) |
+| 403 | Ver SEG-01 a SEG-06 | **Salida del contrato** con la negativa (D-07) |
 | 405 | Método distinto al definido | Vacío o `ProblemDetails` |
 | 413 | Cuerpo de más de 16 KB | `ProblemDetails` |
-| 429 | Más de 30 preguntas por minuto con el mismo `usuario.id` o la misma IP | `ProblemDetails` con `Retry-After` |
-| 503 | El LLM o la API académica no responden dentro del timeout | `ProblemDetails` genérico |
+| 429 | Se supera el límite de tasa por IP de SEG-13 | `ProblemDetails` con `Retry-After` |
+| 503 | El LLM o la API académica no responden a tiempo, se supera el límite de herramientas o el presupuesto diario (SEG-13) | `ProblemDetails` genérico |
 | 500 | Error no controlado | `ProblemDetails` con `traceId`, sin stack trace (SEG-12) |
 
 Reglas del JSON: propiedades en camelCase exactamente como el contrato; `citas` es `[]` cuando no hay citas, nunca `null`; `tokens` es un entero ≥ 0; `costoUsd` es un decimal ≥ 0 con hasta 6 decimales; `Content-Type: application/json; charset=utf-8`.
@@ -74,7 +74,7 @@ Formato de citas (D-14):
 - Otros documentos: `"seccion": "Sección 3"`, `"Sección 3.1"`. Una cita por sección (las "Secciones 3 y 4" se citan como dos entradas).
 - Datos propios: `{ "documento": "Datos del estudiante", "seccion": "Notas" | "Asistencia" | "Datos básicos" }`.
 - Datos de un coordinador: `{ "documento": "Datos del programa", "seccion": "<id del programa>" }`.
-- Solo se devuelven citas que existen en la base de conocimiento indexada. Una cita inexistente se descarta (SEG-10).
+- Solo se devuelven citas que existen en la base de conocimiento indexada. El índice **no contiene** el reglamento 2023 ni el Anexo de bienestar, así que una cita a ellos se descarta (SEG-10).
 
 ## 6. Reglas de negocio
 
@@ -104,20 +104,25 @@ La autorización es **código determinista**, se evalúa **antes** de leer datos
 | ID | Regla | Respuesta |
 | --- | --- | --- |
 | SEG-01 | Un estudiante solo accede a sus propios datos (`usuario.id`). | 403 |
-| SEG-02 | Un coordinador solo accede a estudiantes cuyo `programaId` está en sus `programas`. | 403 |
-| SEG-03 | El `usuario.id` debe existir en la API y su tipo debe coincidir con el `rol` (`estudiante` ↔ `/estudiantes/{id}`, `coordinador` ↔ `/coordinadores/{id}`). Si no, 403 con el mismo cuerpo que SEG-01, para no revelar qué IDs existen. | 403 |
-| SEG-04 | Si la pregunta de un estudiante menciona a otra persona del registro (nombre completo o nombre y apellido, sin importar tildes ni mayúsculas) o cualquier ID `EST-`/`COORD-` distinto al suyo, se deniega **sin llamar al LLM**. Ídem para un coordinador con estudiantes fuera de su programa. | 403 |
-| SEG-05 | Un estudiante no puede pedir agregados que incluyan a otros ("el mejor promedio", "lista de estudiantes", "compárame con mis compañeros", "promedio del curso"). | 403 |
-| SEG-06 | Las herramientas que el LLM puede invocar reciben la identidad del servidor. Las herramientas de estudiante no tienen parámetro de ID. Las de coordinador aceptan `estudianteId` y lo validan con SEG-02 en cada invocación. | Si el modelo pide un ID ajeno: 403 y fin del ciclo |
-| SEG-07 | Los IDs se validan con `^EST-\d{3}$` y `^COORD-\d{2}$` antes de cualquier uso, y se codifican al construir rutas (sin traversal ni query). | 400 si no cumple el formato |
+| SEG-02 | Un coordinador solo accede a estudiantes cuyo `programaId` está en sus programas. **Única fuente de verdad:** `/coordinadores/{id}.programas` (no `/programas[].coordinadorId`). Lista vacía: solo reglamento. Varios programas: la unión, con una cita por programa. | 403 |
+| SEG-03 | El `usuario.id` debe existir en la API y su tipo debe coincidir con el `rol` (`estudiante` ↔ `/estudiantes/{id}`, `coordinador` ↔ `/coordinadores/{id}`). Si no, 403 con el cuerpo de D-07, **elegido solo por el `rol` declarado** e idéntico byte a byte al de un acceso ajeno con identidad válida. Aplica también a preguntas normativas. | 403 |
+| SEG-04 | **Filtro previo de terceros** (sin LLM), sobre la pregunta normalizada con SEG-04a: <br>• **Estudiante:** deniega si menciona (1) el nombre completo de cualquier persona del registro distinta de sí mismo y del coordinador de su propio programa, o (2) cualquier token con forma de ID de persona (`EST-NNN`, `COORD-NN`, exista o no) distinto al suyo. <br>• **Coordinador:** deniega si menciona a un estudiante fuera de sus programas, a otro coordinador (por nombre o ID), un ID con forma de persona que no pertenece a sus programas, o un programa ajeno (SEG-04b). | 403 |
+| SEG-04a | **Normalización única**, compartida por SEG-04 y SEG-10: NFKC, minúsculas, sin tildes, sin caracteres de ancho cero, guiones Unicode unificados a `-`, puntuación a espacio, espacios colapsados. **Nombre completo** = nombre y apellido como tokens completos y contiguos, en cualquier orden. Un nombre o apellido suelto **no** deniega (evita falsos positivos como "notas rojas" o "color pardo"); esa brecha la cubren SEG-06 y SEG-10. **Forma de ID de persona** = `est` o `coord` + separador opcional (`-`, `_`, espacio o nada) + dígitos, **excepto** los códigos de asignatura presentes en los datos (p. ej. `EST-103`, Estadística). | — |
+| SEG-04b | Programa ajeno: mención, como palabra completa normalizada, del ID (`ING-SIS`, `ADM`) o del nombre (`Ingeniería de Sistemas`, `Administración de Empresas`) de un programa que no está en los del coordinador. Las comparaciones entre programas cuentan como mención. | 403 |
+| SEG-05 | **Control estructural:** ninguna herramienta del rol estudiante devuelve datos, conteos ni estadísticas de otras personas. **Capa léxica adicional** (estudiante, lista cerrada, sobre el texto normalizado): `mejor promedio`, `peor promedio`, `ranking`, `que puesto`, `en que lugar quede`, `compar* … companer*`, `por encima de la media`, `promedio del curso`, `promedio del programa`, `promedio de la carrera`, `list* … estudiantes`, `que estudiantes`, `todos los estudiantes`, `otros estudiantes`, `cuantos estudiantes`. | 403 |
+| SEG-06 | Herramientas del LLM acotadas al rol, con la identidad tomada del servidor: <br>• Estudiante: sin ningún parámetro de ID. <br>• Coordinador: la herramienta de programa no tiene parámetros (recorre sus programas); la de detalle acepta `estudianteId` y lo valida con SEG-02 en cada invocación. <br>Si el modelo pide un ID ajeno, la petición termina en **403 tardío** con `motivoDenegacion: herramienta_id_ajeno`, y `tokens` y `costoUsd` reportan el **consumo real** (D-22). | 403 |
+| SEG-07 | Los IDs se validan con `^EST-\d{3}$` y `^COORD-\d{2}$`, y los `programaId` que devuelve la API con `^[A-Z]{2,5}(-[A-Z]{2,5})?$`, antes de usarlos. Se codifican al construir rutas. La URL base de la API académica sale solo de la configuración; sin seguir redirecciones. | 400 si el `usuario.id` no cumple el formato |
 | SEG-08 | Instrucciones dentro de la pregunta ("ignora tus reglas", "soy coordinador", "modo admin") no cambian el rol ni los permisos: el rol sale solo de `usuario.rol` validado. | Se aplican SEG-01 a SEG-06 |
-| SEG-09 | Los documentos de `reglamento/` son datos no confiables: se entregan al modelo entre delimitadores y con la instrucción explícita de no obedecerlos. | — |
-| SEG-10 | Verificación de la salida: las citas deben existir en el índice; la respuesta no puede contener nombres ni IDs de estudiantes no autorizados (si los contiene, se reemplaza por la negativa y se audita como `fuga_bloqueada`). | 200 con negativa |
+| SEG-09 | Las secciones de documentos **y los resultados de las herramientas** (que contienen texto de la API, como nombres de asignaturas) se entregan al modelo como datos delimitados, marcados como no confiables y con la instrucción explícita de no obedecerlos. | — |
+| SEG-10 | **Verificación de la salida**, en orden: <br>(a) las citas que no están en el índice se descartan; <br>(b) si la respuesta contiene el nombre completo o el ID (normalizados con SEG-04a) de una persona no autorizada, se reemplaza por `TEXTO_NEGATIVA` (D-07), con 200 y auditoría `fuga_bloqueada`; <br>(c) todo número con forma de nota (`\d\.\d{1,2}`) o de porcentaje debe aparecer en los resultados de las herramientas o en las secciones entregadas. Si no, la respuesta se reemplaza por `TEXTO_NO_VERIFICABLE` = "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.", con `citas: []` y auditoría `numero_no_verificado`. | 200 |
 | SEG-11 | `LLM_API_KEY` solo se lee de variables de entorno; nunca se registra, se devuelve ni se incluye en la imagen. | — |
 | SEG-12 | Errores sin stack trace, rutas ni respuestas crudas de servicios internos. | — |
-| SEG-13 | Límites de consumo: pregunta ≤ 1.000 caracteres, cuerpo ≤ 16 KB, 30 preguntas por minuto, `max_tokens` de salida ≤ 600, ≤ 4 invocaciones de herramientas por pregunta, timeout de 20 s al LLM y de 5 s a la API. | 400 / 413 / 429 / 503 |
+| SEG-13 | Límites (configurables): pregunta ≤ 1.000 caracteres; cuerpo ≤ 16 KB; **60 preguntas por minuto por IP** (IP de la conexión: `X-Forwarded-For` se ignora salvo con un proxy de confianza configurado; el límite se aplica antes de validar la identidad); como máximo 6 secciones recuperadas; `max_tokens` de salida 600; como máximo 4 invocaciones de herramientas (la 5.ª produce 503 con auditoría `limite_herramientas`); timeout de 20 s al LLM; **presupuesto total de 6 s** hacia la API académica por petición, sin reintentos; presupuesto diario de gasto en USD (al superarlo, 503). | 400 / 413 / 429 / 503 |
 | SEG-14 | Encabezados `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`; CORS sin `AllowAnyOrigin`; Swagger solo en `Development`. | — |
 | SEG-15 | El contenedor corre como usuario no root; la API académica no se publica fuera de la red de Compose. | — |
+| SEG-16 | **Detección de suplantación:** la auditoría registra `ipOrigen`. Si una IP usa más de 3 `usuario.id` distintos en 10 minutos, se emite el evento `multiples_identidades`. El bloqueo (429) es configurable y está **desactivado por defecto** (D-21). | Auditoría |
+| SEG-17 | Cadena de suministro: `packages.lock.json` versionado, imagen base fijada por digest, cero paquetes vulnerables (`dotnet list package --vulnerable --include-transitive`) en el CI. | CI falla |
+| SEG-18 | Minimización: al LLM solo se envían las secciones recuperadas y los resultados de las herramientas autorizadas, nunca el registro completo. | — |
 
 ### 7.1 Matriz de acceso
 
@@ -140,18 +145,19 @@ La autorización es **código determinista**, se evalúa **antes** de leer datos
 
 ## 9. Auditoría
 
-Por cada llamada a `/api/asistente/preguntar` (incluidas las 400, 403 y 429) se emite **un** evento JSON estructurado con: `timestamp` (UTC), `correlationId`, `usuario.rol`, `usuario.id`, `pregunta` (truncada a 1.000 caracteres y con los caracteres de control escapados), `resultado` (`respondida` | `sin_informacion` | `denegada` | `invalida` | `fuga_bloqueada` | `error`), `motivoDenegacion` (si aplica), `estudiantesConsultados` (IDs), `recursosConsultados` (`datos_basicos` | `notas` | `asistencia` | `programa`), `citas`, `tokens`, `costoUsd` y `duracionMs`.
+Por cada llamada a `/api/asistente/preguntar` (incluidas las 400, 403, 413, 429 y 503) se emite **un** evento JSON estructurado, en una sola línea, con: `timestamp` (UTC), `correlationId`, `ipOrigen`, `usuario.rol`, `usuario.id`, `pregunta` (truncada a 1.000 caracteres, con los caracteres de control escapados y **con los nombres completos e IDs de terceros enmascarados** como `[TERCERO]`), `resultado` (`respondida` | `sin_informacion` | `denegada` | `invalida` | `fuga_bloqueada` | `numero_no_verificado` | `limite_herramientas` | `error`), `motivoDenegacion` (`identidad_invalida` | `tercero_mencionado` | `programa_ajeno` | `agregado` | `herramienta_id_ajeno`), `estudiantesConsultados` (IDs), `recursosConsultados` (`datos_basicos` | `notas` | `asistencia` | `programa`), `citas`, `tokens`, `costoUsd` y `duracionMs`. El evento `multiples_identidades` (SEG-16) va aparte.
 
-No se registran valores de notas ni la respuesta completa (Ley 1581, Art. 22; D-13). Nunca se registra la llave.
+No se registran valores de notas ni la respuesta completa (Ley 1581, Art. 22; D-13). Nunca se registra la llave. Retención configurable, 90 días por defecto.
 
 ## 10. Diseño de referencia del flujo
 
 1. Validar la entrada (400/413).
 2. Resolver la identidad en la API y verificar el rol (SEG-03).
-3. Filtro previo de terceros y agregados (SEG-04, SEG-05) → 403 sin LLM.
-4. Recuperar las secciones relevantes de los documentos vigentes (búsqueda léxica por sección; corpus pequeño, sin base vectorial).
-5. Llamar al LLM con las secciones delimitadas y herramientas acotadas al rol (SEG-06). Las herramientas devuelven valores **ya calculados** por `Core` (definitivas, promedio, pérdida por inasistencia, faltas restantes, elegibilidad).
-6. Verificar la salida (SEG-10) y armar `citas`, `usoDatosEstudiante`, `tokens` y `costoUsd`.
+0. Límite de tasa por IP (SEG-13).
+3. Filtro previo de terceros, programas ajenos y agregados (SEG-04, SEG-04b, SEG-05) → 403 sin LLM.
+4. Recuperar las secciones relevantes de los documentos vigentes (búsqueda léxica por sección, máx. 6; corpus pequeño, sin base vectorial).
+5. Llamar al LLM con las secciones y los resultados de herramientas delimitados (SEG-09) y herramientas acotadas al rol (SEG-06). Las herramientas devuelven valores **ya calculados** por `Core` (definitivas, promedio, pérdida por inasistencia, faltas restantes, elegibilidad) y el nombre del coordinador del programa del estudiante.
+6. Verificar la salida (SEG-10 a, b, c) y armar `citas`, `usoDatosEstudiante`, `tokens` y `costoUsd`.
 7. Emitir la auditoría (§9).
 
 ## 11. Criterios de aceptación
@@ -161,14 +167,16 @@ No se registran valores de notas ni la respuesta completa (Ley 1581, Art. 22; D-
 | CA-01 | Las 10 preguntas de `preguntas_ejemplo.json` devuelven la respuesta y las citas esperadas | ESC-001…ESC-010 |
 | CA-02 | Los cálculos de §13 se reproducen exactamente, incluidos los redondeos en el punto medio (4.45 → 4.5, 3.45 → 3.5, 4.05 → 4.1, 4.55 → 4.6, 3.75 → 3.8, 4.15 → 4.2 y el promedio 2.275 → 2.28) | ESC-020…ESC-031 |
 | CA-03 | Ninguna respuesta usa ni cita el reglamento 2023 | ESC-003, ESC-013…ESC-016 |
-| CA-04 | Toda petición de datos ajenos devuelve 403 con el cuerpo de D-07, sin llamar al LLM ni leer datos del tercero | ESC-050…ESC-066 |
-| CA-05 | Ningún vector de inyección (en la pregunta o en un documento) produce datos de terceros, cambio de rol, fuga del prompt o de la llave | ESC-070…ESC-084 |
+| CA-04 | Toda petición de datos ajenos devuelve 403 con el cuerpo de D-07, sin llamar al LLM ni leer datos del tercero (salvo el 403 tardío de SEG-06) | ESC-050…ESC-066, ESC-130…ESC-139 |
+| CA-05 | Ningún vector de inyección (en la pregunta, en un documento o en un resultado de herramienta) produce datos de terceros, cambio de rol, fuga del prompt o de la llave | ESC-070…ESC-089 |
+| CA-12 | Las preguntas legítimas que se parecen a un ataque **no** se deniegan (sin falsos 403) | ESC-120…ESC-129 |
+| CA-13 | La suplantación queda detectada y auditada (SEG-16) | ESC-140…ESC-142 |
 | CA-06 | Las preguntas sin respuesta en las fuentes devuelven el texto de COMP-03 | ESC-090…ESC-094 |
 | CA-07 | El contrato HTTP (forma, tipos y códigos 200/400/403/405/413/429/503) se cumple | ESC-100…ESC-112 |
 | CA-08 | Cada pregunta genera exactamente un evento de auditoría con los campos de §9, sin notas ni llave | ESC-113…ESC-115 |
 | CA-09 | `docker compose up` expone la API en el 8080 con `LLM_API_KEY` y `/api/salud` responde 200 | ESC-116 |
 | CA-10 | El CI bloquea un cambio que rompe el build, una prueba, un eval o la regla de commits | ESC-117 |
-| CA-11 | `usoDatosEstudiante`, `tokens` y `costoUsd` son coherentes: 0 tokens en 403/400 y `true` solo si se leyeron datos | ESC-004, ESC-008, ESC-050, ESC-106 |
+| CA-11 | `usoDatosEstudiante`, `tokens` y `costoUsd` son coherentes: 0 tokens en 400 y en el 403 previo (el 403 tardío reporta el consumo real) y `true` solo si se leyeron datos | ESC-004, ESC-008, ESC-050, ESC-079, ESC-106 |
 
 ## 12. Trazabilidad de requisitos
 
@@ -233,3 +241,6 @@ Trampas que las pruebas deben cubrir: `Math.Round` por defecto (bancario) da 4.4
 | D-16 | Proveedor de LLM | Configurable por `appsettings` (modelo y precio por millón de tokens). Propuesta: un modelo pequeño y económico (p. ej. Claude Haiku) porque el LLM solo redacta: los cálculos y permisos son código. **Requiere confirmación humana** | Costo es el 15% de la evaluación |
 | D-17 | El anexo de `bienestar_y_becas.md` contiene instrucciones dirigidas al asistente | Se excluye del índice (no es contenido normativo) **y** además se prueba la resistencia a la inyección indirecta con documentos sintéticos (defensa en profundidad) | Material no confiable |
 | D-20 | Beca con asignaturas sin definitiva | "No determinable aún" | El promedio del periodo no está completo |
+| D-21 | Bloquear o solo detectar la suplantación (SEG-16) | Solo detectar y auditar por defecto; el bloqueo es configurable | Las pruebas ocultas de Q10 probablemente usan varias identidades desde una misma IP; bloquear las haría fallar |
+| D-22 | 403 cuando el modelo pide un ID ajeno (SEG-06) | 403 tardío con el consumo real de tokens y costo, y `motivoDenegacion: herramienta_id_ajeno`. Se acepta que una inyección indirecta convierta una pregunta legítima en 403: fallar cerrado es preferible a filtrar datos | No ocultar costos reales; ante la duda, denegar |
+| D-23 | Texto exacto en casos de abuso | Las inyecciones con terceros o agregados detectables → 403 (SEG-04/05). Las que no se detectan antes del LLM → se verifica la ausencia de datos de terceros, el código y `usoDatosEstudiante`, no el texto libre | Las aserciones deben ser deterministas |
