@@ -22,26 +22,31 @@ Documentos que debes leer antes de trabajar:
 Backend en **.NET 11** (`net11.0`, con la versión de C# por defecto del SDK). El SDK se fija en `global.json`. Tres proyectos de producción y pruebas separadas. Nada más: cada capa nueva requiere justificarla en la spec.
 
 ```
-src/
-  TutorFlow.Core/            Dominio puro, sin IO ni dependencias de framework
-    Academico/               Cálculo de definitivas, promedio, pérdida por inasistencia (RN-*)
-    Autorizacion/            PoliticaAcceso: quién puede ver qué (SEG-*). Único punto de decisión.
-    Asistente/               Caso de uso PreguntarAsistente + puertos (interfaces)
-    Conocimiento/            Modelo de documento/sección y búsqueda de secciones
-  TutorFlow.Infrastructure/  Adaptadores de los puertos
-    ApiAcademica/            HttpClient tipado hacia la API simulada (mock-api)
-    Llm/                     Puerto IClienteLlm: adaptador Anthropic (SDK oficial) y adaptador compatible con OpenAI (OpenAI, Groq, OpenRouter, Gemini, Ollama…); resolución del proveedor por la llave (spec 001 §9.4)
-    Conocimiento/            Carga e indexado de /reglamento por secciones
-    Auditoria/               Registro de auditoría estructurado
-  TutorFlow.Api/             Host: endpoints, DI, validación, middleware, ProblemDetails
-tests/
-  TutorFlow.Core.Tests/      Unitarias de reglas y política de acceso (xUnit)
-  TutorFlow.Api.Tests/       Integración con WebApplicationFactory, LLM y API académica falsos
-evals/
-  casos/*.json               Casos de eval derivados de escenarios/
-  TutorFlow.Evals/           Runner de evals contra la app (LLM real o grabado)
-docker-compose.yml           api (8080) + mock-api (4000, red interna)
-.github/workflows/           CI
+backend/                     Todo lo de .NET; los comandos dotnet y postman se ejecutan desde aquí
+  TutorFlow.slnx · global.json · Directory.Build.props · Directory.Packages.props · .editorconfig
+  src/
+    TutorFlow.Core/            Dominio puro, sin IO ni dependencias de framework
+      Academico/               Cálculo de definitivas, promedio, pérdida por inasistencia (RN-*)
+      Autorizacion/            PoliticaAcceso: quién puede ver qué (SEG-*). Único punto de decisión.
+      Asistente/               Caso de uso PreguntarAsistente + puertos (interfaces)
+      Conocimiento/            Modelo de documento/sección y búsqueda de secciones
+    TutorFlow.Infrastructure/  Adaptadores de los puertos
+      ApiAcademica/            HttpClient tipado hacia la API simulada (mock-api)
+      Llm/                     Puerto IClienteLlm: adaptador Anthropic (SDK oficial) y adaptador compatible con OpenAI (OpenAI, Groq, OpenRouter, Gemini, Ollama…); resolución del proveedor por la llave (spec 001 §9.4)
+      Conocimiento/            Carga e indexado de /reglamento por secciones
+      Auditoria/               Registro de auditoría estructurado
+    TutorFlow.Api/             Host: endpoints, DI, validación, middleware, ProblemDetails, Dockerfile
+  tests/
+    TutorFlow.Core.Tests/      Unitarias de reglas y política de acceso (xUnit)
+    TutorFlow.Api.Tests/       Integración con WebApplicationFactory, LLM y API académica falsos
+  evals/
+    casos/*.json               Casos de eval derivados de escenarios/
+    TutorFlow.Evals/           Runner de evals contra la app (LLM real o grabado)
+  postman/                     Colecciones v3, entornos, mocks y simulaciones (validación local)
+frontend/                      React + TypeScript (opcional, spec futura)
+docker-compose.yml             api (8080) + mock-api (4000, red interna)
+.github/workflows/             CI
+mock-api/ · reglamento/        Material de Q10 en la raíz, solo lectura
 ```
 
 Dependencias permitidas entre proyectos: `Api → Core, Infrastructure`; `Infrastructure → Core`; `Core →` nada. Las pruebas de arquitectura lo verifican.
@@ -56,6 +61,7 @@ Dependencias permitidas entre proyectos: `Api → Core, Infrastructure`; `Infras
 
 ## 3. Convenciones de código
 
+- Única excepción de analizadores: `backend/tests/.editorconfig` desactiva CA1707, porque los nombres de prueba usan guiones bajos para citar el escenario (`ESC_050_…`). Cualquier otra excepción requiere aprobación humana.
 - `Nullable` habilitado, `TreatWarningsAsErrors=true`, `AnalysisLevel=latest-recommended`, en `Directory.Build.props`.
 - **Complejidad ciclomática ≤ 5 por método** (CA1502 configurado) y **métodos de 20 líneas o menos**. Si un método crece, extrae funciones con nombre de negocio. Sin `if` anidados a más de 2 niveles: usa cláusulas de guarda, `switch` de expresiones o tablas de datos.
 - Nombres del dominio en español, tal como aparecen en la spec (`NotaDefinitiva`, `PromedioPonderado`, `PoliticaAcceso`). Infraestructura técnica en inglés cuando es convención de .NET (`Program`, `HttpClient`).
@@ -77,9 +83,9 @@ Repositorio genérico, MediatR, AutoMapper, CQRS, event sourcing, capas "Manager
 - Las pruebas de **casos alternos y de abuso** son tan obligatorias como las del camino feliz.
 - Cobertura mínima: 90% de líneas en `TutorFlow.Core`, 80% global.
 - Las pruebas de integración no llaman a un LLM real ni a internet: usan dobles.
-- Las pruebas de API de punta a punta son una colección v3 de Postman en `postman/collections/tutorflow/` que los agentes ejecutan **en local** con Postman CLI (`npm install -g postman-cli`) contra la API levantada; no corre en el CI. Las simulaciones de dependencias van en `postman/simulations/`. Se usan las skills del plugin oficial `postman`. `curl` sirve para explorar; la evidencia es Postman CLI.
+- Las pruebas de API de punta a punta son una colección v3 de Postman en `backend/postman/collections/tutorflow/` que los agentes ejecutan **en local** con Postman CLI (`npm install -g postman-cli`) contra la API levantada; no corre en el CI. Las simulaciones de dependencias van en `backend/postman/simulations/`. Se usan las skills del plugin oficial `postman`. `curl` sirve para explorar; la evidencia es Postman CLI.
 - Los evals sí pueden usar el LLM real (requieren `LLM_API_KEY`). Las aserciones de los evals son deterministas: valores numéricos, citas, códigos HTTP y ausencia de datos de terceros. Nada de "LLM como juez" para lo que se puede verificar con código.
-- **Separación de roles:** el agente que implementa no modifica `tests/` ni `evals/`. Si cree que una prueba está mal, lo reporta; no la "arregla" para que pase.
+- **Separación de roles:** el agente que implementa no modifica `backend/tests/` ni `backend/evals/`. Si cree que una prueba está mal, lo reporta; no la "arregla" para que pase.
 
 ## 5. Seguridad
 

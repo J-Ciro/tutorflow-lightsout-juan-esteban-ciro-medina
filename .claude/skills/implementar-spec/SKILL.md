@@ -20,7 +20,7 @@ Delega la escritura de pruebas y evals para todos los CA y escenarios de la spec
 Delega con la ruta de la spec y la lista de pruebas en rojo. Si las tareas son independientes (p. ej. CI y backend), lánzalas en paralelo. Exige el resumen real de `dotnet test`.
 
 ## 3. Verificación local (tú, el orquestador)
-Ejecuta tú mismo `dotnet build -warnaserror`, `dotnet test`, los evals offline y, con la API levantada, la colección de Postman (`postman collection run postman/collections/tutorflow -e "postman/environments/local.environment.yaml"`). No confíes en el reporte del agente: compara.
+Desde `backend/`: Ejecuta tú mismo `dotnet build -warnaserror`, `dotnet test`, los evals offline y, con la API levantada, la colección de Postman (`postman collection run postman/collections/tutorflow -e "postman/environments/local.environment.yaml"`). No confíes en el reporte del agente: compara.
 
 ## 4. Auditoría paralela
 Lanza **en el mismo mensaje** a `seguridad` y a `qa-calidad` (fase B, revisión) sobre `git diff main...HEAD`. Ninguno recibe tu opinión ni la del implementador: solo la spec y el diff.

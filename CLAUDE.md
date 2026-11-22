@@ -37,11 +37,12 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
 | `reglamento/` | Base de conocimiento (material de Q10, solo lectura) |
 | `mock-api/` | API simulada y `datos.json` (material de Q10, solo lectura) |
 | `preguntas_ejemplo.*` | 10 preguntas con la respuesta y la cita esperadas |
-| `src/` | Backend: `TutorFlow.Core`, `TutorFlow.Infrastructure` y `TutorFlow.Api` (lo crean los agentes) |
-| `tests/` | Pruebas unitarias y de integración (lo crean los agentes) |
-| `postman/` | Colecciones v3 (`collections/tutorflow/`), entornos (`environments/`) y simulaciones (`simulations/`) de Postman (lo crean los agentes) |
-| `evals/` | Casos y runner de evals (lo crean los agentes) |
-| `web/` | Frontend opcional (spec futura) |
+| `backend/` | Todo el .NET (lo crean los agentes): solución `TutorFlow.slnx`, `global.json` y propiedades compartidas |
+| `backend/src/` | `TutorFlow.Core`, `TutorFlow.Infrastructure` y `TutorFlow.Api` |
+| `backend/tests/` | Pruebas unitarias y de integración |
+| `backend/evals/` | Casos y runner de evals |
+| `backend/postman/` | Colecciones v3, entornos, mocks y simulaciones de Postman |
+| `frontend/` | React + TypeScript (opcional, spec futura) |
 | `logs/` | Transcripciones de las sesiones de agentes |
 | `.githooks/` | Hook `commit-msg` |
 
@@ -62,15 +63,17 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
 ```bash
 git config core.hooksPath .githooks          # una vez por clon
 node mock-api/server.js                      # API simulada en :4000
-dotnet build -warnaserror                    # compilar
-dotnet test                                  # pruebas unitarias e integración
-dotnet run --project evals/TutorFlow.Evals   # evals (LLM real si existe LLM_API_KEY)
 ollama pull qwen2.5:7b                       # modelo local (sin LLM_API_KEY)
 docker compose up                            # sistema completo en :8080
+curl localhost:8080/api/salud                # salud
+
+cd backend
+dotnet build -warnaserror                    # compilar
+dotnet test                                  # pruebas unitarias e integración
+dotnet run --project evals/TutorFlow.Evals -- --offline   # evals (sin --offline: LLM real)
 npm install -g postman-cli                   # una vez (validación local; no se usa en el CI)
 postman collection run postman/collections/tutorflow \
   -e "postman/environments/local.environment.yaml"   # pruebas de API locales
-curl localhost:8080/api/salud                # salud
 ```
 
 En Claude Code: `/nueva-spec <requisito>`, `/implementar-spec <NNN>`, `/cerrar-corrida`.

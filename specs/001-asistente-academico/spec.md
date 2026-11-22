@@ -669,11 +669,11 @@ Característica: Detectar la suplantación de identidad
 | --- | --- | --- | --- |
 | Unitarias | RN de cálculo, `PoliticaAcceso`, normalización SEG-04a, verificación de salida SEG-10 | xUnit sobre `Core` | Cada push |
 | Integración | Contrato HTTP, flujo completo, auditoría y denegaciones, con el LLM y la API académica como dobles espía | `WebApplicationFactory` | Cada push |
-| Evals offline | Todos los ESC con un LLM grabado o doble | `evals/TutorFlow.Evals` | Cada push |
-| Evals con LLM | Preguntas de ejemplo, reglamento, sin información e inyección contra el modelo real | `evals/TutorFlow.Evals` + `LLM_API_KEY` | PR con el secreto disponible |
-| API de punta a punta | Contrato, permisos, abuso determinista, cuerpo 403 idéntico y encabezados contra la API real levantada con Docker Compose | Colección v3 de Postman (`postman/collections/tutorflow/`) con Postman CLI | Local: antes de reportar (`backend-dotnet`), en la revisión (`qa-calidad`) y en la verificación del orquestador |
+| Evals offline | Todos los ESC con un LLM grabado o doble | `backend/evals/TutorFlow.Evals` | Cada push |
+| Evals con LLM | Preguntas de ejemplo, reglamento, sin información e inyección contra el modelo real | `backend/evals/TutorFlow.Evals` + `LLM_API_KEY` | PR con el secreto disponible |
+| API de punta a punta | Contrato, permisos, abuso determinista, cuerpo 403 idéntico y encabezados contra la API real levantada con Docker Compose | Colección v3 de Postman (`backend/postman/collections/tutorflow/`) con Postman CLI | Local: antes de reportar (`backend-dotnet`), en la revisión (`qa-calidad`) y en la verificación del orquestador |
 | Rendimiento | RNF-01: p95 < 500 ms de las denegaciones del filtro previo | `postman performance run`, runner local | Local, antes de cada merge a `main` |
-| Simulación de fallos | Timeouts, 5xx y respuestas anómalas de la API académica (ESC-085, ESC-089, ESC-108, ESC-135, ESC-136) | `postman simulation` (`postman/simulations/`) | Local, antes de reportar |
+| Simulación de fallos | Timeouts, 5xx y respuestas anómalas de la API académica (ESC-085, ESC-089, ESC-108, ESC-135, ESC-136) | `postman simulation` (`backend/postman/simulations/`) | Local, antes de reportar |
 | Humo | Docker Compose, salud en 200 y un 403 | CI, trabajo `docker` con `curl` | Cada PR |
 
 ### 13.2 Matriz de verificación
