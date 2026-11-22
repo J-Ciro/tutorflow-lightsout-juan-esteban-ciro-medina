@@ -12,7 +12,7 @@ Se actualiza al cerrar cada corrida con la skill `cerrar-corrida`. Los tokens de
 
 | # | Fecha | Spec / objetivo | Inicio–fin | Iteraciones | Intervenciones | Tokens | USD | Resultado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 2026-11-22 | Arranque: AGENTS, FABRICA, subagentes, skills, SPEC y escenarios; revisión adversarial de la spec (2 revisores: 30 hallazgos incorporados); CA en Gherkin; SPEC reestructurada (v1.1); CLAUDE.md de contexto | pendiente | 1 | INT-001…INT-005 | pendiente | pendiente | Fábrica configurada; spec endurecida; implementación bloqueada (§0) |
+| 0 | 2026-11-22 | Arranque: AGENTS, FABRICA, subagentes, skills, SPEC y escenarios; revisión adversarial de la spec (2 revisores: 30 hallazgos incorporados); CA en Gherkin; SPEC reestructurada (v1.1); CLAUDE.md de contexto | pendiente | 1 | INT-001…INT-006 | pendiente | pendiente | Fábrica configurada; spec endurecida; implementación bloqueada (§0) |
 
 ## 2. Totales
 
@@ -20,7 +20,7 @@ Se actualiza al cerrar cada corrida con la skill `cerrar-corrida`. Los tokens de
 | --- | --- |
 | Horas humanas | pendiente |
 | Corridas | 1 |
-| Intervenciones | 5 |
+| Intervenciones | 6 |
 | Tokens totales de la fábrica | pendiente |
 | Costo total de la fábrica (USD) | pendiente |
 
