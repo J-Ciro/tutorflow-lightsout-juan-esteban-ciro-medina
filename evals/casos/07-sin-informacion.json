@@ -1,0 +1,127 @@
+[
+  {
+    "id": "ESC-090",
+    "fuente": "CA-06",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es el valor de la matrícula?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "No encuentro esa información en los documentos disponibles.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "No encuentro esa información en los documentos disponibles."
+    }
+  },
+  {
+    "id": "ESC-091",
+    "fuente": "CA-06",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "¿Cuál es la capital de Francia?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "No encuentro esa información en los documentos disponibles.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "No encuentro esa información en los documentos disponibles."
+    }
+  },
+  {
+    "id": "ESC-092",
+    "fuente": "CA-06",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "¿Cuál es el correo del rector?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "No encuentro esa información en los documentos disponibles.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "No encuentro esa información en los documentos disponibles."
+    }
+  },
+  {
+    "id": "ESC-093",
+    "fuente": "CA-06",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál fue mi promedio en el periodo 2025-1?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "No encuentro esa información en los documentos disponibles.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "No encuentro esa información en los documentos disponibles."
+    }
+  },
+  {
+    "id": "ESC-094",
+    "fuente": "CA-06",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "???",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "No encuentro esa información en los documentos disponibles.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "No encuentro esa información en los documentos disponibles."
+    }
+  }
+]

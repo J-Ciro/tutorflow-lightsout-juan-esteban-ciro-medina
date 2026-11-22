@@ -1,0 +1,315 @@
+[
+  {
+    "id": "ESC-001",
+    "fuente": "CA-01 pregunta 1",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es la nota mínima para aprobar una asignatura?",
+    "http": 200,
+    "contiene": [
+      "3.0",
+      "0.0",
+      "5.0"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 5"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "La nota mínima para aprobar una asignatura es 3.0, en una escala de 0.0 a 5.0."
+    }
+  },
+  {
+    "id": "ESC-002",
+    "fuente": "CA-01 pregunta 2",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es mi promedio ponderado del periodo?",
+    "http": 200,
+    "contiene": [
+      "4.39",
+      "4.5",
+      "4.8",
+      "4.1",
+      "4.0"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "evaluacion_y_calificaciones.md · Sección 4"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-003",
+    "fuente": "CA-01 pregunta 3",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuántas faltas tengo en Bases de Datos?",
+    "http": 200,
+    "contiene": [
+      "2",
+      "48"
+    ],
+    "noContiene": [
+      "20%"
+    ],
+    "citasIncluye": [
+      "Datos del estudiante · Asistencia"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-004",
+    "fuente": "CA-01 pregunta 4",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo se calcula la nota definitiva de una asignatura?",
+    "http": 200,
+    "contiene": [
+      "30%",
+      "40%"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "evaluacion_y_calificaciones.md · Sección 2",
+      "evaluacion_y_calificaciones.md · Sección 3"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "La definitiva es 30% del corte 1, 30% del corte 2 y 40% del corte 3, redondeada a una cifra decimal."
+    }
+  },
+  {
+    "id": "ESC-005",
+    "fuente": "CA-01 pregunta 5",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "¿Qué nota definitiva tengo en Contabilidad?",
+    "http": 200,
+    "contiene": [
+      "3.9"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas",
+      "evaluacion_y_calificaciones.md · Sección 3"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-006",
+    "fuente": "CA-01 pregunta 6",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [
+      "Valentina Castro",
+      "Microeconomía",
+      "1.8",
+      "Estadística",
+      "2.3"
+    ],
+    "noContiene": [
+      "Laura Gómez",
+      "Andrés Martínez",
+      "Sofía Herrera"
+    ],
+    "citasIncluye": [
+      "Datos del programa · ADM",
+      "reglamento_academico_2025.md · Artículo 5"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-007",
+    "fuente": "CA-01 pregunta 7",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es el horario de atención de Bienestar?",
+    "http": 200,
+    "contiene": [
+      "8:00",
+      "17:00",
+      "12:00",
+      "sábado",
+      "edificio B"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "bienestar_y_becas.md · Sección 1"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Bienestar atiende de lunes a viernes de 8:00 a 17:00 y los sábados de 8:00 a 12:00, en el edificio B, piso 2."
+    }
+  },
+  {
+    "id": "ESC-008",
+    "fuente": "CA-01 pregunta 8",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "¿Qué requisitos tiene la beca por rendimiento académico?",
+    "http": 200,
+    "contiene": [
+      "4.3",
+      "12 créditos",
+      "50%"
+    ],
+    "noContiene": [
+      "EST-",
+      "Camilo"
+    ],
+    "citasIncluye": [
+      "bienestar_y_becas.md · Sección 3.1"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "La beca da 50% de descuento. Requisitos: promedio de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos matriculados."
+    }
+  },
+  {
+    "id": "ESC-009",
+    "fuente": "CA-01 pregunta 9 / CA-06",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Qué dice el reglamento sobre el uso de parqueaderos?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "No encuentro esa información en los documentos disponibles.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "No encuentro esa información en los documentos disponibles."
+    }
+  },
+  {
+    "id": "ESC-010",
+    "fuente": "CA-01 pregunta 10",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es la nota de Bases de Datos de Andrés Martínez?",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "offline": null
+  }
+]

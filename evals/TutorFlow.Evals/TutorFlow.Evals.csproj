@@ -4,6 +4,12 @@
     <RootNamespace>TutorFlow.Evals</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <ProjectReference Include="..\..\src\TutorFlow.Api\TutorFlow.Api.csproj" />
     <ProjectReference Include="..\..\src\TutorFlow.Core\TutorFlow.Core.csproj" />
+    <ProjectReference Include="..\..\src\TutorFlow.Infrastructure\TutorFlow.Infrastructure.csproj" />
+    <Compile Include="..\..\tests\TutorFlow.Core.Tests\Soporte\*.cs" LinkBase="Soporte" />
+    <Compile Include="..\..\tests\TutorFlow.Api.Tests\FabricaApi.cs" Link="Soporte\FabricaApi.cs" />
+    <Compile Include="..\..\tests\TutorFlow.Api.Tests\Dobles\*.cs" LinkBase="Soporte\Dobles" />
   </ItemGroup>
 </Project>

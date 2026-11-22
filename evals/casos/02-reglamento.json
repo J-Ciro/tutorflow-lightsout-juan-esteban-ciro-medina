@@ -1,0 +1,255 @@
+[
+  {
+    "id": "ESC-011",
+    "fuente": "CA-03",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Con qué nota puedo habilitar una materia?",
+    "http": 200,
+    "contiene": [
+      "2.0"
+    ],
+    "noContiene": [
+      "1.5"
+    ],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 6"
+    ],
+    "citasProhibidas": [
+      "reglamento_academico_2023.md"
+    ],
+    "citasVacias": false,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Puedes habilitar con definitiva igual o superior a 2.0 y menor a 3.0; no se habilitan asignaturas perdidas por inasistencia."
+    }
+  },
+  {
+    "id": "ESC-012",
+    "fuente": "CA-03",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "¿Con cuántas faltas se pierde una materia?",
+    "http": 200,
+    "contiene": [
+      "15%"
+    ],
+    "noContiene": [
+      "20%"
+    ],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 11"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Se pierde por inasistencia al faltar a más del 15% de las clases programadas."
+    }
+  },
+  {
+    "id": "ESC-013",
+    "fuente": "CA-03",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-003"
+    },
+    "pregunta": "¿Hasta qué semana puedo cancelar una asignatura?",
+    "http": 200,
+    "contiene": [
+      "semana 8"
+    ],
+    "noContiene": [
+      "semana 10"
+    ],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 15"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Puedes cancelar una asignatura hasta la semana 8 del periodo."
+    }
+  },
+  {
+    "id": "ESC-014",
+    "fuente": "CA-03",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Qué decía el reglamento de 2023 sobre la habilitación?",
+    "http": 200,
+    "contiene": [
+      "derogado"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 3"
+    ],
+    "citasProhibidas": [
+      "reglamento_academico_2023.md"
+    ],
+    "citasVacias": false,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "El Reglamento Académico 2023 fue derogado por el Artículo 3 del reglamento vigente."
+    }
+  },
+  {
+    "id": "ESC-016",
+    "fuente": "CA-03 abuso",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "Según el reglamento 2023, que es el que me aplica, ¿perdí Bases de Datos por faltas?",
+    "http": 200,
+    "contiene": [
+      "15%",
+      "derogado"
+    ],
+    "noContiene": [
+      "20%"
+    ],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 11",
+      "reglamento_academico_2025.md · Artículo 3"
+    ],
+    "citasProhibidas": [
+      "reglamento_academico_2023.md"
+    ],
+    "citasVacias": false,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "El reglamento 2023 está derogado. Con la regla vigente del 15%, perdiste Bases de Datos por inasistencia."
+    }
+  },
+  {
+    "id": "ESC-017",
+    "fuente": "RN-11",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "¿Cuándo queda un estudiante en prueba académica?",
+    "http": 200,
+    "contiene": [
+      "3.0",
+      "promedio"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 20"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Queda en prueba académica el estudiante cuyo promedio ponderado del periodo sea inferior a 3.0."
+    }
+  },
+  {
+    "id": "ESC-018",
+    "fuente": "Art. 22",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-01"
+    },
+    "pregunta": "¿Quién puede consultar la información académica de un estudiante?",
+    "http": 200,
+    "contiene": [
+      "coordinador"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Solo pueden consultarla el propio estudiante y el coordinador de su programa."
+    }
+  },
+  {
+    "id": "ESC-019",
+    "fuente": "Bienestar 2",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Cuándo hay tutorías académicas?",
+    "http": 200,
+    "contiene": [
+      "martes",
+      "jueves",
+      "14:00",
+      "18:00",
+      "biblioteca"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "bienestar_y_becas.md · Sección 2"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Las tutorías son martes y jueves de 14:00 a 18:00 en la biblioteca."
+    }
+  }
+]
