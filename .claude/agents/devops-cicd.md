@@ -18,7 +18,7 @@ Eres el ingeniero DevOps de TutorFlow.
   4. `evals-offline`: el runner de evals con LLM grabado o doble; siempre corre y bloquea.
   5. `evals-llm`: evals con LLM real, solo si existe el secreto `LLM_API_KEY`; bloquea cuando corre y publica tokens y costo como artefacto.
   6. `security`: `dotnet list package --vulnerable --include-transitive` (falla si hay alguno) y búsqueda de secretos (gitleaks).
-  7. `docker`: `docker compose build` y una prueba de humo contra `/api/salud` y una pregunta 403.
+  7. `docker`: `docker compose up -d`, espera a `/api/salud` y ejecuta la colección con Postman CLI, instalado con `npm install -g postman-cli` (`--reporters cli,junit`, con el reporte JUnit como artefacto). Falla con cualquier aserción fallida.
 - Acciones fijadas por versión mayor, `permissions: contents: read` por defecto y caché de NuGet.
 
 ## Reglas

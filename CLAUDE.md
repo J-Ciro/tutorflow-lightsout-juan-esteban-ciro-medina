@@ -16,7 +16,7 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
 | Capa | Tecnología |
 | --- | --- |
 | Backend | .NET 8 (C# 12), ASP.NET Core Minimal API |
-| Pruebas | xUnit, `WebApplicationFactory` |
+| Pruebas | xUnit, `WebApplicationFactory`; API de punta a punta con colecciones de Postman ejecutadas con Postman CLI |
 | Evals | Runner propio en .NET (`evals/TutorFlow.Evals`) |
 | LLM | Proveedor configurable con `LLM_API_KEY` (decisión D-16 de la spec) |
 | API académica | Node 18+ (`mock-api/server.js`, puerto 4000) |
@@ -38,7 +38,7 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
 | `mock-api/` | API simulada y `datos.json` (material de Q10, solo lectura) |
 | `preguntas_ejemplo.*` | 10 preguntas con la respuesta y la cita esperadas |
 | `src/` | Backend: `TutorFlow.Core`, `TutorFlow.Infrastructure` y `TutorFlow.Api` (lo crean los agentes) |
-| `tests/` | Pruebas unitarias y de integración (lo crean los agentes) |
+| `tests/` | Pruebas unitarias y de integración, y colección de Postman en `tests/postman/` (lo crean los agentes) |
 | `evals/` | Casos y runner de evals (lo crean los agentes) |
 | `web/` | Frontend opcional (spec futura) |
 | `logs/` | Transcripciones de las sesiones de agentes |
@@ -63,6 +63,8 @@ dotnet build -warnaserror                    # compilar
 dotnet test                                  # pruebas unitarias e integración
 dotnet run --project evals/TutorFlow.Evals   # evals (LLM real si existe LLM_API_KEY)
 docker compose up                            # sistema completo en :8080
+postman collection run tests/postman/tutorflow.postman_collection.json \
+  -e tests/postman/local.postman_environment.json   # pruebas de API (npm install -g postman-cli)
 curl localhost:8080/api/salud                # salud
 ```
 

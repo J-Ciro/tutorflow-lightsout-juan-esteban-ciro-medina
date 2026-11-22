@@ -17,6 +17,9 @@ coverage/
 *.coverage
 *.trx
 
+# Reportes de Postman CLI
+postman-cli-reports/
+
 # Node / frontend
 node_modules/
 dist/

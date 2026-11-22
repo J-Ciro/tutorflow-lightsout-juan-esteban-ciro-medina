@@ -76,6 +76,7 @@ Repositorio genérico, MediatR, AutoMapper, CQRS, event sourcing, capas "Manager
 - Las pruebas de **casos alternos y de abuso** son tan obligatorias como las del camino feliz.
 - Cobertura mínima: 90% de líneas en `TutorFlow.Core`, 80% global.
 - Las pruebas de integración no llaman a un LLM real ni a internet: usan dobles.
+- Las pruebas de API de punta a punta son una colección de Postman en `tests/postman/`, que se ejecuta con Postman CLI (`npm install -g postman-cli`) contra la API levantada. `curl` sirve para explorar; la evidencia es Postman CLI.
 - Los evals sí pueden usar el LLM real (requieren `LLM_API_KEY`). Las aserciones de los evals son deterministas: valores numéricos, citas, códigos HTTP y ausencia de datos de terceros. Nada de "LLM como juez" para lo que se puede verificar con código.
 - **Separación de roles:** el agente que implementa no modifica `tests/` ni `evals/`. Si cree que una prueba está mal, lo reporta; no la "arregla" para que pase.
 

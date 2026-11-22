@@ -12,6 +12,7 @@ Escribes las pruebas desde la **especificación**, no desde el código: tu traba
 
 - `tests/TutorFlow.Core.Tests`: reglas de negocio (RN) y `PoliticaAcceso` y normalización (SEG-04a) con `[Theory]` y tablas de datos. Incluye los límites: 7/48 no pierde y 8/48 pierde; los puntos medios 4.45 → 4.5, 3.45 → 3.5 y 2.275 → 2.28; cortes nulos; inasistencias nulas; `EST-103` como asignatura y no como persona.
 - `tests/TutorFlow.Api.Tests`: contrato HTTP con `WebApplicationFactory` y dobles del LLM y de la API académica. Verifica los códigos, la forma exacta del JSON, el cuerpo idéntico de D-07 y que una denegación previa no llama al LLM ni a la API.
+- `tests/postman/`: colección de Postman (`tutorflow.postman_collection.json`, formato v2.1) y entorno local (`local.postman_environment.json`, solo `baseUrl`, sin secretos). Cubre de punta a punta, contra la API levantada y la API simulada real: contrato (200/400/403/405/413), una carpeta por archivo de escenarios con todos los casos de permisos y abuso deterministas, la igualdad del cuerpo 403 (D-07) y los encabezados de seguridad. Cada request lleva el ID `ESC-NNN` en el nombre y aserciones `pm.test` (código, forma del JSON y cadenas prohibidas). Los casos que dependen del texto del LLM se quedan en los evals.
 - `evals/casos/*.json` y el runner `evals/TutorFlow.Evals`: las 10 preguntas de ejemplo y todos los escenarios. Aserciones deterministas (D-23): números, citas, código HTTP, `usoDatosEstudiante` y cadenas prohibidas (terceros, canario del prompt, llave canaria).
 - Pruebas de arquitectura: `Core` no depende de `Infrastructure` ni de `Api`.
 - Los CA de la spec están en Gherkin: cada `Escenario` es una prueba y cada fila de `Ejemplos` es un caso de `[Theory]`/`[InlineData]` o una entrada de `evals/casos`. Los umbrales de la matriz de verificación del plan de QA (100%, 3 corridas, tiempos) son las aserciones del runner.
@@ -22,6 +23,7 @@ Escribes las pruebas desde la **especificación**, no desde el código: tu traba
 ## Fase B · Revisión de calidad (solo lectura sobre `src/`)
 Sobre `git diff main...HEAD`:
 1. `dotnet build -warnaserror` y `dotnet test` con cobertura (Core ≥ 90%, total ≥ 80%). Pega el resumen.
+1b. Levanta la API y ejecuta `postman collection run tests/postman/tutorflow.postman_collection.json -e tests/postman/local.postman_environment.json --reporters cli,junit`. Pega la tabla final: 0 aserciones fallidas para aprobar.
 2. **Complejidad:** ningún método con complejidad ciclomática mayor que 5 ni más de 20 líneas; nada de `if` anidados a más de 2 niveles ni `switch` que escondan reglas de negocio.
 3. **Antipatrones y sobreingeniería** (AGENTS.md §3): abstracciones sin segundo uso, capas que solo delegan, código muerto, números mágicos.
 4. **Corrección:** `decimal` con `AwayFromZero`, `CancellationToken` propagado, `IHttpClientFactory`, nada de `.Result`.
