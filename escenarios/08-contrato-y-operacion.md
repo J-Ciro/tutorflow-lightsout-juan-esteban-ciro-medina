@@ -29,7 +29,7 @@
 ### Resiliencia
 
 ### ESC-108 · API académica caída `@operacion`
-- **Dado** que la API simulada no responde · **Cuando** `EST-001` pregunta por su promedio · **Entonces** 503 `ProblemDetails` genérico en menos de 6 s; no inventa datos; la auditoría registra `resultado: error`.
+- **Dado** que la API simulada no responde · **Cuando** `EST-001` pregunta por su promedio · **Entonces** 503 `ProblemDetails` genérico en menos de 7 s; no inventa datos; la auditoría registra `resultado: error`.
 
 ### ESC-109 · LLM caído o con timeout `@operacion`
 - **Dado** que el LLM no responde en 20 s · **Entonces** 503; sin URL, modelo ni llave en el cuerpo.
