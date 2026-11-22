@@ -7,7 +7,7 @@ Herramienta: **Claude Code** (CLI). La sesión principal es el **orquestador**: 
 | Agente | Rol | Escribe en | Modelo | Por qué ese modelo |
 | --- | --- | --- | --- | --- |
 | Orquestador (sesión principal) | Coordina el ciclo, verifica y hace merge | git | Opus | Decide y juzga; pocas salidas largas |
-| `arquitecto-spec` | Requisito → spec, RN, SEG, CA y escenarios | `specs/`, `escenarios/`, `SPEC.md` | Opus | La calidad de la spec define todo lo demás |
+| `arquitecto-spec` | Requisito → spec, RN, SEG, CA y escenarios | `specs/<feature-id>/`, `escenarios/<feature-id>/`, índice de `SPEC.md` | Opus | La calidad de la spec define todo lo demás |
 | `qa-calidad` | Fase A: pruebas y evals desde la spec (antes del código). Fase B: revisión de calidad (clean code, complejidad, antipatrones, cobertura y commits) | `tests/`, `evals/` | Sonnet | Volumen alto de código y checklist mecánico |
 | `backend-dotnet` | Implementa `src/` hasta poner las pruebas en verde | `src/` | Sonnet | Buena relación calidad/costo para implementar |
 | `devops-cicd` | Docker, compose y GitHub Actions | `.github/`, `docker/`, `docker-compose.yml` | Sonnet | Tareas acotadas y verificables |

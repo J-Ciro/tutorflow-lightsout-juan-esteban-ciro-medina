@@ -1,6 +1,6 @@
 ---
 name: criterios-gherkin-smart
-description: Guía para redactar criterios de aceptación en Gherkin (BDD) en español que cumplan SMART (Específico, Medible, Alcanzable, Relevante, Comprobable), con su matriz de verificación en el plan de QA. Úsala siempre que escribas o revises la sección de criterios de aceptación de SPEC.md o de una spec en specs/.
+description: Guía para redactar criterios de aceptación en Gherkin (BDD) en español que cumplan SMART (Específico, Medible, Alcanzable, Relevante, Comprobable), con su matriz de verificación en el plan de QA. Úsala siempre que escribas o revises la sección de criterios de aceptación de una spec en specs/<feature-id>/spec.md.
 ---
 
 # Criterios de aceptación en Gherkin + SMART
