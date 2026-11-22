@@ -16,7 +16,8 @@ Entrada: el texto del requisito (en `$ARGUMENTS` o en el mensaje).
 6. Indica el siguiente paso: `/implementar-spec NNN`.
 
 ## Criterios de calidad de la spec (verifícalos antes de la puerta humana)
-- [ ] Cada CA es verificable por código (valor, código HTTP, cita o cadena prohibida).
+- [ ] Cada CA está en Gherkin en español (`# language: es`) y tiene su fila SMART completa (E, M, A, R, C).
+- [ ] Cada `Entonces` es verificable por código (valor, código HTTP, cita, conteo o cadena prohibida) y cada umbral es numérico.
 - [ ] Hay al menos un caso alterno, uno de permisos y uno de abuso por cada camino feliz.
 - [ ] Los valores esperados calculados muestran su cálculo.
 - [ ] No contradice `SPEC.md`; si la modifica, lo dice explícitamente.
