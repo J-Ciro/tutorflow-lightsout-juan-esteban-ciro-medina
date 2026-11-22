@@ -33,7 +33,7 @@ public sealed class ResolutorProveedorLlmTests
 
     private static OpcionesLlm CargarOpciones()
     {
-        var ruta = Path.Combine(DatosReferencia.RutaRepositorio(), "src", "TutorFlow.Api", "appsettings.json");
+        var ruta = Path.Combine(DatosReferencia.RutaRepositorio(), "backend", "src", "TutorFlow.Api", "appsettings.json");
         var configuracion = new ConfigurationBuilder().AddJsonFile(ruta).Build();
         return configuracion.GetSection(OpcionesLlm.Seccion).Get<OpcionesLlm>()!;
     }

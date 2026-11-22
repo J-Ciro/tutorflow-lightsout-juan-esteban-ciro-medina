@@ -95,3 +95,12 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué se cambió:** el hook `.githooks/commit-msg` ahora rechaza cualquier `Co-Authored-By` (también en merges), exige `Generado-por` cuando el commit toca algo distinto de `.md`, `.claude/` y `.githooks/`, y lo rechaza en los commits humanos. Se probaron 7 casos y todos dieron el resultado esperado. Se actualizaron `AGENTS.md` §1 y §6, `backend-dotnet`, `qa-calidad` y `nueva-spec`, y se avisó al agente que estaba trabajando. Los commits anteriores no se reescriben (el PDF prohíbe reescribir el historial).
 - **Costo:** ~1 min humano.
 - **Prevención:** el hook bloquea las tres violaciones antes de crear el commit.
+
+### INT-011 · 2026-11-22 · Separar backend y frontend en carpetas propias
+- **Fase:** implementación (corrida 1, tras las pruebas en rojo)
+- **Qué pasó:** la solución .NET (`src/`, `tests/`, `evals/`, `postman/`, `global.json` y las propiedades compartidas) estaba mezclada en la raíz con las specs, los escenarios y la configuración de la fábrica.
+- **Qué hizo el humano:** pidió *"tener una carpeta donde tengamos back y front, permitiendo así tener todo más ordenado"* y aprobó la estructura propuesta.
+- **Por qué:** separar el producto (backend y frontend) de la documentación y de la fábrica hace el repositorio más fácil de recorrer.
+- **Qué se cambió:** todo el .NET pasó a `backend/` con `git mv`, conservando la historia. Las carpetas `src` y `tests` estaban bloqueadas por Windows y se movieron archivo por archivo. Se creó `frontend/`, que reemplaza a `web/`. `docker-compose.yml`, `mock-api/` y `reglamento/` quedan en la raíz. Tres rutas de las pruebas y del runner ahora incluyen `backend/`. Antes y después del cambio se obtuvo el mismo resultado: 380 y 316 pruebas en rojo, 7 y 14 en verde, evals en fallo y la colección de Postman sin errores de lint. Se actualizaron `AGENTS.md` §2 (los comandos `dotnet` y `postman` se ejecutan desde `backend/`), `CLAUDE.md`, `FABRICA.md`, los agentes, `implementar-spec` y el plan de QA de la spec 001. Además se documentó en `AGENTS.md` §3 la excepción CA1707 en las pruebas.
+- **Costo:** ~2 min humanos.
+- **Prevención:** la estructura queda fijada en `AGENTS.md` §2; cualquier carpeta nueva de producto va dentro de `backend/` o `frontend/`.
