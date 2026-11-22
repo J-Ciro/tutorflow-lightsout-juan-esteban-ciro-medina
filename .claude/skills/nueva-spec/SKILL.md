@@ -12,7 +12,7 @@ Entrada: el texto del requisito (en `$ARGUMENTS` o en el mensaje).
 2. **Análisis (delegado):** lanza el subagente `arquitecto-spec` con el requisito literal. Pídele `specs/NNN-<slug>/spec.md` según `specs/_plantilla/spec.md`, los escenarios en `escenarios/NNN-<slug>/` y la fila de la feature en el índice de `SPEC.md` §5.
 3. **Revisión adversarial (delegada):** cuando exista el borrador, lanza el subagente `seguridad` con esta instrucción: *"Revisa SOLO la spec `specs/NNN-<slug>/spec.md` y sus escenarios, no el código. ¿Qué vector de acceso indebido, inyección o fuga no está cubierto por un escenario, y qué escenario no tiene un resultado determinista?"*. Incorpora sus faltantes como escenarios nuevos (vía `arquitecto-spec`).
 4. **Puerta humana:** muestra al usuario un resumen de una pantalla (alcance, RN y SEG nuevas o cambiadas, número de CA y escenarios por tipo, decisiones `D-xx` y preguntas abiertas). **No continúes a implementación sin su aprobación.** Si corrige algo, aplícalo y registra la intervención con la skill `registrar-intervencion`.
-5. **Commit:** `docs(spec): add NNN <slug> spec` (60 caracteres como máximo) con el trailer `Generado-por: Claude Code`.
+5. **Commit:** `docs(spec): add NNN <slug> spec` (60 caracteres como máximo) **sin trailer** (solo toca `.md`: es un commit humano; AGENTS.md §1 regla 2).
 6. Indica el siguiente paso: `/implementar-spec NNN`.
 
 ## Criterios de calidad de la spec (verifícalos antes de la puerta humana)

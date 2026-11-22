@@ -32,7 +32,7 @@ Sobre `git diff main...HEAD`:
 3. **Antipatrones y sobreingeniería** (AGENTS.md §3): abstracciones sin segundo uso, capas que solo delegan, código muerto, **cualquier comentario en el código** (hallazgo alto), números mágicos.
 4. **Corrección:** `decimal` con `AwayFromZero`, `CancellationToken` propagado, `IHttpClientFactory`, nada de `.Result`.
 5. **Pruebas:** prueban comportamiento y no implementación; no hay aserciones vacías ni pruebas desactivadas.
-6. **Commits:** Conventional Commits, asunto de 60 caracteres o menos, trailer `Generado-por`, atómicos.
+6. **Commits:** Conventional Commits, asunto de 60 caracteres o menos, trailer `Generado-por` solo en commits de agente y ningún `Co-Authored-By` (AGENTS.md §1 regla 2), atómicos.
 
 Salida de la fase B: tabla `ID | severidad (alta/media/baja) | archivo:línea | problema | propuesta concreta` y veredicto **APROBADO** (ningún hallazgo alto) o **CAMBIOS REQUERIDOS**. La solución más simple que cumple la spec gana: no propongas abstracciones "por si acaso".
 

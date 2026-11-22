@@ -3,6 +3,11 @@
 MSG_FILE="$1"
 SUBJECT=$(head -n 1 "$MSG_FILE")
 
+if grep -Eiq '^Co-Authored-By:' "$MSG_FILE"; then
+  echo "ERROR commit-msg: no se permite la linea 'Co-Authored-By'." >&2
+  exit 1
+fi
+
 case "$SUBJECT" in
   Merge\ *|Revert\ *) exit 0 ;;
 esac
@@ -21,11 +26,21 @@ if [ "$LEN" -gt 60 ]; then
   exit 1
 fi
 
-NON_HUMAN=$(git diff --cached --name-only | grep -Ev '(\.md$|^\.claude/|^\.githooks/|^CLAUDE\.md$)')
-if [ -n "$NON_HUMAN" ] && ! grep -Eq '^Generado-por: .+' "$MSG_FILE"; then
-  echo "ERROR commit-msg: falta el trailer 'Generado-por: <herramienta>'." >&2
+HAS_TRAILER=0
+grep -Eq '^Generado-por: .+' "$MSG_FILE" && HAS_TRAILER=1
+
+AGENT_FILES=$(git diff --cached --name-only | grep -Ev '(\.md$|^\.claude/|^\.githooks/)')
+
+if [ -n "$AGENT_FILES" ] && [ "$HAS_TRAILER" -eq 0 ]; then
+  echo "ERROR commit-msg: commit de agente sin el trailer 'Generado-por: <herramienta>'." >&2
   echo "  Archivos que lo exigen:" >&2
-  printf '%s\n' "$NON_HUMAN" | sed 's/^/    /' >&2
+  printf '%s\n' "$AGENT_FILES" | sed 's/^/    /' >&2
+  exit 1
+fi
+
+if [ -z "$AGENT_FILES" ] && [ "$HAS_TRAILER" -eq 1 ]; then
+  echo "ERROR commit-msg: commit humano (solo .md y configuracion de agentes) con el trailer 'Generado-por'." >&2
+  echo "  Los commits humanos no llevan trailer." >&2
   exit 1
 fi
 

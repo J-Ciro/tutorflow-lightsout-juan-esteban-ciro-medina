@@ -12,7 +12,7 @@ Documentos que debes leer antes de trabajar:
 ## 1. Reglas lights-out (no negociables)
 
 1. El humano solo escribe Markdown y la configuración de agentes. **Todo el código, las pruebas, los evals, Docker y el CI los escriben agentes.**
-2. Cada commit de un agente lleva el trailer `Generado-por: Claude Code` (o la herramienta usada). El hook `.githooks/commit-msg` lo exige.
+2. **Trailer solo en commits de agentes.** Un commit que toca cualquier archivo distinto de `.md` y de la configuración de agentes (`.claude/`, `.githooks/`) es de un agente y lleva el trailer `Generado-por: Claude Code`. Un commit que solo toca `.md` y configuración de agentes es humano y **no lleva trailer**. **Jamás** se agrega `Co-Authored-By` en ningún commit, tampoco en merges. El hook `.githooks/commit-msg` hace cumplir las tres reglas.
 3. Las transcripciones de las sesiones se guardan en `/logs` (lo hace el hook `SessionEnd` de `.claude/settings.json`).
 4. Toda corrección o redirección manual del humano se registra en `INTERVENCIONES.md` (skill `registrar-intervencion`).
 5. No se reescribe el historial: nada de `rebase`, `--amend`, `squash`, `reset --hard` ni `push --force`.
@@ -98,6 +98,7 @@ Checklist mínimo, auditado por el agente `seguridad`:
 - **Conventional Commits** en inglés, en imperativo, **asunto de 60 caracteres como máximo**, alcance opcional (`api`, `core`, `authz`, `llm`, `evals`, `ci`, `docker`, `spec`, `agents`).
 - Commits pequeños y atómicos: un cambio lógico por commit, con las pruebas pasando.
 - El cuerpo del commit explica el *porqué* y referencia RN/SEG/CA cuando aplica.
+- Trailers: ver §1 regla 2. Los merges `--no-ff` son integración humana: sin trailer y sin `Co-Authored-By`.
 - Integración a `main` con `git merge --no-ff` y solo con CI y auditorías en verde.
 - Activa el hook una vez por clon: `git config core.hooksPath .githooks`.
 

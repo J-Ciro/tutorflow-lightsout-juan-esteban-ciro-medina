@@ -86,3 +86,12 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué se cambió:** se agregó `.claude/skills/tdd/SKILL.md` tal como la entregó el humano. Se volvió obligatoria en `AGENTS.md` §4, `backend-dotnet`, `qa-calidad` e `implementar-spec`: la skill trae `disable-model-invocation`, así que los agentes la siguen porque se les ordena explícitamente leerla. La regla de comentarios se reemplazó por *"sin comentarios en el código"*: la trazabilidad a las RN va en los `[Trait]` de las pruebas, en la spec y en los commits, y `qa-calidad` trata cualquier comentario como hallazgo alto. Se quitaron los comentarios de los hooks de la fábrica y se avisó al agente que estaba creando el esqueleto.
 - **Costo:** ~2 min humanos.
 - **Prevención:** la revisión de `qa-calidad` (fase B) bloquea cualquier comentario en el código.
+
+### INT-010 · 2026-11-22 · Trailer solo en commits de agentes y nunca Co-Authored-By
+- **Fase:** configuración de la fábrica
+- **Qué pasó:** todos los commits, incluidos los que solo tocaban Markdown y configuración de agentes, llevaban `Generado-por: Claude Code` y `Co-Authored-By: Claude …`. El hook solo exigía el trailer cuando había código y no impedía ninguna de las dos cosas en los demás casos.
+- **Qué hizo el humano:** indicó: *"JAMÁS agregues co-autoría de tipo Co-Authored-By"* y señaló que no se había respetado la regla *"cada commit de un agente debe llevar el trailer Generado-por: <herramienta>. Nuestros commits solo tocan archivos .md y las configuraciones de los agentes, es decir los commits humanos"*.
+- **Por qué:** el trailer debe distinguir el trabajo de los agentes del trabajo humano. Si aparece en todos los commits, deja de informar.
+- **Qué se cambió:** el hook `.githooks/commit-msg` ahora rechaza cualquier `Co-Authored-By` (también en merges), exige `Generado-por` cuando el commit toca algo distinto de `.md`, `.claude/` y `.githooks/`, y lo rechaza en los commits humanos. Se probaron 7 casos y todos dieron el resultado esperado. Se actualizaron `AGENTS.md` §1 y §6, `backend-dotnet`, `qa-calidad` y `nueva-spec`, y se avisó al agente que estaba trabajando. Los commits anteriores no se reescriben (el PDF prohíbe reescribir el historial).
+- **Costo:** ~1 min humano.
+- **Prevención:** el hook bloquea las tres violaciones antes de crear el commit.
