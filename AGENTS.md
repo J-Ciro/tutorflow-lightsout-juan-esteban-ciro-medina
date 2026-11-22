@@ -103,7 +103,7 @@ Checklist mínimo, auditado por el agente `seguridad`:
 
 - Modificar `mock-api/`, `reglamento/` ni `preguntas_ejemplo.*`: son material del cliente.
 - Leer, crear con valores reales ni commitear `.env` o cualquier llave. Solo existe `.env.example` con valores vacíos.
-- Cambiar el contrato de la API definido en `SPEC.md` §4.
+- Cambiar el contrato de la API definido en `SPEC.md` §9.1.
 - Desactivar analizadores, pruebas, evals o pasos del CI para que algo pase (`[Skip]`, `#pragma warning disable`, `continue-on-error`) sin una decisión registrada en la spec.
 - Debilitar una regla de autorización para que un eval pase.
 - Trabajar directamente en `main` o hacer merge sin el visto bueno de `seguridad` y `qa-calidad`.

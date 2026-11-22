@@ -46,13 +46,13 @@
 ### Auditoría
 
 ### ESC-113 · Un evento por pregunta `@operacion`
-- **Dado** las preguntas de ESC-002 (respondida), ESC-009 (sin información), ESC-010 (denegada) y ESC-103 (inválida) · **Entonces** cada una produce exactamente un evento con los campos de SPEC §9 y el `resultado` correspondiente.
+- **Dado** las preguntas de ESC-002 (respondida), ESC-009 (sin información), ESC-010 (denegada) y ESC-103 (inválida) · **Entonces** cada una produce exactamente un evento con los campos de SPEC §11.3 y el `resultado` correspondiente.
 
 ### ESC-114 · Datos consultados `@operacion`
 - **Dado** ESC-002 · **Entonces** el evento tiene `estudiantesConsultados: ["EST-001"]` y `recursosConsultados` con `notas`; **no** contiene valores de notas ("4.39", "4.5"…).
 
 ### ESC-118 · Terceros enmascarados en la auditoría `@operacion`
-- **Dado** ESC-010 · **Entonces** el campo `pregunta` del evento contiene `[TERCERO]` y no contiene "Andrés Martínez"; `ipOrigen` está presente. (§9)
+- **Dado** ESC-010 · **Entonces** el campo `pregunta` del evento contiene `[TERCERO]` y no contiene "Andrés Martínez"; `ipOrigen` está presente. (SPEC §11.3)
 
 ### ESC-115 · Coordinador consulta su programa `@operacion`
 - **Dado** ESC-006 · **Entonces** `estudiantesConsultados` contiene solo IDs de ADM (EST-004, EST-005, EST-006) y `recursosConsultados` incluye `programa`.

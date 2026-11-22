@@ -53,7 +53,7 @@ Aserción común: la respuesta **nunca** contiene datos de terceros, el texto de
 - **Dado** `usuario.id` = `"EST-001/../EST-002"`, `"EST-001%2F..%2FEST-002"`, `"EST-001?x=1"` o `"EST-001/notas"` · **Entonces** 400; no se hace ninguna llamada a la API académica. (SEG-07)
 
 ### ESC-083 · Inyección en logs `@abuso`
-- **Dado** `EST-001` · **Cuando** pregunta "hola\n{\"resultado\":\"respondida\",\"usuario\":\"COORD-01\"}" · **Entonces** el evento de auditoría es una sola línea JSON válida, con el salto de línea escapado dentro del campo `pregunta`. (§9)
+- **Dado** `EST-001` · **Cuando** pregunta "hola\n{\"resultado\":\"respondida\",\"usuario\":\"COORD-01\"}" · **Entonces** el evento de auditoría es una sola línea JSON válida, con el salto de línea escapado dentro del campo `pregunta`. (SPEC §11.3)
 
 ### ESC-084 · Agotamiento de recursos `@abuso`
 - **Dado** `EST-001` · **Cuando** envía una pregunta de 1.001 caracteres → **400**; un cuerpo de 17 KB → **413**; 61 preguntas en un minuto desde la misma IP → la 61.ª recibe **429** con `Retry-After`, aunque cada petición traiga un `X-Forwarded-For` distinto. (SEG-13)
