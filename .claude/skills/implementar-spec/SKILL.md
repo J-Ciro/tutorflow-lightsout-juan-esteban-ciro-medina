@@ -11,7 +11,7 @@ Anota la hora de inicio y fin de cada paso: la necesitas para `REPORTE.md`.
 
 ## 0. Preparación
 - Confirma que la spec está aprobada (puerta humana de `nueva-spec`). Si no, detente.
-- Rama `feat/NNN-<slug>` desde `main`. Verifica `git config core.hooksPath` = `.githooks`.
+- Rama `feat/NNN-<slug>` desde `develop` actualizado. Verifica `git config core.hooksPath` = `.githooks`.
 
 ## 1. Pruebas primero (`qa-calidad`, fase A) · skill `tdd`
 Delega la escritura de pruebas y evals para todos los CA y escenarios de la spec. Exige la evidencia de que fallan (rojo) y la matriz de trazabilidad. Commit `test(...)`.
@@ -31,6 +31,6 @@ Lanza **en el mismo mensaje** a `seguridad` y a `qa-calidad` (fase B, revisión)
 - Repite los pasos 3 y 4 solo con el agente que reportó hallazgos.
 
 ## 6. Condiciones de parada
-- **Éxito:** build sin advertencias, pruebas y evals en verde y `seguridad` y `qa-calidad` con APROBADO. Entonces `git switch main && git merge --no-ff feat/...` y luego la skill `cerrar-corrida`.
+- **Éxito:** build sin advertencias, pruebas y evals en verde y `seguridad` y `qa-calidad` con APROBADO. Entonces la skill `cerrar-corrida` (en la misma rama) y después la skill `abrir-pr` hacia `develop`; el humano hace el merge en GitHub.
 - **Escalar al humano** (detente y explica): 3 iteraciones sin converger; dos agentes en desacuerdo sobre la interpretación de la spec; un cambio exige tocar el contrato, la política de acceso o una prueba existente; un agente propone saltarse una verificación; o falta una herramienta del entorno (SDK, Docker).
 - Nunca declares éxito sin la salida real de los comandos.

@@ -8,12 +8,12 @@ description: Convierte un requisito nuevo (texto libre del cliente) en una spec 
 Entrada: el texto del requisito (en `$ARGUMENTS` o en el mensaje).
 
 ## Pasos
-1. **Rama:** `git switch -c docs/NNN-<slug>` desde `main` actualizado. `NNN-<slug>` es el *feature-id*: siguiente número libre en `specs/` + slug en kebab-case.
+1. **Rama:** `git switch -c docs/NNN-<slug> develop` (con `develop` actualizado). `NNN-<slug>` es el *feature-id*: siguiente número libre en `specs/` + slug en kebab-case.
 2. **Análisis (delegado):** lanza el subagente `arquitecto-spec` con el requisito literal. Pídele `specs/NNN-<slug>/spec.md` según `specs/_plantilla/spec.md`, los escenarios en `escenarios/NNN-<slug>/` y la fila de la feature en el índice de `SPEC.md` §5.
 3. **Revisión adversarial (delegada):** cuando exista el borrador, lanza el subagente `seguridad` con esta instrucción: *"Revisa SOLO la spec `specs/NNN-<slug>/spec.md` y sus escenarios, no el código. ¿Qué vector de acceso indebido, inyección o fuga no está cubierto por un escenario, y qué escenario no tiene un resultado determinista?"*. Incorpora sus faltantes como escenarios nuevos (vía `arquitecto-spec`).
 4. **Puerta humana:** muestra al usuario un resumen de una pantalla (alcance, RN y SEG nuevas o cambiadas, número de CA y escenarios por tipo, decisiones `D-xx` y preguntas abiertas). **No continúes a implementación sin su aprobación.** Si corrige algo, aplícalo y registra la intervención con la skill `registrar-intervencion`.
 5. **Commit:** `docs(spec): add NNN <slug> spec` (60 caracteres como máximo) **sin trailer** (solo toca `.md`: es un commit humano; AGENTS.md §1 regla 2).
-6. Indica el siguiente paso: `/implementar-spec NNN`.
+6. Abre el PR hacia `develop` con la skill `abrir-pr`; tras el merge humano, el siguiente paso es `/implementar-spec NNN`.
 
 ## Criterios de calidad de la spec (verifícalos antes de la puerta humana)
 - [ ] La spec sigue `specs/_plantilla/spec.md` (RF, comportamiento y UX, backend, frontend, datos, CA y plan de QA) y no contiene guías de metodología.

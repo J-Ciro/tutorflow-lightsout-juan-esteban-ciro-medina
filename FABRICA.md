@@ -40,7 +40,7 @@ Principios de separación:
    5. ¿hallazgos críticos/altos? ──sí──► corrección (máx. 3 vueltas) ──► 3
         │ no
         ▼
-   merge --no-ff a main ──► CI (GitHub Actions) bloqueante
+   [abrir-pr] PR a develop ──► CI (GitHub Actions) bloqueante ──► merge humano (merge commit)
         │
         ▼
  [cerrar-corrida] REPORTE.md + logs

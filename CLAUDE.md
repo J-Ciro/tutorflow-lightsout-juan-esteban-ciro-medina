@@ -53,6 +53,7 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
   - `implementar-spec`: ciclo de pruebas, implementación y revisión.
   - `tdd`: prueba en rojo antes de cualquier línea de código de producción.
   - `criterios-gherkin-smart`: cómo redactar los CA.
+  - `abrir-pr`: publicar una rama y preparar su PR hacia `develop` con título y descripción.
   - `registrar-intervencion`: anotar una corrección del humano.
   - `cerrar-corrida`: actualizar `REPORTE.md` y los logs.
 - **Plugin `postman`** (marketplace oficial, habilitado en `.claude/settings.json`): skills `postman:*` para validación local, entre ellas `api-testing`, `api-simulation`, `performance-testing` y `collection-schema-v3`.

@@ -100,12 +100,12 @@ Checklist mínimo, auditado por el agente `seguridad`:
 
 ## 6. Git
 
-- Ramas convencionales cortas desde `main`: `feat/<slug>`, `fix/<slug>`, `test/<slug>`, `docs/<slug>`, `ci/<slug>`, `refactor/<slug>`, `chore/<slug>`. Con requisito: `feat/NNN-<slug>`.
+- **Ramas:** `main` (solo entregas, etiqueta `entrega`) y `develop` (integración). Ramas de trabajo convencionales y cortas **desde `develop`**: `feat/<slug>`, `fix/<slug>`, `test/<slug>`, `docs/<slug>`, `ci/<slug>`, `refactor/<slug>`, `chore/<slug>`. Con requisito: `feat/NNN-<slug>`.
 - **Conventional Commits** en inglés, en imperativo, **asunto de 60 caracteres como máximo**, alcance opcional (`api`, `core`, `authz`, `llm`, `evals`, `ci`, `docker`, `spec`, `agents`).
 - Commits pequeños y atómicos: un cambio lógico por commit, con las pruebas pasando.
 - El cuerpo del commit explica el *porqué* y referencia RN/SEG/CA cuando aplica.
 - Trailers: ver §1 regla 2. Los merges `--no-ff` son integración humana: sin trailer y sin `Co-Authored-By`.
-- Integración a `main` con `git merge --no-ff` y solo con CI y auditorías en verde.
+- Integración por **pull request** (skill `abrir-pr`): rama de trabajo → `develop` con CI y auditorías en verde; `develop` → `main` solo para la entrega. El merge en GitHub es siempre **"Create a merge commit"**, nunca *Squash* ni *Rebase*. El hook `pre-commit` bloquea los commits directos en `main` y `develop`.
 - Activa el hook una vez por clon: `git config core.hooksPath .githooks`.
 
 ## 7. Lo que ningún agente puede hacer

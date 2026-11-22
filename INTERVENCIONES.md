@@ -104,3 +104,12 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué se cambió:** todo el .NET pasó a `backend/` con `git mv`, conservando la historia. Las carpetas `src` y `tests` estaban bloqueadas por Windows y se movieron archivo por archivo. Se creó `frontend/`, que reemplaza a `web/`. `docker-compose.yml`, `mock-api/` y `reglamento/` quedan en la raíz. Tres rutas de las pruebas y del runner ahora incluyen `backend/`. Antes y después del cambio se obtuvo el mismo resultado: 380 y 316 pruebas en rojo, 7 y 14 en verde, evals en fallo y la colección de Postman sin errores de lint. Se actualizaron `AGENTS.md` §2 (los comandos `dotnet` y `postman` se ejecutan desde `backend/`), `CLAUDE.md`, `FABRICA.md`, los agentes, `implementar-spec` y el plan de QA de la spec 001. Además se documentó en `AGENTS.md` §3 la excepción CA1707 en las pruebas.
 - **Costo:** ~2 min humanos.
 - **Prevención:** la estructura queda fijada en `AGENTS.md` §2; cualquier carpeta nueva de producto va dentro de `backend/` o `frontend/`.
+
+### INT-012 · 2026-11-22 · Rama develop y pull requests con título y descripción
+- **Fase:** configuración de la fábrica
+- **Qué pasó:** las ramas de trabajo se integraban directo a `main` con merges locales, y al abrir un PR en GitHub el título salía del nombre de la rama ("Feat/001 asistente academico") y la descripción quedaba vacía.
+- **Qué hizo el humano:** pidió *"crear una rama develop y allí subir los cambios"* y señaló que *"las branches están quedando sin commits ni título automático"*.
+- **Por qué:** un flujo con `develop` separa la integración continua de la entrega, y un PR con título y descripción deja trazabilidad en GitHub.
+- **Qué se cambió:** se creó `develop` desde `main`. `AGENTS.md` §6 ahora dice que las ramas salen de `develop` y se integran por PR con "Create a merge commit" (nunca Squash ni Rebase), y que `develop` pasa a `main` solo en la entrega. El hook `pre-commit` bloquea los commits directos en `main` y `develop`. Nueva skill `abrir-pr`: publica la rama y genera el enlace de GitHub con el título en Conventional Commits y la descripción ya llena (evidencia, auditorías, intervenciones y lista de commits), sin depender de `gh`. Se agregó `.github/pull_request_template.md`, y se actualizaron `implementar-spec`, `nueva-spec`, `FABRICA.md`, `CLAUDE.md` y los disparadores del CI (aviso a `devops-cicd`).
+- **Costo:** ~1 min humano.
+- **Prevención:** el hook impide trabajar directo en `develop` o `main`, y la skill `abrir-pr` es el único camino de integración.
