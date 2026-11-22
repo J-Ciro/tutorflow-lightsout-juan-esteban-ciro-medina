@@ -32,7 +32,7 @@ public static class Principal
         return new OpcionesEvals(
             valores.GetValueOrDefault("--url") ?? UrlPorDefecto,
             args.Contains("--offline"),
-            valores.GetValueOrDefault("--casos", Path.Combine(Pruebas.Soporte.DatosReferencia.RutaRepositorio(), "evals", "casos")),
+            valores.GetValueOrDefault("--casos", Path.Combine(Pruebas.Soporte.DatosReferencia.RutaRepositorio(), "backend", "evals", "casos")),
             int.Parse(valores.GetValueOrDefault("--corridas", "1"), System.Globalization.CultureInfo.InvariantCulture),
             int.Parse(valores.GetValueOrDefault("--pausa-ms", PausaPorDefectoMs.ToString(System.Globalization.CultureInfo.InvariantCulture)), System.Globalization.CultureInfo.InvariantCulture),
             int.Parse(valores.GetValueOrDefault("--umbral-p95-ms", UmbralP95PorDefectoMs.ToString(System.Globalization.CultureInfo.InvariantCulture)), System.Globalization.CultureInfo.InvariantCulture),

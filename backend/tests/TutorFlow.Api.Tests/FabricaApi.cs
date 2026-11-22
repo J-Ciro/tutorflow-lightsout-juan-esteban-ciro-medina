@@ -94,7 +94,7 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Production");
-        builder.UseContentRoot(Path.Combine(DatosReferencia.RutaRepositorio(), "src", "TutorFlow.Api"));
+        builder.UseContentRoot(Path.Combine(DatosReferencia.RutaRepositorio(), "backend", "src", "TutorFlow.Api"));
         foreach (var (clave, valor) in _configuracion)
         {
             builder.UseSetting(clave, valor);
