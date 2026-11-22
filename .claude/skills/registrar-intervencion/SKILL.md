@@ -5,6 +5,8 @@ description: Registra en INTERVENCIONES.md una corrección o redirección manual
 
 # Registrar una intervención humana
 
+**Solo se registra** cuando el humano corrige, rechaza, reorienta o edita a mano algo que produjo la fábrica. **No se registra:** el requisito inicial, una aprobación sin cambios, problemas del entorno (herramientas faltantes, credenciales) ni decisiones que la fábrica tomó sola. Esos van en `REPORTE.md` (bloqueos e incidentes) o en las decisiones D-xx de la spec.
+
 1. Lee `INTERVENCIONES.md` y toma el siguiente número `INT-NNN`.
 2. Agrega una entrada al final con este formato exacto:
 
