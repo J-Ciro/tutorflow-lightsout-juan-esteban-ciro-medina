@@ -2,8 +2,8 @@
 
 | Campo | Valor |
 | --- | --- |
-| Versión | 1.2 · 2026-11-22 |
-| Estado | Borrador para aprobación humana |
+| Versión | 1.3 · 2026-11-22 |
+| Estado | **Aprobada** por el humano (2026-11-22); D-16 confirmada |
 | Contenido | Lo transversal del sistema: objetivo, prioridades, actores, contrato, matriz de acceso y decisiones |
 | Features | `specs/<feature-id>/spec.md` (§5) |
 | Escenarios | `escenarios/<feature-id>/` |
@@ -75,7 +75,7 @@ La autorización es **código determinista**, se evalúa **antes** de leer datos
 
 | ID | Feature | Spec | Escenarios | Estado |
 | --- | --- | --- | --- | --- |
-| 001 | Asistente académico (PDF Q10) | [specs/001-asistente-academico/spec.md](specs/001-asistente-academico/spec.md) | [escenarios/001-asistente-academico/](escenarios/001-asistente-academico/) | Borrador |
+| 001 | Asistente académico (PDF Q10) | [specs/001-asistente-academico/spec.md](specs/001-asistente-academico/spec.md) | [escenarios/001-asistente-academico/](escenarios/001-asistente-academico/) | Aprobada |
 
 ## 6. Decisiones
 
@@ -96,7 +96,7 @@ Decisiones del sistema y de la feature 001. Las features nuevas registran las su
 | D-13 | "Registrar los datos del estudiante consultados" frente a la Ley 1581 | Se registran IDs y recursos consultados, no valores | Auditoría suficiente sin duplicar datos personales |
 | D-14 | Formato de citas | §11.1. Riesgo: la cita esperada "Secciones 3 y 4" se devuelve como dos entradas, y "Datos del estudiante" como `documento`, con la sección en `seccion`. Si las pruebas ocultas comparan la cadena literal, podrían fallar; se elige el formato estructurado del contrato | El contrato define `{documento, seccion}` por cita |
 | D-15 | Separador decimal | Punto | Así lo usan el reglamento y las preguntas de ejemplo |
-| D-16 | Proveedor de LLM | Configurable por `appsettings` (modelo y precio por millón de tokens). Propuesta: un modelo pequeño y económico (p. ej. Claude Haiku) porque el LLM solo redacta: los cálculos y permisos son código. **Requiere confirmación humana** | Costo es el 15% de la evaluación |
+| D-16 | Proveedor de LLM | **Independiente del proveedor:** cualquier persona usa la app con su propia `LLM_API_KEY`. El proveedor se detecta por el prefijo de la llave (tabla en la spec 001 §9.4) y se puede forzar con `LLM_PROVEEDOR`, `LLM_URL_BASE` y `LLM_MODELO`. Sin llave, la app usa Ollama local (`qwen2.5:7b`), que es el entorno de pruebas del humano. Cada proveedor usa un modelo pequeño por defecto, porque el LLM solo redacta: los cálculos y permisos son código. Confirmada por el humano | Cualquier evaluador puede usar su propia llave; el costo es el 15% de la evaluación |
 | D-17 | El anexo de `bienestar_y_becas.md` contiene instrucciones dirigidas al asistente | Se excluye del índice (no es contenido normativo) **y** además se prueba la resistencia a la inyección indirecta con documentos sintéticos (defensa en profundidad) | Material no confiable |
 | D-20 | Beca con asignaturas sin definitiva | "No determinable aún" | El promedio del periodo no está completo |
 | D-21 | Bloquear o solo detectar la suplantación (SEG-16) | Solo detectar y auditar por defecto; el bloqueo es configurable | Las pruebas ocultas de Q10 probablemente usan varias identidades desde una misma IP; bloquear las haría fallar |

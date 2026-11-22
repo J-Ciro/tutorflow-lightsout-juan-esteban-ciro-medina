@@ -36,8 +36,11 @@
 ### ESC-109 · LLM caído o con timeout `@operacion`
 - **Dado** que el LLM no responde en 20 s · **Entonces** 503; sin URL, modelo ni llave en el cuerpo.
 
-### ESC-110 · Sin `LLM_API_KEY` `@operacion`
-- **Dado** que la variable no está definida · **Entonces** la aplicación arranca, `/api/salud` responde 200, una pregunta que requiere el LLM devuelve 503 y una pregunta denegada sigue devolviendo 403 (la autorización no depende del LLM).
+### ESC-110 · Sin LLM disponible `@operacion`
+- **Dado** que `LLM_API_KEY` no está definida y Ollama no responde, o que la llave tiene un prefijo desconocido sin `LLM_URL_BASE` · **Entonces** la aplicación arranca, `/api/salud` responde 200, una pregunta que requiere el LLM devuelve 503 y una pregunta denegada sigue devolviendo 403 (la autorización no depende del LLM).
+
+### ESC-119 · Selección del proveedor por la llave `@operacion`
+- **Dado** `LLM_API_KEY` con los prefijos `sk-ant-`, `sk-or-`, `gsk_`, `AIza`, `sk-proj-` y ninguna llave · **Entonces** el proveedor resuelto es, en orden, Anthropic, OpenRouter, Groq, Gemini, OpenAI y Ollama; con `LLM_PROVEEDOR` definido, gana la variable; el log de arranque muestra el proveedor y el modelo, nunca la llave. (spec §9.4)
 
 ### ESC-111 · Encabezados de seguridad `@contrato`
 - **Dado** cualquier respuesta · **Entonces** incluye `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` y `Referrer-Policy: no-referrer`; ninguna respuesta incluye `Access-Control-Allow-Origin: *`. (SEG-14)
