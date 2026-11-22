@@ -647,7 +647,10 @@ Característica: Detectar la suplantación de identidad
 | Integración | Contrato HTTP, flujo completo, auditoría y denegaciones, con el LLM y la API académica como dobles espía | `WebApplicationFactory` | Cada push |
 | Evals offline | Todos los ESC con un LLM grabado o doble | `evals/TutorFlow.Evals` | Cada push |
 | Evals con LLM | Preguntas de ejemplo, reglamento, sin información e inyección contra el modelo real | `evals/TutorFlow.Evals` + `LLM_API_KEY` | PR con el secreto disponible |
-| API de punta a punta | Contrato, permisos, abuso determinista, cuerpo 403 idéntico y encabezados contra la API real levantada con Docker Compose | Colección de Postman (`tests/postman/`) ejecutada con Postman CLI | Cada PR (trabajo `docker`) y en local antes de reportar |
+| API de punta a punta | Contrato, permisos, abuso determinista, cuerpo 403 idéntico y encabezados contra la API real levantada con Docker Compose | Colección v3 de Postman (`postman/collections/tutorflow/`) con Postman CLI | Local: antes de reportar (`backend-dotnet`), en la revisión (`qa-calidad`) y en la verificación del orquestador |
+| Rendimiento | RNF-01: p95 < 500 ms de las denegaciones del filtro previo | `postman performance run`, runner local | Local, antes de cada merge a `main` |
+| Simulación de fallos | Timeouts, 5xx y respuestas anómalas de la API académica (ESC-085, ESC-089, ESC-108, ESC-135, ESC-136) | `postman simulation` (`postman/simulations/`) | Local, antes de reportar |
+| Humo | Docker Compose, salud en 200 y un 403 | CI, trabajo `docker` con `curl` | Cada PR |
 
 ### 13.2 Matriz de verificación
 
@@ -678,7 +681,7 @@ Característica: Detectar la suplantación de identidad
 ### 13.4 Dobles y datos de prueba
 
 - **LLM doble:** programable por escenario (respuesta fija, invocación de herramienta, cita inventada, nombre de un tercero, consumo de tokens fijo) y espía (cuenta las llamadas).
-- **API académica doble:** `mock-api/datos.json` más variantes para casos sin cobertura en los datos reales: coordinador sin programas, coordinador con dos programas, `programaId` malicioso y asignatura con texto de inyección.
+- **API académica doble:** `mock-api/datos.json` más variantes para casos sin cobertura en los datos reales: coordinador sin programas, coordinador con dos programas, `programaId` malicioso y asignatura con texto de inyección. Las pruebas de integración usan dobles en .NET; las pruebas de punta a punta, la simulación de Postman.
 - **Canarios:** un marcador dentro del prompt de sistema y una llave falsa en `LLM_API_KEY` para detectar fugas.
 
 ### 13.5 Criterios de salida
