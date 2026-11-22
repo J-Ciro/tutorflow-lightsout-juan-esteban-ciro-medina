@@ -9,7 +9,12 @@
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
-      "Bash(node mock-api/server.js:*)"
+      "Bash(node mock-api/server.js:*)",
+      "Bash(postman collection run:*)",
+      "Bash(postman collection lint:*)",
+      "Bash(postman performance run:*)",
+      "Bash(postman simulation:*)",
+      "Bash(curl http://localhost:*)"
     ],
     "deny": [
       "Read(./.env)",
