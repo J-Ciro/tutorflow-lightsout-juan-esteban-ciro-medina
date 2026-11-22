@@ -1,0 +1,33 @@
+# Secretos: LLM_API_KEY nunca entra al repositorio
+.env
+.env.*
+!.env.example
+*.pfx
+*.key
+appsettings.*.local.json
+
+# .NET
+bin/
+obj/
+TestResults/
+*.user
+*.suo
+.vs/
+coverage/
+*.coverage
+*.trx
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+
+# IDE / SO
+.idea/
+.vscode/*
+!.vscode/extensions.json
+Thumbs.db
+.DS_Store
+
+# Claude Code: configuración personal (la compartida sí se versiona)
+.claude/settings.local.json
