@@ -77,3 +77,12 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué se cambió:** se pasó a .NET 11 (`net11.0`) en `AGENTS.md`, `CLAUDE.md`, la spec 001, `backend-dotnet` y `devops-cicd`. Las imágenes Docker pasan a `sdk:11.0` y `aspnet:11.0`, y el SDK se fija en `global.json`, que también lee el CI. Ya no se nombra una versión fija de C#.
 - **Costo:** ~1 min humano.
 - **Prevención:** la versión del runtime queda en una sola fuente (`global.json`) y no repetida en varios documentos.
+
+### INT-009 · 2026-11-22 · TDD obligatorio y código sin comentarios
+- **Fase:** implementación (corrida 1, durante el esqueleto)
+- **Qué pasó:** `AGENTS.md` §3 pedía comentarios que explicaran el porqué y citaran la regla (`// RN-07…`), y el TDD solo estaba implícito en el ciclo de `implementar-spec`, sin una skill propia.
+- **Qué hizo el humano:** entregó la skill `tdd` (*"esto es CRÍTICO antes de escribir cualquier LÍNEA de código"*) e indicó: *"NUNCA agregues comentarios al código, ya que el código debe de hablar por sí mismo y ser fácil de entender, leer y comprender"*.
+- **Por qué:** el comportamiento se demuestra con una prueba en rojo antes del código, y la legibilidad se logra con nombres, no con comentarios.
+- **Qué se cambió:** se agregó `.claude/skills/tdd/SKILL.md` tal como la entregó el humano. Se volvió obligatoria en `AGENTS.md` §4, `backend-dotnet`, `qa-calidad` e `implementar-spec`: la skill trae `disable-model-invocation`, así que los agentes la siguen porque se les ordena explícitamente leerla. La regla de comentarios se reemplazó por *"sin comentarios en el código"*: la trazabilidad a las RN va en los `[Trait]` de las pruebas, en la spec y en los commits, y `qa-calidad` trata cualquier comentario como hallazgo alto. Se quitaron los comentarios de los hooks de la fábrica y se avisó al agente que estaba creando el esqueleto.
+- **Costo:** ~2 min humanos.
+- **Prevención:** la revisión de `qa-calidad` (fase B) bloquea cualquier comentario en el código.
