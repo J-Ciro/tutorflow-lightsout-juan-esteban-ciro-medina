@@ -34,3 +34,4 @@ Thumbs.db
 
 # Claude Code: configuración personal (la compartida sí se versiona)
 .claude/settings.local.json
+.claude/*.local.txt
