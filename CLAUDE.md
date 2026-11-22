@@ -15,7 +15,7 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
 ## Stack tecnológico
 | Capa | Tecnología |
 | --- | --- |
-| Backend | .NET 8 (C# 12), ASP.NET Core Minimal API |
+| Backend | .NET 11 (`net11.0`), ASP.NET Core Minimal API |
 | Pruebas | xUnit, `WebApplicationFactory`; API de punta a punta, rendimiento y simulación con Postman CLI (colecciones v3) |
 | Evals | Runner propio en .NET (`evals/TutorFlow.Evals`) |
 | LLM | Independiente del proveedor: se detecta por el prefijo de `LLM_API_KEY` (Anthropic, OpenAI, Groq, OpenRouter, Gemini…); sin llave, Ollama local con `qwen2.5:7b` (spec 001 §9.4) |

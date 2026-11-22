@@ -5,7 +5,7 @@
 | Versión | 1.3 · 2026-11-22 |
 | Estado | **Aprobada** por el humano (2026-11-22) |
 | Spec del sistema | [`SPEC.md`](../../SPEC.md): objetivo, actores, contrato, matriz de acceso y decisiones |
-| Componentes en esta spec | Backend .NET 8, datos, comportamiento conversacional y QA |
+| Componentes en esta spec | Backend .NET 11, datos, comportamiento conversacional y QA |
 | Fuera de esta spec | Interfaz web React (spec futura, §10) |
 | Escenarios | [`escenarios/001-asistente-academico/`](../../escenarios/001-asistente-academico/) (ESC-001…ESC-199) |
 
@@ -122,7 +122,7 @@ La matriz global está en [`SPEC.md` §4](../../SPEC.md). Esta feature la implem
 
 ## 9. Backend
 
-Arquitectura y convenciones en `AGENTS.md` §2 y §3 (.NET 8: `Core`, `Infrastructure` y `Api`).
+Arquitectura y convenciones en `AGENTS.md` §2 y §3 (.NET 11: `Core`, `Infrastructure` y `Api`).
 
 ### 9.1 Contrato de la API
 

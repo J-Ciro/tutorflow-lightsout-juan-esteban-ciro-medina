@@ -3,7 +3,7 @@
 | Campo | Valor |
 | --- | --- |
 | Versión | 1.3 · 2026-11-22 |
-| Estado | **Aprobada** por el humano (2026-11-22); D-16 confirmada |
+| Estado | **Aprobada** por el humano (2026-11-22); D-16 confirmada; backend en .NET 11 (INT-008) |
 | Contenido | Lo transversal del sistema: objetivo, prioridades, actores, contrato, matriz de acceso y decisiones |
 | Features | `specs/<feature-id>/spec.md` (§5) |
 | Escenarios | `escenarios/<feature-id>/` |

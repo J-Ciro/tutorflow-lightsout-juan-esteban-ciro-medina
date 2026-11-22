@@ -19,7 +19,7 @@ Documentos que debes leer antes de trabajar:
 
 ## 2. Arquitectura
 
-Backend en **.NET 8** (C# 12). Tres proyectos de producción y pruebas separadas. Nada más: cada capa nueva requiere justificarla en la spec.
+Backend en **.NET 11** (`net11.0`, con la versión de C# por defecto del SDK). El SDK se fija en `global.json`. Tres proyectos de producción y pruebas separadas. Nada más: cada capa nueva requiere justificarla en la spec.
 
 ```
 src/
