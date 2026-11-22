@@ -1,0 +1,36 @@
+#!/bin/sh
+# Valida el mensaje de commit segun AGENTS.md (seccion "Git").
+# Activar una vez por clon:  git config core.hooksPath .githooks
+
+MSG_FILE="$1"
+SUBJECT=$(head -n 1 "$MSG_FILE")
+
+case "$SUBJECT" in
+  Merge\ *|Revert\ *) exit 0 ;;
+esac
+
+TYPES='feat|fix|docs|test|refactor|perf|build|ci|chore|style|revert'
+if ! printf '%s' "$SUBJECT" | grep -Eq "^($TYPES)(\([a-z0-9-]+\))?!?: [^ ].*$"; then
+  echo "ERROR commit-msg: el asunto no sigue Conventional Commits." >&2
+  echo "  Formato: <tipo>(<alcance>)?: <descripcion>   tipos: $TYPES" >&2
+  echo "  Recibido: $SUBJECT" >&2
+  exit 1
+fi
+
+LEN=$(printf '%s' "$SUBJECT" | wc -m | tr -d ' ')
+if [ "$LEN" -gt 60 ]; then
+  echo "ERROR commit-msg: el asunto tiene $LEN caracteres (maximo 60)." >&2
+  exit 1
+fi
+
+# Regla lights-out 3: si el commit toca algo distinto de Markdown o de la
+# configuracion de agentes, lo hizo un agente y debe llevar el trailer.
+NON_HUMAN=$(git diff --cached --name-only | grep -Ev '(\.md$|^\.claude/|^\.githooks/|^CLAUDE\.md$)')
+if [ -n "$NON_HUMAN" ] && ! grep -Eq '^Generado-por: .+' "$MSG_FILE"; then
+  echo "ERROR commit-msg: falta el trailer 'Generado-por: <herramienta>'." >&2
+  echo "  Archivos que lo exigen:" >&2
+  printf '%s\n' "$NON_HUMAN" | sed 's/^/    /' >&2
+  exit 1
+fi
+
+exit 0
