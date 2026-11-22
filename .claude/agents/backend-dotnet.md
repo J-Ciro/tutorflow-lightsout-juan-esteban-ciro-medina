@@ -1,6 +1,6 @@
 ---
 name: backend-dotnet
-description: Implementa el backend .NET 8 de TutorFlow (src/) a partir de una spec aprobada y de pruebas ya escritas. Úsalo para código de producción del backend y para corregir hallazgos de auditoría.
+description: Implementa el backend .NET 11 de TutorFlow (src/) a partir de una spec aprobada y de pruebas ya escritas. Úsalo para código de producción del backend y para corregir hallazgos de auditoría.
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: sonnet
 ---

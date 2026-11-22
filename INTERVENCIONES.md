@@ -68,3 +68,12 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué se cambió:** D-16 se reescribió en `SPEC.md` y se añadió la §9.4 a la spec 001: puerto `IClienteLlm` con un adaptador de Anthropic (SDK oficial) y otro compatible con OpenAI (OpenAI, Groq, OpenRouter, Gemini, DeepSeek, Mistral y Ollama). El proveedor se detecta por el prefijo de la llave y se puede forzar con `LLM_PROVEEDOR`, `LLM_URL_BASE` y `LLM_MODELO`; sin llave se usa Ollama con `qwen2.5:7b`. Hay precios por modelo en la configuración y un escenario nuevo, ESC-119. El límite de salida pasó de 600 a 2.000 tokens configurables, porque en los modelos con razonamiento ese límite también lo incluye. Se actualizaron `AGENTS.md`, `CLAUDE.md`, `backend-dotnet` y `qa-calidad`.
 - **Costo:** ~2 min humanos.
 - **Prevención:** las decisiones de proveedor y dependencias externas se especifican tras un puerto desde el principio; antes de fijar un proveedor, se confirma si debe ser intercambiable.
+
+### INT-008 · 2026-11-22 · Backend en .NET 11 en lugar de .NET 8
+- **Fase:** spec
+- **Qué pasó:** la fábrica fijó el backend en .NET 8 (el mínimo del PDF) en `AGENTS.md`, `CLAUDE.md`, la spec 001 y los agentes, y le pidió al humano instalar el SDK de .NET 8.
+- **Qué hizo el humano:** indicó *"No vamos a usar dotnet 8 sino Dotnet 11"*.
+- **Por qué:** decisión del humano; el PDF admite ".NET 8 o superior" y el SDK 11.0.100 ya es estable en `winget`.
+- **Qué se cambió:** se pasó a .NET 11 (`net11.0`) en `AGENTS.md`, `CLAUDE.md`, la spec 001, `backend-dotnet` y `devops-cicd`. Las imágenes Docker pasan a `sdk:11.0` y `aspnet:11.0`, y el SDK se fija en `global.json`, que también lee el CI. Ya no se nombra una versión fija de C#.
+- **Costo:** ~1 min humano.
+- **Prevención:** la versión del runtime queda en una sola fuente (`global.json`) y no repetida en varios documentos.
