@@ -1,0 +1,22 @@
+simulation: academica
+routing: path
+mocks:
+  - name: variantes
+    routeKey: variantes
+    path: postman/mocks/academica-variantes
+  - name: timeout
+    routeKey: timeout
+    path: postman/mocks/academica-normal
+    scenarios:
+      - overrides:
+          conditions:
+            latency:
+              delay_ms: 8000
+  - name: error5xx
+    routeKey: error5xx
+    path: postman/mocks/academica-normal
+    scenarios:
+      - overrides:
+          conditions:
+            error:
+              status_code: 503

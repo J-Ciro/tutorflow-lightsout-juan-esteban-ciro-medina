@@ -1,0 +1,23 @@
+$kind: http-request
+order: 5000
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "pregunta": "¿Qué estudiantes de Administración de Empresas perdieron materias?",
+      "usuario": {
+        "rol": "coordinador",
+        "id": "COORD-01"
+      }
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("ESC-060 responde 403 sin pasar por el LLM", () => pm.response.to.have.status(403));
+      pm.test("ESC-060 responde en menos de 500 ms", () => pm.expect(pm.response.responseTime).to.be.below(500));

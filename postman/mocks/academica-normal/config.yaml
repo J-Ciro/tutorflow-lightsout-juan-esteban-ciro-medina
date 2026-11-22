@@ -1,0 +1,10 @@
+version: 1
+name: academica-normal
+slug: academica-normal
+protocol: http
+port: 4511
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true
