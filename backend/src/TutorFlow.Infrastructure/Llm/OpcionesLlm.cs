@@ -56,8 +56,3 @@ public sealed record ProveedorResuelto(
     decimal PrecioEntradaPorMillon,
     decimal PrecioSalidaPorMillon,
     bool PrecioDesconocido);
-
-public static class ResolutorProveedorLlm
-{
-    public static ProveedorResuelto Resolver(EntornoLlm entorno, OpcionesLlm opciones) => throw new NotImplementedException();
-}
