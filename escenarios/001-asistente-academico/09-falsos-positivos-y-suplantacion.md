@@ -1,5 +1,7 @@
 # 09 · Falsos positivos, evasión y suplantación (CA-04, CA-12, CA-13)
 
+> Spec: [`specs/001-asistente-academico/spec.md`](../../specs/001-asistente-academico/spec.md) · Sistema: [`SPEC.md`](../../SPEC.md)
+
 Un filtro de seguridad que deniega preguntas legítimas también es un defecto: rompe el producto y las pruebas ocultas. Este archivo prueba los dos lados del filtro.
 
 ## Preguntas legítimas que NO deben recibir 403 (CA-12)

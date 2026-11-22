@@ -1,5 +1,7 @@
 # 07 · Sin información y fuera de dominio (CA-06)
 
+> Spec: [`specs/001-asistente-academico/spec.md`](../../specs/001-asistente-academico/spec.md) · Sistema: [`SPEC.md`](../../SPEC.md)
+
 Esperado en todos: 200, `respuesta` exactamente igual al texto de COMP-03, `citas: []` y `usoDatosEstudiante: false`.
 
 ### ESC-090 · Tema académico ausente `@alterno`

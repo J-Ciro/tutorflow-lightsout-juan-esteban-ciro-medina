@@ -1,5 +1,7 @@
 # 05 · Permisos y roles (CA-04)
 
+> Spec: [`specs/001-asistente-academico/spec.md`](../../specs/001-asistente-academico/spec.md) · Sistema: [`SPEC.md`](../../SPEC.md)
+
 Salvo que se indique otra cosa, cada escenario espera: **403** con el cuerpo de D-07, `tokens` 0 y `costoUsd` 0, sin llamar al LLM, sin leer notas ni asistencia del tercero, sin datos de terceros en la respuesta y una auditoría con `resultado: denegada`.
 
 ### Estudiante hacia otro estudiante

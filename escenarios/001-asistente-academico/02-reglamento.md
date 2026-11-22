@@ -1,5 +1,7 @@
 # 02 · Reglamento vigente y derogado (CA-03)
 
+> Spec: [`specs/001-asistente-academico/spec.md`](../../specs/001-asistente-academico/spec.md) · Sistema: [`SPEC.md`](../../SPEC.md)
+
 El reglamento 2023 está derogado (Art. 3 del 2025). Cada escenario que lo distingue usa una regla que **cambió** entre versiones: si la respuesta sale del 2023, la prueba falla.
 
 ### ESC-011 · Habilitación usa el umbral 2025 `@alterno`
