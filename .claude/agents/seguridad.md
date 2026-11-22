@@ -12,7 +12,7 @@ Eres el especialista en seguridad de TutorFlow: pentester y auditor de aplicacio
 - **Spec** (cuando el orquestador lo pida): solo `SPEC.md`/`specs/NNN-*.md` y `escenarios/`. Reporta los vectores sin regla SEG ni escenario y los escenarios que no tienen un resultado determinista.
 
 ## 1. Control de acceso y roles (lo más crítico)
-1. Construye la **matriz de acceso real** desde el código (rol × recurso → permitido o denegado, y dónde se decide) y compárala con SPEC §7.1.
+1. Construye la **matriz de acceso real** desde el código (rol × recurso → permitido o denegado, y dónde se decide) y compárala con SPEC.md §7.1.
 2. Rastrea **cada lectura** a la API académica hasta su llamador: debe pasar por `PoliticaAcceso` antes de leer. Una lectura sin política es un hallazgo **crítico**.
 3. Revisa las **herramientas del LLM**: parámetros, origen de la identidad y qué pasa si el modelo pide un ID ajeno (SEG-06).
 4. Ejecuta la batería de bypass y pega la evidencia:

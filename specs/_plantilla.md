@@ -2,68 +2,94 @@
 
 | Campo | Valor |
 | --- | --- |
+| Versión | 1.0 · AAAA-MM-DD |
 | Estado | borrador / aprobada / implementada |
 | Requisito original | (texto literal del cliente) |
-| Afecta | RN-xx, SEG-xx, CA-xx de `SPEC.md` (o "nuevo") |
+| Componentes en esta spec | backend / frontend / datos / QA |
+| Fuera de esta spec | (componentes que irán en otra spec) |
+| Afecta | RF, RN, SEG o CA de `SPEC.md` (o "nuevo") |
 | Rama | `feat/NNN-<slug>` |
 
-## 1. Objetivo
-Una o dos frases: qué valor entrega y a quién.
+## 1. Contexto y objetivo
+**Qué:** · **Por qué:** · **Cómo:**
 
 ## 2. Alcance
 - **Incluye:**
 - **No incluye:**
 
-## 3. Reglas de negocio
+## 3. Actores y roles
+
+| Rol | Puede |
+| --- | --- |
+
+## 4. Requerimientos funcionales
+
+| ID | Requerimiento | Actor | CA |
+| --- | --- | --- | --- |
+| RF-NNN-01 | | | CA-NNN-01 |
+
+## 5. Comportamiento esperado y experiencia de usuario
+
+| ID | Comportamiento |
+| --- | --- |
+| COMP-NNN-01 | |
+| UX-NNN-01 | |
+
+## 6. Reglas de negocio
+
 | ID | Regla | Fuente (documento · sección o dato) |
 | --- | --- | --- |
 | RN-NNN-01 | | |
 
-## 4. Reglas de seguridad y permisos
+## 7. Seguridad y permisos
+
 | ID | Regla | Rol afectado | Respuesta ante violación |
 | --- | --- | --- | --- |
 | SEG-NNN-01 | | | 403 |
 
-Matriz de acceso del requisito (rol × recurso → permitido/denegado).
+Matriz de acceso (rol × recurso → permitido / denegado).
 
-## 5. Contrato
-Cambios al contrato de API: **ninguno** / descripción (requiere aprobación humana).
+## 8. Requerimientos no funcionales
 
-## 6. Criterios de aceptación (Gherkin + SMART)
+| ID | Requerimiento | Medida |
+| --- | --- | --- |
 
-Formato obligatorio, igual que `SPEC.md` §11: por cada CA, una fila SMART y un bloque Gherkin en español.
+## 9. Backend
+Endpoints, cambios al contrato (**ninguno** o descripción marcada "requiere aprobación humana") y flujo.
 
-### CA-NNN-01 · <comportamiento en una frase>
+## 10. Frontend y UX/UI
+Pantallas, estados (carga, éxito, vacío, error, 403) y textos; o "fuera de esta spec".
 
-| E (específico) | M (medible) | A (alcanzable) | R (relevante) | C (comprobable) |
-| --- | --- | --- | --- | --- |
-| Un comportamiento, un actor | Valor, HTTP, cita, conteo o umbral (%, corridas) | Con qué datos o fuentes se cumple | Prioridad de §1 y reglas RN/SEG | Nivel de prueba (unitaria, integración, eval) + ESC |
+## 11. Datos
+Fuentes, campos nuevos, campos nulos y su tratamiento, auditoría y datos de referencia con su cálculo.
+
+## 12. Criterios de aceptación
+Gherkin en español según la skill `criterios-gherkin-smart`.
+
+### CA-NNN-01 · <comportamiento>
 
 ```gherkin
 # language: es
-Característica: <capacidad>
+Característica:
 
-  Esquema del escenario: <comportamiento>
-    Dado el usuario "<rol>" con id "<usuario>"
-    Cuando pregunta "<pregunta>"
-    Entonces el código HTTP es <http>
-    Y la "respuesta" contiene "<valor>"
-
-    Ejemplos:
-      | rol | usuario | pregunta | http | valor |
+  Escenario:
+    Dado
+    Cuando
+    Entonces
 ```
 
-Reglas: cada `Entonces` lleva un valor literal o un umbral; prohibido "correctamente", "adecuadamente", "rápido" o "seguro". Un `Escenario` por comportamiento. Los casos de seguridad y cálculo exigen 100%; los que dependen del texto del LLM, 100% en 3 corridas.
+## 13. Plan de QA
 
-## 7. Escenarios
-Enlace a los escenarios nuevos en `escenarios/` con este mínimo por camino feliz: 1 feliz, 1 alterno, 1 de permisos y 1 de abuso.
+| CA | Qué se verifica | Nivel | Escenarios | Umbral de aceptación |
+| --- | --- | --- | --- | --- |
+| CA-NNN-01 | | | ESC-xxx | |
 
-## 8. Datos de referencia
-Valores esperados calculados con su cálculo.
+Casos límite obligatorios, dobles y datos de prueba, criterios de salida.
 
-## 9. Decisiones
+## 14. Decisiones
+
 | ID | Ambigüedad | Decisión | Por qué | ¿Aprobación humana? |
 | --- | --- | --- | --- | --- |
 
-## 10. Preguntas abiertas
+## 15. Preguntas abiertas
 -

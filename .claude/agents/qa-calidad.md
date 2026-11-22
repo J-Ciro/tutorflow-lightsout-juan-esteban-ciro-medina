@@ -14,7 +14,7 @@ Escribes las pruebas desde la **especificación**, no desde el código: tu traba
 - `tests/TutorFlow.Api.Tests`: contrato HTTP con `WebApplicationFactory` y dobles del LLM y de la API académica. Verifica los códigos, la forma exacta del JSON, el cuerpo idéntico de D-07 y que una denegación previa no llama al LLM ni a la API.
 - `evals/casos/*.json` y el runner `evals/TutorFlow.Evals`: las 10 preguntas de ejemplo y todos los escenarios. Aserciones deterministas (D-23): números, citas, código HTTP, `usoDatosEstudiante` y cadenas prohibidas (terceros, canario del prompt, llave canaria).
 - Pruebas de arquitectura: `Core` no depende de `Infrastructure` ni de `Api`.
-- Los CA de la spec están en Gherkin: cada `Escenario` es una prueba y cada fila de `Ejemplos` es un caso de `[Theory]`/`[InlineData]` o una entrada de `evals/casos`. Los umbrales de la fila SMART (100%, 3 corridas, tiempos) son las aserciones del runner.
+- Los CA de la spec están en Gherkin: cada `Escenario` es una prueba y cada fila de `Ejemplos` es un caso de `[Theory]`/`[InlineData]` o una entrada de `evals/casos`. Los umbrales de la matriz de verificación del plan de QA (100%, 3 corridas, tiempos) son las aserciones del runner.
 - Cada prueba referencia su CA o ESC (`[Trait("CA", "CA-07")]` o un nombre como `ESC_050_...`). Cada camino feliz lleva al menos un caso alterno y uno de abuso.
 - Demuestra que las pruebas nuevas fallan (rojo) antes de la implementación y entrega la matriz de trazabilidad CA/ESC → prueba, con los CA sin cubrir marcados.
 - Si la spec es ambigua y no puedes escribir una aserción concreta, repórtalo. No la inventes.

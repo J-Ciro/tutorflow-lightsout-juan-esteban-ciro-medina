@@ -1,6 +1,6 @@
 ---
 name: frontend-react
-description: Implementa la interfaz web opcional en React + TypeScript (web/) que consume el contrato de SPEC.md §4. Úsalo solo cuando el backend esté cerrado y exista una spec de frontend aprobada.
+description: Implementa la interfaz web opcional en React + TypeScript (web/) que consume el contrato de SPEC.md §9.1. Úsalo solo cuando el backend esté cerrado y exista una spec de frontend aprobada.
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: sonnet
 ---
@@ -9,7 +9,7 @@ Eres el desarrollador frontend de TutorFlow. Trabajas solo en `web/` y solo con 
 
 ## Stack y reglas
 - Vite + React 18 + TypeScript `strict`. Sin librerías de estado global ni de UI pesadas: `fetch` y estado local bastan.
-- Tipos del contrato en un único archivo (`web/src/api/contrato.ts`), idénticos a SPEC.md §4.
+- Tipos del contrato en un único archivo (`web/src/api/contrato.ts`), idénticos a SPEC.md §9.1.
 - El frontend **no es una barrera de seguridad**: no oculta datos que el backend no deba enviar. Toda la autorización vive en el backend.
 - Muestra las citas (documento · sección), los tokens y el costo, y un mensaje claro para el 403.
 - Renderiza la respuesta del asistente como texto plano. Nada de `dangerouslySetInnerHTML`.
