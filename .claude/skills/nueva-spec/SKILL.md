@@ -10,7 +10,7 @@ Entrada: el texto del requisito (en `$ARGUMENTS` o en el mensaje).
 ## Pasos
 1. **Rama:** `git switch -c docs/NNN-<slug>` desde `main` actualizado. NNN = siguiente número libre en `specs/`.
 2. **Análisis (delegado):** lanza el subagente `arquitecto-spec` con el requisito literal. Pídele `specs/NNN-<slug>.md` según `specs/_plantilla.md`, los escenarios nuevos en `escenarios/` y la fila de trazabilidad en `SPEC.md` §12.
-3. **Revisión adversarial (delegada, en paralelo):** cuando exista el borrador, lanza a la vez `auditor-autorizacion` y `auditor-seguridad` con esta instrucción: *"Revisa SOLO la spec `specs/NNN-<slug>.md` y sus escenarios, no el código. ¿Qué vector de acceso indebido, inyección o fuga no está cubierto por un escenario?"*. Incorpora sus faltantes como escenarios nuevos (vía `arquitecto-spec`).
+3. **Revisión adversarial (delegada):** cuando exista el borrador, lanza el subagente `seguridad` con esta instrucción: *"Revisa SOLO la spec `specs/NNN-<slug>.md` y sus escenarios, no el código. ¿Qué vector de acceso indebido, inyección o fuga no está cubierto por un escenario, y qué escenario no tiene un resultado determinista?"*. Incorpora sus faltantes como escenarios nuevos (vía `arquitecto-spec`).
 4. **Puerta humana:** muestra al usuario un resumen de una pantalla (alcance, RN y SEG nuevas o cambiadas, número de CA y escenarios por tipo, decisiones `D-xx` y preguntas abiertas). **No continúes a implementación sin su aprobación.** Si corrige algo, aplícalo y registra la intervención con la skill `registrar-intervencion`.
 5. **Commit:** `docs(spec): add NNN <slug> spec` (60 caracteres como máximo) con el trailer `Generado-por: Claude Code`.
 6. Indica el siguiente paso: `/implementar-spec NNN`.
