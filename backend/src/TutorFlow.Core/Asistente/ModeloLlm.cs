@@ -43,5 +43,14 @@ public static class CalculadoraCosto
     public const int TokensPorMillon = 1_000_000;
     public const int DecimalesCosto = 6;
 
-    public static decimal Calcular(UsoTokens uso, PrecioModelo? precio) => throw new NotImplementedException();
+    public static decimal Calcular(UsoTokens uso, PrecioModelo? precio)
+    {
+        if (precio is null)
+        {
+            return 0m;
+        }
+
+        var costo = (uso.Entrada * precio.EntradaPorMillon + uso.Salida * precio.SalidaPorMillon) / TokensPorMillon;
+        return Math.Round(costo, DecimalesCosto, MidpointRounding.AwayFromZero);
+    }
 }

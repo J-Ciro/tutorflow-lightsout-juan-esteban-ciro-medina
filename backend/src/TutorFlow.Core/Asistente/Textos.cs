@@ -17,7 +17,7 @@ public static class Textos
     public const string SeccionAsistencia = "Asistencia";
     public const string SeccionDatosBasicos = "Datos básicos";
 
-    public static string Negativa(Rol rol) => throw new NotImplementedException();
+    public static string Negativa(Rol rol) => rol == Rol.Coordinador ? NegativaCoordinador : NegativaEstudiante;
 
-    public static Cita CitaNegativa() => throw new NotImplementedException();
+    public static Cita CitaNegativa() => new(DocumentoReglamentoVigente, SeccionPrivacidad);
 }
