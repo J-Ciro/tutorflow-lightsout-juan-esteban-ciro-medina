@@ -17,7 +17,9 @@ public static class ServiciosTutorFlow
     private const string NombreClienteLlm = "llm";
     private const string SeccionCodigosAsignatura = "Autorizacion:CodigosAsignatura";
     private const string ClaveMarcadorCanario = "Llm:MarcadorCanario";
+    private const string ClaveReservaPorPeticion = "Llm:ReservaPorPeticionUsd";
     private const string ClaveSeccionLimites = "Limites";
+    private const string ClaveTraceId = "traceId";
 
     public static IServiceCollection AgregarTutorFlow(this IServiceCollection servicios, IConfiguration configuracion)
     {
@@ -25,7 +27,8 @@ public static class ServiciosTutorFlow
         AgregarNucleo(servicios, configuracion);
         AgregarInfraestructura(servicios, configuracion);
         AgregarLlm(servicios, configuracion);
-        servicios.AddProblemDetails();
+        servicios.AddProblemDetails(opciones =>
+            opciones.CustomizeProblemDetails = contexto => contexto.ProblemDetails.Extensions[ClaveTraceId] = contexto.HttpContext.TraceIdentifier);
         servicios.AddExceptionHandler<ManejadorExcepciones>();
         servicios.ConfigureHttpJsonOptions(opciones => opciones.SerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping);
         servicios.AddHostedService<RegistroArranqueLlm>();
@@ -117,6 +120,6 @@ public static class ServiciosTutorFlow
         var resuelto = proveedor.GetRequiredService<ProveedorResuelto>();
         var precio = resuelto.PrecioDesconocido ? null : new PrecioModelo(resuelto.PrecioEntradaPorMillon, resuelto.PrecioSalidaPorMillon);
         var codigos = configuracion.GetSection(SeccionCodigosAsignatura).Get<string[]>() ?? [];
-        return new ConfiguracionAsistente(precio, configuracion[ClaveMarcadorCanario], codigos);
+        return new ConfiguracionAsistente(precio, configuracion[ClaveMarcadorCanario], codigos, LeerDecimal(configuracion[ClaveReservaPorPeticion]));
     }
 }

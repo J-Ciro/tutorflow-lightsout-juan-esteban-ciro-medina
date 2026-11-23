@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,7 +23,7 @@ public sealed partial class ManejadorExcepciones : IExceptionHandler
             Status = StatusCodes.Status500InternalServerError,
             Title = TituloErrorInesperado
         };
-        problema.Extensions["traceId"] = Activity.Current?.Id ?? httpContext.TraceIdentifier;
+        problema.Extensions["traceId"] = httpContext.TraceIdentifier;
         httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
         await httpContext.Response.WriteAsJsonAsync(problema, options: null, contentType: TipoDeContenidoProblema, cancellationToken);
         return true;
