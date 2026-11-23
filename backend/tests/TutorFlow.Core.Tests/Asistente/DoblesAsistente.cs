@@ -45,7 +45,8 @@ internal sealed class LlmDoble(Func<SolicitudLlm, int, RespuestaLlm> guion) : IC
     public Task<RespuestaLlm> CompletarAsync(SolicitudLlm solicitud, CancellationToken cancellationToken)
     {
         Solicitudes.Add(solicitud);
-        return Task.FromResult(guion(solicitud, Solicitudes.Count - 1));
+        var respuesta = guion(solicitud, Solicitudes.Count - 1);
+        return Task.FromResult(respuesta with { Uso = respuesta.Uso with { Entrada = ConsumoRealista.Reportados(solicitud) } });
     }
 
     public string TextoDeLlamada(int indice) =>

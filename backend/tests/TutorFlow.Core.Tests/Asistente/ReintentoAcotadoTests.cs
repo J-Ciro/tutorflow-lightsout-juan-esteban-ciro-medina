@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using TutorFlow.Core.Asistente;
 using TutorFlow.Core.Autorizacion;
 using TutorFlow.Core.Conocimiento;
+using TutorFlow.Pruebas.Soporte;
 using static TutorFlow.Core.Tests.Asistente.EscenarioAsistente;
 using static TutorFlow.Core.Tests.Asistente.SeccionesDeReferencia;
 
@@ -15,8 +16,11 @@ public sealed class ReintentoAcotadoTests
     private const string PerdidaDeMateo = "Mateo Vargas perdió Estadística.";
     private const string PerdidasDeValentina = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
     private const string MotivoPerdidaDeMateo = "la afirmación de pérdida de Mateo Vargas en Estadística no coincide con los datos entregados";
-    private const int TokensPorLlamada = 15;
+    private const int SalidaPorLlamada = 5;
     private static readonly Usuario Est001 = new(Rol.Estudiante, "EST-001");
+
+    private static int TokensEsperados(EscenarioAsistente escenario) => ConsumoRealista.TokensDe(escenario.Llm.Solicitudes, SalidaPorLlamada);
+
     private static readonly Usuario Est006 = new(Rol.Estudiante, "EST-006");
     private static readonly Usuario Coord01 = new(Rol.Coordinador, "COORD-01");
     private static readonly Usuario Coord02 = new(Rol.Coordinador, "COORD-02");
@@ -49,7 +53,7 @@ public sealed class ReintentoAcotadoTests
         Assert.Single(ReintentoDeLlm.Reintentos(escenario.Llm));
         ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
         ReintentoDeLlm.AfirmarSegundoTurno(guion, PerdidaDeMateo, ReintentoDeLlm.Instruccion(MotivoPerdidaDeMateo));
-        Assert.Equal(TokensPorLlamada * escenario.Llm.Solicitudes.Count, resultado.Respuesta.Tokens);
+        Assert.Equal(TokensEsperados(escenario), resultado.Respuesta.Tokens);
     }
 
     [Fact]
@@ -66,7 +70,7 @@ public sealed class ReintentoAcotadoTests
         Assert.Equal(2, escenario.Llm.Solicitudes.Count);
         Assert.Equal("Tu promedio es 4.39.", resultado.Respuesta!.Respuesta);
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.Equal(2 * TokensPorLlamada, resultado.Respuesta.Tokens);
+        Assert.Equal(TokensEsperados(escenario), resultado.Respuesta.Tokens);
         ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
         ReintentoDeLlm.AfirmarSegundoTurno(guion, "Tu promedio es 4.40.", ReintentoDeLlm.Instruccion("la cifra 4.40 no está en los datos ni en las secciones entregados"));
     }
