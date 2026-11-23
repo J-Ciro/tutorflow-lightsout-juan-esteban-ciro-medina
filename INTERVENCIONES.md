@@ -122,3 +122,12 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué se cambió:** se agregaron D-24 (Extensions.AI solo en Infrastructure, sin invocación automática de funciones, sin Agent Framework) y D-25 (archivo JSONL diario en un volumen de Docker), y se actualizó D-13. En la spec 001, §11.3 incorpora el campo `datosConsultados` (estudiante, programa, recurso y asignatura, sin valores) y la persistencia. CA-08 suma dos escenarios Gherkin, y se agregaron ESC-143 y ESC-144. Se avisó a `backend-dotnet` del cambio de adaptador. Pendiente por TDD: `qa-calidad` escribe las pruebas de ESC-143 y ESC-144, después las implementa `backend-dotnet` y `devops-cicd` agrega el volumen.
 - **Costo:** ~2 min humanos.
 - **Prevención:** los requisitos del PDF que admiten varias lecturas se confirman con el humano en lugar de resolverlos solo con una decisión D-xx.
+
+### INT-014 · 2026-11-22 · Instrucciones directas al agente de backend: prompt en prosa y modelo sin constante
+- **Fase:** implementación (corrida 1, paso 2)
+- **Qué pasó:** mientras `backend-dotnet` implementaba, el humano le escribió directamente desde la vista del agente, fuera del orquestador.
+- **Qué hizo el humano:** según el reporte del agente, confirmado por el humano: (1) que el prompt de sistema esté escrito en prosa, con la audiencia, las fuentes, las razones de cada regla, un ejemplo y la delimitación de los datos no confiables, en lugar de listas de prohibiciones; (2) que el modelo por defecto no sea una constante en el código, sino que salga solo de `appsettings.json` y de `LLM_MODELO`. Las palabras exactas no quedaron en la sesión del orquestador; quedan en la transcripción del agente.
+- **Por qué:** un prompt que explica el porqué orienta mejor al modelo que una lista de "no hagas", y fijar el modelo en el código impide cambiarlo por configuración (D-16).
+- **Qué se cambió:** commits `647bb37`, `182cea9` y `e9a3223` (prompt) y la resolución del modelo en Infrastructure. El agente quitó del prompt los ejemplos con datos inventados porque un modelo de 7B los copiaba en lugar de llamar a la herramienta.
+- **Costo:** pendiente (lo indica el humano).
+- **Prevención:** cuando el humano dé instrucciones directas a un agente, el agente las marca en su reporte como "pedido del humano" (así ocurrió aquí) y el orquestador las registra.
