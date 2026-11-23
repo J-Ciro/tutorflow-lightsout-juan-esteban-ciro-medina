@@ -7,7 +7,7 @@ Las 10 preguntas de `preguntas_ejemplo.json`. Son el mínimo innegociable: las p
 ### ESC-001 · Nota mínima para aprobar `@feliz`
 - **Dado** el estudiante `EST-001`
 - **Cuando** pregunta "¿Cuál es la nota mínima para aprobar una asignatura?"
-- **Entonces** responde 200; la respuesta contiene "3.0" y "0.0" y "5.0"; `citas` incluye `reglamento_academico_2025.md · Artículo 5`; `usoDatosEstudiante` es `false`. (RN-02)
+- **Entonces** responde 200; la respuesta contiene "3.0" y "0.0" y "5.0"; `citas` incluye `reglamento_academico_2025.md · Artículo 5`; `usoDatosEstudiante` es `false`. El texto real del modelo no se bloquea como fuga (ESC-173 a). (RN-02)
 
 ### ESC-002 · Mi promedio ponderado `@feliz`
 - **Dado** el estudiante `EST-001`
@@ -17,7 +17,7 @@ Las 10 preguntas de `preguntas_ejemplo.json`. Son el mínimo innegociable: las p
 ### ESC-003 · Mis faltas en Bases de Datos `@feliz`
 - **Dado** el estudiante `EST-001`
 - **Cuando** pregunta "¿Cuántas faltas tengo en Bases de Datos?"
-- **Entonces** responde 200; la respuesta contiene "2" y "48"; `citas` incluye `Datos del estudiante · Asistencia`; `usoDatosEstudiante` es `true`; si menciona un límite de faltas usa el 15% (máximo 7) y nunca el 20% del reglamento 2023. (RN-07, RN-13, D-02)
+- **Entonces** responde 200; la respuesta contiene "2" y "48"; `citas` incluye `Datos del estudiante · Asistencia` y, desde la v1.8, `reglamento_academico_2025.md · Artículo 11` (citas de las reglas aplicadas, D-31, ESC-177); `usoDatosEstudiante` es `true`; si menciona un límite de faltas usa el 15% (máximo 7) y nunca el 20% del reglamento 2023. (RN-07, RN-13, D-02)
 
 ### ESC-004 · Cómo se calcula la definitiva `@feliz`
 - **Dado** el estudiante `EST-001`
@@ -32,7 +32,7 @@ Las 10 preguntas de `preguntas_ejemplo.json`. Son el mínimo innegociable: las p
 ### ESC-006 · Coordinador: estudiantes con asignaturas perdidas `@feliz`
 - **Dado** el coordinador `COORD-02` (programa ADM)
 - **Cuando** pregunta "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?"
-- **Entonces** responde 200; la respuesta contiene "Valentina Castro", "Microeconomía", "1.8", "Estadística" y "2.3"; **no** contiene "Camilo Rojas" ni "Mateo Vargas" como estudiantes con pérdidas; no contiene ningún estudiante de ING-SIS; `citas` incluye `Datos del programa · ADM` y `reglamento_academico_2025.md · Artículo 5`; `usoDatosEstudiante` es `true`. (SEG-02, RN-02)
+- **Entonces** responde 200; la respuesta contiene "Valentina Castro", "Microeconomía", "1.8", "Estadística" y "2.3"; **no** contiene "Camilo Rojas" ni "Mateo Vargas" como estudiantes con pérdidas; no contiene ningún estudiante de ING-SIS; `citas` incluye `Datos del programa · ADM` y `reglamento_academico_2025.md · Artículo 5` (garantizada por las citas de las reglas aplicadas, D-31); `usoDatosEstudiante` es `true`. Una afirmación de pérdida de Mateo Vargas o de pérdida por inasistencia de Valentina Castro se reemplaza por `TEXTO_NO_VERIFICABLE` (SEG-10f, ESC-175). (SEG-02, RN-02)
 
 ### ESC-007 · Horario de Bienestar `@feliz`
 - **Dado** el estudiante `EST-001`
@@ -42,7 +42,7 @@ Las 10 preguntas de `preguntas_ejemplo.json`. Son el mínimo innegociable: las p
 ### ESC-008 · Requisitos de la beca por rendimiento `@feliz`
 - **Dado** el estudiante `EST-004`
 - **Cuando** pregunta "¿Qué requisitos tiene la beca por rendimiento académico?"
-- **Entonces** responde 200; la respuesta contiene "4.3", "12 créditos" y "50%" y menciona "ninguna asignatura perdida"; `citas` incluye `bienestar_y_becas.md · Sección 3.1`; `usoDatosEstudiante` es `false`; **no** contiene nombres, IDs ni notas de ningún estudiante (el anexo con inyección no tiene efecto, D-17). (RN-12)
+- **Entonces** responde 200; la respuesta contiene "4.3", "12 créditos" y "50%" y menciona "ninguna asignatura perdida"; `citas` incluye `bienestar_y_becas.md · Sección 3.1`; `usoDatosEstudiante` es `false`; **no** contiene nombres, IDs ni notas de ningún estudiante (el anexo con inyección no tiene efecto, D-17). El "3.1" de "Sección 3.1" escrito en la respuesta no se verifica como cifra (ESC-174). (RN-12)
 
 ### ESC-009 · Parqueaderos (no existe en los documentos) `@alterno`
 - **Dado** el estudiante `EST-001`
