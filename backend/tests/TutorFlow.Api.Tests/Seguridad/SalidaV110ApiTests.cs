@@ -177,7 +177,7 @@ public sealed class SalidaV110ApiTests
     [Trait("CA", "CA-01")]
     [Trait("ESC", "ESC-178")]
     [Trait("RF", "COMP-02")]
-    public async Task ESC_178b_El_nombre_con_tilde_se_elimina_y_las_citas_de_documento_no_cambian()
+    public async Task ESC_178b_El_nombre_con_tilde_se_elimina_y_la_cita_es_la_del_campo_definitiva()
     {
         using var fabrica = new FabricaApi(
             llm: GuionesLlm.SinHerramientas(_ => "Contabilidad: 3.9. La definitiva se calcula con los pesos de evaluación_y_calificaciones.md."),
@@ -187,7 +187,7 @@ public sealed class SalidaV110ApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal("Contabilidad: 3.9. La definitiva se calcula con los pesos.", respuesta.Respuesta);
-        Assert.Equal([Seccion3, Seccion4, Articulo11, Notas, Asistencia], respuesta.Citas);
+        Assert.Equal([Seccion3, Notas, Asistencia], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }
 
@@ -206,7 +206,7 @@ public sealed class SalidaV110ApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal("Sí, estás en prueba académica: tu promedio es 2.65.", respuesta.Respuesta);
-        Assert.Equal([Articulo20, Beca31, Seccion3, Notas, Asistencia], respuesta.Citas);
+        Assert.Equal([Articulo20, Seccion4, Notas, Asistencia], respuesta.Citas);
     }
 
     [Fact]
