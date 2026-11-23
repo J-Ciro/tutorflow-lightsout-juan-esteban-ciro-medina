@@ -34,7 +34,17 @@ public sealed class AuditoriaJsonConsola : IAuditoria
 
     private static Dictionary<string, object?> Proyectar(EventoAuditoria evento)
     {
-        var proyeccion = new Dictionary<string, object?>
+        var proyeccion = CamposDe(evento);
+        if (evento.IdSolicitado is { } idSolicitado)
+        {
+            proyeccion["idSolicitado"] = idSolicitado;
+        }
+
+        return proyeccion;
+    }
+
+    private static Dictionary<string, object?> CamposDe(EventoAuditoria evento) =>
+        new()
         {
             ["timestamp"] = evento.Timestamp.ToString("O", System.Globalization.CultureInfo.InvariantCulture),
             ["correlationId"] = evento.CorrelationId,
@@ -52,13 +62,6 @@ public sealed class AuditoriaJsonConsola : IAuditoria
             ["duracionMs"] = evento.DuracionMs,
             ["precioDesconocido"] = evento.PrecioDesconocido
         };
-        if (evento.IdSolicitado is { } idSolicitado)
-        {
-            proyeccion["idSolicitado"] = idSolicitado;
-        }
-
-        return proyeccion;
-    }
 
     private static Dictionary<string, string> Proyectar(DatoConsultado dato)
     {
