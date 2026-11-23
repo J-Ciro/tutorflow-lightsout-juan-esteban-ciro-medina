@@ -34,8 +34,9 @@ Los IDs son globales e inmutables: una feature nueva toma el siguiente bloque de
 | [08-contrato-y-operacion.md](001-asistente-academico/08-contrato-y-operacion.md) | ESC-100…119, ESC-143…144 | CA-07…CA-11 |
 | [09-falsos-positivos-y-suplantacion.md](001-asistente-academico/09-falsos-positivos-y-suplantacion.md) | ESC-120…142 | CA-04, CA-12, CA-13 |
 | [10-salida-trazabilidad-y-limites.md](001-asistente-academico/10-salida-trazabilidad-y-limites.md) | ESC-145…164, ESC-172…182 | CA-01, CA-04, CA-05, CA-06, CA-07, CA-08, CA-11, CA-14, CA-15 |
+| [11-ronda-4-verificacion-datos-y-determinismo.md](001-asistente-academico/11-ronda-4-verificacion-datos-y-determinismo.md) | ESC-183…197 | CA-01, CA-04, CA-12, CA-14, CA-15, CA-16…CA-21 |
 
-Siguiente ID libre de la feature 001: ESC-183.
+Siguiente ID libre de la feature 001: ESC-198.
 
 **Regla de determinismo:** cada escenario tiene un único resultado esperado. Si el texto libre del LLM no se puede fijar, se afirman el código HTTP, las citas, `usoDatosEstudiante` y la ausencia de datos de terceros (D-23).
 
