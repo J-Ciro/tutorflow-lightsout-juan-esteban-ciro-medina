@@ -25,7 +25,7 @@ public sealed class RegresionLlmRealApiTests
         Estas perdidas se respaldan en el Artículo 11 del reglamento académico.
         """;
 
-    private const string TextoPerdidasCorrecto = "Valentina Castro (ID EST-005) tiene asignaturas perdidas por inasistencia: Microeconomía con 1.8 y Estadística con 2.3. Mateo Vargas (ID EST-006) tiene una asignatura sin definitiva: Estadística. Camilo Rojas (ID EST-004) no tiene ninguna asignatura perdida.";
+    private const string TextoPerdidasCorrecto = "Valentina Castro (ID EST-005) tiene asignaturas perdidas: Microeconomía con 1.8 y Estadística con 2.3. Mateo Vargas (ID EST-006) tiene una asignatura sin definitiva: Estadística. Camilo Rojas (ID EST-004) no tiene ninguna asignatura perdida.";
 
     private static readonly Regex MateoConPerdida = new(@"Mateo Vargas[^\n]*perdi", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
 
@@ -115,6 +115,8 @@ public sealed class RegresionLlmRealApiTests
         Assert.Contains("Valentina Castro", respuesta.Respuesta, StringComparison.Ordinal);
         Assert.Contains("1.8", respuesta.Respuesta, StringComparison.Ordinal);
         Assert.Contains("2.3", respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.Contains(CitaArticulo5, respuesta.Citas);
+        Assert.Contains("Datos del programa · ADM", respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
         Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
