@@ -147,13 +147,20 @@ public sealed class HerramientasAsistente
         var directorio = solicitud.Contexto.Directorio;
         var estudiante = directorio.Estudiantes.First(e => e.Id == solicitud.EstudianteId);
         var resumen = await ResumirAsync(estudiante.Id, solicitud.CancellationToken);
-        var detalle = string.Join("\n", FormateadorDatos.DatosBasicos(estudiante, directorio), FormateadorDatos.Notas(resumen), FormateadorDatos.Asistencia(resumen));
+        var detalle = string.Join("\n", FormateadorDatos.DatosBasicos(estudiante, directorio), FormateadorDatos.Notas(resumen), FormateadorDatos.Asistencia(resumen, terceraPersona: true));
         var contenido = ConReglas(solicitud, detalle, ReglasAplicadas.DeNotasYAsistencia([resumen]));
         var recursos = new[] { RecursoConsultado.DatosBasicos, RecursoConsultado.Notas, RecursoConsultado.Asistencia };
         solicitud.Registro.Registrar(estudiante.Id, recursos, new Cita(Textos.DocumentoDatosEstudiante, Textos.SeccionAsistencia));
         solicitud.Registro.RegistrarDatos(DatosDeEstudiante(estudiante, resumen, RecursoConsultado.DatosBasicos));
         solicitud.Registro.RegistrarResumen(resumen);
         return Responder(solicitud, contenido, estudiante.Id, recursos, Textos.SeccionNotas);
+    }
+
+    public async Task<string> LeerProgramaAsync(ContextoUsuario contexto, RegistroConsultas registro, CancellationToken cancellationToken)
+    {
+        var resultado = await ConsultarPrograma(new SolicitudHerramienta(contexto, registro, null, null, cancellationToken));
+        registro.AgregarFuente(resultado.Contenido);
+        return resultado.Contenido;
     }
 
     private async Task<ResultadoHerramienta> ConsultarPrograma(SolicitudHerramienta solicitud)
@@ -176,20 +183,20 @@ public sealed class HerramientasAsistente
     private async Task<string> DescribirProgramaAsync(SolicitudHerramienta solicitud, Programa programa)
     {
         var estudiantes = solicitud.Contexto.Directorio.Estudiantes.Where(e => e.ProgramaId == programa.Id).ToList();
-        var lineas = new List<string> { FormateadorDatos.EncabezadoPrograma(programa, estudiantes.Count) };
+        var datos = new List<EstudianteDePrograma>();
         var resumenes = new List<ResumenEstudiante>();
         foreach (var estudiante in estudiantes)
         {
             var resumen = await ResumirAsync(estudiante.Id, solicitud.CancellationToken);
             resumenes.Add(resumen);
-            lineas.Add(FormateadorDatos.LineaDePrograma(estudiante, resumen));
+            datos.Add(new EstudianteDePrograma(estudiante, resumen));
             solicitud.Registro.Registrar(estudiante.Id, [RecursoConsultado.Programa, RecursoConsultado.Notas, RecursoConsultado.Asistencia], null);
             solicitud.Registro.RegistrarDatos(DatosDeEstudiante(estudiante, resumen, RecursoConsultado.Programa));
             solicitud.Registro.RegistrarResumen(resumen);
         }
 
         solicitud.Registro.RegistrarCita(new Cita(Textos.DocumentoDatosPrograma, programa.Id));
-        var contenido = ConReglas(solicitud, string.Join("\n", lineas), ReglasAplicadas.DePrograma(resumenes));
+        var contenido = ConReglas(solicitud, FormateadorPrograma.Bloque(programa, datos), ReglasAplicadas.DePrograma(resumenes));
         return FormateadorDatos.Delimitar($"{Textos.DocumentoDatosPrograma} · {programa.Id}", contenido);
     }
 

@@ -23,7 +23,13 @@ public sealed record SolicitudLlm(
     string PromptSistema,
     IReadOnlyList<MensajeLlm> Mensajes,
     IReadOnlyList<HerramientaLlm> Herramientas,
-    int MaximoTokensSalida);
+    int MaximoTokensSalida,
+    decimal Temperatura = 0m,
+    int Semilla = 1);
+
+public sealed record AjustesDelModelo(decimal Temperatura = 0m, int Semilla = 1);
+
+public sealed record ContextoTruncadoDetectado(int TokensEstimados, int TokensReportados);
 
 public sealed record UsoTokens(int Entrada, int Salida)
 {
@@ -34,7 +40,8 @@ public sealed record RespuestaLlm(
     string? Texto,
     IReadOnlyList<LlamadaHerramienta> Llamadas,
     UsoTokens Uso,
-    bool Rechazada);
+    bool Rechazada,
+    ContextoTruncadoDetectado? ContextoTruncado = null);
 
 public sealed record PrecioModelo(decimal EntradaPorMillon, decimal SalidaPorMillon);
 

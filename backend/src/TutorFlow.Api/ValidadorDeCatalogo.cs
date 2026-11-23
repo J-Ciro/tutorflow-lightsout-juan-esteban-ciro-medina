@@ -17,27 +17,28 @@ internal static partial class ValidadorDeCatalogo
         public string ClaveDeNombre => $"{SeccionAsignaturas}:{Indice}:Nombre";
     }
 
+    private sealed record Incumplimiento(bool Falla, string Clave, string? Valor, string Regla);
+
     public static IEnumerable<string> Validar(IConfiguration configuracion)
     {
         var entradas = configuracion.GetSection(SeccionAsignaturas).GetChildren()
             .Select(hijo => new Entrada(hijo.Key, hijo["Codigo"], hijo["Nombre"]))
             .ToList();
         var delCatalogo = entradas.Count == 0
-            ? [Linea(SeccionAsignaturas, string.Empty, "catálogo vacío")]
-            : entradas.SelectMany(entrada => LineasDe(entrada, entradas));
+            ? [ValidadorDeConfiguracion.LineaInvalida(SeccionAsignaturas, string.Empty, "catálogo vacío")]
+            : entradas.SelectMany((entrada, posicion) => LineasDe(entrada, entradas.Take(posicion).ToList()));
         return delCatalogo.Concat(LineasDeLaLista(configuracion, entradas));
     }
 
-    private static IEnumerable<string> LineasDe(Entrada entrada, List<Entrada> entradas)
+    private static IEnumerable<string> LineasDe(Entrada entrada, List<Entrada> anteriores)
     {
-        var anteriores = entradas.Take(entradas.IndexOf(entrada)).ToList();
         var codigoRepetido = anteriores.FirstOrDefault(otra => !string.IsNullOrEmpty(entrada.Codigo) && otra.Codigo == entrada.Codigo);
         var nombreRepetido = anteriores.FirstOrDefault(otra => !EstaVacio(entrada.Nombre) && Normalizado(otra.Nombre) == Normalizado(entrada.Nombre));
         return Lineas(
-            (!CumpleFormato(entrada.Codigo), entrada.ClaveDeCodigo, entrada.Codigo, ReglaFormato),
-            (codigoRepetido is not null, entrada.ClaveDeCodigo, entrada.Codigo, $"código duplicado de {codigoRepetido?.ClaveDeCodigo}"),
-            (EstaVacio(entrada.Nombre), entrada.ClaveDeNombre, entrada.Nombre, "nombre vacío"),
-            (nombreRepetido is not null, entrada.ClaveDeNombre, entrada.Nombre, $"nombre duplicado de {nombreRepetido?.ClaveDeNombre}"));
+            new Incumplimiento(!CumpleFormato(entrada.Codigo), entrada.ClaveDeCodigo, entrada.Codigo, ReglaFormato),
+            new Incumplimiento(codigoRepetido is not null, entrada.ClaveDeCodigo, entrada.Codigo, $"código duplicado de {codigoRepetido?.ClaveDeCodigo}"),
+            new Incumplimiento(EstaVacio(entrada.Nombre), entrada.ClaveDeNombre, entrada.Nombre, "nombre vacío"),
+            new Incumplimiento(nombreRepetido is not null, entrada.ClaveDeNombre, entrada.Nombre, $"nombre duplicado de {nombreRepetido?.ClaveDeNombre}"));
     }
 
     private static IEnumerable<string> LineasDeLaLista(IConfiguration configuracion, List<Entrada> entradas)
@@ -48,17 +49,14 @@ internal static partial class ValidadorDeCatalogo
             var formato = CumpleFormato(codigo.Value);
             var repetido = codigos.Take(posicion).FirstOrDefault(otro => otro.Value == codigo.Value);
             return Lineas(
-                (!formato, codigo.Path, codigo.Value, ReglaFormato),
-                (formato && repetido.Path is not null, codigo.Path, codigo.Value, $"código duplicado de {repetido.Path}"),
-                (formato && entradas.All(entrada => entrada.Codigo != codigo.Value), codigo.Path, codigo.Value, $"no está en {SeccionAsignaturas}"));
+                new Incumplimiento(!formato, codigo.Path, codigo.Value, ReglaFormato),
+                new Incumplimiento(formato && repetido.Path is not null, codigo.Path, codigo.Value, $"código duplicado de {repetido.Path}"),
+                new Incumplimiento(formato && entradas.All(entrada => entrada.Codigo != codigo.Value), codigo.Path, codigo.Value, $"no está en {SeccionAsignaturas}"));
         });
     }
 
-    private static IEnumerable<string> Lineas(params (bool Falla, string Clave, string? Valor, string Regla)[] reglas) =>
-        reglas.Where(regla => regla.Falla).Select(regla => Linea(regla.Clave, regla.Valor, regla.Regla));
-
-    private static string Linea(string clave, string? valor, string regla) =>
-        $"{ValidadorDeConfiguracion.PrefijoInvalida}: {clave} = \"{ValorDeMensaje.De(valor)}\" ({regla})";
+    private static IEnumerable<string> Lineas(params Incumplimiento[] reglas) =>
+        reglas.Where(regla => regla.Falla).Select(regla => ValidadorDeConfiguracion.LineaInvalida(regla.Clave, regla.Valor, regla.Regla));
 
     private static bool EstaVacio(string? texto) => string.IsNullOrWhiteSpace(texto);
 

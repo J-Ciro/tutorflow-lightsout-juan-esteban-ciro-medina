@@ -3,17 +3,26 @@ using TutorFlow.Core.Conocimiento;
 
 namespace TutorFlow.Core.Asistente;
 
+internal sealed record CierreEvaluado(
+    string Texto,
+    IReadOnlyList<Cita> Citas,
+    ResultadoAuditoria Resultado,
+    bool? UsoDatos,
+    bool Bloqueado,
+    string? MotivoDeReintento)
+{
+    public static CierreEvaluado Entregable(string texto, IReadOnlyList<Cita> citas, ResultadoAuditoria resultado, bool? usoDatos = null) =>
+        new(texto, citas, resultado, usoDatos, false, null);
+}
+
 internal sealed class CierreDeRespuesta
 {
-    private const int MaximoCitasDeReglasAplicadas = 3;
-
     private readonly IBaseConocimiento _baseConocimiento;
     private readonly PoliticaAcceso _politicaAcceso;
     private readonly VerificadorSalida _verificadorSalida;
     private readonly ConfiguracionAsistente _configuracion;
-    private readonly EmisorDeResultados _emisor;
     private readonly CitasDeRespuesta _citasDeRespuesta;
-    private readonly OrdenDeReglasPorRelevancia _ordenDeReglas;
+    private readonly CitasDeReglasAplicadas _citasDeReglas;
     private readonly AfirmacionesDePerdida _afirmacionesDePerdida;
     private readonly DefinitivaPorAsignatura _definitivaPorAsignatura;
 
@@ -21,103 +30,93 @@ internal sealed class CierreDeRespuesta
         IBaseConocimiento baseConocimiento,
         PoliticaAcceso politicaAcceso,
         VerificadorSalida verificadorSalida,
-        ConfiguracionAsistente configuracion,
-        EmisorDeResultados emisor)
+        ConfiguracionAsistente configuracion)
     {
         _baseConocimiento = baseConocimiento;
         _politicaAcceso = politicaAcceso;
         _verificadorSalida = verificadorSalida;
         _configuracion = configuracion;
-        _emisor = emisor;
         _citasDeRespuesta = new CitasDeRespuesta(configuracion.ApoyoMinimoRespaldo);
-        _ordenDeReglas = new OrdenDeReglasPorRelevancia(baseConocimiento);
-        _afirmacionesDePerdida = new AfirmacionesDePerdida(configuracion.Catalogo);
         _definitivaPorAsignatura = new DefinitivaPorAsignatura(configuracion.Catalogo);
+        _citasDeReglas = new CitasDeReglasAplicadas(baseConocimiento, _definitivaPorAsignatura);
+        _afirmacionesDePerdida = new AfirmacionesDePerdida(configuracion.Catalogo);
     }
 
-    public ResultadoPregunta Completar(SesionPregunta sesion, string texto, EntradaConversacion entrada)
+    public CierreEvaluado Evaluar(SesionPregunta sesion, string texto, EntradaConversacion entrada)
     {
         if (texto.Trim() == Textos.SinInformacion)
         {
-            return _emisor.SinInformacion(sesion);
+            IReadOnlyList<Cita> delPrograma = [.. sesion.Registro.Citas.Where(cita => cita.Documento == Textos.DocumentoDatosPrograma)];
+            return CierreEvaluado.Entregable(Textos.SinInformacion, delPrograma, ResultadoAuditoria.SinInformacion);
         }
 
-        foreach (var seccion in entrada.Secciones)
-        {
-            sesion.Registro.AgregarFuente($"{seccion.Titulo}. {seccion.Texto}");
-        }
-
-        var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, sesion.Directorio);
-        var verificada = Verificar(sesion, texto, entrada, autorizados);
-        return verificada.Resultado == ResultadoAuditoria.Respondida
-            ? ResponderSiLasAfirmacionesSeRespaldan(sesion, verificada, entrada, autorizados)
-            : _emisor.Responder(sesion, verificada.Respuesta, verificada.Citas, verificada.Resultado);
+        var escritas = EscritasValidas(sesion, texto, entrada);
+        var limpio = Textos.CitasDeTextoFijo(texto) is null ? ReferenciasEscritas.Limpiar(texto, escritas) : texto;
+        return ReferenciasEscritas.TieneContenido(limpio)
+            ? Verificar(sesion, limpio, escritas, entrada)
+            : CierreEvaluado.Entregable(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion);
     }
 
-    private SalidaVerificada Verificar(SesionPregunta sesion, string texto, EntradaConversacion entrada, IReadOnlyCollection<string> autorizados)
+    private IReadOnlyList<Cita> EscritasValidas(SesionPregunta sesion, string texto, EntradaConversacion entrada) =>
+        _verificadorSalida.DescartarCitasInexistentes(
+            _citasDeRespuesta.EscritasConApoyo(texto, entrada.Secciones, sesion.Registro.Reglas),
+            _baseConocimiento);
+
+    private CierreEvaluado Verificar(SesionPregunta sesion, string limpio, IReadOnlyList<Cita> escritas, EntradaConversacion entrada)
     {
-        var candidatas = _citasDeRespuesta.EscritasConApoyo(texto, entrada.Secciones, sesion.Registro.Reglas);
-        return _verificadorSalida.Verificar(
+        var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, sesion.Directorio);
+        var verificada = _verificadorSalida.Verificar(
             sesion.Entrada.Usuario,
-            texto,
-            candidatas,
+            limpio,
+            escritas,
             autorizados,
             sesion.Registro.Fuentes,
             _baseConocimiento,
             sesion.Directorio,
             Confidencial(sesion, entrada));
+        if (verificada.Resultado != ResultadoAuditoria.Respondida)
+        {
+            return new CierreEvaluado(verificada.Respuesta, verificada.Citas, verificada.Resultado, null, true, verificada.MotivoDeReintento);
+        }
+
+        var motivo = MotivoDeAfirmacionNoVerificable(sesion, limpio, autorizados);
+        return motivo is null
+            ? Completar(sesion, limpio, escritas, entrada)
+            : new CierreEvaluado(Textos.NoVerificable, [], ResultadoAuditoria.EstadoNoVerificado, null, true, motivo);
     }
 
-    private ResultadoPregunta ResponderSiLasAfirmacionesSeRespaldan(
-        SesionPregunta sesion,
-        SalidaVerificada verificada,
-        EntradaConversacion entrada,
-        IReadOnlyCollection<string> autorizados) =>
-        AfirmacionesSonVerificables(sesion, verificada.Respuesta, autorizados)
-            ? ResponderVerificada(sesion, verificada, entrada)
-            : _emisor.Responder(sesion, Textos.NoVerificable, [], ResultadoAuditoria.EstadoNoVerificado);
-
-    private bool AfirmacionesSonVerificables(SesionPregunta sesion, string respuesta, IReadOnlyCollection<string> autorizados)
+    private string? MotivoDeAfirmacionNoVerificable(SesionPregunta sesion, string respuesta, IReadOnlyCollection<string> autorizados)
     {
         var usuario = sesion.Entrada.Usuario;
+        var bloques = BloquesDeRespuesta.De(respuesta);
         var resumenes = sesion.Registro.Resumenes;
-        return _afirmacionesDePerdida.SonVerificables(respuesta, usuario.Rol, autorizados, sesion.Directorio, resumenes)
-            && _definitivaPorAsignatura.SonVerificables(respuesta, usuario, autorizados, sesion.Directorio, resumenes);
+        return _afirmacionesDePerdida.Motivo(bloques, usuario, autorizados, sesion.Directorio, resumenes)
+            ?? _definitivaPorAsignatura.Motivo(bloques, usuario, autorizados, sesion.Directorio, resumenes);
     }
 
-    private ResultadoPregunta ResponderVerificada(SesionPregunta sesion, SalidaVerificada verificada, EntradaConversacion entrada)
+    private CierreEvaluado Completar(SesionPregunta sesion, string limpio, IReadOnlyList<Cita> escritas, EntradaConversacion entrada)
     {
-        var citasDeTextoFijo = Textos.CitasDeTextoFijo(verificada.Respuesta);
+        var citasDeTextoFijo = Textos.CitasDeTextoFijo(limpio);
         if (citasDeTextoFijo is not null)
         {
-            return _emisor.Responder(sesion, verificada.Respuesta, citasDeTextoFijo, verificada.Resultado);
+            return CierreEvaluado.Entregable(limpio, citasDeTextoFijo, ResultadoAuditoria.Respondida);
         }
 
-        var citasDeDocumento = CitasDeDocumento(sesion, verificada, entrada);
-        if (citasDeDocumento.Count == 0 && !sesion.Registro.UsoDatos)
+        var documentos = CitasDeDocumento(sesion, limpio, escritas, entrada);
+        if (documentos.Count == 0 && !sesion.Registro.UsoDatos)
         {
-            return _emisor.SinInformacion(sesion);
+            return new CierreEvaluado(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, false, true, null);
         }
 
-        IReadOnlyList<Cita> citas = [.. citasDeDocumento.Concat(sesion.Registro.Citas).Distinct()];
-        return ResponderSinReferenciasHuerfanas(sesion, verificada, citas);
+        IReadOnlyList<Cita> citas = [.. documentos.Concat(sesion.Registro.Citas).Distinct()];
+        return CierreEvaluado.Entregable(limpio, citas, ResultadoAuditoria.Respondida);
     }
 
-    private ResultadoPregunta ResponderSinReferenciasHuerfanas(SesionPregunta sesion, SalidaVerificada verificada, IReadOnlyList<Cita> citas)
+    private IReadOnlyList<Cita> CitasDeDocumento(SesionPregunta sesion, string limpio, IReadOnlyList<Cita> escritas, EntradaConversacion entrada)
     {
-        var limpia = ReferenciasEscritas.Limpiar(verificada.Respuesta, citas);
-        return ReferenciasEscritas.TienePalabras(limpia)
-            ? _emisor.Responder(sesion, limpia, citas, verificada.Resultado)
-            : _emisor.Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion);
-    }
-
-    private IReadOnlyList<Cita> CitasDeDocumento(SesionPregunta sesion, SalidaVerificada verificada, EntradaConversacion entrada)
-    {
-        var reglasAplicadas = _ordenDeReglas.Ordenar(sesion.Registro.Reglas, sesion.Entrada.Pregunta).Take(MaximoCitasDeReglasAplicadas);
-        IReadOnlyList<Cita> escritasYReglas = [.. verificada.Citas.Concat(reglasAplicadas).Distinct()];
-        return escritasYReglas.Count > 0
-            ? escritasYReglas
-            : _citasDeRespuesta.Respaldo(verificada.Respuesta, entrada.Secciones);
+        var reglas = _citasDeReglas.De(sesion.Registro, sesion.Entrada.Pregunta, limpio, escritas, sesion.Directorio);
+        IReadOnlyList<Cita> sinRespaldo = [.. escritas.Concat(reglas).Concat(_citasDeRespuesta.PorTema(limpio, entrada.Secciones)).Distinct()];
+        return sinRespaldo.Count > 0 ? sinRespaldo : _citasDeRespuesta.Respaldo(limpio, entrada.Secciones);
     }
 
     private MaterialConfidencial Confidencial(SesionPregunta sesion, EntradaConversacion entrada) =>

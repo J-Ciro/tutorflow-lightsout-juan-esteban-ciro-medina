@@ -25,6 +25,8 @@ public sealed class RegistroConsultas
 
     public IReadOnlyList<Cita> Reglas => ReglasAplicadas.Citas(_entradasDeReglas);
 
+    public bool ReglasIncluyenNotas => _entradasDeReglas.Contains(0);
+
     public IReadOnlyDictionary<string, ResumenEstudiante> Resumenes => _resumenes;
 
     public IReadOnlyList<string> Fuentes => _fuentes;

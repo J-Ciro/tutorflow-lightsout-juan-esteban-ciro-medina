@@ -13,18 +13,6 @@ internal static partial class TokenizadorTexto
     private const int SinLimite = int.MaxValue;
     private static readonly Dictionary<string, string> NombreDelSimbolo = new() { ["≤"] = "<=", ["≥"] = ">=" };
 
-    private const string CaracteresIgnorables = "​‌‍⁠﻿­";
-
-    private static readonly IReadOnlyDictionary<char, char> SinAcento = ConstruirTablaSinAcento(
-        ('a', "áàäâãåāăą"),
-        ('e', "éèëêēėęě"),
-        ('i', "íìïîīįı"),
-        ('o', "óòöôõøōő"),
-        ('u', "úùüûūůűų"),
-        ('n', "ñń"),
-        ('c', "çćč"),
-        ('y', "ýÿ"));
-
     public static IReadOnlyList<TokenTexto> Tokenizar(string texto)
     {
         var acumulador = new AcumuladorTokens();
@@ -64,10 +52,7 @@ internal static partial class TokenizadorTexto
             .Where(indice => CoincideEn(tokens, indice, secuencia));
 
     public static string Plegado(string texto) =>
-        string.Concat(texto.EnumerateRunes()
-            .SelectMany(PlegadoCompatibilidad.De)
-            .Where(caracter => !EsIgnorable(caracter))
-            .Select(Plegar));
+        string.Concat(texto.EnumerateRunes().SelectMany(PlegadoCompatibilidad.De).Select(char.ToLowerInvariant));
 
     public static IReadOnlyList<string> Valores(string texto) =>
         Tokenizar(texto).Select(token => token.Valor).ToList();
@@ -103,43 +88,29 @@ internal static partial class TokenizadorTexto
 
     private static void ProcesarRune(AcumuladorTokens acumulador, Rune rune, int inicio, int fin)
     {
-        foreach (var caracter in PlegadoCompatibilidad.De(rune))
-        {
-            Procesar(acumulador, caracter, inicio, fin);
-        }
-    }
-
-    private static void Procesar(AcumuladorTokens acumulador, char caracter, int inicio, int fin)
-    {
-        if (EsIgnorable(caracter))
+        var plegado = PlegadoCompatibilidad.De(rune);
+        if (plegado.Length == 0)
         {
             acumulador.Extender(fin);
             return;
         }
 
-        var plegado = Plegar(caracter);
-        if (char.IsLetterOrDigit(plegado))
+        foreach (var caracter in plegado)
         {
-            acumulador.Agregar(plegado, inicio, fin);
+            Procesar(acumulador, char.ToLowerInvariant(caracter), inicio, fin);
+        }
+    }
+
+    private static void Procesar(AcumuladorTokens acumulador, char minuscula, int inicio, int fin)
+    {
+        if (char.IsLetterOrDigit(minuscula))
+        {
+            acumulador.Agregar(minuscula, inicio, fin);
             return;
         }
 
         acumulador.Cerrar();
     }
-
-    private static bool EsIgnorable(char caracter) =>
-        CaracteresIgnorables.Contains(caracter)
-        || CharUnicodeInfo.GetUnicodeCategory(caracter) == UnicodeCategory.NonSpacingMark;
-
-    private static char Plegar(char caracter)
-    {
-        var minuscula = char.ToLowerInvariant(caracter);
-        return SinAcento.GetValueOrDefault(minuscula, minuscula);
-    }
-
-    private static Dictionary<char, char> ConstruirTablaSinAcento(params (char Base, string Variantes)[] grupos) =>
-        grupos.SelectMany(grupo => grupo.Variantes.Select(variante => (variante, grupo.Base)))
-            .ToDictionary(par => par.variante, par => par.Base);
 
     private sealed class AcumuladorTokens
     {

@@ -40,6 +40,16 @@ public sealed class AuditoriaJsonConsola : IAuditoria
             proyeccion["idSolicitado"] = idSolicitado;
         }
 
+        if (evento.Reintento)
+        {
+            proyeccion["reintento"] = true;
+        }
+
+        if (evento.ContextoTruncado)
+        {
+            proyeccion["contextoTruncado"] = true;
+        }
+
         if (evento.PrecioDesconocido)
         {
             proyeccion["precioDesconocido"] = true;

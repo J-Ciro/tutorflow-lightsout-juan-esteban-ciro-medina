@@ -28,6 +28,12 @@ internal sealed class SesionPregunta(
 
     public bool ReservaHecha { get; set; }
 
+    public bool Reintento { get; set; }
+
+    public int ReservasExtra { get; set; }
+
+    public bool ContextoTruncado { get; set; }
+
     public IReadOnlyList<SeccionDocumento> Secciones { get; set; } = [];
 
     public ActivacionResumen Activacion { get; set; } = ActivacionResumen.Ninguna;

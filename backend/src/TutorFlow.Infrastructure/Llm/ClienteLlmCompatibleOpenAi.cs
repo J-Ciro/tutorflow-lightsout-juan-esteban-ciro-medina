@@ -15,10 +15,12 @@ public sealed class ClienteLlmCompatibleOpenAi : IClienteLlm
 
     private readonly IChatClient _cliente;
     private readonly string _modelo;
+    private readonly bool _controlaContexto;
 
     public ClienteLlmCompatibleOpenAi(HttpClient httpClient, ProveedorResuelto proveedor, string? llave)
     {
         _modelo = proveedor.Modelo;
+        _controlaContexto = proveedor.Proveedor == ProveedorLlm.Ollama;
         var opciones = new OpenAIClientOptions
         {
             Endpoint = ConstruirEndpoint(proveedor.UrlBase),
@@ -35,18 +37,23 @@ public sealed class ClienteLlmCompatibleOpenAi : IClienteLlm
         {
             ModelId = _modelo,
             MaxOutputTokens = solicitud.MaximoTokensSalida,
+            Temperature = (float)solicitud.Temperatura,
+            Seed = solicitud.Semilla,
             Tools = [.. solicitud.Herramientas.Select(Declarar)]
         };
         try
         {
             var respuesta = await _cliente.GetResponseAsync(Mensajes(solicitud), opciones, cancellationToken);
-            return Traducir(respuesta);
+            return ConControlDeContexto(solicitud, Traducir(respuesta));
         }
         catch (ClientResultException)
         {
             throw new DependenciaNoDisponibleException("El proveedor del LLM respondió con un error.");
         }
     }
+
+    private RespuestaLlm ConControlDeContexto(SolicitudLlm solicitud, RespuestaLlm respuesta) =>
+        _controlaContexto ? respuesta with { ContextoTruncado = EstimadorDeContexto.Evaluar(solicitud, respuesta.Uso) } : respuesta;
 
     private static Uri ConstruirEndpoint(string urlBase)
     {

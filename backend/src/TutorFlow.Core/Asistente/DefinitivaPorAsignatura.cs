@@ -7,10 +7,10 @@ namespace TutorFlow.Core.Asistente;
 
 internal sealed partial class DefinitivaPorAsignatura
 {
-    private const int PalabrasDeNegacion = 3;
     private const int PalabrasHastaLaCifra = 8;
-    private const int PalabrasDeRequisito = 2;
+    private const int PalabrasDelRequisito = 4;
     private const string Definitiva = "definitiva";
+    private const string Definitivas = "definitivas";
 
     private static readonly HashSet<string> Comparadores = new(StringComparer.Ordinal)
     {
@@ -25,14 +25,11 @@ internal sealed partial class DefinitivaPorAsignatura
 
     private static readonly HashSet<string> Enlaces = new(StringComparer.Ordinal) { "a", "de", "que" };
 
-    private static readonly HashSet<string> Requisitos = new(StringComparer.Ordinal) { "necesitas", "necesita", "requiere" };
+    private static readonly HashSet<string> Determinantes = new(StringComparer.Ordinal) { "una", "la" };
 
-    private static readonly HashSet<string> Negaciones = new(StringComparer.Ordinal) { "no", "ni", "sin", "aun" };
+    private static readonly HashSet<string> Negaciones = new(StringComparer.Ordinal) { "no", "ni", "sin" };
 
-    private static readonly HashSet<string> PalabrasDeReferencia = new(StringComparer.Ordinal)
-    {
-        "seccion", "secciones", "articulo", "articulos", "art"
-    };
+    private static readonly HashSet<string>[] SaltosPrevios = [new(StringComparer.Ordinal) { "nota" }, Determinantes, FormasDePerdida.Auxiliares];
 
     private readonly IReadOnlyList<AsignaturaCatalogo> _catalogo;
 
@@ -41,52 +38,129 @@ internal sealed partial class DefinitivaPorAsignatura
         _catalogo = catalogo;
     }
 
-    public bool SonVerificables(
-        string respuesta,
+    public string? Motivo(
+        IReadOnlyList<BloqueDeTexto> bloques,
         Usuario usuario,
         IReadOnlyCollection<string> idsAutorizados,
         DirectorioAcademico directorio,
-        IReadOnlyDictionary<string, ResumenEstudiante> resumenesLeidos) =>
-        TramosDePersonas.DeRespuesta(respuesta, usuario.Rol, idsAutorizados, directorio)
-            .SelectMany(oracion => Atribuciones(oracion, usuario, CatalogoAsignaturas.Vigente(_catalogo, directorio)))
-            .All(atribucion => Coincide(atribucion, resumenesLeidos));
-
-    private static IEnumerable<AtribucionDeDefinitiva> Atribuciones(OracionAnalizada oracion, Usuario usuario, IReadOnlyList<AsignaturaCatalogo> catalogo)
+        IReadOnlyDictionary<string, ResumenEstudiante> resumenesLeidos)
     {
-        var tokens = TokenizadorTexto.TokenizarConCifras(oracion.Texto);
-        var apariciones = CatalogoAsignaturas.Apariciones(tokens, catalogo);
-        return Enumerable.Range(0, tokens.Count)
-            .Where(indice => tokens[indice].Valor == Definitiva && !EstaNegada(tokens, indice))
-            .Select(indice => (Definitiva: indice, Cifra: CifraAsociada(tokens, indice)))
-            .Where(par => par.Cifra is { } cifra && !EsUmbral(tokens, par.Definitiva, cifra))
-            .Select(par => par.Cifra!.Value)
-            .SelectMany(cifra => Atribuir(oracion, usuario, tokens, apariciones, cifra));
+        var catalogo = CatalogoAsignaturas.Vigente(_catalogo, directorio);
+        return bloques
+            .SelectMany(bloque => Atribuciones(bloque, catalogo).Select(atribucion => (Bloque: bloque, Atribucion: atribucion)))
+            .Select(par => MotivoDe(par.Atribucion, TramosDePersonas.De(par.Bloque, usuario, idsAutorizados, directorio), usuario, directorio, resumenesLeidos))
+            .FirstOrDefault(motivo => motivo is not null);
     }
 
-    private static IEnumerable<AtribucionDeDefinitiva> Atribuir(
-        OracionAnalizada oracion,
+    public IEnumerable<(string Clave, string Cifra)> ParesDe(string respuesta, DirectorioAcademico directorio)
+    {
+        var catalogo = CatalogoAsignaturas.Vigente(_catalogo, directorio);
+        return BloquesDeRespuesta.De(respuesta).SelectMany(bloque =>
+        {
+            var tokens = TokenizadorTexto.TokenizarConCifras(bloque.Texto);
+            return Pares(bloque, tokens, CatalogoAsignaturas.Apariciones(tokens, catalogo), hayDefinitiva: true).Select(atribucion => (atribucion.Clave, atribucion.Cifra));
+        });
+    }
+
+    private static string? MotivoDe(
+        AtribucionDeDefinitiva atribucion,
+        PersonasDeBloque personas,
         Usuario usuario,
+        DirectorioAcademico directorio,
+        IReadOnlyDictionary<string, ResumenEstudiante> resumenesLeidos)
+    {
+        if (personas.Ambiguo)
+        {
+            return Motivo(atribucion, null, usuario, directorio);
+        }
+
+        return personas.Tramos
+            .Where(tramo => tramo.Tokens.Any(token => token.Inicio == atribucion.InicioDeAsignatura))
+            .Where(tramo => !Coincide(atribucion, tramo.PersonaId, resumenesLeidos))
+            .Select(tramo => Motivo(atribucion, tramo.PersonaId, usuario, directorio))
+            .FirstOrDefault();
+    }
+
+    private static string Motivo(AtribucionDeDefinitiva atribucion, string? personaId, Usuario usuario, DirectorioAcademico directorio)
+    {
+        var persona = personaId is null || usuario.Rol != Rol.Coordinador ? string.Empty : $" de {NombreDe(personaId, directorio)}";
+        return $"la definitiva {atribucion.Cifra} de {atribucion.Escrita}{persona} no coincide con los datos entregados";
+    }
+
+    private static string NombreDe(string personaId, DirectorioAcademico directorio) =>
+        directorio.Estudiantes.Select(estudiante => (estudiante.Id, estudiante.Nombre))
+            .Concat(directorio.Coordinadores.Select(coordinador => (coordinador.Id, coordinador.Nombre)))
+            .FirstOrDefault(persona => persona.Id == personaId).Nombre ?? personaId;
+
+    private static IEnumerable<AtribucionDeDefinitiva> Atribuciones(BloqueDeTexto bloque, IReadOnlyList<AsignaturaCatalogo> catalogo)
+    {
+        var tokens = TokenizadorTexto.TokenizarConCifras(bloque.Texto);
+        var apariciones = CatalogoAsignaturas.Apariciones(tokens, catalogo);
+        var hayDefinitiva = Enumerable.Range(0, tokens.Count).Any(indice => EsDefinitiva(tokens, indice) && !EstaNegada(tokens, indice));
+        var porCifra = Enumerable.Range(0, tokens.Count)
+            .Where(indice => tokens[indice].Valor == Definitiva && !EstaNegada(tokens, indice))
+            .Select(indice => CifraEfectiva(tokens, indice))
+            .OfType<int>()
+            .SelectMany(cifra => AtribucionMasCercana(bloque, tokens, apariciones, cifra));
+        return porCifra.Concat(Pares(bloque, tokens, apariciones, hayDefinitiva));
+    }
+
+    private static IEnumerable<AtribucionDeDefinitiva> AtribucionMasCercana(
+        BloqueDeTexto bloque,
         IReadOnlyList<TokenTexto> tokens,
         IReadOnlyList<AparicionDeAsignatura> apariciones,
         int cifra)
     {
         var asignatura = apariciones.MinBy(aparicion => (Distancia(aparicion, cifra), aparicion.Inicio > cifra));
-        return asignatura is null
-            ? []
-            : PersonasDe(oracion, usuario, tokens[asignatura.Inicio].Inicio)
-                .Select(persona => new AtribucionDeDefinitiva(persona, asignatura.Clave, tokens[cifra].Valor));
+        return asignatura is null ? [] : [Construir(bloque, tokens, asignatura, cifra, conDefinitiva: true)];
     }
+
+    private static IEnumerable<AtribucionDeDefinitiva> Pares(
+        BloqueDeTexto bloque,
+        IReadOnlyList<TokenTexto> tokens,
+        IReadOnlyList<AparicionDeAsignatura> apariciones,
+        bool hayDefinitiva) =>
+        apariciones
+            .Where(aparicion => aparicion.Fin + 1 < tokens.Count && EsCifraDeNota(tokens, aparicion.Fin + 1) && SoloSeparadores(bloque.Texto, tokens, aparicion))
+            .Where(aparicion => !EsUmbralDeCifra(tokens, aparicion.Fin + 1))
+            .Select(aparicion => Construir(bloque, tokens, aparicion, aparicion.Fin + 1, hayDefinitiva));
+
+    private static bool SoloSeparadores(string texto, IReadOnlyList<TokenTexto> tokens, AparicionDeAsignatura aparicion) =>
+        SeparadoresDePar().IsMatch(texto[tokens[aparicion.Fin].Fin..tokens[aparicion.Fin + 1].Inicio]);
+
+    private static AtribucionDeDefinitiva Construir(
+        BloqueDeTexto bloque,
+        IReadOnlyList<TokenTexto> tokens,
+        AparicionDeAsignatura asignatura,
+        int cifra,
+        bool conDefinitiva) =>
+        new(
+            asignatura.Clave,
+            tokens[cifra].Valor,
+            tokens[asignatura.Inicio].Inicio,
+            bloque.Texto[tokens[asignatura.Inicio].Inicio..tokens[asignatura.Fin].Fin],
+            conDefinitiva);
 
     private static int Distancia(AparicionDeAsignatura asignatura, int cifra) =>
         asignatura.Fin < cifra ? cifra - asignatura.Fin : asignatura.Inicio - cifra;
 
-    private static IEnumerable<string> PersonasDe(OracionAnalizada oracion, Usuario usuario, int posicion) =>
-        usuario.Rol == Rol.Coordinador
-            ? oracion.Tramos.Where(tramo => tramo.Tokens.Any(token => token.Inicio == posicion)).Select(tramo => tramo.PersonaId)
-            : [usuario.Id];
+    private static bool EsDefinitiva(IReadOnlyList<TokenTexto> tokens, int indice) =>
+        tokens[indice].Valor is Definitiva or Definitivas;
 
-    private static bool EsUmbral(IReadOnlyList<TokenTexto> tokens, int definitiva, int cifra) =>
-        PrecedidaDeComparador(tokens, cifra) || HayVerboDeRequisito(tokens, definitiva, cifra);
+    private static int? CifraEfectiva(IReadOnlyList<TokenTexto> tokens, int definitiva)
+    {
+        var cifra = CifraAsociada(tokens, definitiva);
+        return cifra is { } asociada && EsUmbralDeCifra(tokens, asociada) ? SiguienteNoUmbral(tokens, asociada) : cifra;
+    }
+
+    private static int? SiguienteNoUmbral(IReadOnlyList<TokenTexto> tokens, int desde) =>
+        Enumerable.Range(desde + 1, Math.Max(0, tokens.Count - desde - 1))
+            .Where(posicion => EsCifraDeNota(tokens, posicion) && !EsUmbralDeCifra(tokens, posicion))
+            .Select(posicion => (int?)posicion)
+            .FirstOrDefault();
+
+    private static bool EsUmbralDeCifra(IReadOnlyList<TokenTexto> tokens, int cifra) =>
+        PrecedidaDeComparador(tokens, cifra) || SigueARequisito(tokens, cifra);
 
     private static bool PrecedidaDeComparador(IReadOnlyList<TokenTexto> tokens, int cifra) =>
         TerminaComparador(tokens, cifra - 1) || (cifra > 0 && Enlaces.Contains(tokens[cifra - 1].Valor) && TerminaComparador(tokens, cifra - 2));
@@ -96,14 +170,17 @@ internal sealed partial class DefinitivaPorAsignatura
         && (Comparadores.Contains(tokens[indice].Valor)
             || (indice > 0 && ComparadoresDeDosPalabras.Contains((tokens[indice - 1].Valor, tokens[indice].Valor))));
 
-    private static bool HayVerboDeRequisito(IReadOnlyList<TokenTexto> tokens, int definitiva, int cifra) =>
-        (cifra > 0 && Requisitos.Contains(tokens[cifra - 1].Valor))
-        || Enumerable.Range(Math.Max(0, definitiva - PalabrasDeRequisito), Math.Min(PalabrasDeRequisito, definitiva))
-            .Any(anterior => Requisitos.Contains(tokens[anterior].Valor));
+    private static bool SigueARequisito(IReadOnlyList<TokenTexto> tokens, int cifra) =>
+        RequisitoPrevio().IsMatch(string.Join(' ', tokens.Take(cifra).TakeLast(PalabrasDelRequisito).Select(token => token.Valor)));
 
-    private static bool EstaNegada(IReadOnlyList<TokenTexto> tokens, int indice) =>
-        Enumerable.Range(Math.Max(0, indice - PalabrasDeNegacion), Math.Min(PalabrasDeNegacion, indice))
-            .Any(anterior => Negaciones.Contains(tokens[anterior].Valor));
+    private static bool EstaNegada(IReadOnlyList<TokenTexto> tokens, int indice)
+    {
+        var anterior = SaltosPrevios.Aggregate(indice - 1, (posicion, saltables) => Saltar(tokens, posicion, saltables));
+        return anterior >= 0 && Negaciones.Contains(tokens[anterior].Valor);
+    }
+
+    private static int Saltar(IReadOnlyList<TokenTexto> tokens, int posicion, HashSet<string> saltables) =>
+        posicion >= 0 && saltables.Contains(tokens[posicion].Valor) ? posicion - 1 : posicion;
 
     private static int? CifraAsociada(IReadOnlyList<TokenTexto> tokens, int indice)
     {
@@ -116,20 +193,38 @@ internal sealed partial class DefinitivaPorAsignatura
         CifraDeNota().IsMatch(tokens[posicion].Valor)
         && !(posicion > 0 && PalabrasDeReferencia.Contains(tokens[posicion - 1].Valor));
 
-    private static bool Coincide(AtribucionDeDefinitiva atribucion, IReadOnlyDictionary<string, ResumenEstudiante> resumenesLeidos)
+    private static bool Coincide(AtribucionDeDefinitiva atribucion, string personaId, IReadOnlyDictionary<string, ResumenEstudiante> resumenesLeidos)
     {
-        if (!resumenesLeidos.TryGetValue(atribucion.PersonaId, out var resumen))
+        if (!resumenesLeidos.TryGetValue(personaId, out var resumen))
         {
             return true;
         }
 
         var resultado = resumen.Asignaturas.FirstOrDefault(r => AmbitoPersonal.Clave(r.Asignatura.Codigo) == atribucion.Clave);
-        return resultado is null
-            || resultado.Definitiva == decimal.Parse(atribucion.Cifra, CultureInfo.InvariantCulture);
+        return resultado is null || ValoresAceptados(resultado, atribucion.ConDefinitiva).Contains(decimal.Parse(atribucion.Cifra, CultureInfo.InvariantCulture));
     }
+
+    private static IEnumerable<decimal> ValoresAceptados(ResultadoAsignatura resultado, bool soloDefinitiva)
+    {
+        var definitiva = resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia ? 0m : resultado.Definitiva;
+        var propios = new[] { definitiva };
+        var otros = new[] { resultado.Asignatura.Cortes.Corte1, resultado.Asignatura.Cortes.Corte2, resultado.Asignatura.Cortes.Corte3, resultado.Acumulada?.Valor };
+        return (soloDefinitiva ? propios : propios.Concat(otros)).OfType<decimal>();
+    }
+
+    private static readonly HashSet<string> PalabrasDeReferencia = new(StringComparer.Ordinal)
+    {
+        "seccion", "secciones", "articulo", "articulos", "art"
+    };
+
+    [GeneratedRegex(@"(?:^| )necesitas(?: (?:una|la))? definitiva de\z", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
+    private static partial Regex RequisitoPrevio();
+
+    [GeneratedRegex(@"^[\s:=(]*\z", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
+    private static partial Regex SeparadoresDePar();
 
     [GeneratedRegex(@"^\d\.\d{1,2}\z", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex CifraDeNota();
 
-    private sealed record AtribucionDeDefinitiva(string PersonaId, string Clave, string Cifra);
+    private sealed record AtribucionDeDefinitiva(string Clave, string Cifra, int InicioDeAsignatura, string Escrita, bool ConDefinitiva);
 }

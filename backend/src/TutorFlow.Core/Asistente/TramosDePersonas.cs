@@ -1,52 +1,52 @@
-using System.Text.RegularExpressions;
 using TutorFlow.Core.Autorizacion;
 
 namespace TutorFlow.Core.Asistente;
 
 internal sealed record TramoDePersona(string PersonaId, IReadOnlyList<TokenTexto> Tokens);
 
-internal sealed record OracionAnalizada(string Texto, IReadOnlyList<TramoDePersona> Tramos);
+internal sealed record PersonasDeBloque(IReadOnlyList<TramoDePersona> Tramos, bool Ambiguo)
+{
+    public static PersonasDeBloque Ninguna { get; } = new([], false);
+}
 
-internal static partial class TramosDePersonas
+internal static class TramosDePersonas
 {
     private static readonly HashSet<string> PalabrasDelSujetoCoordinado = new(StringComparer.Ordinal) { "y", "e", "id" };
 
-    public static IEnumerable<string> Oraciones(string respuesta) =>
-        CorteDeOracion().Split(respuesta).Where(oracion => !string.IsNullOrWhiteSpace(oracion));
-
-    public static IReadOnlyList<OracionAnalizada> DeRespuesta(
-        string respuesta,
-        Rol rol,
+    public static PersonasDeBloque De(
+        BloqueDeTexto bloque,
+        Usuario usuario,
         IReadOnlyCollection<string> idsAutorizados,
         DirectorioAcademico directorio)
     {
-        var herencia = new HerenciaEnListas(rol == Rol.Coordinador);
-        return [.. SaltoDeLinea().Split(respuesta).SelectMany(linea =>
+        var tokens = TokenizadorTexto.Tokenizar(bloque.Texto);
+        if (usuario.Rol != Rol.Coordinador)
         {
-            var persona = herencia.PersonaHeredada(linea, DetectorTerceros.MencionesDeAutorizados(linea, idsAutorizados, directorio));
-            return persona is null
-                ? Oraciones(linea).Select(oracion => new OracionAnalizada(oracion, De(oracion, idsAutorizados, directorio)))
-                : [new OracionAnalizada(linea, [new TramoDePersona(persona, TokenizadorTexto.Tokenizar(linea))])];
-        })];
-    }
-
-    public static IReadOnlyList<TramoDePersona> De(
-        string oracion,
-        IReadOnlyCollection<string> idsAutorizados,
-        DirectorioAcademico directorio)
-    {
-        var menciones = DetectorTerceros.MencionesDeAutorizados(oracion, idsAutorizados, directorio);
-        if (menciones.Count == 0)
-        {
-            return [];
+            return new PersonasDeBloque([new TramoDePersona(usuario.Id, tokens)], false);
         }
 
-        var tokens = TokenizadorTexto.Tokenizar(oracion);
+        var menciones = DetectorTerceros.MencionesDeAutorizados(bloque.Texto, idsAutorizados, directorio);
+        var enOracion = menciones.Where(mencion => mencion.Inicio >= bloque.InicioDeLaOracion).ToList();
+        var delContexto = menciones.Where(mencion => mencion.Inicio < bloque.InicioDeLaOracion).Select(mencion => mencion.Id).Distinct().ToList();
+        return enOracion.Count == 0 ? SoloDelContexto(delContexto, tokens) : new PersonasDeBloque(DeLaOracion(enOracion, delContexto, tokens), false);
+    }
+
+    private static PersonasDeBloque SoloDelContexto(List<string> delContexto, IReadOnlyList<TokenTexto> tokens) =>
+        delContexto.Count switch
+        {
+            0 => PersonasDeBloque.Ninguna,
+            1 => new PersonasDeBloque([new TramoDePersona(delContexto[0], tokens)], false),
+            _ => new PersonasDeBloque([], true)
+        };
+
+    private static List<TramoDePersona> DeLaOracion(List<MencionDeAutorizado> menciones, List<string> delContexto, IReadOnlyList<TokenTexto> tokens)
+    {
         var primeraDeCualquiera = menciones[0].Inicio;
         var tramos = menciones.GroupBy(mencion => mencion.Id)
             .Select(grupo => TramoDe(grupo.Key, grupo.First().Inicio, menciones, tokens, primeraDeCualquiera))
             .ToList();
-        return Coordinar(tramos, menciones);
+        var coordinados = Coordinar(tramos, menciones);
+        return [.. coordinados.Concat(delContexto.Where(id => coordinados.All(tramo => tramo.PersonaId != id)).Select(id => new TramoDePersona(id, tokens)))];
     }
 
     private static TramoDePersona TramoDe(
@@ -65,20 +65,21 @@ internal static partial class TramosDePersonas
         return new TramoDePersona(personaId, [.. delTramo]);
     }
 
-    private static List<TramoDePersona> Coordinar(List<TramoDePersona> tramos, IReadOnlyList<MencionDeAutorizado> menciones)
+    private static List<TramoDePersona> Coordinar(IReadOnlyList<TramoDePersona> tramos, IReadOnlyList<MencionDeAutorizado> menciones)
     {
-        for (var indice = tramos.Count - 2; indice >= 0; indice--)
+        var coordinados = tramos.ToList();
+        for (var indice = coordinados.Count - 2; indice >= 0; indice--)
         {
-            if (ComparteElPredicado(tramos[indice], menciones))
-            {
-                var siguiente = tramos[indice + 1];
-                var propios = siguiente.Tokens.Where(token => !EnMencion(token, siguiente.PersonaId, menciones));
-                tramos[indice] = tramos[indice] with { Tokens = [.. tramos[indice].Tokens.Union(propios).OrderBy(token => token.Inicio)] };
-            }
+            coordinados[indice] = ComparteElPredicado(coordinados[indice], menciones)
+                ? coordinados[indice] with { Tokens = [.. coordinados[indice].Tokens.Union(PropiosDe(coordinados[indice + 1], menciones)).OrderBy(token => token.Inicio)] }
+                : coordinados[indice];
         }
 
-        return tramos;
+        return coordinados;
     }
+
+    private static IEnumerable<TokenTexto> PropiosDe(TramoDePersona siguiente, IReadOnlyList<MencionDeAutorizado> menciones) =>
+        siguiente.Tokens.Where(token => !EnMencion(token, siguiente.PersonaId, menciones));
 
     private static bool ComparteElPredicado(TramoDePersona tramo, IReadOnlyList<MencionDeAutorizado> menciones)
     {
@@ -90,48 +91,4 @@ internal static partial class TramosDePersonas
 
     private static bool EnMencion(TokenTexto token, string personaId, IReadOnlyList<MencionDeAutorizado> menciones) =>
         menciones.Any(mencion => mencion.Id == personaId && token.Inicio >= mencion.Inicio && token.Inicio < mencion.Fin);
-
-    [GeneratedRegex(@"\r?\n|(?<=[.!?;])(?=\s|$)", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
-    private static partial Regex CorteDeOracion();
-
-    [GeneratedRegex(@"\r?\n", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
-    private static partial Regex SaltoDeLinea();
-
-    private sealed partial class HerenciaEnListas(bool activa)
-    {
-        private string? _encabezado;
-        private bool _enBloque;
-
-        public string? PersonaHeredada(string linea, IReadOnlyList<MencionDeAutorizado> menciones)
-        {
-            if (!activa)
-            {
-                return null;
-            }
-
-            if (string.IsNullOrWhiteSpace(linea) || menciones.Count > 0)
-            {
-                Reiniciar(menciones.Count > 0 ? menciones[^1].Id : null);
-                return null;
-            }
-
-            return Continuar(linea);
-        }
-
-        private void Reiniciar(string? encabezado)
-        {
-            _encabezado = encabezado;
-            _enBloque = false;
-        }
-
-        private string? Continuar(string linea)
-        {
-            _enBloque = _enBloque || (_encabezado is not null && MarcadorDeLista().IsMatch(linea));
-            _encabezado = _enBloque ? _encabezado : null;
-            return _encabezado;
-        }
-
-        [GeneratedRegex(@"^\s*(?:[-*•]|\d+[.)])\s", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
-        private static partial Regex MarcadorDeLista();
-    }
 }

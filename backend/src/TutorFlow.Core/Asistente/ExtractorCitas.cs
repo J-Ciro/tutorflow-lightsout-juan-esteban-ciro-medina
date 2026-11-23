@@ -7,25 +7,30 @@ public static partial class ExtractorCitas
 {
     private const string PrefijoArticulo = "Artículo";
     private const string PrefijoSeccion = "Sección";
+    private const string SeccionAnexo = "Anexo";
 
     public static IReadOnlyList<Cita> De(string texto) =>
-        CitaEnTexto().Matches(texto)
-            .Select(coincidencia => new Cita(coincidencia.Groups["doc"].Value, Normalizar(coincidencia.Groups["sec"].Value)))
-            .Distinct()
-            .ToList();
+        CitaEnTexto().Matches(texto).SelectMany(CitasDe).Distinct().ToList();
 
     public static string SinCitas(string texto) =>
         CitaEnTexto().Replace(texto, " ");
 
-    private static string Normalizar(string seccion)
+    private static IEnumerable<Cita> CitasDe(Match coincidencia)
     {
-        var partes = seccion.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-        return partes.Length < 2 ? seccion : $"{Prefijo(partes[0])} {partes[1].Trim()}";
+        var documento = coincidencia.Groups["doc"].Value;
+        return coincidencia.Groups["anexo"].Success
+            ? [new Cita(documento, SeccionAnexo)]
+            : Numero().Matches(coincidencia.Groups["nums"].Value).Select(numero => new Cita(documento, $"{Prefijo(coincidencia.Groups["tipo"].Value)} {numero.Value}"));
     }
 
     private static string Prefijo(string palabra) =>
         palabra.StartsWith("Art", StringComparison.OrdinalIgnoreCase) ? PrefijoArticulo : PrefijoSeccion;
 
-    [GeneratedRegex(@"(?<doc>[A-Za-z0-9_]+\.md)\s*·\s*(?<sec>Art[ií]culo\s+\d+|Secci[oó]n\s+\d+(?:\.\d+)?|Anexo)", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
+    [GeneratedRegex(
+        @"(?<doc>[A-Za-z0-9_]+\.md)\s*·\s*(?:(?<tipo>Art[ií]culos?|Secci[oó]n(?:es)?)\s+(?<nums>\d+(?:\.\d+)?(?:\s*(?:,|y|e)\s*\d+(?:\.\d+)?)*)|(?<anexo>Anexo))",
+        RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex CitaEnTexto();
+
+    [GeneratedRegex(@"\d+(?:\.\d+)?", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
+    private static partial Regex Numero();
 }

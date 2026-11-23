@@ -38,7 +38,7 @@ public sealed class PreguntarAsistente
     private readonly LectorResumenPropio _lectorResumen;
     private readonly RelevanciaPrevia _relevancia;
     private readonly EmisorDeResultados _emisor;
-    private readonly CierreDeRespuesta _cierre;
+    private readonly FaseDelModelo _fase;
 
     public PreguntarAsistente(
         IApiAcademica apiAcademica,
@@ -62,7 +62,7 @@ public sealed class PreguntarAsistente
         _lectorResumen = new LectorResumenPropio(politicaAcceso);
         _relevancia = new RelevanciaPrevia(politicaAcceso, configuracion.RelevanciaMinima);
         _emisor = new EmisorDeResultados(auditor, politicaAcceso, configuracion);
-        _cierre = new CierreDeRespuesta(baseConocimiento, politicaAcceso, verificadorSalida, configuracion, _emisor);
+        _fase = new FaseDelModelo(clienteLlm, politicaAcceso, limites, configuracion, presupuesto, _emisor, new CierreDeRespuesta(baseConocimiento, politicaAcceso, verificadorSalida, configuracion));
     }
 
     public async Task<ResultadoPregunta> EjecutarAsync(
@@ -107,7 +107,7 @@ public sealed class PreguntarAsistente
         {
             if (CatalogoAsignaturas.EsIdDePersona(catalogo[indice].Codigo, directorio))
             {
-                _configuracion.Advertir($"{Textos.PrefijoConfiguracionIgnorada}: Autorizacion:Asignaturas:{indice}:Codigo = \"{catalogo[indice].Codigo}\" (coincide con el ID de una persona del registro); se excluye del catálogo");
+                _configuracion.AdvertirUnaVez($"{Textos.PrefijoConfiguracionIgnorada}: Autorizacion:Asignaturas:{indice}:Codigo = \"{catalogo[indice].Codigo}\" (coincide con el ID de una persona del registro); se excluye del catálogo");
             }
         }
 
@@ -154,7 +154,16 @@ public sealed class PreguntarAsistente
         }
         finally
         {
-            _presupuesto.Sustituir(reserva, _configuracion.GastoDe(sesion.Uso.Valor));
+            Sustituir(sesion, reserva);
+        }
+    }
+
+    private void Sustituir(SesionPregunta sesion, decimal reserva)
+    {
+        _presupuesto.Sustituir(reserva, _configuracion.GastoDe(sesion.Uso.Valor, 1 + sesion.ReservasExtra));
+        for (var extra = 0; extra < sesion.ReservasExtra; extra++)
+        {
+            _presupuesto.Sustituir(reserva, 0m);
         }
     }
 
@@ -164,7 +173,7 @@ public sealed class PreguntarAsistente
         limite.CancelAfter(TimeSpan.FromSeconds(_limites.TimeoutLlmSegundos));
         try
         {
-            return await ResponderAsync(sesion, limite.Token);
+            return await _fase.ResponderAsync(sesion, limite.Token, cancellationToken);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -172,26 +181,4 @@ public sealed class PreguntarAsistente
         }
     }
 
-    private async Task<ResultadoPregunta> ResponderAsync(SesionPregunta sesion, CancellationToken cancellationToken)
-    {
-        var usuario = sesion.Entrada.Usuario;
-        var contexto = new ContextoUsuario(usuario, sesion.Directorio);
-        var entrada = await PrepararEntradaAsync(sesion, contexto, cancellationToken);
-        var conversacion = new ConversacionLlm(_clienteLlm, new HerramientasAsistente(sesion.Api, _politicaAcceso), _limites, sesion.Uso);
-        var resultado = await conversacion.EjecutarAsync(contexto, entrada, sesion.Registro, cancellationToken);
-        return resultado.Estado switch
-        {
-            EstadoConversacion.IdAjeno => _emisor.Denegar(sesion, MotivoDenegacion.HerramientaIdAjeno, sesion.Uso.Valor.Total, resultado.IdSolicitado),
-            EstadoConversacion.LimiteHerramientas => _emisor.NoDisponible(sesion, ResultadoAuditoria.LimiteHerramientas),
-            EstadoConversacion.Rechazada => _emisor.Responder(sesion, Textos.NoVerificable, [], ResultadoAuditoria.Error),
-            _ => _cierre.Completar(sesion, resultado.Texto ?? string.Empty, entrada)
-        };
-    }
-
-    private async Task<EntradaConversacion> PrepararEntradaAsync(SesionPregunta sesion, ContextoUsuario contexto, CancellationToken cancellationToken)
-    {
-        var pregunta = sesion.Entrada.Pregunta;
-        var resumen = await _lectorResumen.LeerAsync(contexto, sesion.Activacion, sesion.Api, sesion.Registro, cancellationToken);
-        return new EntradaConversacion(pregunta, sesion.Secciones, resumen, ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
-    }
 }

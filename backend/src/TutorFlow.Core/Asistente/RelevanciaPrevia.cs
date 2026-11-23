@@ -54,20 +54,11 @@ internal sealed class RelevanciaPrevia
 
         var programas = _politicaAcceso.ProgramasAutorizados(contexto.Usuario, contexto.Directorio);
         return programas.Count > 0
-            && (PideTerminosDeDatos(palabras) || MencionaEstudianteDeSusProgramas(contexto, palabras, programas));
+            && (PideTerminosDeDatos(palabras) || ActivadorPrelectura.Activa(contexto, palabras, programas));
     }
 
     private static bool PideTerminosDeDatos(IReadOnlyList<string> palabras) =>
         palabras.Any(TerminosPropiosDelCoordinador.Contains) || ActivadorResumenPropio.PideDatosAcademicos(palabras);
-
-    private static bool MencionaEstudianteDeSusProgramas(
-        ContextoUsuario contexto,
-        IReadOnlyList<string> palabras,
-        IReadOnlyList<string> programas)
-    {
-        var propios = contexto.Directorio.Estudiantes.Where(e => programas.Contains(e.ProgramaId)).Select(e => e.Id).ToHashSet();
-        return DetectorTerceros.PersonasMencionadas(string.Join(' ', palabras), contexto.Directorio).Any(propios.Contains);
-    }
 
     private static bool PideOtroPeriodo(IReadOnlyList<string> palabras) =>
         palabras.Zip(palabras.Skip(1)).Any(par => EsPeriodo(par.First, par.Second) && $"{par.First}-{par.Second}" != Textos.Periodo);

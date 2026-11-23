@@ -22,7 +22,8 @@ public sealed class ConfiguracionAsistente
         int apoyoMinimoRespaldo = ApoyoMinimoPorDefecto,
         IReadOnlyList<AsignaturaCatalogo>? catalogo = null,
         decimal reservaSinPrecioUsd = ReservaSinPrecioPorDefectoUsd,
-        Action<string>? advertir = null)
+        Action<string>? advertir = null,
+        AjustesDelModelo? ajustes = null)
     {
         Catalogo = catalogo ?? throw new ArgumentNullException(nameof(catalogo));
         Advertir = AdvertenciaOSilencio(advertir);
@@ -31,12 +32,28 @@ public sealed class ConfiguracionAsistente
             ? Convert.ToHexString(RandomNumberGenerator.GetBytes(BytesDelMarcadorAleatorio))
             : marcadorCanarioConfigurado;
         CodigosAsignatura = CodigosOCatalogo(codigosAsignatura, Catalogo);
-        ReservaPorPeticionUsd = reservaPorPeticionUsd ?? ReservaPorDefecto(precio, reservaSinPrecioUsd);
+        Ajustes = ajustes ?? new AjustesDelModelo();
+        ReservaPorPeticionUsd = reservaPorPeticionUsd is > 0m ? reservaPorPeticionUsd.Value : ReservaPorDefecto(precio, reservaSinPrecioUsd);
         RelevanciaMinima = Math.Max(MinimoPermitido, relevanciaMinima);
         ApoyoMinimoRespaldo = Math.Max(MinimoPermitido, apoyoMinimoRespaldo);
     }
 
+    private readonly HashSet<string> _advertidas = [];
+
     public Action<string> Advertir { get; }
+
+    public void AdvertirUnaVez(string mensaje)
+    {
+        lock (_advertidas)
+        {
+            if (_advertidas.Add(mensaje))
+            {
+                Advertir(mensaje);
+            }
+        }
+    }
+
+    public AjustesDelModelo Ajustes { get; }
 
     public PrecioModelo? Precio { get; }
 
@@ -57,11 +74,11 @@ public sealed class ConfiguracionAsistente
     private static IReadOnlyCollection<string> CodigosOCatalogo(IReadOnlyCollection<string>? codigos, IReadOnlyList<AsignaturaCatalogo> catalogo) =>
         codigos ?? [.. catalogo.Select(asignatura => asignatura.Codigo)];
 
-    public decimal GastoDe(UsoTokens uso) =>
-        Precio is null ? ReservaPorPeticionUsd : CalculadoraCosto.Calcular(uso, Precio);
+    public decimal GastoDe(UsoTokens uso, int llamadas = 1) =>
+        Precio is null ? ReservaPorPeticionUsd * llamadas : CalculadoraCosto.Calcular(uso, Precio);
 
     private static decimal ReservaPorDefecto(PrecioModelo? precio, decimal reservaSinPrecioUsd) =>
         precio is null
-            ? reservaSinPrecioUsd
+            ? (reservaSinPrecioUsd > 0m ? reservaSinPrecioUsd : ReservaSinPrecioPorDefectoUsd)
             : CalculadoraCosto.Calcular(new UsoTokens(TokensDeEntradaReservados, TokensDeSalidaReservados), precio);
 }
