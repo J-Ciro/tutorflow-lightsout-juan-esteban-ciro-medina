@@ -26,6 +26,7 @@ public sealed partial class VerificadorSalida
         MaterialConfidencial? confidencial = null) =>
         RechazoPorPersona(usuario, respuesta, idsPersonasAutorizadas, directorio)
         ?? RechazoPorConfiguracion(respuesta, textosFuente, confidencial)
+        ?? RechazoPorValorMonetario(respuesta, textosFuente)
         ?? RechazoPorNumero(respuesta, textosFuente)
         ?? new SalidaVerificada(respuesta, DescartarCitasInexistentes(citas, baseConocimiento), ResultadoAuditoria.Respondida);
 
@@ -44,6 +45,11 @@ public sealed partial class VerificadorSalida
         MaterialConfidencial? confidencial) =>
         confidencial is not null && DetectorFugaConfiguracion.HayFuga(respuesta, confidencial, textosFuente)
             ? new SalidaVerificada(Textos.SinInformacion, [], ResultadoAuditoria.FugaBloqueada)
+            : null;
+
+    private static SalidaVerificada? RechazoPorValorMonetario(string respuesta, IReadOnlyCollection<string> textosFuente) =>
+        DetectorValorMonetario.HayValorNoRespaldado(respuesta, textosFuente)
+            ? new SalidaVerificada(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion)
             : null;
 
     private SalidaVerificada? RechazoPorNumero(string respuesta, IReadOnlyCollection<string> textosFuente) =>
