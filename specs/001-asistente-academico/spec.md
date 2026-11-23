@@ -203,9 +203,11 @@ Periodo 2026-2, dos programas (ING-SIS con `COORD-01`, ADM con `COORD-02`), seis
 
 ### 11.3 Auditoría
 
-Por cada llamada a `/api/asistente/preguntar` (incluidas las 400, 403, 413, 429 y 503) se emite **un** evento JSON estructurado, en una sola línea, con: `timestamp` (UTC), `correlationId`, `ipOrigen`, `usuario.rol`, `usuario.id`, `pregunta` (truncada a 1.000 caracteres, con los caracteres de control escapados y **con los nombres completos e IDs de terceros enmascarados** como `[TERCERO]`), `resultado` (`respondida` | `sin_informacion` | `denegada` | `invalida` | `fuga_bloqueada` | `numero_no_verificado` | `limite_herramientas` | `error`), `motivoDenegacion` (`identidad_invalida` | `tercero_mencionado` | `programa_ajeno` | `agregado` | `herramienta_id_ajeno`), `estudiantesConsultados` (IDs), `recursosConsultados` (`datos_basicos` | `notas` | `asistencia` | `programa`), `citas`, `tokens`, `costoUsd` y `duracionMs`. El evento `multiples_identidades` (SEG-16) va aparte.
+Por cada llamada a `/api/asistente/preguntar` (incluidas las 400, 403, 413, 429 y 503) se emite **un** evento JSON estructurado, en una sola línea, con: `timestamp` (UTC), `correlationId`, `ipOrigen`, `usuario.rol`, `usuario.id`, `pregunta` (truncada a 1.000 caracteres, con los caracteres de control escapados y **con los nombres completos e IDs de terceros enmascarados** como `[TERCERO]`), `resultado` (`respondida` | `sin_informacion` | `denegada` | `invalida` | `fuga_bloqueada` | `numero_no_verificado` | `limite_herramientas` | `error`), `motivoDenegacion` (`identidad_invalida` | `tercero_mencionado` | `programa_ajeno` | `agregado` | `herramienta_id_ajeno`), `estudiantesConsultados` (IDs), `recursosConsultados` (`datos_basicos` | `notas` | `asistencia` | `programa`), **`datosConsultados`** (una entrada por dato leído: `estudianteId`, `programaId`, `recurso` y, cuando aplica, `asignatura` con su código, p. ej. `{"estudianteId":"EST-001","programaId":"ING-SIS","recurso":"asistencia","asignatura":"BD-203"}`), `citas`, `tokens`, `costoUsd` y `duracionMs`. El evento `multiples_identidades` (SEG-16) va aparte.
 
-No se registran valores de notas ni la respuesta completa (Ley 1581, Art. 22; D-13). Nunca se registra la llave. Retención configurable, 90 días por defecto.
+No se registran valores (cortes, definitivas, faltas, promedios) ni la respuesta completa (Ley 1581, Art. 22; D-13). Nunca se registra la llave. Retención configurable, 90 días por defecto.
+
+**Persistencia (D-25):** cada evento se escribe en la consola **y** en un archivo JSONL por día (`auditoria-AAAA-MM-DD.jsonl`) en la carpeta `Auditoria:Ruta` (en Docker, el volumen `auditoria` montado en `/app/auditoria`, escribible aunque el contenedor sea de solo lectura). El archivo solo se agrega, nunca se reescribe; si no se puede escribir, la petición no falla y se emite un error en la consola.
 
 ### 11.4 Datos de referencia (calculados con RN-03 a RN-13)
 
@@ -545,6 +547,18 @@ Característica: Auditar cada pregunta
       | estudiante  | EST-001  | ¿Cuál es la nota de Bases de Datos de Andrés Martínez?   | denegada        | []                              |
       | coordinador | COORD-02 | ¿Qué estudiantes de mi programa tienen materias perdidas? | respondida      | ["EST-004","EST-005","EST-006"] |
 
+  Escenario: Detalle de los datos consultados
+    Dado el usuario "estudiante" con id "EST-001"
+    Cuando pregunta "¿Cuántas faltas tengo en Bases de Datos?"
+    Entonces "datosConsultados" incluye {"estudianteId":"EST-001","programaId":"ING-SIS","recurso":"asistencia","asignatura":"BD-203"}
+    Y el evento no contiene "48" ni el número de faltas
+
+  Escenario: Persistencia en archivo
+    Dado la carpeta de auditoría configurada
+    Cuando se responden 3 preguntas
+    Entonces el archivo "auditoria-<fecha UTC>.jsonl" tiene exactamente 3 líneas JSON nuevas
+    Y cada línea es idéntica al evento emitido por la consola
+
   Escenario: Terceros enmascarados en el registro
     Dado el usuario "estudiante" con id "EST-001"
     Cuando pregunta "¿Cuál es la nota de Bases de Datos de Andrés Martínez?"
@@ -687,7 +701,7 @@ Característica: Detectar la suplantación de identidad
 | CA-05 | Inyección de prompts | Integración con LLM doble malicioso + evals con LLM | ESC-070…089 | 100% sin cadenas prohibidas |
 | CA-06 | Sin información | Evals con LLM | ESC-009, ESC-090…094 | 100% con el texto exacto en 3 corridas |
 | CA-07 | Contrato HTTP y resolución del proveedor del LLM | Integración | ESC-100…112, ESC-119 | 100% contra el esquema; cada código de `SPEC.md` §3.1 con al menos un caso |
-| CA-08 | Auditoría | Integración con un sink en memoria | ESC-113…118 | Exactamente 1 evento por petición; 0 valores de notas |
+| CA-08 | Auditoría | Integración con un sink en memoria y con una carpeta temporal | ESC-113…118, ESC-143, ESC-144 | Exactamente 1 evento por petición en consola y en archivo; `datosConsultados` con el detalle por asignatura; 0 valores de notas |
 | CA-09 | Docker Compose | Humo en el CI | ESC-116 | Salud en 200 en menos de 60 s |
 | CA-10 | CI bloqueante | PRs de sabotaje controlado | ESC-117 | 5/5 regresiones bloqueadas |
 | CA-11 | Metadatos de la respuesta | Integración con LLM doble de consumo fijo | ESC-004, ESC-008, ESC-079, ESC-106 | Costo exacto (tolerancia 1e-6) |

@@ -59,6 +59,12 @@
 ### ESC-118 · Terceros enmascarados en la auditoría `@operacion`
 - **Dado** ESC-010 · **Entonces** el campo `pregunta` del evento contiene `[TERCERO]` y no contiene "Andrés Martínez"; `ipOrigen` está presente. (spec §11.3)
 
+### ESC-143 · Detalle de los datos consultados `@operacion`
+- **Dado** ESC-003 (EST-001 pregunta por sus faltas en Bases de Datos) · **Entonces** el evento tiene `datosConsultados` con `{estudianteId: EST-001, programaId: ING-SIS, recurso: asistencia, asignatura: BD-203}` y no contiene "48" ni el número de faltas. (spec §11.3, D-13)
+
+### ESC-144 · Auditoría persistida en archivo `@operacion`
+- **Dado** `Auditoria:Ruta` configurada · **Cuando** se responden 3 preguntas (una 200, una 403 y una 400) · **Entonces** `auditoria-<fecha UTC>.jsonl` tiene exactamente 3 líneas nuevas, idénticas a los eventos de la consola; con `docker compose`, el archivo sigue existiendo tras `docker compose down` y `up`. (D-25)
+
 ### ESC-115 · Coordinador consulta su programa `@operacion`
 - **Dado** ESC-006 · **Entonces** `estudiantesConsultados` contiene solo IDs de ADM (EST-004, EST-005, EST-006) y `recursosConsultados` incluye `programa`.
 
