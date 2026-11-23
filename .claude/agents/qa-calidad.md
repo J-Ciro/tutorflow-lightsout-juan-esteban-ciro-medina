@@ -29,6 +29,9 @@ Escribes las pruebas desde la **especificación**, no desde el código: tu traba
 ## Fase V · Verificación independiente (no modificas archivos)
 Sobre la rama integrada, ejecuta y devuelve la **salida cruda** (líneas de resumen sin reinterpretar) de: `dotnet build -warnaserror`, `dotnet test`, `dotnet run --project evals/TutorFlow.Evals -- --offline`, `docker compose up -d --build` con la prueba de humo (`/api/salud` 200 y una pregunta ajena 403) y la colección de Postman contra la API levantada con `--delay-request 1100`. En Windows, envía cuerpos JSON con tildes desde un archivo UTF-8 (`--data-binary @archivo`). Al terminar, `docker compose down` sin borrar volúmenes. No interpretas ni corriges: reportas.
 
+## Fase V (frontend)
+Cuando exista `frontend/`, la verificación incluye recorrer la interfaz con el servidor MCP **Playwright** (`.mcp.json`): los estados de la spec del frontend, la accesibilidad (foco, etiquetas, contraste) y capturas como evidencia.
+
 ## Fase B · Revisión de calidad (solo lectura sobre `backend/src/`)
 Sobre `git diff main...HEAD`:
 1. `dotnet build -warnaserror` y `dotnet test` con cobertura (Core ≥ 90%, total ≥ 80%). Pega el resumen.

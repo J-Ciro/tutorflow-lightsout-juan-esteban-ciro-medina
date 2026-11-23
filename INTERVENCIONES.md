@@ -167,3 +167,12 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué se cambió:** se encargó a `arquitecto-spec` la spec v1.6 con: umbral de relevancia previo al LLM (COMP-03 sin llamar al modelo), reemplazo por COMP-03 de toda respuesta sin cita válida ni datos, respaldo de citas condicionado a que la sección comparta términos con la respuesta (modifica D-28), D-29 y escenarios desde ESC-165. Después sigue el ciclo de TDD.
 - **Costo:** ~2 min humanos.
 - **Prevención:** cualquier regla de comportamiento del asistente que proteja al usuario debe tener una verificación en código, no solo una instrucción en el prompt.
+
+### INT-019 · 2026-11-23 · MCP de Playwright para validar el frontend
+- **Fase:** configuración de la fábrica
+- **Qué pasó:** la fábrica no tenía forma de validar una interfaz web en un navegador.
+- **Qué hizo el humano:** pidió *"instalemos además el MCP de Playwright para que podamos luego de construir el front end validarlo"*.
+- **Por qué:** la feature 002 (frontend) necesita verificar estados, flujos y accesibilidad en un navegador real, no solo con pruebas unitarias.
+- **Qué se cambió:** servidor MCP `playwright` en `.mcp.json` a nivel de proyecto, con `@playwright/mcp@0.0.86` (paquete oficial de Microsoft, versión fija) en modo headless. El hook `commit-msg` y `AGENTS.md` tratan `.mcp.json` como configuración de agentes (commit humano). Se documentó su uso en `frontend-react`, en la fase V de `qa-calidad` y en `CLAUDE.md`. Claude Code lo deja pendiente de aprobación del humano al abrir la sesión.
+- **Costo:** ~1 min humano.
+- **Prevención:** las herramientas externas se fijan por versión y se documentan en el agente que las usa.

@@ -15,4 +15,5 @@ Eres el desarrollador frontend de TutorFlow. Trabajas solo en `frontend/` y solo
 - Renderiza la respuesta del asistente como texto plano. Nada de `dangerouslySetInnerHTML`.
 - Pruebas con Vitest y Testing Library para los estados: carga, éxito con citas, sin información, 403 y error de red.
 - Accesible: etiquetas en los controles, foco visible y contraste AA.
-- No modificas `backend/src/`, `backend/tests/` ni `backend/evals/` del backend.
+- Validación visual y de flujo con el servidor MCP **Playwright** (`.mcp.json`, `@playwright/mcp` en modo headless): navega la app levantada, completa el chat, captura pantallas de los estados (carga, éxito con citas, sin información, 403 y error) y verifica foco y contraste. Las pruebas automatizadas de regresión van en Playwright Test dentro de `frontend/`.
+- No modificas `backend/`.

@@ -57,6 +57,7 @@ Es la prueba técnica de Q10 "Senior Full Stack con IA", modalidad *lights-out*.
   - `registrar-intervencion`: anotar una corrección del humano.
   - `cerrar-corrida`: actualizar `REPORTE.md` y los logs.
 - **Plugin `postman`** (marketplace oficial, habilitado en `.claude/settings.json`): skills `postman:*` para validación local, entre ellas `api-testing`, `api-simulation`, `performance-testing` y `collection-schema-v3`.
+- **MCP Playwright** (`.mcp.json`, `@playwright/mcp@0.0.86` headless): validación de la interfaz web por `frontend-react` y `qa-calidad`.
 - **Hooks y permisos:** `.claude/settings.json`; scripts de hooks en `.claude/hooks/`.
 - **Patrón de orquestación:** la sesión principal planifica y delega; los subagentes, en paralelo y cada uno en su worktree, escriben, verifican y auditan (`FABRICA.md`, skill `implementar-spec`).
 - **Reglas de trabajo:** `AGENTS.md`. **Funcionamiento de la fábrica:** `FABRICA.md`.

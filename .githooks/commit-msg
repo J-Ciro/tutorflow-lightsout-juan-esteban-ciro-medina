@@ -29,7 +29,7 @@ fi
 HAS_TRAILER=0
 grep -Eq '^Generado-por: .+' "$MSG_FILE" && HAS_TRAILER=1
 
-AGENT_FILES=$(git diff --cached --name-only | grep -Ev '(\.md$|^\.claude/|^\.githooks/)')
+AGENT_FILES=$(git diff --cached --name-only | grep -Ev '(\.md$|^\.claude/|^\.githooks/|^\.mcp\.json$)')
 
 if [ -n "$AGENT_FILES" ] && [ "$HAS_TRAILER" -eq 0 ]; then
   echo "ERROR commit-msg: commit de agente sin el trailer 'Generado-por: <herramienta>'." >&2
