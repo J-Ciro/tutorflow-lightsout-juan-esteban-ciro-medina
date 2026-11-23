@@ -2,7 +2,7 @@
 
 > Regla: cada decisión ocupa como máximo 3 líneas (decisión · por qué · estado). Una corrección actualiza la regla en `spec.md` o `plan.md` y deja aquí su D; la historia está en git.
 
-Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022. Ninguna cambia el contrato ni la matriz de acceso de [`constitution.md`](../../constitution.md). D-11, D-12, D-18 y D-19 no existen (números no usados).
+Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022; D-65, ambigüedades reportadas por QA. Ninguna cambia el contrato ni la matriz de acceso de [`constitution.md`](../../constitution.md). D-11, D-12, D-18 y D-19 no existen (números no usados).
 
 ## Decisiones
 
@@ -60,13 +60,13 @@ Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del 
 - **D-48** · Un único reintento acotado tras SEG-10c, d, f o g; nunca tras SEG-10b. · Por qué: con temperatura 0 el modelo repite el error si no se le dice cuál fue; SEG-10b repetiría un dato ajeno. · Vigente.
 - **D-49** · (1) reglas aplicadas solo con relevancia > 0; (2) umbral relativo de recuperación del 50% → sustituido por D-54; (3) respaldo de 1 sola sección. · Por qué: citas de relevancia 0 degradan la precisión. · (1) y (3) vigentes.
 - **D-50** · Limpieza ampliada: oración de atribución huérfana, restos solapados, atribución genérica sin cita y frase de COMP-03 anexada. · Por qué: textos truncados o mal atribuidos. · Vigente; mitigada por D-60.
-- **D-51** · Plegado Unicode con tablas propias generadas de `UnicodeData.txt` como recurso incrustado. · Por qué: con `InvariantGlobalization` `Normalize` no hace nada. · Ajustada por D-61 y D-62 E6.
+- **D-51** · Plegado Unicode con tablas propias generadas de `UnicodeData.txt` como recurso incrustado. · Por qué: con `InvariantGlobalization` `Normalize` no hace nada. · Ajustada por D-61, D-62 E6 y D-65 G2.
 - **D-52** · Fase V: 5 corridas por pregunta con el defecto de temperatura; umbrales 5 de 5, no se bajan. · Por qué: el resultado no debe depender del azar. · Ajustada por D-59 y D-63 F8, F9.
 - **D-53** · Las citas de reglas aplicadas se ligan al campo que usa la respuesta final verificada. · Por qué: una regla solo respalda lo que la respuesta dice. · Ajustada por D-56.
 - **D-54** · Entrega de secciones: la primera, la primera relevante, las de puntaje ≥ 55% y las relevantes con 2 raíces y ≥ 40%. · Por qué: medido con el índice real, 0 secciones necesarias perdidas y márgenes > 5 puntos. · Vigente.
 - **D-55** · Citas por tema de sección entregada (pesos y redondeo). · Por qué: Q10 #4 necesita la `Sección 2` y el modelo la escribe 1 de 32 veces. · Vigente.
 - **D-56** · El campo definitiva también se usa por valor (par asignatura-cifra igual a la definitiva calculada). · Por qué: la cita no debe depender de la palabra. · Vigente.
-- **D-57** · Contexto de Ollama: estimación de tokens, tope probado de 3.000 y detección del truncado que falla cerrado. · Por qué: `/v1` ignora `num_ctx` y el truncado es silencioso. · Vigente.
+- **D-57** · Contexto de Ollama: estimación de tokens, tope probado de 3.000 y detección del truncado que falla cerrado. · Por qué: `/v1` ignora `num_ctx` y el truncado es silencioso. · Vigente; estimación precisada por D-65 G4.
 - **D-58** · Bloque de ejemplos normativo (EJ-1…EJ-4), presentación de la `Sección 3.1` y cifras de ejemplo fuera de las fuentes. · Por qué: medido, los ejemplos fijan el dato completo. · Vigente.
 - **D-59** · `Llm:Temperatura` decimal de 0 a 0.3, por defecto 0, validada al arrancar. · Por qué: INT-022; ningún valor > 0 mejoró un criterio. · Vigente.
 - **D-60** · Un nombre de documento escrito con espacios es una sola referencia; la eliminación de más queda mitigada (la fuente sigue en `citas`). · Por qué: restos ilegibles. · Vigente.
@@ -76,6 +76,8 @@ Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del 
 - **D-63** · Ambigüedades F1–F10: F1 mayúscula solo tras texto eliminado y sin cortar en `;`; F2 la resuelve D-55; F3 "Reglas aplicadas" termina en punto; F4 "3.9." se entrega; F5 promedio por cifra con 2 decimales; F6 espacios al borde inválidos en toda clave numérica;
   F7 un paso por regla del prompt; F8 `respondida` por HTTP = 200 sin texto fijo; F9 tabla de la fase V en `REPORTE.md`; F10 el coordinador sin programas no está exento. · Vigente.
 - **D-64** · Un par asignatura-cifra sin la palabra "definitiva" se verifica contra la definitiva, los cortes y la acumulada. · Por qué: "Contabilidad: 3.3." se entregaba. · Vigente.
+- **D-65** · Ambigüedades G1–G6 de QA: G1 un corte solo pasa SEG-10c si llegó por `consultar_cortes`; G2 esquema del recurso de plegado (plan §9.1); G3 el turno de herramienta de ESC-199 d2 es `consultar_notas` sin resumen; G4 la estimación cuenta `messages[].content` con el mensaje `system`, sin `tools`;
+  G5 CA-14 exige el Art. 22 en ESC-018 solo con cita escrita; G6 los límites de 55% y 40% se prueban por sensibilidad ⌊P⌋ / ⌊P⌋ + 1 con el índice real. · Por qué: la opción más simple y verificable; no cambia contrato, permisos ni reglas de producto. · Vigente.
 
 ## Riesgos y su decisión
 
@@ -83,7 +85,7 @@ Ningún riesgo queda aceptado salvo D-01 (aprobado por el humano). Evidencia de 
 
 | Riesgo | Decisión | Control verificable | D | CA / ESC |
 | --- | --- | --- | --- | --- |
-| Umbral relativo estimado y excepción de relevancia que entregaba 6 secciones | Mitigado: 55% o relevante con 2 raíces y 40%, más la primera relevante | 13 conjuntos fijados con el índice real; 0 necesarias perdidas | D-54 | CA-22, ESC-198 a |
+| Umbral relativo estimado y excepción de relevancia que entregaba 6 secciones | Mitigado: 55% o relevante con 2 raíces y 40%, más la primera relevante | 13 conjuntos fijados con el índice real; 0 necesarias perdidas; sensibilidad ⌊P⌋ / ⌊P⌋ + 1 de las reglas (3) y (4) | D-54, D-65 | CA-22, ESC-198 a |
 | `Artículo 16` a 0.4 puntos del corte en Q10 #1 | Mitigado: queda 5.4 puntos por debajo del 55% | Conjunto de Q10 #1 fijado | D-54 | CA-22, ESC-198 a |
 | `Sección 2` ausente en Q10 #4 | Eliminado: citas por tema | P4 con y sin cita escrita; 0 términos en 528 respuestas ajenas | D-55 | CA-01, CA-22, ESC-198 b–d |
 | Citas de P2 y P5 dependientes de la palabra "definitiva" | Eliminado: campo definitiva por valor | P2 sin la palabra; Q10 #5 mínima | D-56 | CA-22, ESC-198 e, f |
@@ -96,4 +98,5 @@ Ningún riesgo queda aceptado salvo D-01 (aprobado por el humano). Evidencia de 
 | Temperatura mayor que 0 | Mitigado: rango [0, 0.3], defecto 0 | Arranque fallido fuera de rango; `temperature` en el cuerpo | D-59 | CA-15, CA-23, ESC-192, ESC-199 c, f |
 | Atribución genérica con un resto suelto | Eliminado: nombre con espacios | Texto real limpiado | D-60 | CA-14, ESC-198 l |
 | Atribución genérica eliminada de más | Mitigado: nunca de menos; la fuente queda en `citas` | Fase V: 0 atribuciones sin cita en 50 respuestas | D-60 | CA-01, CA-14, ESC-198 l |
-| Homoglifos y letras con trazo sin plegar | Eliminado: tabla de confusables | 5 variantes con 403; 3 textos legítimos sin 403 | D-61 | CA-04, CA-24, ESC-186 f, ESC-199 a, b |
+| Homoglifos y letras con trazo sin plegar | Eliminado: tabla de confusables | 5 variantes con 403; 3 textos legítimos sin 403; esquema del recurso verificado fila por fila | D-61, D-65 | CA-04, CA-24, ESC-186 f, ESC-196, ESC-199 a, b |
+| Art. 22 de una pregunta normativa del coordinador sin citar: la prelectura da reglas aplicadas y desplaza el respaldo | Mitigado: P-04 pide citar y la cita escrita se conserva con datos leídos | ESC-018 a con Art. 22 y ESC-018 b exacto sin él; frecuencia con LLM real por medir | D-65 | CA-14, ESC-018 |
