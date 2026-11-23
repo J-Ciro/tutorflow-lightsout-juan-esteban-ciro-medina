@@ -63,6 +63,14 @@ internal sealed class IndiceFijo(IReadOnlyList<SeccionDocumento> indice, IReadOn
         indice.Any(s => s.Documento == cita.Documento && s.Seccion == cita.Seccion);
 }
 
+internal sealed class IndiceRelevante : IBaseConocimiento
+{
+    public IReadOnlyList<SeccionDocumento> BuscarSecciones(string consulta, int maximo) =>
+        [new SeccionDocumento("reglamento_academico_2025.md", "Artículo 99", "Ley", consulta)];
+
+    public bool ExisteCita(Cita cita) => false;
+}
+
 internal sealed class AuditoriaDoble : IAuditoria
 {
     public List<EventoAuditoria> Eventos { get; } = [];
@@ -85,9 +93,8 @@ internal sealed class EscenarioAsistente
 
     private readonly PreguntarAsistente _asistente;
 
-    private EscenarioAsistente(Func<SolicitudLlm, int, RespuestaLlm> guion, IBaseConocimiento baseConocimiento, string? canario)
+    private EscenarioAsistente(Func<SolicitudLlm, int, RespuestaLlm> guion, IBaseConocimiento baseConocimiento, string? canario, DatosAcademicos datos)
     {
-        var datos = DatosReferencia.Cargar();
         var reloj = new RelojFijo();
         var limites = new LimitesAsistente();
         Api = new ApiAcademicaDoble(datos);
@@ -114,8 +121,9 @@ internal sealed class EscenarioAsistente
     public static EscenarioAsistente Con(
         Func<SolicitudLlm, int, RespuestaLlm> guion,
         IBaseConocimiento? baseConocimiento = null,
-        string? canario = null) =>
-        new(guion, baseConocimiento ?? new IndiceFijo([], []), canario);
+        string? canario = null,
+        DatosAcademicos? datos = null) =>
+        new(guion, baseConocimiento ?? new IndiceRelevante(), canario, datos ?? DatosReferencia.Cargar());
 
     public static RespuestaLlm Texto(string texto) => new(texto, [], new UsoTokens(10, 5), false);
 

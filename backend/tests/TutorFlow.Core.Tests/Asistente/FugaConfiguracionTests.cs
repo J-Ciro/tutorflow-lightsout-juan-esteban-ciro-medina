@@ -49,15 +49,20 @@ public sealed class FugaConfiguracionTests
     [Fact]
     [Trait("ESC", "ESC-163")]
     [Trait("SEG", "SEG-10d")]
-    public async Task Siete_palabras_consecutivas_del_prompt_no_se_bloquean()
+    [Trait("CA", "CA-06")]
+    [Trait("SEG", "SEG-10e")]
+    public async Task Siete_palabras_consecutivas_del_prompt_no_son_fuga_y_sin_respaldo_se_reemplazan_por_COMP_03_con_auditoria_sin_informacion()
     {
-        var fragmento = string.Empty;
-        var escenario = Con((solicitud, _) => Texto(fragmento = FragmentoDelPrompt(solicitud.PromptSistema, PalabrasSinFuga)));
+        var seccion = new SeccionDocumento(BaseDelReglamento, "Artículo 12", "Ley", "Institucional.");
+        var escenario = Con((solicitud, _) => Texto(FragmentoDelPrompt(solicitud.PromptSistema, PalabrasSinFuga)), new IndiceFijo([seccion], [seccion]));
 
         var resultado = await escenario.PreguntarAsync(Estudiante, PreguntaInstrucciones);
 
-        Assert.Equal(fragmento, resultado.Respuesta!.Respuesta);
-        Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
+        Assert.Single(escenario.Llm.Solicitudes);
+        Assert.Equal(Textos.SinInformacion, resultado.Respuesta!.Respuesta);
+        Assert.Empty(resultado.Respuesta.Citas);
+        Assert.Equal(ResultadoAuditoria.SinInformacion, resultado.Auditoria);
+        Assert.Equal(ResultadoAuditoria.SinInformacion, Assert.Single(escenario.Auditoria.Eventos).Resultado);
     }
 
     [Theory]
@@ -126,7 +131,7 @@ public sealed class FugaConfiguracionTests
     public async Task Un_fragmento_del_prompt_que_tambien_esta_en_una_seccion_entregada_no_cuenta_como_fuga()
     {
         var fragmento = FragmentoDelPrompt(ConstructorPrompts.PromptSistema(Rol.Estudiante, null), PalabrasDeFuga);
-        var seccion = new SeccionDocumento(BaseDelReglamento, "Artículo 1", "Principios", $"El texto dice: {fragmento}.");
+        var seccion = new SeccionDocumento(BaseDelReglamento, "Artículo 1", "Principios", $"El texto institucional dice: {fragmento}.");
         var escenario = Con(Fijo(fragmento), new IndiceFijo([seccion], [seccion]));
 
         var resultado = await escenario.PreguntarAsync(Estudiante, PreguntaInstrucciones);
