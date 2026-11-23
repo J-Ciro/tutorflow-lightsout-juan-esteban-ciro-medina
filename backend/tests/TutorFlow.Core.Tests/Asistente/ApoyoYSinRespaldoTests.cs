@@ -125,14 +125,40 @@ public sealed class ApoyoYSinRespaldoTests
     [Trait("ESC", "ESC-164")]
     [Trait("CA", "CA-14")]
     [Trait("COMP", "COMP-02")]
-    public async Task Sin_citas_escritas_el_respaldo_es_solo_la_seccion_que_comparte_dos_raices_con_la_respuesta()
+    public async Task Sin_citas_escritas_el_respaldo_son_las_secciones_que_comparten_dos_raices_incluidas_las_cifras()
     {
-        var escenario = Con(Fijo("Una asignatura se aprueba con 3.0."), Indice(Articulo5, Articulo11, Articulo12, Articulo22));
+        var escenario = Con(Fijo("Una asignatura se aprueba con 3.0."), Indice(Articulo5, Articulo6, Articulo11, Articulo12, Articulo20, Articulo22));
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
-        AfirmarRespondida(resultado, "Una asignatura se aprueba con 3.0.", [new Cita(Reglamento, "Artículo 5")]);
+        AfirmarRespondida(resultado, "Una asignatura se aprueba con 3.0.", [new Cita(Reglamento, "Artículo 5"), new Cita(Reglamento, "Artículo 6")]);
         Assert.DoesNotContain(resultado.Respuesta!.Citas, c => c.Documento == Textos.DocumentoDatosEstudiante);
+    }
+
+    [Fact]
+    [Trait("ESC", "ESC-164")]
+    [Trait("CA", "CA-14")]
+    [Trait("COMP", "COMP-02")]
+    public async Task El_respaldo_de_la_nota_minima_sigue_el_orden_de_ranking_y_nunca_incluye_el_Articulo_20()
+    {
+        var escenario = Con(Fijo("Una asignatura se aprueba con 3.0."), Indice(Articulo20, Articulo6, Articulo5, Articulo11, Articulo12, Articulo22));
+
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
+
+        AfirmarRespondida(resultado, "Una asignatura se aprueba con 3.0.", [new Cita(Reglamento, "Artículo 6"), new Cita(Reglamento, "Artículo 5")]);
+    }
+
+    [Fact]
+    [Trait("ESC", "ESC-164")]
+    [Trait("CA", "CA-14")]
+    [Trait("COMP", "COMP-02")]
+    public async Task Un_entero_no_es_la_cifra_3_0_y_el_respaldo_queda_solo_en_el_Articulo_5()
+    {
+        var escenario = Con(Fijo("Una asignatura se aprueba con 3."), Indice(Articulo5, Articulo6, Articulo11, Articulo12, Articulo20, Articulo22));
+
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
+
+        AfirmarRespondida(resultado, "Una asignatura se aprueba con 3.", [new Cita(Reglamento, "Artículo 5")]);
     }
 
     [Fact]
@@ -142,11 +168,11 @@ public sealed class ApoyoYSinRespaldoTests
     public async Task La_cita_al_reglamento_2023_se_descarta_y_el_respaldo_es_el_mismo_de_la_respuesta_sin_cita()
     {
         var texto = "Una asignatura se aprueba con 3.0. reglamento_academico_2023.md · Artículo 5";
-        var escenario = Con(Fijo(texto), Indice(Articulo5, Articulo11, Articulo12, Articulo22));
+        var escenario = Con(Fijo(texto), Indice(Articulo5, Articulo6, Articulo11, Articulo12, Articulo20, Articulo22));
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
-        AfirmarRespondida(resultado, texto, [new Cita(Reglamento, "Artículo 5")]);
+        AfirmarRespondida(resultado, texto, [new Cita(Reglamento, "Artículo 5"), new Cita(Reglamento, "Artículo 6")]);
     }
 
     [Fact]
