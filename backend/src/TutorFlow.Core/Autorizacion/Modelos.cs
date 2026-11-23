@@ -16,7 +16,8 @@ public enum MotivoDenegacion
     TerceroMencionado,
     ProgramaAjeno,
     Agregado,
-    HerramientaIdAjeno
+    HerramientaIdAjeno,
+    CapacidadAjena
 }
 
 public sealed record DecisionAcceso(bool Permitido, MotivoDenegacion? Motivo)
