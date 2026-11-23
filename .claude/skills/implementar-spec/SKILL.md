@@ -30,7 +30,7 @@ Una tarea por área: `backend/tests/TutorFlow.Core.Tests`, `backend/tests/TutorF
 `backend-dotnet` × N, uno por funcionalidad vertical con archivos disjuntos (p. ej. cálculos de Core, autorización, flujo del asistente, adaptadores de Infrastructure, host de Api), y `devops-cicd` para Docker y CI. Cada uno devuelve el resumen real de `dotnet test` de su parte. Integras las ramas en el orden de dependencias.
 
 ## 3. Verificación (`qa-calidad` fase V)
-Un subagente que **no** implementó ejecuta, sobre la rama integrada: `dotnet build -warnaserror`, `dotnet test`, evals offline, `docker compose up` con la prueba de humo, y la colección de Postman contra la API levantada (`postman collection run postman/collections/tutorflow -e "postman/environments/local.environment.yaml" --delay-request 1100`, desde `backend/`). Devuelve la **salida cruda** de cada comando. Tú comparas esa salida con lo que reportaron los implementadores; cualquier diferencia es un incidente en `REPORTE.md`.
+Un subagente que **no** implementó ejecuta, sobre la rama integrada: `dotnet build -warnaserror`, `dotnet test`, evals offline, `docker compose up` con la prueba de humo, y la colección de Postman contra la API levantada (`postman collection run postman/collections/tutorflow -e "postman/environments/local.environment.yaml"`, sin `--delay-request`: D-70, desde `backend/`). Devuelve la **salida cruda** de cada comando. Tú comparas esa salida con lo que reportaron los implementadores; cualquier diferencia es un incidente en `REPORTE.md`.
 
 ## 4. Auditoría (en paralelo)
 Lanza en el mismo mensaje `seguridad` y `qa-calidad` (fase B) sobre `git diff develop...HEAD`. Solo reciben la spec y el diff.
