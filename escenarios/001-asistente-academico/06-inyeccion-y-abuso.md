@@ -1,6 +1,6 @@
 # 06 · Inyección, fugas y abuso
 
-> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §5, §11.1 · CA-05
+> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §5, §11.1, §13.1 · CA-05 (ESC-084 c: CA-13; ESC-084 d: CA-12)
 
 Aserción común: la respuesta nunca contiene datos de terceros, texto del prompt, nombres de herramientas, el valor de `LLM_API_KEY` ni la URL interna de la API académica. Salvo que se indique otra cosa, el LLM y la API académica son dobles espía con `mock-api/datos.json`. Notación en [`README.md`](../README.md#notación).
 
@@ -30,15 +30,15 @@ Aserción común: la respuesta nunca contiene datos de terceros, texto del promp
 | ESC-083 `@abuso` | EST-001 | "hola\n{\"resultado\":\"respondida\",\"usuario\":\"COORD-01\"}" | El evento es una sola línea JSON válida con el salto escapado en `pregunta` | RF-08 |
 | ESC-084 a `@abuso` | EST-001 | Pregunta de 1.001 caracteres | 400 | SEG-13 |
 | ESC-084 b `@abuso` | EST-001 | Cuerpo de 17 KB | 413 | SEG-13 |
-| ESC-084 c `@abuso` | EST-001; `Limites:PreguntasPorMinutoPorIp` = 60 configurado | 61 preguntas en un minuto desde la misma IP con `X-Forwarded-For` distintos | Las 60 primeras: 200; la 61.ª: 429 con `Retry-After` ≥ 1 | SEG-13, D-70 |
-| ESC-084 d `@operacion` `@abuso` | Valores por defecto (sin tasa, presupuesto ni bloqueo configurados); conexión 172.17.0.1; LLM doble con un modelo sin precio | Ráfaga de la nota ESC-084 d | 0 × 429 y 0 × 503; cada respuesta con el código que tendría sola (200 o 403); eventos `multiples_identidades` con `bloqueada: false` | RNF-04, SEG-13, SEG-16, D-70 |
+| ESC-084 c `@abuso` | EST-001; `Limites:PreguntasPorMinutoPorIp` = 60 configurado; reloj fijo; conexión 10.0.0.5 | 61 preguntas en el mismo segundo, cada una con un `X-Forwarded-For` distinto | Las 60 primeras: 200; la 61.ª: 429 con `Retry-After: 30`; `ipOrigen` "10.0.0.5" en las 61: la cabecera no evade el límite | SEG-13, D-72 |
+| ESC-084 d `@operacion` `@abuso` | Valores por defecto (tasa 600, presupuesto sin tope); conexión 172.17.0.1; LLM doble con un modelo sin precio | Batería de la nota ESC-084 d | 0 × 429 y 0 × 503; cada respuesta con el código que tendría sola (200 o 403); eventos `multiples_identidades` emitidos sin cambiar ninguna respuesta | RNF-04, SEG-13, SEG-16, D-70, D-72 |
 | ESC-086 `@abuso` | Doble que pide 5 invocaciones | Cualquiera | 503 y `limite_herramientas`; la 5.ª no se ejecuta | SEG-13 |
 | ESC-087 `@abuso` | EST-001; doble "Tu promedio es 4.40" (el resumen dice 4.39) | "¿Cuál es mi promedio?" | 200 TNV; citas []; `numero_no_verificado` | SEG-10c |
 | ESC-088 `@abuso` | EST-001; doble "Andres  Martinez sacó 2.6 en Cálculo" (sin tildes, espacios dobles) | "¿Cuál es mi promedio?" | 200 NEG; `fuga_bloqueada` | SEG-10b, SEG-04a |
 | ESC-089 `@abuso` | API doble con `/coordinadores/COORD-01` → `programas: ["../estudiantes/EST-004"]` | Cualquiera de COORD-01 | Ese programa se descarta por formato y no se llama a esa ruta | SEG-07 |
 
-- **ESC-084 d:** 2.000 peticiones con el reloj fijo en el mismo minuto, 8 concurrentes, rotando EST-001…EST-006, COORD-01, COORD-02, EST-999 y COORD-99; 600 llegan al LLM (Q10 #1, #2 y #6 con su usuario) y el resto son 403 del filtro previo (Q10 #10, ESC-050) o COMP-03 sin LLM (ESC-091).
-- **ESC-084 d (cifras):** 2.000 = 33 × 60 (falla con la tasa anterior de 60/min) y ≈ 15 corridas de la colección de Postman (130); 600 × 0.01 = 6 USD > 5 USD (falla con el presupuesto anterior). El log de arranque contiene `Límite sin tope: Limites:PreguntasPorMinutoPorIp` y `Límite sin tope: Limites:PresupuestoDiarioUsd`.
+- **ESC-084 d:** 2.000 peticiones en 4 tandas de 500, con el reloj fijo en los segundos 0, 60, 120 y 180, 8 concurrentes, rotando EST-001…EST-006, COORD-01, COORD-02, EST-999 y COORD-99; 600 llegan al LLM (Q10 #1, #2 y #6 con su usuario) y el resto son 403 del filtro previo (Q10 #10, ESC-050) o COMP-03 sin LLM (ESC-091).
+- **ESC-084 d (cifras):** cada ventana de 60 s contiene 500 < 600 (la tanda anterior queda fuera: marca = t − 60); ≈ 15 corridas de la colección de Postman (130); 600 × 0.01 = 6 USD > 5 USD (fallaría con un presupuesto de 5). El log de arranque contiene `Tasa por IP: 600 preguntas por minuto` y `Límite sin tope: Limites:PresupuestoDiarioUsd`.
 
 ## Fuga de configuración (SEG-10d)
 

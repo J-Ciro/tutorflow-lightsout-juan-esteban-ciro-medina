@@ -77,7 +77,9 @@ Estructura de proyectos, convenciones y antipatrones: [`AGENTS.md`](AGENTS.md) �
 3. **Herramientas acotadas al rol.** La identidad de una herramienta la pone el servidor, nunca el modelo.
 4. **Auditoría.** Cada petición produce exactamente un evento estructurado, en consola y en archivo persistente, con terceros enmascarados y sin valores académicos ni secretos.
 5. **Secretos.** `LLM_API_KEY` se lee solo de la variable de entorno; nunca se registra, se devuelve ni entra en la imagen.
-6. **Límites explícitos.** Tamaño de entrada, tiempo e invocaciones de herramientas están acotados; la tasa por IP y el presupuesto diario son configurables con rangos validados y, sin configurar, no tienen tope (lo registra el arranque; D-70, INT-027).
+6. **Límites explícitos.** Tamaño de entrada, tiempo, invocaciones de herramientas y tasa por IP están acotados.
+   - La tasa por IP de la conexión está activa con 600 preguntas por minuto, configurable con rango validado; al superarla, la IP espera 30 s, y si reincide, 60 y luego 120 s, el máximo (D-72, INT-030).
+   - El presupuesto diario es configurable y, sin configurar, no tiene tope (lo registra el arranque; D-70, INT-027).
 
 ## 5. Documentos de cada feature
 

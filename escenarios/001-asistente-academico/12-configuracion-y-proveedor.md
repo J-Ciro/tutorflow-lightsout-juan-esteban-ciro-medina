@@ -1,6 +1,6 @@
 # 12 · Configuración, prompt y proveedor del LLM
 
-> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §4, §5, §13 · CA-15 (también ESC-096), CA-20, CA-23
+> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §4, §5, §13 · CA-15, CA-20, CA-23
 
 Salvo que se indique otra cosa:
 
@@ -42,19 +42,20 @@ Notación en [`README.md`](../README.md#notación).
 | z | `Autorizacion:Asignaturas:2:Codigo` | `BD-２０３` (U+FF12, U+FF10, U+FF13) | No arranca | `Configuración inválida: Autorizacion:Asignaturas:2:Codigo = "BD-２０３" (formato ^[A-Z]{2,4}-[0-9]{3}\z)` |
 | aa | `Autorizacion:CodigosAsignatura:0` | `bd203` | No arranca | Exactamente 1 línea para esa clave: `Configuración inválida: Autorizacion:CodigosAsignatura:0 = "bd203" (formato ^[A-Z]{2,4}-[0-9]{3}\z)`; ninguna con `no está en Autorizacion:Asignaturas` |
 | ab | `Autorizacion:Asignaturas:2:Codigo` y `Autorizacion:CodigosAsignatura:0` | `bd203` y `BD-203` | No arranca | La línea de formato de (k) y `Configuración inválida: Autorizacion:CodigosAsignatura:0 = "BD-203" (no está en Autorizacion:Asignaturas)` |
-| ac | `Conocimiento:RelevanciaMinima`, `Limites:PresupuestoDiarioUsd`, `Limites:BloquearMultiplesIdentidades` (una por corrida) | ` 5 `, `5 `, ` true` | No arranca | `… RelevanciaMinima = " 5 " (entero de 1 a 10)`, `… PresupuestoDiarioUsd = "5 " (decimal mayor que 0 y hasta 1000)`, `… BloquearMultiplesIdentidades = " true" (true o false)` |
+| ac | `Conocimiento:RelevanciaMinima`, `Limites:PresupuestoDiarioUsd`, `Limites:PreguntasPorMinutoPorIp` (una por corrida) | ` 5 `, `5 `, ` 600` | No arranca | `… RelevanciaMinima = " 5 " (entero de 1 a 10)`, `… PresupuestoDiarioUsd = "5 " (decimal mayor que 0 y hasta 1000)`, `… PreguntasPorMinutoPorIp = " 600" (entero de 1 a 10000)` |
 | ad | `Autorizacion:Asignaturas:6:Nombre` | ausente (`null`; la entrada solo tiene `Codigo` `EST-103`) | No arranca | `Configuración inválida: Autorizacion:Asignaturas:6:Nombre = "" (nombre vacío)` |
 | ae | `Autorizacion:Asignaturas:2:Codigo` | 63 veces `A`, una comilla doble y `B` | No arranca | `Configuración inválida: Autorizacion:Asignaturas:2:Codigo = "` + 63 `A` + `\…" (formato ^[A-Z]{2,4}-[0-9]{3}\z)`: se escapa y después se trunca a 64 caracteres (63 `A` y la barra), sin la `B` |
 | af | `Autorizacion:Asignaturas` (prueba unitaria del validador) | Lista vacía | Inválido | Exactamente `Configuración inválida: Autorizacion:Asignaturas = "" (catálogo vacío)` |
-| ag | `Limites:PreguntasPorMinutoPorIp` | vacío o ausente | Arranca; sin tope: 61 preguntas en un minuto desde una IP, las 61 con 200 | `Límite sin tope: Limites:PreguntasPorMinutoPorIp` |
-| ah | `Limites:PreguntasPorMinutoPorIp` y `Limites:PresupuestoDiarioUsd` | `60` y `5` | Arranca; efectivos 60 y 5; ninguna línea `Límite sin tope` | — |
+| ag | `Limites:PreguntasPorMinutoPorIp` | vacío o ausente | Arranca; efectivo 600: 600 preguntas en un segundo desde una IP con 200 y la 601.ª con 429 `Retry-After: 30` | `Tasa por IP: 600 preguntas por minuto` |
+| ah | `Limites:PreguntasPorMinutoPorIp` y `Limites:PresupuestoDiarioUsd` | `10000` y `5` | Arranca; efectivos 10000 y 5; ninguna línea `Límite sin tope` | `Tasa por IP: 10000 preguntas por minuto` |
+| ai | `Limites:BloquearMultiplesIdentidades` = `true` y `Proxy:IpsConfiables:0` = `abc` (claves retiradas, D-72) | — | Arranca sin advertencia; se ignoran: 0 respuestas 429 por identidades y `X-Forwarded-For` sin efecto | — |
 
 - **(o)–(q):** salud 200 y la advertencia indicada; con un doble que retiene cada llamada, de 3 peticiones simultáneas de EST-001 ("¿Cuál es mi promedio?") exactamente 2 responden 200 y 1 responde 503 sin LLM, con 2 llamadas.
   - Cálculo (o) y (p): 2 × 0.01 = 0.02 ≤ 0.02 y 0.03 > 0.02.
   - Cálculo (q): 8000 × 0.10 / 10⁶ + 2000 × 0.50 / 10⁶ = 0.0018, 2 × 0.0018 = 0.0036 ≤ 0.0036 y 0.0054 > 0.0036.
   - Con la reserva en 0, las 3 darían 200 (control desactivado).
-- **(r)–(w), (ag), (ah):** salud 200, sin `Configuración inválida` ni `Configuración ignorada`, valor efectivo indicado; en (v) y (ag), la línea esperada está en el log de arranque.
-- Reglas: RNF-05, SEG-11, SEG-13, D-39, D-40, D-70. CA-15.
+- **(r)–(w), (ag)–(ai):** salud 200, sin `Configuración inválida` ni `Configuración ignorada`, valor efectivo indicado; en (v), (ag) y (ah), la línea esperada está en el log de arranque.
+- Reglas: RNF-05, SEG-11, SEG-13, D-39, D-40, D-70, D-72. CA-15.
 
 ## Catálogo, avisos y claves nuevas
 
@@ -73,28 +74,13 @@ Notación en [`README.md`](../README.md#notación).
 - **ESC-188 b:** `Autorizacion:Asignaturas:2:Codigo` = "BD-203" + un carácter + "Arranque correcto", una corrida por U+2028, U+2029, U+202E y U+200B.
 - **ESC-199 c1:** `Configuración inválida: Llm:Temperatura = "<valor>" (decimal de 0 a 0.3)`, `… PuntajeRelativoRelevante = "<valor>" (entero de 1 a 100)`, `… PuntajeRelativoMinimo = " 55" (entero de 1 a 100)` y `… Llm:Semilla = "1 " (entero de 0 a 2147483647)`.
 
-## Proxy de confianza (ESC-096)
-
-Una corrida por valor. `<regla>` = `IP individual IPv4 o IPv6, sin red, rango, puerto ni zona`; la línea esperada es `Configuración inválida: <clave> = "<valor>" (<regla>)`.
-
-| ID | Actor | Entrada | Resultado esperado | Regla |
-| --- | --- | --- | --- | --- |
-| ESC-096 a `@abuso` | `Proxy:IpsConfiables:0` | `10.0.0.0/8`, `172.30.80.0/29`, `2001:db8::/32` | No arranca; línea con la clave `Proxy:IpsConfiables:0` y el valor | RNF-05, D-68 |
-| ESC-096 b `@abuso` | `Proxy:IpsConfiables:0` | `10.0.0.5-10.0.0.9` | No arranca; su línea | RNF-05, D-68 |
-| ESC-096 c | `Proxy:IpsConfiables:0` | `abc`, `10.0.0.256`, `10.1`, `010.0.0.5`, ` 10.0.0.5` | No arranca; su línea (`10.1` es inválido aunque `IPAddress.TryParse` lo acepte) | RNF-05, D-68 |
-| ESC-096 d `@abuso` | `Proxy:IpsConfiables:0` | `10.0.0.5:8080`, `fe80::1%eth0` | No arranca; su línea | RNF-05, D-68 |
-| ESC-096 e `@abuso` | `Proxy:IpsConfiables:0` | `0.0.0.0`, `::` | No arranca; su línea | RNF-05, D-68 |
-| ESC-096 f | `Proxy:IpsConfiables:0` = `10.0.0.5` y `Proxy:IpsConfiables:1` = `abc` | — | No arranca con exactamente 1 línea, la de `Proxy:IpsConfiables:1` | RNF-05, D-68 |
-| ESC-096 g | Variable `Proxy__IpsConfiables` (escalar, no lista) | `172.30.80.2` | No arranca; línea con la clave `Proxy:IpsConfiables` | RNF-05, D-68 |
-| ESC-096 h | `Proxy:IpsConfiables:0` | `10.0.0.5`; con `Proxy:IpsConfiables:1` = `10.0.0.5` (duplicado) | Arranca sin advertencia; el log de arranque registra `10.0.0.5` como IP de confianza | D-68 |
-| ESC-096 i | `Proxy:IpsConfiables:0` | `2001:db8::5` | Arranca sin advertencia | D-68 |
-| ESC-096 j `@alterno` | Variable `Proxy__IpsConfiables__0` vacía | — | Arranca sin advertencia con la lista vacía: se comporta como ESC-047 | RNF-05, D-68 |
+- ESC-096 · retirado (D-72)
 
 ## Prompt y proveedor
 
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
-| ESC-191 `@feliz` `@alterno` | Prompt de `estudiante` y de `coordinador` | Instrucciones fuera de `<ejemplos>` | ≤ 12 pasos numerados de ≤ 40 palabras; P-01…P-07 como en la nota ESC-191; los 7 pasos distintos; 0 `documento.md`; el bloque cumple ESC-173 e y ESC-198 i | D-46, D-58, D-63 F7 |
+| ESC-191 `@feliz` `@alterno` | Prompt de `estudiante` y de `coordinador` | Instrucciones fuera de `<ejemplos>` | ≤ 12 pasos numerados de ≤ 40 palabras; P-01…P-08 como en la nota ESC-191; los 8 pasos distintos; 0 `documento.md`; el bloque cumple ESC-173 e y ESC-198 i | D-46, D-58, D-63 F7 |
 | ESC-192 a–d `@operacion` | Servidor doble del proveedor que registra el cuerpo | EST-001: "¿Cuál es la nota mínima para aprobar una asignatura?" con (a) `ollama`, (b) `openai`, (c) `anthropic`, (d) `ollama` y `Llm:Semilla` 42 | `temperature` 0 (defecto) en todos; `seed` 1 en (a) y (b), ausente en (c), 42 en (d) | D-47, D-59 |
 | ESC-192 e–g | Igual | (e) `ollama` con `Llm:Temperatura` 0.3; (f) `anthropic` con 0.1; (g) `openai` con 0.2 | `temperature` 0.3, 0.1 y 0.2; `seed` 1 en (e) y (g), ausente en (f) | D-59 |
 | ESC-199 d1 `@operacion` | Prompt y formatos reales | Cada llamada de Q10 #1 a #8 con su usuario (Q10 #6 con prelectura) y el reintento de Q10 #6 con "Mateo Vargas perdió Estadística." | Cada una estima ≤ 3.000 tokens (plan §4.4); referencia en la nota ESC-199 d1. Si una supera el tope, falla y se reporta | D-57 |
@@ -104,5 +90,5 @@ Una corrida por valor. `<regla>` = `IP individual IPv4 o IPv6, sin red, rango, p
 | ESC-199 e5 | `openai` doble que reporta 10 | Igual | Igual que (e2): la detección solo aplica a `ollama` | D-57 |
 | ESC-199 f | `ollama` con `Llm:Temperatura` 0.2 | Cualquiera, con reintento | El log de arranque registra 0.2; toda petición, también la del reintento, lleva `temperature` 0.2 y `seed` 1 | D-59 |
 
-- **ESC-191:** P-01 con la frase de COMP-03 y `solo`; P-02 con `lugar`, `horario`, `montos` y `beneficio`; P-03 con `promedio` y `definitivas`; P-04 con `(archivo · sección)`; P-05 con `consecuencias` y `consejos`; P-06 con `sin definitiva` y `perdida`; P-07 con `herramientas`.
+- **ESC-191:** P-01 con la frase de COMP-03 y `solo`; P-02 con `lugar`, `horario`, `montos` y `beneficio`; P-03 con `promedio` y `definitivas`; P-04 con `(archivo · sección)`; P-05 con `consecuencias` y `consejos`; P-06 con `sin definitiva` y `perdida`; P-07 con `herramientas`; P-08 con `LaTeX`, `fórmulas` y `%`. Las instrucciones contienen 0 veces `2023` y `derog` (D-73).
 - **ESC-199 d1:** referencia: Q10 #5, 7.767 caracteres → 2.220 (2.436 reales); Q10 #6 con prelectura, 6.354 → 1.816 (1.984 reales).

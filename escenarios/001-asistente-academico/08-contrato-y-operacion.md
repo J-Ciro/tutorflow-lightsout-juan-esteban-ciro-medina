@@ -42,25 +42,26 @@ Notación en [`README.md`](../README.md#notación).
 | ESC-180 b | Igual con `Llm:ReservaSinPrecioUsd` 0 (se usa 0.01 con advertencia al arrancar) | Igual | Igual que (a) | SEG-13, D-39, D-40 |
 | ESC-180 c `@operacion` | Igual con `ollama` a precio 0 / 0 | Igual | Las 4 responden 200 con costo 0; ningún `precioDesconocido`; 4 llamadas | D-39 |
 
-## IP de origen y proxy de confianza (CA-13)
+## Tasa por IP y bloqueo escalonado (CA-13)
 
-Salvo que se indique otra cosa: la prueba fija la IP de la conexión (plan §15.4); EST-001 pregunta "¿Cuál es la nota mínima para aprobar una asignatura?" con un LLM doble; "proxy" = `Proxy:IpsConfiables` = `["10.0.0.5"]`; "XFF" = `X-Forwarded-For`.
+Salvo que se indique otra cosa: configuración por defecto (600 por minuto); reloj controlado; la prueba fija la IP de la conexión en 10.0.0.5 (plan §15.4); cada pregunta es de EST-001, "¿Cuál es la nota mínima para aprobar una asignatura?", con un LLM doble; "tanda en t" = 601 preguntas con el reloj fijo en el segundo t; "XFF" = `X-Forwarded-For`.
 
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
-| ESC-047 `@abuso` | Sin `Proxy:IpsConfiables` (defecto); conexión 10.0.0.5 | XFF `203.0.113.7` | 200; `ipOrigen` "10.0.0.5"; con la tasa configurada, la petición cuenta para el límite de 10.0.0.5 (ESC-084 c sigue dando 429 a la 61.ª) | SEG-19, D-68 |
-| ESC-048 a `@feliz` | Proxy; conexión 10.0.0.5 | XFF `203.0.113.7` | 200; `ipOrigen` "203.0.113.7"; cuenta para el límite de 203.0.113.7 y no para el de 10.0.0.5 | SEG-19, D-68 |
-| ESC-048 b `@abuso` | Proxy; conexión 10.0.0.5 | XFF `198.51.100.1, 203.0.113.7` | `ipOrigen` "203.0.113.7": solo cuenta el último valor | SEG-19, D-68 |
-| ESC-048 c `@alterno` | Proxy; conexión `::ffff:10.0.0.5` | XFF `203.0.113.7` | `ipOrigen` "203.0.113.7" | D-68 |
-| ESC-048 d `@alterno` | Proxy; conexión 10.0.0.5 | Sin XFF | `ipOrigen` "10.0.0.5" | D-68 |
-| ESC-048 e `@abuso` | Proxy; conexión 10.0.0.5 | XFF `EST-002`, luego `203.0.113.7, abc`; luego sin XFF y con `Forwarded: for=203.0.113.9`, `X-Real-IP: 203.0.113.9` y `X-Forwarded-Host: evil.example` | Las 3: 200 y `ipOrigen` "10.0.0.5"; ningún evento contiene "EST-002" en `ipOrigen` ni "203.0.113.9" | SEG-19, D-68 |
-| ESC-049 `@permisos` `@abuso` | Proxy; conexión 10.0.0.6 (no está en la lista) | XFF `203.0.113.7` | `ipOrigen` "10.0.0.6"; cuenta para el límite de 10.0.0.6 | SEG-19, D-68 |
-| ESC-067 `@abuso` | (a) proxy y (b) sin `Proxy:IpsConfiables`; conexión 127.0.0.1 y luego `::1` | XFF `203.0.113.7` | `ipOrigen` "127.0.0.1" y "::1" en (a) y (b): loopback nunca se confía implícitamente | D-68 |
-| ESC-068 `@permisos` | Proxy; tasa configurada en 60; conexión 10.0.0.5 | 61 preguntas en un minuto con XFF `203.0.113.7` y 1 con XFF `203.0.113.8` | La 61.ª de 203.0.113.7 recibe 429 con `Retry-After`; la de 203.0.113.8, 200: límites independientes tras el proxy | SEG-13, SEG-19 |
-| ESC-069 `@abuso` | Proxy; conexión 10.0.0.5; bloqueo desactivado; reloj controlado | "¿Cuál es mi promedio?": EST-001…EST-004 en los min 0–3 con XFF `203.0.113.7`; EST-005 en el min 3 con XFF `203.0.113.8` | Las 5: 200; exactamente 1 evento con `ipOrigen` "203.0.113.7" y `usuarioIds` EST-001…EST-004; 0 eventos con "10.0.0.5" o "203.0.113.8" | SEG-16, SEG-19 |
-| ESC-095 a `@operacion` `@abuso` | `docker compose up` sin perfil | `curl` a `localhost:8080/api/asistente/preguntar` con XFF `203.0.113.99` | `ipOrigen` distinto de "203.0.113.99" y de "172.30.80.2"; salud 200; no existe el contenedor `web`; en `docker network inspect` de `web-api`, `api` tiene 172.30.80.3 y ningún contenedor tiene 172.30.80.2 | SEG-19, D-68 |
-| ESC-095 b `@operacion` | `docker compose --profile web up` | Una pregunta por `localhost:5173` | 200; `web` está en `web-api` y en `publica`; solo `web` tiene 172.30.80.2 y `api` tiene 172.30.80.3; `ipOrigen` distinto de toda IP del contenedor `web` (`docker inspect`) | SEG-19, D-68 |
-| ESC-095 c `@abuso` | Igual que (b) | XFF `203.0.113.99` por el 5173 y, aparte, por el 8080 | En las 2, `ipOrigen` distinto de "203.0.113.99" (el proxy de la 002 sobrescribe la cabecera; el 8080 no viene de la IP confiada) | SEG-19, D-68 |
+| ESC-047 `@abuso` | Conexión 10.0.0.5 | Una pregunta con XFF `203.0.113.7`; otra con `Forwarded: for=203.0.113.9` y `X-Real-IP: 203.0.113.9`; otra desde la conexión `::ffff:10.0.0.5` | Las 3: 200 y `ipOrigen` "10.0.0.5"; ningún evento contiene "203.0.113.7" ni "203.0.113.9" | SEG-13, D-72 |
+| ESC-068 `@permisos` `@abuso` | Tanda en 0 desde 10.0.0.5 | En el segundo 1: una pregunta desde 10.0.0.6 y otra desde 10.0.0.5 con XFF `10.0.0.6` | 10.0.0.6: 200; 10.0.0.5: 429 con `Retry-After: 29`: límite y bloqueo son por IP de la conexión | SEG-13, D-72 |
+| ESC-142 a `@abuso` | Tanda en 0 | — | Las 600 primeras: 200; la 601.ª: 429 `ProblemDetails` con `Retry-After: 30`, 0 llamadas al LLM y 0 a la API académica | SEG-13, D-72 |
+| ESC-142 b `@abuso` `@alterno` | Tanda en 0 | Preguntas en los segundos 10, 29.5 y 30; `GET /api/salud` en el 10 | 429 con `Retry-After: 20` y `1`; en el 30, 200: las bloqueadas no alargan el bloqueo y la ventana empieza vacía; salud 200 | SEG-13, D-72 |
+| ESC-142 c `@abuso` `@permisos` | Tanda en 0 cuya 601.ª lleva, una por corrida, el cuerpo `{}`, `usuario.id` EST-999 o `Content-Type: text/plain` | — | 429 con `Retry-After: 30` en las 3, no 400, 403 ni 415; 0 lecturas de la API académica: el 429 no revela si un ID existe | SEG-13, D-72 |
+| ESC-142 d `@abuso` | Tandas en 0, 30, 90 y 210 | — | En cada tanda, 600 × 200; la 601.ª: 429 con `Retry-After` 30, 60, 120 y 120 (bloqueos hasta los segundos 30, 90, 210 y 330) | SEG-13, D-72 |
+| ESC-142 e `@alterno` | Igual que (d) | Una tanda más en el segundo 929 (corrida 1) o 930 (corrida 2) | 929: 429 con `Retry-After: 120` (599 s desde el fin del bloqueo, en 330); 930: `Retry-After: 30` (600 s: la escalada se reinicia) | SEG-13, D-72 |
+| ESC-142 f `@alterno` | 600 preguntas en el segundo 0 | Una pregunta en el 59.9 (corrida 1) o en el 60 (corrida 2) | 59.9: 429 con `Retry-After: 30` (las 600 siguen en la ventana); 60: 200 (una marca de hace 60 s exactos ya no cuenta) | SEG-13, D-72 |
+
+- ESC-048 · retirado (D-72)
+- ESC-049 · retirado (D-72)
+- ESC-067 · retirado (D-72)
+- ESC-069 · retirado (D-72)
+- ESC-095 · retirado (D-72)
 
 ## Auditoría
 

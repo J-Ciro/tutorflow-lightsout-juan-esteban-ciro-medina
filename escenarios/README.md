@@ -5,7 +5,7 @@ Los escenarios se agrupan por feature en `escenarios/<feature-id>/`, con el mism
 ## Convenciones
 
 - **Formato:** una tabla por tema con las columnas `ID | Actor | Entrada | Resultado esperado | Regla`. Una fila por caso; las filas no pasan de ~400 caracteres (un texto más largo va en un bullet bajo la tabla). Las condiciones comunes se escriben una sola vez, sobre la tabla.
-- **ID:** `ESC-NNN`, único y nunca reutilizado. Los casos de un escenario se distinguen con una letra (`ESC-175 j`). Un escenario retirado se marca como `~~retirado~~` y no se borra.
+- **ID:** `ESC-NNN`, único y nunca reutilizado. Los casos de un escenario se distinguen con una letra (`ESC-175 j`). Un escenario retirado no se borra: queda en una línea, "ESC-NNN · retirado (D-xx)", sin texto tachado.
 - **Corrección:** cambiar un resultado actualiza la fila en su sitio y registra la D en `decisiones.md`; no se agrega historia ("hasta la v1.x…"): la historia está en git.
 - **Etiquetas:** `@feliz`, `@alterno` (límites, nulos, vacíos), `@permisos`, `@abuso` (ataque deliberado), `@contrato`, `@operacion`.
 - **Trazabilidad:** cada fila indica las reglas (RN, SEG, COMP, D) que verifica; cada archivo indica sus CA.
@@ -39,7 +39,7 @@ Los escenarios se agrupan por feature en `escenarios/<feature-id>/`, con el mism
 
 Los IDs son globales e inmutables: una feature nueva toma el siguiente bloque de 100 libre.
 
-**Continuación del bloque 001.** Los 19 números que quedaban libres ya se usaron (ESC-035 en D-66, ESC-036…039 en D-67 y ESC-047…049, 067…069 y 095…099 en D-68 y D-69). Un caso nuevo de la 001 usa, en este orden:
+**Continuación del bloque 001.** Los 19 números que quedaban libres ya se usaron (ESC-035 en D-66, ESC-036…039 en D-67 y ESC-047…049, 067…069 y 095…099 en D-68 y D-69; D-72 reescribió ESC-047, 068 y 097 y retiró los demás, que no se reutilizan). Un caso nuevo de la 001 usa, en este orden:
 
 1. uno de esos números libres, en el archivo de su tema;
 2. una letra de un escenario existente del mismo tema;
@@ -56,10 +56,10 @@ Los IDs son globales e inmutables: una feature nueva toma el siguiente bloque de
 | [05-permisos.md](001-asistente-academico/05-permisos.md) | Permisos, normalización, homoglifos y capacidades de otro rol | ESC-036…039, ESC-050…066, ESC-130…134, ESC-137…139, ESC-149, ESC-186, ESC-187, ESC-196, ESC-199 a1–a9, b | CA-04, CA-12, CA-24 |
 | [06-inyeccion-y-abuso.md](001-asistente-academico/06-inyeccion-y-abuso.md) | Inyección, fugas e IDs en la salida | ESC-070…089, ESC-145…147, ESC-157, ESC-161, ESC-163, ESC-173, ESC-174, ESC-176 | CA-05 |
 | [07-sin-informacion.md](001-asistente-academico/07-sin-informacion.md) | No invención: umbral, exenciones, respaldo y apoyo | ESC-090…094, ESC-165…171 | CA-06, CA-14 |
-| [08-contrato-y-operacion.md](001-asistente-academico/08-contrato-y-operacion.md) | Contrato, límites, auditoría, despliegue y CI | ESC-047…049, ESC-067…069, ESC-095, ESC-100…119, ESC-143, ESC-144, ESC-148, ESC-150…153, ESC-158…160, ESC-180 | CA-07…CA-11, CA-13 |
-| [09-falsos-positivos-y-suplantacion.md](001-asistente-academico/09-falsos-positivos-y-suplantacion.md) | Sin falsos 403 y suplantación | ESC-097…099, ESC-120…129, ESC-140…142 | CA-12, CA-13 |
+| [08-contrato-y-operacion.md](001-asistente-academico/08-contrato-y-operacion.md) | Contrato, límites, auditoría, despliegue y CI | ESC-047, ESC-068, ESC-100…119, ESC-142, ESC-143, ESC-144, ESC-148, ESC-150…153, ESC-158…160, ESC-180 (retirados: ESC-048, 049, 067, 069, 095) | CA-07…CA-11, CA-13 |
+| [09-falsos-positivos-y-suplantacion.md](001-asistente-academico/09-falsos-positivos-y-suplantacion.md) | Sin falsos 403 y suplantación auditada | ESC-097, ESC-120…129, ESC-140, ESC-141 (retirados: ESC-098, 099) | CA-08, CA-12 |
 | [10-verificacion-de-datos.md](001-asistente-academico/10-verificacion-de-datos.md) | Texto final verificado, pérdidas, definitivas y reintento | ESC-035, ESC-175, ESC-179, ESC-183…185, ESC-193, ESC-199 g1–g4, h1, h2 | CA-06, CA-16, CA-17, CA-21 |
 | [11-citas-y-limpieza.md](001-asistente-academico/11-citas-y-limpieza.md) | Citas, recuperación y limpieza de referencias | ESC-156, ESC-162, ESC-164, ESC-177, ESC-178, ESC-194, ESC-195, ESC-198 | CA-01, CA-14, CA-22 |
-| [12-configuracion-y-proveedor.md](001-asistente-academico/12-configuracion-y-proveedor.md) | Configuración, prompt y proveedor del LLM | ESC-096, ESC-181, ESC-182, ESC-188, ESC-191, ESC-192, ESC-199 c1, c2, d, e1–e5, f | CA-15, CA-20, CA-23 |
+| [12-configuracion-y-proveedor.md](001-asistente-academico/12-configuracion-y-proveedor.md) | Configuración, prompt y proveedor del LLM | ESC-181, ESC-182, ESC-188, ESC-191, ESC-192, ESC-199 c1, c2, d, e1–e5, f | CA-15, CA-20, CA-23 |
 
 `10-salida-trazabilidad-y-limites.md`, `11-ronda-4-verificacion-datos-y-determinismo.md` y `12-v1-12-riesgos-y-ambiguedades.md` quedaron retirados (organizados por ronda) y deben eliminarse con `git rm`.
