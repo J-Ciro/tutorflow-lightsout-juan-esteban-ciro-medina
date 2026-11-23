@@ -30,13 +30,13 @@ public sealed class PreguntasDeQ10ApiTests
     private const string Definitivas = "Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0.";
     private const string TextoP8 = "Requisitos: promedio de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos; da 50% de descuento en la matrícula siguiente.";
 
-    public static TheoryData<string, string, string, string[], string[]> SeccionesEntregadas => new()
+    public static TheoryData<string, string, string, string[]> SeccionesEntregadas => new()
     {
-        { "Q10 #8", "EST-004", PreguntaP8, [Beca31], ["reglamento_academico_2025.md · Artículo 1", "reglamento_academico_2025.md · Artículo 2", Articulo20] },
-        { "Q10 #4", "EST-001", PreguntaP4, [Seccion2, Seccion3], ["bienestar_y_becas.md"] },
-        { "Q10 #7", "EST-001", PreguntaP7, [Bienestar1], ["evaluacion_y_calificaciones.md"] },
-        { "Q10 #1", "EST-001", PreguntaP1, [Articulo5], ["bienestar_y_becas.md"] },
-        { "Q10 #5", "EST-004", PreguntaP5, [Seccion3, Articulo5], ["bienestar_y_becas.md"] }
+        { "Q10 #8", "EST-004", PreguntaP8, [Beca31] },
+        { "Q10 #4", "EST-001", PreguntaP4, [Seccion3, Seccion2, Articulo5] },
+        { "Q10 #7", "EST-001", PreguntaP7, [Bienestar1] },
+        { "Q10 #1", "EST-001", PreguntaP1, [Articulo5, Seccion3] },
+        { "Q10 #5", "EST-004", PreguntaP5, [Seccion3, Seccion2, Articulo5] }
     };
 
     public static TheoryData<string, string, string, string, string[], bool> CitasPorPregunta => new()
@@ -53,7 +53,7 @@ public sealed class PreguntasDeQ10ApiTests
         { "Q10 #8 literal", "EST-004", PreguntaP8, "Promedio ponderado del periodo de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos matriculados. Da 50% de descuento en la matrícula siguiente.", [Beca31], false }
     };
 
-    private static Dictionary<string, string?> ConPuntajeDel50() => new() { [PuntajeRelativo] = "50" };
+    private static Dictionary<string, string?> ConUmbralesPorDefecto() => [];
 
     private static IReadOnlyList<string> FuentesDeDocumentos(SolicitudLlm solicitud) =>
         [.. GuionesLlm.Bloques(solicitud)
@@ -64,26 +64,24 @@ public sealed class PreguntasDeQ10ApiTests
     [MemberData(nameof(SeccionesEntregadas))]
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-194")]
-    [Trait("D", "D-49")]
-    public async Task ESC_194d_Con_el_indice_real_y_el_50_por_ciento_se_entregan_las_secciones_esperadas(string caso, string usuario, string pregunta, string[] incluye, string[] excluye)
+    [Trait("D", "D-54")]
+    public async Task ESC_194d_Con_el_indice_real_y_los_umbrales_55_y_40_se_entregan_los_conjuntos_de_ESC_198a(string caso, string usuario, string pregunta, string[] esperadas)
     {
         Assert.NotEmpty(caso);
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Revisa el detalle."), conocimientoReal: true, configuracion: ConPuntajeDel50());
+        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Revisa el detalle."), conocimientoReal: true, configuracion: ConUmbralesPorDefecto());
 
         await fabrica.PreguntarEstudianteAsync(usuario, pregunta);
 
-        var entregadas = FuentesDeDocumentos(Assert.Single(fabrica.Llm.Solicitudes));
-        Assert.All(incluye, esperada => Assert.Contains(esperada, entregadas));
-        Assert.All(excluye, prohibida => Assert.DoesNotContain(entregadas, e => e.StartsWith(prohibida, StringComparison.Ordinal)));
+        Assert.Equal(esperadas, FuentesDeDocumentos(Assert.Single(fabrica.Llm.Solicitudes)));
     }
 
     [Fact]
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-194")]
-    [Trait("D", "D-49")]
+    [Trait("D", "D-54")]
     public async Task ESC_194d_Q10_8_no_entrega_la_Seccion_3_2_ni_la_Seccion_3_de_evaluacion()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Revisa el detalle."), conocimientoReal: true, configuracion: ConPuntajeDel50());
+        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Revisa el detalle."), conocimientoReal: true, configuracion: ConUmbralesPorDefecto());
 
         await fabrica.PreguntarEstudianteAsync("EST-004", PreguntaP8);
 
@@ -95,7 +93,7 @@ public sealed class PreguntasDeQ10ApiTests
     [Fact]
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-194")]
-    [Trait("D", "D-49")]
+    [Trait("D", "D-54")]
     public async Task ESC_194d_Con_un_puntaje_relativo_de_1_el_umbral_deja_pasar_las_secciones_recuperadas_de_P8()
     {
         var configuracion = new Dictionary<string, string?> { [PuntajeRelativo] = "1" };
@@ -117,7 +115,7 @@ public sealed class PreguntasDeQ10ApiTests
     public async Task Las_citas_de_documento_de_cada_pregunta_de_Q10_son_exactamente_las_de_la_spec(string caso, string usuario, string pregunta, string texto, string[] citas, bool usaDatos)
     {
         Assert.NotEmpty(caso);
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true, configuracion: ConPuntajeDel50());
+        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true, configuracion: ConUmbralesPorDefecto());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync(usuario, pregunta);
 
@@ -134,7 +132,7 @@ public sealed class PreguntasDeQ10ApiTests
     public async Task P6_con_la_herramienta_de_programa_cita_Articulo_6_Seccion_3_y_Articulo_5_y_los_datos_del_programa()
     {
         const string texto = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
-        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true, configuracion: ConPuntajeDel50());
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true, configuracion: ConUmbralesPorDefecto());
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaP6);
 
@@ -149,7 +147,7 @@ public sealed class PreguntasDeQ10ApiTests
     public async Task ESC_194g_Nombrar_la_beca_en_la_respuesta_del_coordinador_no_agrega_citas_de_bienestar()
     {
         const string texto = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3); para la beca revisa con Bienestar.";
-        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true, configuracion: ConPuntajeDel50());
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true, configuracion: ConUmbralesPorDefecto());
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaP6);
 
@@ -161,17 +159,19 @@ public sealed class PreguntasDeQ10ApiTests
     [Fact]
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-194")]
-    [Trait("D", "D-49")]
+    [Trait("D", "D-54")]
+    [Trait("D", "D-63")]
     public async Task ESC_194e_El_Articulo_20_escrito_por_el_modelo_para_Q10_8_se_elimina_del_texto_y_no_se_cita()
     {
         var texto = $"{TextoP8.TrimEnd('.')} ({Articulo20}).";
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true, configuracion: ConPuntajeDel50());
+        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true, configuracion: ConUmbralesPorDefecto());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-004", PreguntaP8);
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.DoesNotContain("Artículo 20", respuesta.Respuesta, StringComparison.Ordinal);
-        Assert.DoesNotContain(".md", respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.Equal(TextoP8, respuesta.Respuesta);
         Assert.Equal([Beca31], respuesta.Citas);
+        Assert.False(respuesta.UsoDatosEstudiante);
+        Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 }
