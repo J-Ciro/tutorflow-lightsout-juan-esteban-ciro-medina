@@ -48,7 +48,6 @@
     ],
     "noContiene": [],
     "citasIncluye": [
-      "evaluacion_y_calificaciones.md · Sección 3",
       "evaluacion_y_calificaciones.md · Sección 4"
     ],
     "citasProhibidas": [],
@@ -124,7 +123,7 @@
     "offline": {
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "La definitiva es 30% del corte 1, 30% del corte 2 y 40% del corte 3, redondeada a una cifra decimal."
+      "texto": "La definitiva es 30% del corte 1, 30% del corte 2 y 40% del corte 3, redondeada a una cifra decimal (evaluacion_y_calificaciones.md · Sección 2 y evaluacion_y_calificaciones.md · Sección 3)."
     }
   },
   {

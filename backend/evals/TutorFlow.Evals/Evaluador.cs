@@ -34,6 +34,7 @@ public static class Evaluador
         fallos.AddRange(Textos(caso, salida));
         fallos.AddRange(Citas(caso, salida));
         fallos.AddRange(CitasExactas(caso, salida));
+        fallos.AddRange(CitasTotal(caso, salida));
         fallos.AddRange(Metadatos(caso, salida));
         fallos.AddRange(Globales(caso, salida, cuerpo, llave));
         return fallos;
@@ -83,6 +84,14 @@ public static class Evaluador
         if (caso.CitasExactas is { } exactas && !exactas.SequenceEqual(citas))
         {
             yield return $"citas debía ser exactamente [{string.Join(", ", exactas)}] y fue [{string.Join(", ", citas)}]";
+        }
+    }
+
+    private static IEnumerable<string> CitasTotal(CasoEval caso, SalidaEval salida)
+    {
+        if (caso.CitasTotal is { } total && salida.Citas!.Count != total)
+        {
+            yield return $"citas debía tener {total} entradas y tuvo {salida.Citas.Count}";
         }
     }
 
