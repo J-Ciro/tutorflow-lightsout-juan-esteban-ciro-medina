@@ -2,7 +2,7 @@
 
 > Regla: cada decisión ocupa como máximo 3 líneas (decisión · por qué · estado). Una corrección actualiza la regla en `spec.md` o `plan.md` y deja aquí su D; la historia está en git.
 
-Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022; D-65, ambigüedades de QA; D-66, arbitraje de la ronda 4; D-67, INT-024 (humano); D-68 y D-69, INT-025 (humano); D-70, INT-027 (humano).
+Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022; D-65, ambigüedades de QA; D-66, arbitraje de la ronda 4; D-67, INT-024 (humano); D-68 y D-69, INT-025 (humano); D-70, INT-027 (humano); D-71, decisión del orquestador.
 Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitution.md). D-11, D-12, D-18 y D-19 no existen.
 
 ## Decisiones
@@ -84,12 +84,14 @@ Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitutio
 - **D-67** · (Humano, INT-024) Las capacidades de otro rol solo se responden con el Art. 22: SEG-04c da 403 `capacidad_ajena` a rol ajeno + capacidad con contenido (qué, cuáles, cuántos) o con permisos, herramientas, lo que vería o simulación; pasan quién y sí o no. Entre coordinadores, igual; del coordinador a un estudiante, solo lo segundo. SEG-10d (d)(2): toda herramienta.
   Por qué: describir capacidades ajenas expone el modelo de permisos; la frontera léxica cerrada no bloquea normativas (INT-020). · Vigente; decisión del humano; no amplía la matriz ni cambia el contrato (403 de D-07).
 - **D-68** · (Humano, INT-025) Proxy de confianza (SEG-19): `Proxy:IpsConfiables`, IPs individuales, vacía por defecto (IP inválida, red o rango → no arranca). Solo una conexión desde esa lista aporta el último valor de `X-Forwarded-For` (`ForwardLimit` 1, sin redes ni loopback implícitos); en Compose, solo la IP fija del contenedor `web` en la red `web-api`.
-  Por qué: tras el proxy de la 002 todos compartían su IP (D-002-14); confiar en una subred o en el gateway del bridge dejaría falsificar la IP desde el host por el 8080. · Vigente; decisión del humano; no cambia el contrato ni la matriz.
+  Por qué: tras el proxy de la 002 todos compartían su IP (D-002-14); confiar en una subred o en el gateway del bridge dejaría falsificar la IP desde el host por el 8080. · Vigente; decisión del humano; no cambia el contrato ni la matriz. Ajuste medido: `api` fija .3 y `ip_range` .4/30 (`api` tomaba .2 y `web` no arrancaba); `web` también en `publica` para publicar el 5173 (plan §13.1).
 - **D-69** · (Humano, INT-025) Corrige SEG-16 con bloqueo: solo la identidad nueva que supera el umbral recibe 429; las registradas siguen atendiéndose; el intento bloqueado no se registra; `Retry-After` = segundos, hacia arriba y mínimo 1, hasta que vence la entrada más antigua; un evento por identidad nueva y ventana.
   Por qué: el bloqueo alcanzaba a las 3 primeras y cada intento renovaba la ventana (bloqueo indefinido). · Vigente; decisión del humano; por defecto sigue solo auditando (D-21).
 - **D-70** · (Humano, INT-027) El evaluador es un cliente legítimo: una IP, 8 identidades e IDs inexistentes, ráfagas, su propia llave y varias corridas al día. Por defecto, tasa por IP y presupuesto diario sin tope (clave ausente o vacía; `0` sigue inválido) y SEG-16 sin bloqueo; endurecer es opt-in validado, con 429 o 503 y `Retry-After`.
   Por qué: el gasto es del dueño de la llave, el propio evaluador (precisión del humano); 130 peticiones sin retardo tardan ~7 s y superan 60/min, y 5 USD a 0.01 dan 500 preguntas; la enumeración la frenan las herramientas atadas a la identidad, no la tasa.
-  Estado: vigente; decisión del humano, que acepta el riesgo de la tasa sin tope y fija que un 429 del proveedor da 503 con su `Retry-After` (1 a 3600 s; plan §4.1). El `Retry-After` de los 503 no cambia el contrato ni la matriz.
+  Estado: vigente; decisión del humano: acepta la tasa sin tope; un 429 del proveedor da 503 con su `Retry-After` (1 a 3600 s; plan §4.1), sin cambiar contrato ni matriz. M-1 cerrada: timeout del LLM en 20 s (Ollama en GPU, 74 peticiones: 0 timeouts, máx. 8.7 s en frío, p95 1.6 s secuencial y 6.5 s concurrente); en CPU, configurable hasta 60.
+- **D-71** · Cada umbral de RNF-02 se mide desde su fase: 20 s desde el inicio de la fase del LLM (llamadas, herramientas y reintento) y 6 s acumulados de API académica; con los defectos, petición total < 27 s (6 + 20 + 1 de margen).
+  Por qué: CA-07 exigía < 21 s en total y la suma real llega a ~26 s; aclarar es lo más simple, no recorta el tiempo del LLM ni cambia el contrato. · Vigente; decisión del orquestador con medición (M-1).
 
 ## Riesgos y su decisión
 
@@ -136,4 +138,6 @@ Ningún riesgo queda aceptado salvo D-01 y la tasa sin tope por defecto de D-70 
 | Una llave de DeepSeek (`sk-`) tomada por OpenAI o una de Mistral sin prefijo → 503 | Mitigado: `LLM_PROVEEDOR=openai-compatible` con `LLM_URL_BASE` y `LLM_MODELO` documentado en plan §4.1 y `.env.example` | ESC-110 a, ESC-119 | D-16, D-70 | CA-07 |
 | `0` leído como ilimitado por error de un operador | Eliminado: sin tope solo con la clave ausente o vacía; `0` no arranca | ESC-181 e, h; ESC-181 v, ag con `Límite sin tope` en el log | D-70 | CA-15 |
 | 503 de `limite_herramientas` a una pregunta legítima | Mitigado: resumen y prelectura desde la primera llamada (COMP-07, COMP-08) | Fase V: 0 × 503 en las 50 respuestas | D-27, D-45, D-70 | CA-01 |
-| Timeout de 20 s con Ollama en CPU, un modelo lento o peticiones concurrentes en cola de Ollama → 503 | Decisión condicionada a la medición M-1 (INT-021): si el p95 de la fase del LLM supera 15 s, el defecto sube a 60 s | M-1: p50, p95 y máximo por pregunta de Q10, secuencial y con 8 concurrentes | D-70 | CA-07, ESC-109, ESC-158 |
+| Timeout de 20 s con Ollama en CPU, un modelo lento o peticiones concurrentes en cola de Ollama → 503 | Mitigado con la medición M-1: 20 s por defecto (GPU: 0 timeouts en 74, máx. 8.7 s, p95 6.5 s concurrente); en CPU, `Limites:TimeoutLlmSegundos` hasta 60 por configuración | ESC-109, ESC-158 a con 20 s; fuera de 1 a 60 no arranca (plan §13.2, ESC-181 f) | D-70 | CA-07, CA-15 |
+| Un contenedor de `web-api` toma 172.30.80.2 (IP confiada) o `web` no arranca | Eliminado: `web` en .2 y `api` en .3 fijas; la asignación dinámica solo da .4 a .7 | Con y sin el perfil `web`, 0 contenedores distintos de `web` con .2 | D-68 | CA-13, ESC-095 a, b |
+| Timeout total ambiguo (CA-07 < 21 s frente a 6 + 20 s) | Eliminado: cada umbral se mide desde su fase; total < 27 s | ESC-158 a (< 21 s de fase) y b (≥ 25 s y < 27 s total) | D-71 | CA-07 |
