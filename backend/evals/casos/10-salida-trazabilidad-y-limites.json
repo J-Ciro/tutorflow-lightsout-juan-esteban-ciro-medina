@@ -513,7 +513,7 @@
       "Datos del estudiante"
     ],
     "citasVacias": false,
-    "usoDatosEstudiante": false,
+    "usoDatosEstudiante": true,
     "respuestaExacta": null,
     "tokensCero": false,
     "filtroPrevio": false,
@@ -1527,7 +1527,7 @@
     "citasExactas": [
       "reglamento_academico_2025.md · Artículo 22"
     ],
-    "usoDatosEstudiante": false,
+    "usoDatosEstudiante": true,
     "respuestaExacta": "No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa.",
     "tokensCero": false,
     "filtroPrevio": false,

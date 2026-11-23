@@ -1,4 +1,5 @@
 using System.Text.Json;
+using TutorFlow.Api.Tests.Dobles;
 
 namespace TutorFlow.Api.Tests.Llm;
 
@@ -22,7 +23,7 @@ public sealed class TemperaturaConfiguradaApiTests
     private static JsonElement Cuerpo(PeticionLlm peticion) => JsonElement.Parse(peticion.Cuerpo);
 
     private static ManejadorLlmFalso ConUnaRespuesta() =>
-        new((p, _) => RespuestasProveedor.Texto(p, "Una asignatura se aprueba con 3.0.", 10, 5));
+        new((p, _) => RespuestasProveedor.Texto(p, "Una asignatura se aprueba con 3.0.", 5));
 
     [Theory]
     [InlineData(null, "0.3", true, "e")]
@@ -56,7 +57,7 @@ public sealed class TemperaturaConfiguradaApiTests
     [Trait("D", "D-59")]
     public async Task ESC_199f_Con_ollama_y_temperatura_0_2_el_log_de_arranque_la_registra_y_toda_peticion_incluida_la_del_reintento_la_lleva_con_semilla_1()
     {
-        var manejador = new ManejadorLlmFalso((p, _) => RespuestasProveedor.Texto(p, "Tu promedio es 4.40.", 10, 5));
+        var manejador = new ManejadorLlmFalso((p, _) => RespuestasProveedor.Texto(p, "Tu promedio es 4.40.", 5));
         using var fabrica = Fabrica(null, manejador, "0.2");
 
         await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPromedio);

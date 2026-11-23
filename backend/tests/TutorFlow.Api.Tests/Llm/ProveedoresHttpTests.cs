@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using TutorFlow.Api.Tests.Dobles;
 using TutorFlow.Core.Asistente;
 
 namespace TutorFlow.Api.Tests.Llm;
@@ -42,6 +43,12 @@ public static class RespuestasProveedor
 
     public static HttpResponseMessage Json(string contenido, HttpStatusCode estado = HttpStatusCode.OK) =>
         new(estado) { Content = new StringContent(contenido, Encoding.UTF8, "application/json") };
+
+    public static HttpResponseMessage Texto(PeticionLlm peticion, string texto, int salida) =>
+        Texto(peticion, texto, ConsumoRealistaHttp.Reportados(peticion), salida);
+
+    public static HttpResponseMessage LlamadaAHerramienta(PeticionLlm peticion, int salida) =>
+        LlamadaAHerramienta(peticion, ConsumoRealistaHttp.Reportados(peticion), salida);
 
     public static HttpResponseMessage Texto(PeticionLlm peticion, string texto, int entrada, int salida) =>
         Serializar(EsAnthropic(peticion)
@@ -102,16 +109,31 @@ public static class RespuestasProveedor
 
     private static HttpResponseMessage Serializar(object valor) => Json(JsonSerializer.Serialize(valor));
 
-    public static HttpResponseMessage Rechazo(PeticionLlm peticion) =>
-        Json(EsAnthropic(peticion)
-            ? """{"id":"msg_3","type":"message","role":"assistant","model":"m","content":[],"stop_reason":"refusal","usage":{"input_tokens":10,"output_tokens":0}}"""
-            : """{"id":"c3","object":"chat.completion","choices":[{"index":0,"message":{"role":"assistant","content":null,"refusal":"No puedo ayudar con eso"},"finish_reason":"stop"}],"usage":{"prompt_tokens":10,"completion_tokens":0,"total_tokens":10}}""");
+    public static HttpResponseMessage Rechazo(PeticionLlm peticion)
+    {
+        var entrada = ConsumoRealistaHttp.Reportados(peticion);
+        return Json(EsAnthropic(peticion)
+            ? $$$"""{"id":"msg_3","type":"message","role":"assistant","model":"m","content":[],"stop_reason":"refusal","usage":{"input_tokens":{{{entrada}}},"output_tokens":0}}"""
+            : $$$"""{"id":"c3","object":"chat.completion","choices":[{"index":0,"message":{"role":"assistant","content":null,"refusal":"No puedo ayudar con eso"},"finish_reason":"stop"}],"usage":{"prompt_tokens":{{{entrada}}},"completion_tokens":0,"total_tokens":{{{entrada}}}}}""");
+    }
 }
 
 public sealed class ProveedoresHttpTests
 {
     private const string Normativa = "¿Cuál es la nota mínima para aprobar una asignatura?";
     private const string RespuestaNormativa = "Una asignatura se aprueba con 3.0.";
+    private const int SalidaPorLlamada = 200;
+    private const decimal PrecioEntrada = 1.0m;
+    private const decimal PrecioSalida = 5.0m;
+    private const decimal ToleranciaDeCosto = 0.000001m;
+
+    private static void AfirmarConsumo(RespuestaApi respuesta, ManejadorLlmFalso manejador)
+    {
+        var entrada = manejador.Peticiones.Sum(ConsumoRealistaHttp.Reportados);
+        var salida = manejador.Peticiones.Count * SalidaPorLlamada;
+        Assert.Equal(entrada + salida, respuesta.Tokens);
+        Assert.InRange(respuesta.CostoUsd, ConsumoRealista.CostoDe(entrada, salida, PrecioEntrada, PrecioSalida) - ToleranciaDeCosto, ConsumoRealista.CostoDe(entrada, salida, PrecioEntrada, PrecioSalida) + ToleranciaDeCosto);
+    }
 
     public static TheoryData<string?, string, string> Proveedores => new()
     {
@@ -142,15 +164,14 @@ public sealed class ProveedoresHttpTests
     [Trait("ESC", "ESC-119")]
     public async Task Respuesta_simple_reporta_tokens_costo_modelo_y_llave_solo_hacia_el_proveedor(string? llave, string host, string modelo)
     {
-        var manejador = new ManejadorLlmFalso((p, _) => RespuestasProveedor.Texto(p, RespuestaNormativa, 1000, 200));
+        var manejador = new ManejadorLlmFalso((p, _) => RespuestasProveedor.Texto(p, RespuestaNormativa, SalidaPorLlamada));
         using var fabrica = Fabrica(llave, manejador);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", Normativa);
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(RespuestaNormativa, respuesta.Respuesta);
-        Assert.Equal(1200, respuesta.Tokens);
-        Assert.Equal(0.002m, respuesta.CostoUsd);
+        AfirmarConsumo(respuesta, manejador);
         Assert.NotEmpty(manejador.Peticiones);
         Assert.All(manejador.Peticiones, p => Assert.Equal(host, p.Uri.Host));
         Assert.All(manejador.Peticiones, p => Assert.Contains(modelo, p.Cuerpo, StringComparison.Ordinal));
@@ -165,16 +186,15 @@ public sealed class ProveedoresHttpTests
     public async Task Flujo_con_herramienta_suma_tokens_de_ambas_invocaciones_y_entrega_el_resultado_al_modelo(string? llave, string host, string modelo)
     {
         var manejador = new ManejadorLlmFalso((p, n) => n == 0
-            ? RespuestasProveedor.LlamadaAHerramienta(p, 1000, 200)
-            : RespuestasProveedor.Texto(p, "Datos revisados.", 1000, 200));
+            ? RespuestasProveedor.LlamadaAHerramienta(p, SalidaPorLlamada)
+            : RespuestasProveedor.Texto(p, "Datos revisados.", SalidaPorLlamada));
         using var fabrica = Fabrica(llave, manejador);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio ponderado del periodo?");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.True(respuesta.UsoDatosEstudiante);
-        Assert.Equal(2400, respuesta.Tokens);
-        Assert.Equal(0.004m, respuesta.CostoUsd);
+        AfirmarConsumo(respuesta, manejador);
         Assert.Equal(2, manejador.Peticiones.Count);
         Assert.Contains("4.39", manejador.Peticiones[1].Cuerpo, StringComparison.Ordinal);
         Assert.All(manejador.Peticiones, p => Assert.Equal(host, p.Uri.Host));
@@ -239,7 +259,7 @@ public sealed class ProveedoresHttpTests
     [Trait("ESC", "ESC-079")]
     public async Task Las_herramientas_enviadas_al_proveedor_no_tienen_parametros_de_id_para_el_estudiante(string? llave)
     {
-        var manejador = new ManejadorLlmFalso((p, _) => RespuestasProveedor.Texto(p, "Listo.", 10, 5));
+        var manejador = new ManejadorLlmFalso((p, _) => RespuestasProveedor.Texto(p, "Listo.", 5));
         using var fabrica = Fabrica(llave, manejador);
 
         await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");

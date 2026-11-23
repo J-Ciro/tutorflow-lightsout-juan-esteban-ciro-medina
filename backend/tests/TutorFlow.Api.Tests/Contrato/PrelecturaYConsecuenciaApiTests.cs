@@ -114,7 +114,9 @@ public sealed class PrelecturaYConsecuenciaApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.All(fabrica.Llm.Solicitudes.SelectMany(s => s.Mensajes), m => Assert.DoesNotContain(FuenteDelPrograma, m.Contenido, StringComparison.Ordinal));
-        Assert.DoesNotContain(fabrica.Api.Llamadas, l => l.StartsWith("ObtenerNotas", StringComparison.Ordinal) || l.StartsWith("ObtenerEstudiantesDePrograma", StringComparison.Ordinal));
+        Assert.DoesNotContain(fabrica.Api.Llamadas, l => l.StartsWith("ObtenerNotas", StringComparison.Ordinal) || l.StartsWith("ObtenerAsistencia", StringComparison.Ordinal));
+        Assert.Equal(1, fabrica.Llm.Llamadas);
+        Assert.Empty(Assert.Single(fabrica.Auditoria.Eventos).DatosConsultados);
         Assert.False(respuesta.UsoDatosEstudiante);
     }
 

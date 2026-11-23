@@ -8,10 +8,10 @@ public sealed class PresupuestoSinPrecioApiTests
     private const string PresupuestoDiario = "0.03";
     private const string ClaveReserva = "Llm:ReservaSinPrecioUsd";
     private const string Pregunta = "¿Cuál es mi promedio?";
-    private const int TokensPorPeticion = 1200;
+    private const int SalidaPorPeticion = 200;
     private const int PeticionesPorEscenario = 4;
     private const int Aceptadas = 3;
-    private static readonly UsoTokens Uso = new(1000, 200);
+    private static readonly UsoTokens Uso = new(0, SalidaPorPeticion);
 
     public static TheoryData<string?> ReservasQueSeUsanPorDefecto => new()
     {
@@ -63,11 +63,12 @@ public sealed class PresupuestoSinPrecioApiTests
         var respuestas = await PreguntarSeguidoAsync(fabrica);
 
         Assert.Equal([200, 200, 200, 503], respuestas.Select(r => r.Estado).ToArray());
-        Assert.All(respuestas.Take(Aceptadas), r =>
+        for (var i = 0; i < Aceptadas; i++)
         {
-            Assert.Equal(TokensPorPeticion, r.Tokens);
-            Assert.Equal(0m, r.CostoUsd);
-        });
+            Assert.Equal(ConsumoRealista.Reportados(llm.Solicitudes[i]) + SalidaPorPeticion, respuestas[i].Tokens);
+            Assert.Equal(0m, respuestas[i].CostoUsd);
+        }
+
         Assert.Equal(Aceptadas, llm.Llamadas);
         Assert.All(fabrica.Auditoria.Eventos.Take(Aceptadas), e => Assert.True(e.PrecioDesconocido));
     }

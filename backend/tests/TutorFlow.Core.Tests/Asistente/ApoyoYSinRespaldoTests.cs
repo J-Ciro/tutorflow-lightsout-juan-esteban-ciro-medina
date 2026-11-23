@@ -286,7 +286,7 @@ public sealed class ApoyoYSinRespaldoTests
         var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es mi promedio?");
 
         var citas = resultado.Respuesta!.Citas.ToArray();
-        Assert.Equal([new Cita(Evaluacion, "Sección 3"), new Cita(Evaluacion, "Sección 4"), new Cita(Reglamento, "Artículo 11")], citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray());
+        Assert.Equal([new Cita(Evaluacion, "Sección 3"), new Cita(Evaluacion, "Sección 4")], citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray());
         Assert.Contains(DatosNotas, citas);
         Assert.Contains(DatosAsistencia, citas);
     }

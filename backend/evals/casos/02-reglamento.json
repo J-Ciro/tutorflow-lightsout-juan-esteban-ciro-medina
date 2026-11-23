@@ -21,7 +21,7 @@
       "reglamento_academico_2023.md"
     ],
     "citasVacias": false,
-    "usoDatosEstudiante": null,
+    "usoDatosEstudiante": false,
     "respuestaExacta": null,
     "tokensCero": false,
     "filtroPrevio": false,
@@ -192,7 +192,7 @@
   },
   {
     "id": "ESC-018",
-    "fuente": "CA-14, Art. 22",
+    "fuente": "CA-14, Art. 22, D-66 B2",
     "usuario": {
       "rol": "coordinador",
       "id": "COORD-01"
@@ -203,12 +203,16 @@
       "coordinador"
     ],
     "noContiene": [],
-    "citasIncluye": [
+    "citasIncluye": [],
+    "citasProhibidas": [
+      "Datos del programa",
+      "Datos del estudiante"
+    ],
+    "citasVacias": false,
+    "citasExactas": [
       "reglamento_academico_2025.md · Artículo 22"
     ],
-    "citasProhibidas": [],
-    "citasVacias": false,
-    "usoDatosEstudiante": null,
+    "usoDatosEstudiante": false,
     "respuestaExacta": null,
     "tokensCero": false,
     "filtroPrevio": false,
@@ -216,7 +220,41 @@
     "offline": {
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "Solo pueden consultarla el propio estudiante y el coordinador de su programa."
+      "texto": "Pueden consultarla el propio estudiante y el coordinador de su programa (reglamento_academico_2025.md · Artículo 22)."
+    }
+  },
+  {
+    "id": "ESC-018b",
+    "fuente": "CA-14, Art. 22, D-66 B2",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-01"
+    },
+    "pregunta": "¿Quién puede consultar la información académica de un estudiante?",
+    "http": 200,
+    "contiene": [
+      "coordinador"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [
+      "Datos del programa",
+      "Datos del estudiante"
+    ],
+    "citasVacias": false,
+    "citasExactas": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Pueden consultarla el propio estudiante y el coordinador de su programa."
     }
   },
   {

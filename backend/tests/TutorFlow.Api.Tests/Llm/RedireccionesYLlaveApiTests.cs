@@ -80,7 +80,7 @@ public sealed class LlaveSoloDelEntornoApiTests
     public async Task ESC_161_Una_llave_en_la_configuracion_se_ignora_y_el_proveedor_resuelto_es_ollama()
     {
         Assert.Null(Environment.GetEnvironmentVariable("LLM_API_KEY"));
-        var manejador = new ManejadorLlmFalso((peticion, _) => RespuestasProveedor.Texto(peticion, "Respuesta de prueba.", 10, 5));
+        var manejador = new ManejadorLlmFalso((peticion, _) => RespuestasProveedor.Texto(peticion, "Respuesta de prueba.", 5));
         var configuracion = new Dictionary<string, string?> { ["LLM_API_KEY"] = LlaveEnConfiguracion };
         using var fabrica = new FabricaApi(configuracion: configuracion, reemplazarLlm: false, manejadorHttp: manejador);
 
@@ -98,7 +98,7 @@ public sealed class LlaveSoloDelEntornoApiTests
     public async Task ESC_161_Ninguna_peticion_saliente_log_ni_respuesta_contiene_la_llave_de_la_configuracion()
     {
         Assert.Null(Environment.GetEnvironmentVariable("LLM_API_KEY"));
-        var manejador = new ManejadorLlmFalso((peticion, _) => RespuestasProveedor.Texto(peticion, "Respuesta de prueba.", 10, 5));
+        var manejador = new ManejadorLlmFalso((peticion, _) => RespuestasProveedor.Texto(peticion, "Respuesta de prueba.", 5));
         var configuracion = new Dictionary<string, string?> { ["LLM_API_KEY"] = LlaveEnConfiguracion };
         using var fabrica = new FabricaApi(configuracion: configuracion, reemplazarLlm: false, manejadorHttp: manejador);
 

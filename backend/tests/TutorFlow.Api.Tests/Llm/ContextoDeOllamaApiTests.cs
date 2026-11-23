@@ -21,21 +21,6 @@ public sealed class ContextoDeOllamaApiTests
         { "e4", null, 2, false }
     };
 
-    private static int Estimar(PeticionLlm peticion)
-    {
-        using var cuerpo = JsonDocument.Parse(peticion.Cuerpo);
-        var caracteres = cuerpo.RootElement.GetProperty("messages").EnumerateArray().Sum(m => CaracteresDe(m.GetProperty("content")));
-        return (int)Math.Ceiling(caracteres / CaracteresPorToken);
-    }
-
-    private static int CaracteresDe(JsonElement contenido) =>
-        contenido.ValueKind switch
-        {
-            JsonValueKind.String => contenido.GetString()!.Length,
-            JsonValueKind.Array => contenido.EnumerateArray().Sum(parte => parte.TryGetProperty("text", out var texto) ? texto.GetString()!.Length : 0),
-            _ => 0
-        };
-
     private static int Reportado(int estimado, int caso) =>
         caso switch
         {
@@ -70,7 +55,7 @@ public sealed class ContextoDeOllamaApiTests
         var reportado = 0;
         var manejador = new ManejadorLlmFalso((peticion, _) =>
         {
-            estimado = Estimar(peticion);
+            estimado = ConsumoRealistaHttp.Estimados(peticion);
             reportado = (int)Math.Ceiling(ProporcionMinimaDelContexto * estimado) - 1;
             return RespuestasProveedor.Texto(peticion, Respuesta, reportado, 5);
         });
@@ -100,7 +85,7 @@ public sealed class ContextoDeOllamaApiTests
         Assert.NotEmpty(caso);
         var manejador = new ManejadorLlmFalso((peticion, _) =>
         {
-            var reportado = Reportado(Estimar(peticion), reporte);
+            var reportado = Reportado(ConsumoRealistaHttp.Estimados(peticion), reporte);
             return reporte == 2 ? SinUso(Respuesta) : RespuestasProveedor.Texto(peticion, Respuesta, reportado, 5);
         });
         using var fabrica = Fabrica(llave, manejador);
@@ -128,6 +113,25 @@ public sealed class ContextoDeOllamaApiTests
         Assert.Equal(Respuesta, respuesta.Respuesta);
         Assert.Single(manejador.Peticiones);
         Assert.False(AfirmacionesDeContexto.ContextoTruncadoRegistrado(Assert.Single(fabrica.Auditoria.Eventos)));
+    }
+
+    [Fact]
+    [Trait("CA", "CA-23")]
+    [Trait("ESC", "ESC-199")]
+    [Trait("D", "D-66")]
+    public async Task ESC_199e6_Con_ollama_un_prompt_tokens_de_10_se_detecta_como_truncado_sin_minimo_de_verosimilitud()
+    {
+        var manejador = new ManejadorLlmFalso((peticion, _) => RespuestasProveedor.Texto(peticion, Respuesta, 10, 5));
+        using var fabrica = Fabrica(null, manejador);
+
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);
+
+        Assert.Equal(Textos.NoVerificable, respuesta.Respuesta);
+        Assert.Empty(respuesta.Citas);
+        Assert.Single(manejador.Peticiones);
+        var evento = Assert.Single(fabrica.Auditoria.Eventos);
+        Assert.Equal(ResultadoAuditoria.Error, evento.Resultado);
+        AfirmacionesDeContexto.AfirmarContextoTruncadoRegistrado(evento);
     }
 
     [Theory]

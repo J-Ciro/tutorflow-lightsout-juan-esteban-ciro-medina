@@ -6,9 +6,12 @@ namespace TutorFlow.Api.Tests.Operacion;
 public sealed class Auditoria503ApiTests
 {
     private const string Pregunta = "¿Cuál es mi promedio?";
-    private const int TokensDeLaPrimeraLlamada = 120;
+    private const int SalidaPorLlamada = 20;
     private const int PeticionesQueConsumenElPresupuesto = 3;
-    private static readonly UsoTokens UsoPorLlamada = new(100, 20);
+    private const decimal CostoDeseadoPorPeticionUsd = 0.0029m;
+    private const decimal TokensPorMillon = 1_000_000m;
+    private const int PrecisionDelPrecio = 6;
+    private static readonly UsoTokens UsoPorLlamada = new(0, SalidaPorLlamada);
 
     public static TheoryData<string> FallosDelLlmTrasLeerDatos => new()
     {
@@ -31,6 +34,16 @@ public sealed class Auditoria503ApiTests
 
     private static Dictionary<string, string?> ConPrecios() => FabricaApi.Precios("10", "10");
 
+    private static async Task<string> PrecioParaUnCostoPorPeticionAsync()
+    {
+        var sonda = ClienteLlmDoble.Texto("Tu promedio es 4.39.", new UsoTokens(0, 0));
+        using var fabricaSonda = new FabricaApi(llm: sonda);
+        await fabricaSonda.PreguntarEstudianteAsync("EST-001", Pregunta);
+        var tokensDeEntrada = ConsumoRealista.Reportados(sonda.Solicitudes[0]);
+        return Math.Round(CostoDeseadoPorPeticionUsd * TokensPorMillon / tokensDeEntrada, PrecisionDelPrecio)
+            .ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
     [Theory]
     [MemberData(nameof(FallosDelLlmTrasLeerDatos))]
     [Trait("CA", "CA-08")]
@@ -39,7 +52,8 @@ public sealed class Auditoria503ApiTests
     [Trait("HALLAZGO", "H-04")]
     public async Task Un_503_por_llm_caido_tras_leer_datos_audita_lo_consultado_y_el_consumo(string tipo)
     {
-        using var fabrica = new FabricaApi(llm: LeeNotasYLuegoFalla(Fallo(tipo)), configuracion: ConPrecios());
+        var llm = LeeNotasYLuegoFalla(Fallo(tipo));
+        using var fabrica = new FabricaApi(llm: llm, configuracion: ConPrecios());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);
 
@@ -50,7 +64,7 @@ public sealed class Auditoria503ApiTests
         Assert.Contains(RecursoConsultado.Notas, evento.RecursosConsultados);
         Assert.Contains(RecursoConsultado.Asistencia, evento.RecursosConsultados);
         Assert.Contains(evento.DatosConsultados, d => d.EstudianteId == "EST-001" && d.Recurso == RecursoConsultado.Notas && d.Asignatura == "CAL-201");
-        Assert.Equal(TokensDeLaPrimeraLlamada, evento.Tokens);
+        Assert.Equal(ConsumoRealista.Reportados(llm.Solicitudes[0]) + SalidaPorLlamada, evento.Tokens);
         Assert.True(evento.CostoUsd > 0m);
         Assert.Empty(evento.Citas);
     }
@@ -82,8 +96,9 @@ public sealed class Auditoria503ApiTests
     [Trait("HALLAZGO", "H-04")]
     public async Task Un_503_por_presupuesto_agotado_audita_lo_leido_antes_de_reservar_y_no_llama_al_llm()
     {
-        var llm = ClienteLlmDoble.Texto("Tu promedio es 4.39.", new UsoTokens(100, 0));
-        var configuracion = new Dictionary<string, string?>(FabricaApi.Precios("30", "0"))
+        var llm = ClienteLlmDoble.Texto("Tu promedio es 4.39.", new UsoTokens(0, 0));
+        var precioEntrada = await PrecioParaUnCostoPorPeticionAsync();
+        var configuracion = new Dictionary<string, string?>(FabricaApi.Precios(precioEntrada, "0"))
         {
             ["Limites:PresupuestoDiarioUsd"] = "0.010",
             ["Llm:ReservaPorPeticionUsd"] = "0.004"

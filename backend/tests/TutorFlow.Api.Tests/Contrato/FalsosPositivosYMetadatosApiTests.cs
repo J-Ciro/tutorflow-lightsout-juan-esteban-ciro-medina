@@ -94,6 +94,20 @@ public sealed class FalsosPositivosApiTests
 
 public sealed class MetadatosApiTests
 {
+    private const int SalidaPorLlamada = 200;
+    private const decimal PrecioEntrada = 1.0m;
+    private const decimal PrecioSalida = 5.0m;
+    private const decimal ToleranciaDeCosto = 0.000001m;
+
+    private static void AfirmarConsumo(RespuestaApi respuesta, ClienteLlmDoble llm)
+    {
+        var entrada = llm.Solicitudes.Sum(ConsumoRealista.Reportados);
+        var salida = llm.Llamadas * SalidaPorLlamada;
+        var costo = ConsumoRealista.CostoDe(entrada, salida, PrecioEntrada, PrecioSalida);
+        Assert.Equal(entrada + salida, respuesta.Tokens);
+        Assert.InRange(respuesta.CostoUsd, costo - ToleranciaDeCosto, costo + ToleranciaDeCosto);
+    }
+
     public static TheoryData<string, string, bool> UsoDeDatos => new()
     {
         { "EST-001", "¿Cómo se calcula la nota definitiva de una asignatura?", false },
@@ -105,14 +119,13 @@ public sealed class MetadatosApiTests
     [Trait("CA", "CA-11")]
     public async Task Costo_se_calcula_con_los_precios_configurados()
     {
-        var llm = ClienteLlmDoble.Texto("Respuesta de prueba.", new UsoTokens(1000, 200));
+        var llm = ClienteLlmDoble.Texto("Respuesta de prueba.", new UsoTokens(0, SalidaPorLlamada));
         using var fabrica = new FabricaApi(llm: llm, configuracion: FabricaApi.Precios("1.0", "5.0"));
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.Equal(1200, respuesta.Tokens);
-        Assert.Equal(0.002m, respuesta.CostoUsd);
+        AfirmarConsumo(respuesta, llm);
     }
 
     [Fact]
@@ -120,14 +133,13 @@ public sealed class MetadatosApiTests
     [Trait("ESC", "ESC-106")]
     public async Task ESC_106_Tokens_y_costo_suman_todas_las_invocaciones_al_llm()
     {
-        var llm = ClienteLlmDoble.ConsultaDatos(uso: new UsoTokens(1000, 200));
+        var llm = ClienteLlmDoble.ConsultaDatos(uso: new UsoTokens(0, SalidaPorLlamada));
         using var fabrica = new FabricaApi(llm: llm, configuracion: FabricaApi.Precios("1.0", "5.0"));
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio ponderado del periodo?");
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.Equal(fabrica.Llm.Llamadas * 1200, respuesta.Tokens);
-        Assert.Equal(fabrica.Llm.Llamadas * 0.002m, respuesta.CostoUsd);
+        AfirmarConsumo(respuesta, llm);
     }
 
     [Fact]

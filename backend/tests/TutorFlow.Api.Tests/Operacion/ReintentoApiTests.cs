@@ -12,8 +12,8 @@ public sealed class ReintentoApiTests
     private const string PreguntaQ10Seis = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
     private const string PerdidaDeMateo = "Mateo Vargas perdió Estadística.";
     private const string PerdidasDeValentina = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
-    private const int TokensPorLlamada = 120;
-    private const decimal CostoPorLlamada = 0.00002m;
+    private const int SalidaPorLlamada = 20;
+    private const decimal ToleranciaDeCosto = 0.000001m;
 
     public static TheoryData<string, string> BloqueosSinReintento => new()
     {
@@ -36,12 +36,14 @@ public sealed class ReintentoApiTests
         Afirmaciones.SalidaDelContrato(respuesta);
         Assert.Equal("Tu promedio es 4.39.", respuesta.Respuesta);
         Assert.Equal(2, fabrica.Llm.Llamadas);
-        Assert.Equal(2 * TokensPorLlamada, respuesta.Tokens);
-        Assert.Equal(2 * CostoPorLlamada, respuesta.CostoUsd);
+        var entrada = fabrica.Llm.Solicitudes.Sum(ConsumoRealista.Reportados);
+        var salida = fabrica.Llm.Llamadas * SalidaPorLlamada;
+        Assert.Equal(entrada + salida, respuesta.Tokens);
+        Assert.InRange(respuesta.CostoUsd, ConsumoRealista.CostoDe(entrada, salida, 0.10m, 0.50m) - ToleranciaDeCosto, ConsumoRealista.CostoDe(entrada, salida, 0.10m, 0.50m) + ToleranciaDeCosto);
         Assert.True(respuesta.UsoDatosEstudiante);
         var evento = Assert.Single(fabrica.Auditoria.Eventos);
         Assert.Equal(ResultadoAuditoria.Respondida, evento.Resultado);
-        Assert.Equal(2 * TokensPorLlamada, evento.Tokens);
+        Assert.Equal(entrada + salida, evento.Tokens);
         AfirmacionesDeReintento.AfirmarReintentoRegistrado(evento);
     }
 

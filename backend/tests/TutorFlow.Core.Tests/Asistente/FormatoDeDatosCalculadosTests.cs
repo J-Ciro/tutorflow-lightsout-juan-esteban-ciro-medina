@@ -152,6 +152,30 @@ public sealed partial class FormatoDeDatosCalculadosTests
         Assert.Contains(linea, lineas);
     }
 
+    [Fact]
+    [Trait("CA", "CA-18")]
+    [Trait("ESC", "ESC-189")]
+    [Trait("D", "D-66")]
+    public async Task ESC_189g_El_resumen_de_EST_006_trae_el_equivalente_de_la_acumulada_y_la_nota_minima()
+    {
+        var lineas = await LineasDelResumenAsync("EST-006");
+
+        Assert.Contains("Equivalente de la acumulada de Estadística sobre la nota completa: 4.0", lineas);
+        Assert.Contains("Nota mínima para aprobar: 3.0", lineas);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-18")]
+    [Trait("ESC", "ESC-189")]
+    [Trait("D", "D-66")]
+    public async Task ESC_189g_El_resumen_de_EST_001_trae_la_nota_minima_y_ninguna_linea_de_equivalente()
+    {
+        var lineas = await LineasDelResumenAsync("EST-001");
+
+        Assert.Contains("Nota mínima para aprobar: 3.0", lineas);
+        Assert.DoesNotContain(lineas, l => l.StartsWith("Equivalente", StringComparison.Ordinal));
+    }
+
     [Theory]
     [MemberData(nameof(LineasDeNotas))]
     [Trait("CA", "CA-18")]

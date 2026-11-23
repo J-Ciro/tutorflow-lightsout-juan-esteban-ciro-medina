@@ -77,7 +77,7 @@ public sealed class InyeccionApiTests
         Assert.Equal(403, respuesta.Estado);
         Afirmaciones.SalidaDelContrato(respuesta);
         Assert.Equal(Textos.NegativaEstudiante, respuesta.Respuesta);
-        Assert.Equal(ClienteLlmDoble.UsoPorDefecto.Total, respuesta.Tokens);
+        Assert.Equal(ConsumoRealista.TokensDe(fabrica.Llm.Solicitudes, ClienteLlmDoble.UsoPorDefecto.Salida), respuesta.Tokens);
         Assert.Equal(0, fabrica.Api.LecturasDatosDe("EST-002"));
         var evento = Assert.Single(fabrica.Auditoria.Eventos);
         Assert.Equal(MotivoDenegacion.HerramientaIdAjeno, evento.MotivoDenegacion);

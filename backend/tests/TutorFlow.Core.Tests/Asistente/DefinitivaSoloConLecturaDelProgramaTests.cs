@@ -62,9 +62,11 @@ public sealed class DefinitivaSoloConLecturaDelProgramaTests
         await escenario.PreguntarAsync(Coord02, PreguntaDefinitiva);
 
         var resultadoDeLaHerramienta = escenario.Llm.TextoDeLlamada(1);
-        Assert.Contains("Valentina Castro (ID EST-005)", resultadoDeLaHerramienta, StringComparison.Ordinal);
-        Assert.Contains("Microeconomía (1.8)", resultadoDeLaHerramienta, StringComparison.Ordinal);
-        Assert.Contains("Estadística (2.3)", resultadoDeLaHerramienta, StringComparison.Ordinal);
-        Assert.DoesNotContain("Contabilidad (3.2)", resultadoDeLaHerramienta, StringComparison.Ordinal);
+        Assert.Contains("Estudiante: Valentina Castro (ID EST-005)", resultadoDeLaHerramienta, StringComparison.Ordinal);
+        Assert.Contains("Perdida por nota: Microeconomía (definitiva 1.8)", resultadoDeLaHerramienta, StringComparison.Ordinal);
+        Assert.Contains("Perdida por nota: Estadística (definitiva 2.3)", resultadoDeLaHerramienta, StringComparison.Ordinal);
+        Assert.Contains("Estudiantes con asignaturas perdidas: Valentina Castro (Microeconomía 1.8; Estadística 2.3)", resultadoDeLaHerramienta, StringComparison.Ordinal);
+        Assert.DoesNotContain("Contabilidad 3.2", resultadoDeLaHerramienta, StringComparison.Ordinal);
+        Assert.DoesNotContain("Contabilidad (definitiva 3.2)", resultadoDeLaHerramienta, StringComparison.Ordinal);
     }
 }

@@ -99,9 +99,8 @@
     ],
     "noContiene": [],
     "citasIncluye": [
-      "reglamento_academico_2025.md · Artículo 20",
-      "bienestar_y_becas.md · Sección 3.1",
-      "evaluacion_y_calificaciones.md · Sección 3"
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
     ],
     "citasProhibidas": [],
     "citasVacias": false,
@@ -113,8 +112,12 @@
     "offline": {
       "herramientas": "todas",
       "estudianteIdCoordinador": null,
-      "texto": "Sí, estás en prueba académica: tu promedio es 2.65, menor a 3.0."
-    }
+      "texto": "Sí, estás en prueba académica: tu promedio es 2.65."
+    },
+    "citasDocumentoExactas": [
+      "reglamento_academico_2025.md · Artículo 20",
+      "evaluacion_y_calificaciones.md · Sección 4"
+    ]
   },
   {
     "id": "ESC-024",
