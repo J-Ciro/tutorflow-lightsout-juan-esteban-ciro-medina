@@ -122,7 +122,8 @@ public sealed class HerramientasAsistente
 
         var id = solicitud.Contexto.Usuario.Id;
         var notas = await _apiAcademica.ObtenerNotasAsync(id, solicitud.CancellationToken);
-        var contenido = FormateadorDatos.Cortes(notas, solicitud.Asignatura);
+        var resumen = await ResumirAsync(id, solicitud.CancellationToken);
+        var contenido = ConReglas(solicitud, FormateadorDatos.Cortes(notas, solicitud.Asignatura), ReglasAplicadas.DeNotas([resumen]));
         var codigos = FormateadorDatos.BuscarAsignaturas(notas, solicitud.Asignatura).Select(nota => nota.Codigo);
         solicitud.Registro.RegistrarDatos(DatosLeidos.PorCodigos(id, ProgramaDe(solicitud, id), codigos, RecursoConsultado.Notas));
         return Responder(solicitud, contenido, id, [RecursoConsultado.Notas], Textos.SeccionNotas);
