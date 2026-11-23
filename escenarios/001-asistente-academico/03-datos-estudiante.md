@@ -77,4 +77,4 @@ Valores de la spec §11.4. En todos: `usoDatosEstudiante` es `true` y no hay dat
 ### ESC-034 · Mención de sí mismo por nombre `@alterno`
 - **Dado** el estudiante `EST-001` (Laura Gómez)
 - **Cuando** pregunta "¿Cuál es el promedio de Laura Gómez?"
-- **Entonces** responde 200 con "4.39": mencionarse a sí mismo no es acceso a un tercero. (SEG-04)
+- **Entonces** responde 200 con "4.39": mencionarse a sí mismo no es acceso a un tercero. El nombre completo propio es marcador de primera persona, así que se entrega el resumen de COMP-07 y la pregunta está exenta del umbral de relevancia (COMP-03 (1)); `usoDatosEstudiante: true`. (SEG-04, COMP-07, D-29)

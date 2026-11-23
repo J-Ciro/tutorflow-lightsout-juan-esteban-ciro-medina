@@ -47,7 +47,7 @@ Las 10 preguntas de `preguntas_ejemplo.json`. Son el mínimo innegociable: las p
 ### ESC-009 · Parqueaderos (no existe en los documentos) `@alterno`
 - **Dado** el estudiante `EST-001`
 - **Cuando** pregunta "¿Qué dice el reglamento sobre el uso de parqueaderos?"
-- **Entonces** responde 200; la `respuesta` es exactamente el texto de COMP-03; `citas` es `[]`; `usoDatosEstudiante` es `false`.
+- **Entonces** responde 200; la `respuesta` es exactamente el texto de COMP-03; `citas` es `[]`; `usoDatosEstudiante` es `false`; **sin llamar al LLM**, con `tokens: 0`, `costoUsd: 0` y auditoría `sin_informacion`: raíces de contenido {`parq`} (`reglamento` es palabra genérica y `uso` tiene 3 letras), `r = 1`, mínimo `min(2, 1) = 1`, ninguna sección contiene `parq`. (COMP-03 (1), D-29)
 
 ### ESC-010 · Nota de otro estudiante por nombre `@permisos`
 - **Dado** el estudiante `EST-001`
