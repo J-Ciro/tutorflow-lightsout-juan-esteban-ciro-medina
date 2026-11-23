@@ -41,6 +41,7 @@ public sealed class PreguntarAsistente
     private readonly LectorResumenPropio _lectorResumen;
     private readonly RelevanciaPrevia _relevancia;
     private readonly CitasDeRespuesta _citasDeRespuesta;
+    private readonly AfirmacionesDePerdida _afirmacionesDePerdida;
 
     public PreguntarAsistente(
         IApiAcademica apiAcademica,
@@ -65,6 +66,7 @@ public sealed class PreguntarAsistente
         _lectorResumen = new LectorResumenPropio(politicaAcceso);
         _relevancia = new RelevanciaPrevia(politicaAcceso, configuracion.RelevanciaMinima);
         _citasDeRespuesta = new CitasDeRespuesta(configuracion.ApoyoMinimoRespaldo);
+        _afirmacionesDePerdida = new AfirmacionesDePerdida(configuracion.Catalogo);
     }
 
     public async Task<ResultadoPregunta> EjecutarAsync(
@@ -188,9 +190,18 @@ public sealed class PreguntarAsistente
         var candidatas = _citasDeRespuesta.EscritasConApoyo(texto, entrada.Secciones, sesion.Registro.Reglas);
         var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio, Confidencial(sesion, entrada));
         return verificada.Resultado == ResultadoAuditoria.Respondida
-            ? ResponderVerificada(sesion, verificada, entrada)
+            ? ResponderSiLasPerdidasSeRespaldan(sesion, verificada, entrada, autorizados)
             : Responder(sesion, verificada.Respuesta, verificada.Citas, verificada.Resultado);
     }
+
+    private ResultadoPregunta ResponderSiLasPerdidasSeRespaldan(
+        SesionPregunta sesion,
+        SalidaVerificada verificada,
+        EntradaConversacion entrada,
+        IReadOnlyCollection<string> autorizados) =>
+        _afirmacionesDePerdida.SonVerificables(verificada.Respuesta, autorizados, sesion.Directorio, sesion.Registro.Resumenes)
+            ? ResponderVerificada(sesion, verificada, entrada)
+            : Responder(sesion, Textos.NoVerificable, [], ResultadoAuditoria.EstadoNoVerificado);
 
     private ResultadoPregunta ResponderVerificada(SesionPregunta sesion, SalidaVerificada verificada, EntradaConversacion entrada)
     {

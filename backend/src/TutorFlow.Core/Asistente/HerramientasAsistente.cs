@@ -109,6 +109,7 @@ public sealed class HerramientasAsistente
         var id = solicitud.Contexto.Usuario.Id;
         var resumen = await ResumirAsync(id, solicitud.CancellationToken);
         solicitud.Registro.RegistrarDatos(DatosLeidos.PorAsignatura(resumen, ProgramaDe(solicitud, id), RecursoConsultado.Notas, RecursoConsultado.Asistencia));
+        solicitud.Registro.RegistrarResumen(resumen);
         return Responder(solicitud, ConReglas(solicitud, FormateadorDatos.Notas(resumen), ReglasAplicadas.DeNotas([resumen])), id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], Textos.SeccionNotas);
     }
 
@@ -132,6 +133,7 @@ public sealed class HerramientasAsistente
         var id = solicitud.Contexto.Usuario.Id;
         var resumen = await ResumirAsync(id, solicitud.CancellationToken);
         solicitud.Registro.RegistrarDatos(DatosLeidos.PorAsignatura(resumen, ProgramaDe(solicitud, id), RecursoConsultado.Notas, RecursoConsultado.Asistencia));
+        solicitud.Registro.RegistrarResumen(resumen);
         return Responder(solicitud, ConReglas(solicitud, FormateadorDatos.Asistencia(resumen), ReglasAplicadas.DeAsistencia([resumen])), id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], Textos.SeccionAsistencia);
     }
 
@@ -150,6 +152,7 @@ public sealed class HerramientasAsistente
         var recursos = new[] { RecursoConsultado.DatosBasicos, RecursoConsultado.Notas, RecursoConsultado.Asistencia };
         solicitud.Registro.Registrar(estudiante.Id, recursos, new Cita(Textos.DocumentoDatosEstudiante, Textos.SeccionAsistencia));
         solicitud.Registro.RegistrarDatos(DatosDeEstudiante(estudiante, resumen, RecursoConsultado.DatosBasicos));
+        solicitud.Registro.RegistrarResumen(resumen);
         return Responder(solicitud, contenido, estudiante.Id, recursos, Textos.SeccionNotas);
     }
 
@@ -182,6 +185,7 @@ public sealed class HerramientasAsistente
             lineas.Add(FormateadorDatos.LineaDePrograma(estudiante, resumen));
             solicitud.Registro.Registrar(estudiante.Id, [RecursoConsultado.Programa, RecursoConsultado.Notas, RecursoConsultado.Asistencia], null);
             solicitud.Registro.RegistrarDatos(DatosDeEstudiante(estudiante, resumen, RecursoConsultado.Programa));
+            solicitud.Registro.RegistrarResumen(resumen);
         }
 
         solicitud.Registro.RegistrarCita(new Cita(Textos.DocumentoDatosPrograma, programa.Id));
