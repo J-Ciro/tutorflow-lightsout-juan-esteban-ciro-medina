@@ -1,192 +1,129 @@
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json.Nodes;
+using System.ClientModel;
+using System.ClientModel.Primitives;
+using System.Text.Json;
+using Microsoft.Extensions.AI;
+using OpenAI;
 using TutorFlow.Core.Asistente;
 
 namespace TutorFlow.Infrastructure.Llm;
 
 public sealed class ClienteLlmCompatibleOpenAi : IClienteLlm
 {
-    private const string RutaChatCompletions = "chat/completions";
-    private const string RutaConVersion = "v1/chat/completions";
-    private const string FinPorContenidoFiltrado = "content_filter";
+    private const string LlaveParaServidoresSinAutenticacion = "sin-llave";
+    private const string SegmentoDeVersion = "v1/";
+    private const int ReintentosMaximos = 0;
 
-    private readonly HttpClient _httpClient;
-    private readonly ProveedorResuelto _proveedor;
-    private readonly string? _llave;
+    private readonly IChatClient _cliente;
+    private readonly string _modelo;
 
     public ClienteLlmCompatibleOpenAi(HttpClient httpClient, ProveedorResuelto proveedor, string? llave)
     {
-        _httpClient = httpClient;
-        _proveedor = proveedor;
-        _llave = llave;
+        _modelo = proveedor.Modelo;
+        var opciones = new OpenAIClientOptions
+        {
+            Endpoint = ConstruirEndpoint(proveedor.UrlBase),
+            Transport = new HttpClientPipelineTransport(httpClient),
+            RetryPolicy = new ClientRetryPolicy(ReintentosMaximos)
+        };
+        var credencial = new ApiKeyCredential(string.IsNullOrWhiteSpace(llave) ? LlaveParaServidoresSinAutenticacion : llave);
+        _cliente = new OpenAIClient(credencial, opciones).GetChatClient(proveedor.Modelo).AsIChatClient();
     }
 
     public async Task<RespuestaLlm> CompletarAsync(SolicitudLlm solicitud, CancellationToken cancellationToken)
     {
-        using var peticion = new HttpRequestMessage(HttpMethod.Post, ConstruirUri())
+        var opciones = new ChatOptions
         {
-            Content = JsonContent.Create(ConstruirCuerpo(solicitud))
+            ModelId = _modelo,
+            MaxOutputTokens = solicitud.MaximoTokensSalida,
+            Tools = [.. solicitud.Herramientas.Select(Declarar)]
         };
-        if (!string.IsNullOrWhiteSpace(_llave))
+        try
         {
-            peticion.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _llave);
+            var respuesta = await _cliente.GetResponseAsync(Mensajes(solicitud), opciones, cancellationToken);
+            return Traducir(respuesta);
         }
-
-        using var respuesta = await _httpClient.SendAsync(peticion, cancellationToken);
-        if (!respuesta.IsSuccessStatusCode)
+        catch (ClientResultException)
         {
             throw new DependenciaNoDisponibleException("El proveedor del LLM respondió con un error.");
         }
-
-        var contenido = await respuesta.Content.ReadFromJsonAsync<RespuestaOpenAi>(cancellationToken);
-        return LeerRespuesta(contenido);
     }
 
-    private Uri ConstruirUri()
+    private static Uri ConstruirEndpoint(string urlBase)
     {
-        var baseUrl = new Uri(_proveedor.UrlBase.TrimEnd('/') + "/");
-        var ruta = baseUrl.AbsolutePath == "/" ? RutaConVersion : RutaChatCompletions;
-        return new Uri(baseUrl, ruta);
+        var raiz = new Uri(urlBase.TrimEnd('/') + "/");
+        return raiz.AbsolutePath == "/" ? new Uri(raiz, SegmentoDeVersion) : raiz;
     }
 
-    private JsonObject ConstruirCuerpo(SolicitudLlm solicitud)
+    private static List<ChatMessage> Mensajes(SolicitudLlm solicitud)
     {
-        var cuerpo = new JsonObject
-        {
-            ["model"] = _proveedor.Modelo,
-            ["max_tokens"] = solicitud.MaximoTokensSalida,
-            ["messages"] = Mensajes(solicitud)
-        };
-        if (solicitud.Herramientas.Count > 0)
-        {
-            cuerpo["tools"] = new JsonArray([.. solicitud.Herramientas.Select(Herramienta)]);
-        }
-
-        return cuerpo;
-    }
-
-    private static JsonArray Mensajes(SolicitudLlm solicitud)
-    {
-        var mensajes = new JsonArray { new JsonObject { ["role"] = "system", ["content"] = solicitud.PromptSistema } };
-        foreach (var mensaje in solicitud.Mensajes)
-        {
-            mensajes.Add(Mensaje(mensaje));
-        }
-
+        var mensajes = new List<ChatMessage> { new(ChatRole.System, solicitud.PromptSistema) };
+        mensajes.AddRange(solicitud.Mensajes.Select(Mensaje));
         return mensajes;
     }
 
-    private static JsonObject Mensaje(MensajeLlm mensaje) => mensaje.Rol switch
+    private static ChatMessage Mensaje(MensajeLlm mensaje) => mensaje.Rol switch
     {
-        RolMensaje.Herramienta => new JsonObject { ["role"] = "tool", ["tool_call_id"] = mensaje.IdLlamada, ["content"] = mensaje.Contenido },
+        RolMensaje.Herramienta => new ChatMessage(ChatRole.Tool, [new FunctionResultContent(mensaje.IdLlamada ?? string.Empty, mensaje.Contenido)]),
         RolMensaje.Asistente => MensajeDeAsistente(mensaje),
-        _ => new JsonObject { ["role"] = "user", ["content"] = mensaje.Contenido }
+        _ => new ChatMessage(ChatRole.User, mensaje.Contenido)
     };
 
-    private static JsonObject MensajeDeAsistente(MensajeLlm mensaje)
+    private static ChatMessage MensajeDeAsistente(MensajeLlm mensaje)
     {
-        var resultado = new JsonObject
+        var contenidos = new List<AIContent>();
+        if (!string.IsNullOrEmpty(mensaje.Contenido))
         {
-            ["role"] = "assistant",
-            ["content"] = string.IsNullOrEmpty(mensaje.Contenido) ? null : mensaje.Contenido
-        };
-        if (mensaje.Llamadas.Count > 0)
-        {
-            resultado["tool_calls"] = new JsonArray([.. mensaje.Llamadas.Select(LlamadaDeHerramienta)]);
+            contenidos.Add(new TextContent(mensaje.Contenido));
         }
 
-        return resultado;
+        contenidos.AddRange(mensaje.Llamadas.Select(llamada =>
+            new FunctionCallContent(llamada.Id, llamada.Nombre, ArgumentosDe(llamada.ArgumentosJson))));
+        return new ChatMessage(ChatRole.Assistant, contenidos);
     }
 
-    private static JsonObject LlamadaDeHerramienta(LlamadaHerramienta llamada) => new()
+    private static Dictionary<string, object?> ArgumentosDe(string argumentosJson)
     {
-        ["id"] = llamada.Id,
-        ["type"] = "function",
-        ["function"] = new JsonObject { ["name"] = llamada.Nombre, ["arguments"] = llamada.ArgumentosJson }
-    };
+        using var documento = JsonDocument.Parse(argumentosJson);
+        return documento.RootElement.ValueKind == JsonValueKind.Object
+            ? documento.RootElement.EnumerateObject().ToDictionary(p => p.Name, p => (object?)p.Value.Clone())
+            : [];
+    }
 
-    private static JsonObject Herramienta(HerramientaLlm herramienta)
+    private static AIFunctionDeclaration Declarar(HerramientaLlm herramienta)
     {
-        var propiedades = new JsonObject();
-        foreach (var parametro in herramienta.Parametros)
+        var propiedades = herramienta.Parametros.ToDictionary(
+            parametro => parametro.Nombre,
+            parametro => new { type = "string", description = parametro.Descripcion });
+        var esquema = JsonSerializer.SerializeToElement(new
         {
-            propiedades[parametro.Nombre] = new JsonObject { ["type"] = "string", ["description"] = parametro.Descripcion };
-        }
-
-        var requeridos = herramienta.Parametros.Where(p => p.Requerido).Select(p => (JsonNode)p.Nombre).ToArray();
-        return new JsonObject
-        {
-            ["type"] = "function",
-            ["function"] = new JsonObject
-            {
-                ["name"] = herramienta.Nombre,
-                ["description"] = herramienta.Descripcion,
-                ["parameters"] = new JsonObject { ["type"] = "object", ["properties"] = propiedades, ["required"] = new JsonArray(requeridos) }
-            }
-        };
+            type = "object",
+            properties = propiedades,
+            required = herramienta.Parametros.Where(p => p.Requerido).Select(p => p.Nombre).ToArray()
+        });
+        return AIFunctionFactory.CreateDeclaration(herramienta.Nombre, herramienta.Descripcion, esquema);
     }
 
-    private static RespuestaLlm LeerRespuesta(RespuestaOpenAi? respuesta)
+    private static RespuestaLlm Traducir(ChatResponse respuesta)
     {
-        var contenido = respuesta ?? new RespuestaOpenAi();
-        var eleccion = contenido.Choices is [var primera, ..] ? primera : new EleccionOpenAi();
-        var uso = new UsoTokens(contenido.Usage.PromptTokens, contenido.Usage.CompletionTokens);
-        return new RespuestaLlm(eleccion.Message.Content, LeerLlamadas(eleccion.Message), uso, EsRechazo(eleccion));
+        var rechazada = EsRechazo(respuesta);
+        var texto = rechazada ? null : respuesta.Text;
+        return new RespuestaLlm(
+            string.IsNullOrEmpty(texto) ? null : texto,
+            LlamadasDe(respuesta),
+            UsoDe(respuesta.Usage),
+            rechazada);
     }
 
-    private static bool EsRechazo(EleccionOpenAi eleccion) =>
-        !string.IsNullOrEmpty(eleccion.Message.Refusal) || eleccion.FinishReason == FinPorContenidoFiltrado;
+    private static bool EsRechazo(ChatResponse respuesta) =>
+        respuesta.FinishReason == ChatFinishReason.ContentFilter
+        || (respuesta.RawRepresentation is OpenAI.Chat.ChatCompletion completado && !string.IsNullOrEmpty(completado.Refusal));
 
-    private static List<LlamadaHerramienta> LeerLlamadas(MensajeOpenAi mensaje) =>
-        [.. mensaje.ToolCalls.Select(llamada => new LlamadaHerramienta(llamada.Id, llamada.Function.Name, llamada.Function.Arguments))];
+    private static List<LlamadaHerramienta> LlamadasDe(ChatResponse respuesta) =>
+        [.. respuesta.Messages
+            .SelectMany(mensaje => mensaje.Contents)
+            .OfType<FunctionCallContent>()
+            .Select(llamada => new LlamadaHerramienta(llamada.CallId, llamada.Name, JsonSerializer.Serialize(llamada.Arguments ?? new Dictionary<string, object?>())))];
 
-    private sealed class RespuestaOpenAi
-    {
-        public List<EleccionOpenAi> Choices { get; init; } = [];
-
-        public UsoOpenAi Usage { get; init; } = new();
-    }
-
-    private sealed class EleccionOpenAi
-    {
-        public MensajeOpenAi Message { get; init; } = new();
-
-        [JsonPropertyName("finish_reason")]
-        public string? FinishReason { get; init; }
-    }
-
-    private sealed class MensajeOpenAi
-    {
-        public string? Content { get; init; }
-
-        public string? Refusal { get; init; }
-
-        [JsonPropertyName("tool_calls")]
-        public List<LlamadaOpenAi> ToolCalls { get; init; } = [];
-    }
-
-    private sealed class LlamadaOpenAi
-    {
-        public string Id { get; init; } = string.Empty;
-
-        public FuncionOpenAi Function { get; init; } = new();
-    }
-
-    private sealed class FuncionOpenAi
-    {
-        public string Name { get; init; } = string.Empty;
-
-        public string Arguments { get; init; } = "{}";
-    }
-
-    private sealed class UsoOpenAi
-    {
-        [JsonPropertyName("prompt_tokens")]
-        public int PromptTokens { get; init; }
-
-        [JsonPropertyName("completion_tokens")]
-        public int CompletionTokens { get; init; }
-    }
+    private static UsoTokens UsoDe(UsageDetails? uso) =>
+        new((int)(uso?.InputTokenCount ?? 0), (int)(uso?.OutputTokenCount ?? 0));
 }
