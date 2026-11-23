@@ -27,6 +27,19 @@ public sealed class PoliticaAcceso
     public IReadOnlyList<string> ProgramasAutorizados(Usuario usuario, DirectorioAcademico directorio) =>
         EvaluarIdentidad(usuario, directorio).Permitido ? AmbitoPersonal.ProgramasDe(usuario, directorio) : [];
 
+    public IReadOnlyList<string> IdsPersonasAutorizadas(Usuario usuario, DirectorioAcademico directorio)
+    {
+        if (!EvaluarIdentidad(usuario, directorio).Permitido)
+        {
+            return [];
+        }
+
+        var ambito = AmbitoPersonal.De(usuario, directorio);
+        return [.. directorio.Estudiantes.Select(e => e.Id)
+            .Concat(directorio.Coordinadores.Select(c => c.Id))
+            .Where(id => ambito.ClavesDeNombre.Contains(AmbitoPersonal.Clave(id)))];
+    }
+
     private static bool ExisteIdentidad(Usuario usuario, DirectorioAcademico directorio) => usuario.Rol switch
     {
         Rol.Estudiante => Identificadores.EsIdEstudiante(usuario.Id) && directorio.Estudiantes.Any(e => e.Id == usuario.Id),
