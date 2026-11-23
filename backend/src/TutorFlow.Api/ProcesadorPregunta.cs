@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Globalization;
+using Microsoft.Net.Http.Headers;
 using TutorFlow.Core.Asistente;
 using TutorFlow.Core.Autorizacion;
 
@@ -6,6 +8,9 @@ namespace TutorFlow.Api;
 
 public sealed partial class ProcesadorPregunta
 {
+    private const string TipoDeContenidoJson = "application/json";
+    private const string IpDesconocida = "desconocida";
+    private const string TituloTipoNoSoportado = "El tipo de contenido de la solicitud no está soportado.";
     private const string TituloSolicitudInvalida = "La solicitud no es válida.";
     private const string TituloCuerpoDemasiadoGrande = "El cuerpo de la solicitud supera el tamaño permitido.";
     private const string TituloDemasiadasSolicitudes = "Se superó el límite de preguntas. Intenta de nuevo más tarde.";
@@ -38,9 +43,16 @@ public sealed partial class ProcesadorPregunta
     {
         var peticion = new DatosPeticion(IpDe(contexto), contexto.TraceIdentifier, Stopwatch.StartNew());
         var tasa = _limitadorTasa.Intentar(peticion.Ip);
-        if (!tasa.Permitido)
+        return tasa.Permitido
+            ? await ProcesarEntradaAsync(contexto, peticion, cancellationToken)
+            : await RechazarPorTasaAsync(contexto, peticion, tasa.SegundosParaReintentar, cancellationToken);
+    }
+
+    private async Task<IResult> ProcesarEntradaAsync(HttpContext contexto, DatosPeticion peticion, CancellationToken cancellationToken)
+    {
+        if (!EsJson(contexto.Request.ContentType))
         {
-            return Rechazar429(contexto, peticion, null, tasa.SegundosParaReintentar);
+            return RechazarInvalida(peticion, null, StatusCodes.Status415UnsupportedMediaType, TituloTipoNoSoportado);
         }
 
         var cuerpo = await LectorCuerpo.LeerAsync(contexto.Request.Body, _limites.MaximoBytesCuerpo, cancellationToken);
@@ -55,12 +67,33 @@ public sealed partial class ProcesadorPregunta
             : RechazarInvalida(peticion, solicitud.Pregunta, StatusCodes.Status400BadRequest, TituloSolicitudInvalida);
     }
 
+    private async Task<IResult> RechazarPorTasaAsync(HttpContext contexto, DatosPeticion peticion, int segundosParaReintentar, CancellationToken cancellationToken)
+    {
+        var solicitud = await LeerSolicitudParaAuditoriaAsync(contexto, cancellationToken);
+        return Rechazar429(contexto, peticion, solicitud, segundosParaReintentar);
+    }
+
+    private async Task<SolicitudValidada?> LeerSolicitudParaAuditoriaAsync(HttpContext contexto, CancellationToken cancellationToken)
+    {
+        if (!EsJson(contexto.Request.ContentType))
+        {
+            return null;
+        }
+
+        var cuerpo = await LectorCuerpo.LeerAsync(contexto.Request.Body, _limites.MaximoBytesCuerpo, cancellationToken);
+        return cuerpo.ExcedeElLimite ? null : ValidadorSolicitud.Validar(cuerpo.Bytes, _limites.MaximoCaracteresPregunta);
+    }
+
+    private static bool EsJson(string? tipoDeContenido) =>
+        MediaTypeHeaderValue.TryParse(tipoDeContenido, out var tipo)
+        && string.Equals(tipo.MediaType.Value, TipoDeContenidoJson, StringComparison.OrdinalIgnoreCase);
+
     private static string IpDe(HttpContext contexto)
     {
         var direccion = contexto.Connection.RemoteIpAddress;
         if (direccion is null)
         {
-            return "desconocida";
+            return IpDesconocida;
         }
 
         return (direccion.IsIPv4MappedToIPv6 ? direccion.MapToIPv4() : direccion).ToString();
@@ -157,7 +190,7 @@ public sealed partial class ProcesadorPregunta
             solicitud?.Pregunta,
             ResultadoAuditoria.Denegada,
             peticion.Cronometro.ElapsedMilliseconds));
-        contexto.Response.Headers.RetryAfter = segundosParaReintentar.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        contexto.Response.Headers.RetryAfter = segundosParaReintentar.ToString(CultureInfo.InvariantCulture);
         return Results.Problem(statusCode: StatusCodes.Status429TooManyRequests, title: TituloDemasiadasSolicitudes);
     }
 
