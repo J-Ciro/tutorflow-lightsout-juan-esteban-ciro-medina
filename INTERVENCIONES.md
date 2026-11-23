@@ -192,3 +192,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** un riesgo anotado sin decisión es un defecto aplazado, igual que en INT-020.
 - **Costo:** ~1 min humano.
 - **Prevención:** en la skill `nueva-spec` y en `arquitecto-spec`, todo riesgo identificado lleva una decisión explícita: eliminarlo, mitigarlo con un control verificable o aceptarlo con la aprobación del humano. Queda pendiente del visto bueno del humano.
+
+### INT-022 · 2026-11-23 · Rango de temperatura del LLM
+- **Fase:** spec
+- **Qué pasó:** la spec v1.11 (D-47, §9.4) fijó la temperatura en 0 en todos los adaptadores.
+- **Qué hizo el humano:** *"La temperatura podemos ajustarla de 0 hasta MAXIMO 0.3"*.
+- **Por qué:** se admite un rango acotado para equilibrar el determinismo con la calidad de la respuesta, sin pasar nunca de 0.3.
+- **Costo:** ~1 min humano.
+- **Prevención:** D-47 se ajusta para permitir una temperatura entre 0 y 0.3, como configuración validada al arrancar (RNF-05). Un valor fuera del rango impide arrancar. El valor por defecto se elige con la medición del punto 4.
