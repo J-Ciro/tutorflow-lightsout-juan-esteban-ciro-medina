@@ -23,6 +23,7 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
     private readonly IBaseConocimiento? _conocimiento;
     private readonly bool _reemplazarLlm;
     private readonly HttpMessageHandler? _manejadorHttp;
+    private readonly bool _auditoriaReal;
 
     public FabricaApi(
         ApiAcademicaDoble? api = null,
@@ -31,7 +32,8 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
         IReadOnlyDictionary<string, string?>? configuracion = null,
         bool reemplazarLlm = true,
         HttpMessageHandler? manejadorHttp = null,
-        bool conocimientoReal = false)
+        bool conocimientoReal = false,
+        bool auditoriaReal = false)
     {
         Api = api ?? new ApiAcademicaDoble();
         Llm = llm ?? ClienteLlmDoble.Texto("Respuesta de prueba.");
@@ -39,6 +41,7 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
         _configuracion = configuracion ?? SinConfiguracion;
         _reemplazarLlm = reemplazarLlm;
         _manejadorHttp = manejadorHttp;
+        _auditoriaReal = auditoriaReal;
     }
 
     private static readonly Dictionary<string, string?> SinConfiguracion = [];
@@ -112,11 +115,15 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
     private void Reemplazar(IServiceCollection servicios)
     {
         servicios.RemoveAll<IApiAcademica>();
-        servicios.RemoveAll<IAuditoria>();
         servicios.RemoveAll<IReloj>();
         servicios.AddSingleton<IApiAcademica>(Api);
-        servicios.AddSingleton<IAuditoria>(Auditoria);
         servicios.AddSingleton<IReloj>(Reloj);
+        if (!_auditoriaReal)
+        {
+            servicios.RemoveAll<IAuditoria>();
+            servicios.AddSingleton<IAuditoria>(Auditoria);
+        }
+
         servicios.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, FiltroIpRemota>();
         if (_conocimiento is not null)
         {
