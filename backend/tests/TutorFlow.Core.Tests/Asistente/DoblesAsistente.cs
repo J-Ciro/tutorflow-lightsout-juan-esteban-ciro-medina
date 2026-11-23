@@ -108,7 +108,7 @@ internal sealed class EscenarioAsistente
             new PoliticaAcceso(),
             new VerificadorSalida(),
             limites,
-            new ConfiguracionAsistente(null, canario, datos.Directorio.CodigosAsignatura),
+            new ConfiguracionAsistente(null, canario, datos.Directorio.CodigosAsignatura, catalogo: CatalogoDePrueba.Asignaturas),
             new PresupuestoDiario(reloj, limites));
     }
 
