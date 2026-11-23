@@ -149,3 +149,12 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué se cambió:** `implementar-spec` se reescribió con el patrón de orquestación. El orquestador planifica tareas con archivos sin solapamiento y lanza hasta 4 subagentes en paralelo, cada uno en su `git worktree` y rama `feat/NNN-<slug>--<tarea>`. Integra con `merge --no-ff`, los conflictos los resuelve el agente dueño, y el orquestador no escribe código, pruebas ni spec ni verifica por su cuenta. Nueva fase V en `qa-calidad`: verificación independiente con salida cruda. Se actualizaron `FABRICA.md` y `CLAUDE.md`.
 - **Costo:** ~1 min humano.
 - **Prevención:** la skill obliga a escribir un plan de tareas (agente, archivos, dependencias) antes de lanzar a cualquier agente.
+
+### INT-017 · 2026-11-23 · Logs de las sesiones incompletos
+- **Fase:** configuración de la fábrica
+- **Qué pasó:** `logs/` tenía una sola transcripción (una sesión corta de 9 líneas), aunque se llevaban varias sesiones de trabajo. El hook solo exportaba con `SessionEnd`. La sesión principal empezó antes de que existiera el hook y se retomó con `--continue`, así que nunca terminó. Además el hook ignoraba las 19 transcripciones de subagentes. Al revisar se encontró también que el archivo local de términos privados (`.claude/redacciones.local.txt`) había desaparecido, así que esos términos no se estaban redactando.
+- **Qué hizo el humano:** señaló *"me preocupa del flujo de trabajo que solo se ha generado un log y llevamos ya varias sesiones"*.
+- **Por qué:** el PDF exige guardar los registros de las sesiones de los agentes (regla 5), y la transparencia vale el 15 % de la evaluación.
+- **Qué se cambió:** `exportar-log.js` ahora exporta la sesión del orquestador y todos sus subagentes a `logs/sesiones/<session-id>/{sesion.jsonl, subagentes/}`, de forma idempotente y con redacción. Tiene un modo `--todo` para recuperar lo pendiente, que exportó 21 transcripciones. Se agregó el hook `SubagentStop`, se recreó la lista de términos privados y se verificó con `grep` que no quedaran apariciones. Se actualizaron `logs/README.md` y la skill `cerrar-corrida`.
+- **Costo:** ~1 min humano.
+- **Prevención:** la exportación se dispara al terminar cada subagente y en `cerrar-corrida`, y esa skill verifica que la lista de redacción exista antes de hacer commit de los logs.
