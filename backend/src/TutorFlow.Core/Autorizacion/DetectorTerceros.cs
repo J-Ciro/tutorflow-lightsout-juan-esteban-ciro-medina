@@ -21,6 +21,12 @@ public static partial class DetectorTerceros
     public static bool TieneFormaDeIdPersona(string textoNormalizado, DirectorioAcademico directorio) =>
         MencionesDeId(TokenizadorTexto.Tokenizar(textoNormalizado), directorio).Count > 0;
 
+    public static bool MencionaNombreCompleto(string idPersona, string textoNormalizado, DirectorioAcademico directorio)
+    {
+        var clave = AmbitoPersonal.Clave(idPersona);
+        return MencionesDeNombre(TokenizadorTexto.Tokenizar(textoNormalizado), directorio).Any(mencion => mencion.Clave == clave);
+    }
+
     public static IReadOnlyList<string> PersonasMencionadas(string textoNormalizado, DirectorioAcademico directorio)
     {
         var tokens = TokenizadorTexto.Tokenizar(textoNormalizado);

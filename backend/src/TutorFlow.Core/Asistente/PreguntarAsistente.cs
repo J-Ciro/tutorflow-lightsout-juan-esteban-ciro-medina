@@ -39,6 +39,7 @@ public sealed class PreguntarAsistente
     private readonly ConfiguracionAsistente _configuracion;
     private readonly PresupuestoDiario _presupuesto;
     private readonly LectorResumenPropio _lectorResumen;
+    private readonly RelevanciaPrevia _relevancia;
 
     public PreguntarAsistente(
         IApiAcademica apiAcademica,
@@ -61,6 +62,7 @@ public sealed class PreguntarAsistente
         _configuracion = configuracion;
         _presupuesto = presupuesto;
         _lectorResumen = new LectorResumenPropio(politicaAcceso);
+        _relevancia = new RelevanciaPrevia(politicaAcceso, configuracion.RelevanciaMinima);
     }
 
     public async Task<ResultadoPregunta> EjecutarAsync(
@@ -80,8 +82,18 @@ public sealed class PreguntarAsistente
         var sesion = new SesionPregunta(entrada, ipOrigen, correlationId, api, directorio ?? ConstructorDirectorio.Vacio);
         var decision = Autorizar(sesion);
         return decision.Permitido
-            ? await ResponderConReservaAsync(sesion, cancellationToken)
+            ? await ResponderSiEsRelevanteAsync(sesion, cancellationToken)
             : Denegar(sesion, decision.Motivo, 0);
+    }
+
+    private async Task<ResultadoPregunta> ResponderSiEsRelevanteAsync(SesionPregunta sesion, CancellationToken cancellationToken)
+    {
+        var pregunta = sesion.Entrada.Pregunta;
+        var contexto = new ContextoUsuario(sesion.Entrada.Usuario, sesion.Directorio);
+        sesion.Secciones = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(pregunta), _limites.MaximoSeccionesRecuperadas);
+        return _relevancia.DebeResponderSinInformacion(contexto, pregunta, sesion.Secciones)
+            ? Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, usoDatos: false)
+            : await ResponderConReservaAsync(sesion, cancellationToken);
     }
 
     private DecisionAcceso Autorizar(SesionPregunta sesion)
@@ -143,9 +155,8 @@ public sealed class PreguntarAsistente
     private async Task<EntradaConversacion> PrepararEntradaAsync(SesionPregunta sesion, ContextoUsuario contexto, CancellationToken cancellationToken)
     {
         var pregunta = sesion.Entrada.Pregunta;
-        var secciones = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(pregunta), _limites.MaximoSeccionesRecuperadas);
         var resumen = await _lectorResumen.LeerAsync(contexto, pregunta, sesion.Api, sesion.Registro, cancellationToken);
-        return new EntradaConversacion(pregunta, secciones, resumen, ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
+        return new EntradaConversacion(pregunta, sesion.Secciones, resumen, ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
     }
 
     private ResultadoPregunta Completar(SesionPregunta sesion, string texto, EntradaConversacion entrada)
