@@ -46,6 +46,7 @@ internal sealed class LectorResumenPropio
         var resumen = await ResumirAsync(contexto, activacion, api, cancellationToken);
         Registrar(contexto, resumen, registro);
         var entregado = FormateadorResumen.Resumir(resumen);
+        registro.RegistrarReglas(entregado.EntradasDeReglas);
         registro.AgregarFuente(entregado.Texto);
         return entregado;
     }

@@ -27,6 +27,8 @@ public sealed record ResultadoPregunta(
 
 public sealed class PreguntarAsistente
 {
+    private const int MaximoCitasDeReglasAplicadas = 3;
+
     private readonly IApiAcademica _apiAcademica;
     private readonly IClienteLlm _clienteLlm;
     private readonly IBaseConocimiento _baseConocimiento;
@@ -183,7 +185,7 @@ public sealed class PreguntarAsistente
 
         var directorio = sesion.Directorio;
         var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, directorio);
-        var candidatas = _citasDeRespuesta.EscritasConApoyo(texto, entrada.Secciones, ReglasDeDatos(sesion, entrada));
+        var candidatas = _citasDeRespuesta.EscritasConApoyo(texto, entrada.Secciones, sesion.Registro.Reglas);
         var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio, Confidencial(sesion, entrada));
         return verificada.Resultado == ResultadoAuditoria.Respondida
             ? ResponderVerificada(sesion, verificada, entrada)
@@ -198,18 +200,24 @@ public sealed class PreguntarAsistente
             return Responder(sesion, verificada.Respuesta, citasDeTextoFijo, verificada.Resultado);
         }
 
-        var respaldo = verificada.Citas.Count > 0 ? [] : _citasDeRespuesta.Respaldo(verificada.Respuesta, entrada.Secciones);
-        if (verificada.Citas.Count + respaldo.Count == 0 && !sesion.Registro.UsoDatos)
+        var citasDeDocumento = CitasDeDocumento(sesion, verificada, entrada);
+        if (citasDeDocumento.Count == 0 && !sesion.Registro.UsoDatos)
         {
             return Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, usoDatos: false);
         }
 
-        IReadOnlyList<Cita> citas = [.. verificada.Citas.Concat(respaldo).Concat(sesion.Registro.Citas).Distinct()];
+        IReadOnlyList<Cita> citas = [.. citasDeDocumento.Concat(sesion.Registro.Citas).Distinct()];
         return Responder(sesion, verificada.Respuesta, citas, verificada.Resultado);
     }
 
-    private static IReadOnlyCollection<Cita> ReglasDeDatos(SesionPregunta sesion, EntradaConversacion entrada) =>
-        [.. (entrada.Resumen?.Reglas ?? []).Concat(sesion.Registro.Reglas)];
+    private IReadOnlyList<Cita> CitasDeDocumento(SesionPregunta sesion, SalidaVerificada verificada, EntradaConversacion entrada)
+    {
+        var reglasAplicadas = sesion.Registro.Reglas.Take(MaximoCitasDeReglasAplicadas);
+        IReadOnlyList<Cita> escritasYReglas = [.. verificada.Citas.Concat(reglasAplicadas).Distinct()];
+        return escritasYReglas.Count > 0
+            ? escritasYReglas
+            : _citasDeRespuesta.Respaldo(verificada.Respuesta, entrada.Secciones);
+    }
 
     private MaterialConfidencial Confidencial(SesionPregunta sesion, EntradaConversacion entrada) =>
         new(

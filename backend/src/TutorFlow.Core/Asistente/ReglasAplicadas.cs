@@ -9,61 +9,49 @@ public static class ReglasAplicadas
     public const string DocumentoEvaluacion = "evaluacion_y_calificaciones.md";
     public const string DocumentoBienestar = "bienestar_y_becas.md";
 
-    private static readonly Cita DefinitivaEvaluacion = new(DocumentoEvaluacion, Textos.SeccionDefinitiva);
-    private static readonly Cita PromedioEvaluacion = new(DocumentoEvaluacion, Textos.SeccionPromedio);
-    private static readonly Cita NotaMinima = new(DocumentoReglamento, Textos.SeccionNotaMinima);
-    private static readonly Cita Habilitacion = new(DocumentoReglamento, Textos.SeccionHabilitacion);
-    private static readonly Cita NoHabilitables = new(DocumentoReglamento, Textos.SeccionNoHabilitables);
-    private static readonly Cita PerdidaPorInasistencia = new(DocumentoReglamento, Textos.SeccionPerdidaPorInasistencia);
-    private static readonly Cita AsistenciaSinRegistro = new(DocumentoReglamento, Textos.SeccionAsistenciaSinRegistro);
-    private static readonly Cita PruebaAcademica = new(DocumentoReglamento, Textos.SeccionPruebaAcademica);
-    private static readonly Cita BecaPorRendimiento = new(DocumentoBienestar, Textos.SeccionBecaPorRendimiento);
+    private static readonly IReadOnlyList<ReglaCondicionada> OrdenFijo =
+    [
+        new(new Cita(DocumentoEvaluacion, Textos.SeccionDefinitiva), lectura => lectura.Notas),
+        new(new Cita(DocumentoEvaluacion, Textos.SeccionPromedio), lectura => lectura.Notas),
+        new(new Cita(DocumentoReglamento, Textos.SeccionPerdidaPorInasistencia), lectura => lectura.Asistencia),
+        new(new Cita(DocumentoBienestar, Textos.SeccionBecaPorRendimiento), lectura => lectura.Notas),
+        new(new Cita(DocumentoReglamento, Textos.SeccionNotaMinima), lectura => lectura.Hay(EstadoAsignatura.Perdida)),
+        new(new Cita(DocumentoReglamento, Textos.SeccionHabilitacion), lectura => lectura.Hay(EstadoAsignatura.Perdida)),
+        new(new Cita(DocumentoReglamento, Textos.SeccionNoHabilitables), lectura => lectura.Hay(EstadoAsignatura.PerdidaPorInasistencia)),
+        new(new Cita(DocumentoReglamento, Textos.SeccionPerdidaPorInasistencia), lectura => lectura.Hay(EstadoAsignatura.PerdidaPorInasistencia)),
+        new(new Cita(DocumentoReglamento, Textos.SeccionPruebaAcademica), lectura => lectura.PruebaAcademica),
+        new(new Cita(DocumentoReglamento, Textos.SeccionAsistenciaSinRegistro), lectura => lectura.AsistenciaSinRegistro),
+        new(new Cita(DocumentoEvaluacion, Textos.SeccionDefinitiva), lectura => lectura.Hay(EstadoAsignatura.SinDefinitiva))
+    ];
 
-    public static IReadOnlyList<Cita> DeNotas(IReadOnlyList<ResumenEstudiante> resumenes) =>
-        [.. new[] { DefinitivaEvaluacion, PromedioEvaluacion, BecaPorRendimiento }.Concat(Condicionales(resumenes)).Distinct()];
+    public static IReadOnlyList<int> DeNotas(IReadOnlyList<ResumenEstudiante> resumenes) =>
+        Entradas(new LecturaDeReglas(true, false, resumenes));
 
-    public static IReadOnlyList<Cita> DeAsistencia(IReadOnlyList<ResumenEstudiante> resumenes) =>
-        [.. new[] { PerdidaPorInasistencia }.Concat(Condicionales(resumenes)).Distinct()];
+    public static IReadOnlyList<int> DeAsistencia(IReadOnlyList<ResumenEstudiante> resumenes) =>
+        Entradas(new LecturaDeReglas(false, true, resumenes));
 
-    public static IReadOnlyList<Cita> DePrograma(IReadOnlyList<ResumenEstudiante> resumenes) =>
-        [.. Condicionales(resumenes).Distinct()];
+    public static IReadOnlyList<int> DeNotasYAsistencia(IReadOnlyList<ResumenEstudiante> resumenes) =>
+        Entradas(new LecturaDeReglas(true, true, resumenes));
 
-    private static IEnumerable<Cita> Condicionales(IReadOnlyList<ResumenEstudiante> resumenes)
+    public static IReadOnlyList<int> DePrograma(IReadOnlyList<ResumenEstudiante> resumenes) =>
+        Entradas(new LecturaDeReglas(false, false, resumenes));
+
+    public static IReadOnlyList<Cita> Citas(IEnumerable<int> entradas) =>
+        [.. entradas.Distinct().Order().Select(entrada => OrdenFijo[entrada].Cita).Distinct()];
+
+    private static List<int> Entradas(LecturaDeReglas lectura) =>
+        [.. Enumerable.Range(0, OrdenFijo.Count).Where(entrada => OrdenFijo[entrada].Aplica(lectura))];
+
+    private sealed record ReglaCondicionada(Cita Cita, Func<LecturaDeReglas, bool> Aplica);
+
+    private sealed record LecturaDeReglas(bool Notas, bool Asistencia, IReadOnlyList<ResumenEstudiante> Resumenes)
     {
-        var resultados = resumenes.SelectMany(resumen => resumen.Asignaturas).ToList();
-        if (resultados.Any(r => r.Estado == EstadoAsignatura.Perdida))
-        {
-            yield return NotaMinima;
-            yield return Habilitacion;
-        }
+        private IEnumerable<ResultadoAsignatura> Resultados => Resumenes.SelectMany(resumen => resumen.Asignaturas);
 
-        if (resultados.Any(r => r.Estado == EstadoAsignatura.PerdidaPorInasistencia))
-        {
-            yield return NoHabilitables;
-            yield return PerdidaPorInasistencia;
-        }
+        public bool PruebaAcademica => Resumenes.Any(resumen => resumen.PruebaAcademica);
 
-        foreach (var cita in CondicionalesDeEstado(resumenes, resultados))
-        {
-            yield return cita;
-        }
-    }
+        public bool AsistenciaSinRegistro => Resultados.Any(r => r.EstadoAsistencia == EstadoAsistencia.SinRegistro);
 
-    private static IEnumerable<Cita> CondicionalesDeEstado(IReadOnlyList<ResumenEstudiante> resumenes, List<ResultadoAsignatura> resultados)
-    {
-        if (resumenes.Any(resumen => resumen.PruebaAcademica))
-        {
-            yield return PruebaAcademica;
-        }
-
-        if (resultados.Any(r => r.EstadoAsistencia == EstadoAsistencia.SinRegistro))
-        {
-            yield return AsistenciaSinRegistro;
-        }
-
-        if (resultados.Any(r => r.Estado == EstadoAsignatura.SinDefinitiva))
-        {
-            yield return DefinitivaEvaluacion;
-        }
+        public bool Hay(EstadoAsignatura estado) => Resultados.Any(r => r.Estado == estado);
     }
 }
