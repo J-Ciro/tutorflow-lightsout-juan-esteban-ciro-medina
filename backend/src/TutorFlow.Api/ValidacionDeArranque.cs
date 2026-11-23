@@ -6,6 +6,7 @@ namespace TutorFlow.Api;
 internal sealed partial class ValidacionDeArranque : IStartupFilter
 {
     private static readonly string[] VariablesDePrecio = ["LLM_PRECIO_ENTRADA", "LLM_PRECIO_SALIDA"];
+    private static readonly string[] ClavesDeLimitesOpcionales = ["Limites:PreguntasPorMinutoPorIp", "Limites:PresupuestoDiarioUsd"];
 
     private readonly IConfiguration _configuracion;
     private readonly IVariablesEntorno _variables;
@@ -32,8 +33,17 @@ internal sealed partial class ValidacionDeArranque : IStartupFilter
             RegistrarAdvertencia(_logger, advertencia);
         }
 
+        RegistrarLimitesSinTope(efectiva);
         RegistrarProxies(efectiva);
         return siguiente;
+    }
+
+    private void RegistrarLimitesSinTope(IConfiguration efectiva)
+    {
+        foreach (var clave in ClavesDeLimitesOpcionales.Where(clave => string.IsNullOrWhiteSpace(efectiva[clave])))
+        {
+            RegistrarLimiteSinTope(_logger, clave);
+        }
     }
 
     private void RegistrarProxies(IConfiguration efectiva)
@@ -53,6 +63,9 @@ internal sealed partial class ValidacionDeArranque : IStartupFilter
             .Where(par => par.Value is not null);
         return new ConfigurationBuilder().AddConfiguration(_configuracion).AddInMemoryCollection(delEntorno).Build();
     }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Límite sin tope: {Clave}")]
+    private static partial void RegistrarLimiteSinTope(ILogger logger, string clave);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "IPs de proxy de confianza: {Ips}.")]
     private static partial void RegistrarProxyConfiable(ILogger logger, string ips);
