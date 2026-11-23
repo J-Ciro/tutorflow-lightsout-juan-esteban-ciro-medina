@@ -5,7 +5,7 @@ namespace TutorFlow.Api.Tests.Operacion;
 
 public sealed class CatalogoDeAsignaturasInvalidoApiTests
 {
-    private const string ReglaFormato = @"formato ^[A-Z]{2,4}-\d{3}$";
+    private const string ReglaFormato = @"formato ^[A-Z]{2,4}-[0-9]{3}\z";
 
     public static TheoryData<string, string> CodigosSinFormato => new()
     {
