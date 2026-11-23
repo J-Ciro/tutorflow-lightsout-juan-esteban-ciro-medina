@@ -91,10 +91,10 @@ internal static partial class TramosDePersonas
     private static bool EnMencion(TokenTexto token, string personaId, IReadOnlyList<MencionDeAutorizado> menciones) =>
         menciones.Any(mencion => mencion.Id == personaId && token.Inicio >= mencion.Inicio && token.Inicio < mencion.Fin);
 
-    [GeneratedRegex(@"\r?\n|(?<=[.!?;])(?=\s|$)", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+    [GeneratedRegex(@"\r?\n|(?<=[.!?;])(?=\s|$)", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex CorteDeOracion();
 
-    [GeneratedRegex(@"\r?\n", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+    [GeneratedRegex(@"\r?\n", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex SaltoDeLinea();
 
     private sealed partial class HerenciaEnListas(bool activa)
@@ -131,7 +131,7 @@ internal static partial class TramosDePersonas
             return _encabezado;
         }
 
-        [GeneratedRegex(@"^\s*(?:[-*•]|\d+[.)])\s", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+        [GeneratedRegex(@"^\s*(?:[-*•]|\d+[.)])\s", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
         private static partial Regex MarcadorDeLista();
     }
 }

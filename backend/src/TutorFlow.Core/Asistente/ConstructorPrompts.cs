@@ -47,7 +47,7 @@ public static partial class ConstructorPrompts
 
     public static string Instrucciones(string promptSistema) => BloqueDeEjemplos().Replace(promptSistema, string.Empty);
 
-    [GeneratedRegex("<ejemplos>.*?</ejemplos>", RegexOptions.Singleline | RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+    [GeneratedRegex("<ejemplos>.*?</ejemplos>", RegexOptions.Singleline | RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex BloqueDeEjemplos();
 
     internal static MensajeLlm MensajeInicial(string pregunta, IReadOnlyList<SeccionDocumento> secciones, ResumenEntregado? resumen)

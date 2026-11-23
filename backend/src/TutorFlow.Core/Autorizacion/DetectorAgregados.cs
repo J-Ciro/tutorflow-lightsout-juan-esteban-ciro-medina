@@ -12,6 +12,6 @@ public static partial class DetectorAgregados
         + @"|promedio (del curso|del programa|de la carrera)|que estudiantes|todos los estudiantes"
         + @"|otros estudiantes|cuantos estudiantes)\b"
         + @"|\bcompar\w*\b.*\bcompaner\w*\b|\blist\w*\b.*\bestudiantes\b",
-        RegexOptions.CultureInvariant)]
+        RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex PatronesAgregados();
 }

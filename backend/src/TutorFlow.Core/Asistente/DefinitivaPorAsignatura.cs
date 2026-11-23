@@ -95,7 +95,7 @@ internal sealed partial class DefinitivaPorAsignatura
             || resultado.Definitiva == decimal.Parse(atribucion.Cifra, CultureInfo.InvariantCulture);
     }
 
-    [GeneratedRegex(@"^\d\.\d{1,2}\z", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+    [GeneratedRegex(@"^\d\.\d{1,2}\z", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex CifraDeNota();
 
     private sealed record AtribucionDeDefinitiva(string PersonaId, string Clave, string Cifra);

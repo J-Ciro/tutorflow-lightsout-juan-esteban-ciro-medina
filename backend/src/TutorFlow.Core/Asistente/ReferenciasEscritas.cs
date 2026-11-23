@@ -8,7 +8,6 @@ public static partial class ReferenciasEscritas
 {
     private const char Marca = '';
     private const int PalabrasMinimasPorOracion = 3;
-    private const int LimiteRegexMs = 1000;
     private const string DocumentoDerogado = "reglamento_academico_2023.md";
     private const string FinDePalabra = @"(?![\p{L}\p{N}_-])";
     private const string Parada = "(?:según|segun|ver|consulta|en|de|del|con|a|al|el|la|los|las)";
@@ -27,7 +26,7 @@ public static partial class ReferenciasEscritas
         + "|" + Documento + @"\s*[·,:-]\s*" + Seccion
         + "|" + Documento + ")";
 
-    private static readonly TimeSpan LimiteRegex = TimeSpan.FromMilliseconds(LimiteRegexMs);
+    private static readonly TimeSpan LimiteRegex = TimeSpan.FromMilliseconds(TiempoLimiteRegex.Milisegundos);
 
     private static readonly (Regex Patron, string Reemplazo)[] ReglasDeSignos =
     [
@@ -89,18 +88,18 @@ public static partial class ReferenciasEscritas
     private static bool MismoDocumento(Cita cita, string documento) =>
         string.Equals(PlegadoCompatibilidad.Aplicar(cita.Documento), documento, StringComparison.OrdinalIgnoreCase);
 
-    [GeneratedRegex(PatronReferencia, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, LimiteRegexMs)]
+    [GeneratedRegex(PatronReferencia, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
     private static partial Regex Referencia();
 
-    [GeneratedRegex(@"\d+(?:\.\d+)*", RegexOptions.CultureInvariant, LimiteRegexMs)]
+    [GeneratedRegex(@"\d+(?:\.\d+)*", RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
     private static partial Regex NumeroDeSeccion();
 
-    [GeneratedRegex(@"\p{L}{2,}", RegexOptions.CultureInvariant, LimiteRegexMs)]
+    [GeneratedRegex(@"\p{L}{2,}", RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
     private static partial Regex PalabraDeLetras();
 
-    [GeneratedRegex(@"[\p{L}\p{N}]+", RegexOptions.CultureInvariant, LimiteRegexMs)]
+    [GeneratedRegex(@"[\p{L}\p{N}]+", RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
     private static partial Regex PalabraOCifra();
 
-    [GeneratedRegex(@"(?<=\n)|(?<=[.!?;])(?=\s|$)", RegexOptions.CultureInvariant, LimiteRegexMs)]
+    [GeneratedRegex(@"(?<=\n)|(?<=[.!?;])(?=\s|$)", RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
     private static partial Regex CorteDeOracion();
 }

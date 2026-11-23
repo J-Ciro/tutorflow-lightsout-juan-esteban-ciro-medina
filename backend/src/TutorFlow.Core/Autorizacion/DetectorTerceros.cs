@@ -141,9 +141,9 @@ public static partial class DetectorTerceros
         directorio.Estudiantes.Select(estudiante => (estudiante.Id, estudiante.Nombre))
             .Concat(directorio.Coordinadores.Select(coordinador => (coordinador.Id, coordinador.Nombre)));
 
-    [GeneratedRegex(@"^(est|coord)[0-9]+\z")]
+    [GeneratedRegex(@"^(est|coord)[0-9]+\z", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex IdPegado();
 
-    [GeneratedRegex(@"^[0-9]+\z")]
+    [GeneratedRegex(@"^[0-9]+\z", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex SoloDigitos();
 }
