@@ -22,16 +22,16 @@ public sealed class ExclusionComparativaDefinitivaTests
         { "o", "EST-005", PreguntaAprobar, "Para aprobar Estadística necesitas una definitiva de 3.0." },
         { "p", "EST-005", PreguntaAprobar, "Estadística se aprueba con definitiva ≥ 3.0 y la tuya es 2.3." },
         { "o-igual", "EST-005", PreguntaAprobar, "Estadística se aprueba con definitiva mayor o igual a 3.0 y la tuya es 2.3." },
-        { "simbolo-doble", "EST-005", PreguntaAprobar, "Estadística se aprueba con definitiva >= 3.0 y la tuya es 2.3." },
-        { "requiere", "EST-005", PreguntaAprobar, "Estadística requiere una definitiva de 3.0." },
-        { "verbo-pegado-a-la-cifra", "EST-005", PreguntaAprobar, "Para aprobar Estadística necesitas 3.0 de definitiva." }
+        { "simbolo-doble", "EST-005", PreguntaAprobar, "Estadística se aprueba con definitiva >= 3.0 y la tuya es 2.3." }
     };
 
     public static TheoryData<string, string, string, string> ComparativasQueSiSeVerifican => new()
     {
         { "q", "EST-006", PreguntaEstadistica, "Tu definitiva en Estadística es 4.0, mayor a 3.0." },
         { "s", "EST-004", PreguntaContabilidad, "Tu definitiva en Contabilidad, que no necesita habilitación, es 3.3." },
-        { "para", "EST-004", PreguntaContabilidad, "La definitiva para Contabilidad es 3.3." }
+        { "para", "EST-004", PreguntaContabilidad, "La definitiva para Contabilidad es 3.3." },
+        { "requiere-ya-no-es-requisito", "EST-005", PreguntaAprobar, "Estadística requiere una definitiva de 3.0." },
+        { "verbo-pegado-a-la-cifra-ya-no-es-requisito", "EST-005", PreguntaAprobar, "Para aprobar Estadística necesitas 3.0 de definitiva." }
     };
 
     [Theory]
