@@ -24,7 +24,7 @@ public sealed class DefinitivaSoloConLecturaDelProgramaApiTests
         Assert.Empty(respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
         Assert.Equal(ResultadoAuditoria.NumeroNoVerificado, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
-        Assert.Equal(2, fabrica.Llm.Llamadas);
+        Assert.Equal(3, fabrica.Llm.Llamadas);
     }
 
     [Fact]

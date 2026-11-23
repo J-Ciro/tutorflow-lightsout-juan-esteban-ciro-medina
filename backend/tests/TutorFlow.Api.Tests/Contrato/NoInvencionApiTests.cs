@@ -48,7 +48,10 @@ public sealed class NoInvencionApiTests
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaDePrecio);
 
         Assert.True(respuesta.Estado == 200, caso);
-        Afirmaciones.SinInformacionTrasLlm(respuesta, fabrica);
+        Afirmaciones.SinInformacion(respuesta);
+        Assert.Equal(2, fabrica.Llm.Llamadas);
+        Assert.True(respuesta.Tokens > 0);
+        Assert.Equal(ResultadoAuditoria.SinInformacion, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 
     [Fact]
