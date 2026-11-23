@@ -26,8 +26,8 @@ public sealed class ContratoSaludTests
     [Trait("ESC", "ESC-110")]
     public async Task ESC_110_Salud_responde_200_aunque_la_llave_tenga_prefijo_desconocido_sin_url_base()
     {
-        var configuracion = new Dictionary<string, string?> { ["LLM_API_KEY"] = "zzz-prefijo-desconocido" };
-        using var fabrica = new FabricaApi(configuracion: configuracion, reemplazarLlm: false);
+        var entorno = new Dictionary<string, string?> { ["LLM_API_KEY"] = "zzz-prefijo-desconocido" };
+        using var fabrica = new FabricaApi(variablesEntorno: entorno, reemplazarLlm: false);
 
         var respuesta = await fabrica.EnviarAsync(HttpMethod.Get, "/api/salud", null);
 

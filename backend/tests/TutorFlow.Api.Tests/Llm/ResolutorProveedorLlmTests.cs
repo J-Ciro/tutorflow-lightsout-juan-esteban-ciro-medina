@@ -159,8 +159,8 @@ public sealed class ProveedorLlmLogDeArranqueTests
     [Trait("SEG", "SEG-11")]
     public async Task ESC_119_El_log_de_arranque_muestra_el_modelo_y_nunca_la_llave(string llave, string modelo)
     {
-        var configuracion = new Dictionary<string, string?> { ["LLM_API_KEY"] = llave };
-        using var fabrica = new FabricaApi(configuracion: configuracion);
+        var entorno = new Dictionary<string, string?> { ["LLM_API_KEY"] = llave };
+        using var fabrica = new FabricaApi(variablesEntorno: entorno);
 
         await fabrica.EnviarAsync(HttpMethod.Get, "/api/salud", null);
         await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar?");

@@ -26,11 +26,10 @@ public sealed class RedireccionesLlmApiTests
         });
         var configuracion = new Dictionary<string, string?>
         {
-            ["LLM_API_KEY"] = LlaveDeLaPrueba,
             ["LLM_PROVEEDOR"] = "openai-compatible",
             ["LLM_URL_BASE"] = proveedor.Url
         };
-        using var fabrica = new FabricaApi(configuracion: configuracion, reemplazarLlm: false);
+        using var fabrica = new FabricaApi(configuracion: configuracion, variablesEntorno: new Dictionary<string, string?> { ["LLM_API_KEY"] = LlaveDeLaPrueba }, reemplazarLlm: false);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
 
@@ -55,11 +54,10 @@ public sealed class RedireccionesLlmApiTests
         });
         var configuracion = new Dictionary<string, string?>
         {
-            ["LLM_API_KEY"] = LlaveDeLaPrueba,
             ["LLM_PROVEEDOR"] = "openai-compatible",
             ["LLM_URL_BASE"] = proveedor.Url
         };
-        using var fabrica = new FabricaApi(configuracion: configuracion, reemplazarLlm: false);
+        using var fabrica = new FabricaApi(configuracion: configuracion, variablesEntorno: new Dictionary<string, string?> { ["LLM_API_KEY"] = LlaveDeLaPrueba }, reemplazarLlm: false);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
 

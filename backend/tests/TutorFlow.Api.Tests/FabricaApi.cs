@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using TutorFlow.Api.Tests.Dobles;
 using TutorFlow.Core.Asistente;
+using TutorFlow.Infrastructure.Configuracion;
 using TutorFlow.Pruebas.Soporte;
 
 namespace TutorFlow.Api.Tests;
@@ -25,6 +26,7 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
     private readonly HttpMessageHandler? _manejadorHttp;
     private readonly bool _auditoriaReal;
     private readonly IClienteLlm? _clienteLlm;
+    private readonly IReadOnlyDictionary<string, string?>? _variablesEntorno;
 
     public FabricaApi(
         ApiAcademicaDoble? api = null,
@@ -35,8 +37,10 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
         HttpMessageHandler? manejadorHttp = null,
         bool conocimientoReal = false,
         bool auditoriaReal = false,
-        IClienteLlm? clienteLlm = null)
+        IClienteLlm? clienteLlm = null,
+        IReadOnlyDictionary<string, string?>? variablesEntorno = null)
     {
+        _variablesEntorno = variablesEntorno;
         _clienteLlm = clienteLlm;
         Api = api ?? new ApiAcademicaDoble();
         Llm = llm ?? ClienteLlmDoble.Texto("Respuesta de prueba.");
@@ -140,6 +144,12 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
     {
         servicios.RemoveAll<IApiAcademica>();
         servicios.RemoveAll<IReloj>();
+        if (_variablesEntorno is not null)
+        {
+            servicios.RemoveAll<IVariablesEntorno>();
+            servicios.AddSingleton<IVariablesEntorno>(new VariablesEntornoFijas(_variablesEntorno));
+        }
+
         servicios.AddSingleton<IApiAcademica>(Api);
         servicios.AddSingleton<IReloj>(Reloj);
         if (!_auditoriaReal)
