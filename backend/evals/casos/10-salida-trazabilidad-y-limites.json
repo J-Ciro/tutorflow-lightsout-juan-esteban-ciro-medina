@@ -321,5 +321,39 @@
       "estudianteIdCoordinador": null,
       "texto": "El horario de atención de Bienestar es el que publica la institución."
     }
+  },
+  {
+    "id": "ESC-164a",
+    "fuente": "COMP-02, D-28",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es la nota mínima para aprobar una asignatura?",
+    "http": 200,
+    "contiene": [
+      "3.0"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 5"
+    ],
+    "citasProhibidas": [
+      "Datos del estudiante"
+    ],
+    "citasVacias": false,
+    "citasExactas": null,
+    "citasTotal": 2,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Una asignatura se aprueba con 3.0."
+    }
   }
 ]

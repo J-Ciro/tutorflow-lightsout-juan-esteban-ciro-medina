@@ -18,6 +18,7 @@ public sealed record CasoEval(
     IReadOnlyList<string> CitasProhibidas,
     bool CitasVacias,
     IReadOnlyList<string>? CitasExactas,
+    int? CitasTotal,
     bool? UsoDatosEstudiante,
     string? RespuestaExacta,
     bool TokensCero,

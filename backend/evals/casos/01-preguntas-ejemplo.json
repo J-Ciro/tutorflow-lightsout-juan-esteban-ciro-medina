@@ -61,7 +61,7 @@
     "offline": {
       "herramientas": "todas",
       "estudianteIdCoordinador": null,
-      "texto": "Tu promedio ponderado del periodo es 4.39.\nCálculo Integral: 4.5\nProgramación Orientada a Objetos: 4.8\nBases de Datos: 4.1\nInglés III: 4.0"
+      "texto": "Tu promedio ponderado del periodo es 4.39.\nCálculo Integral: 4.5\nProgramación Orientada a Objetos: 4.8\nBases de Datos: 4.1\nInglés III: 4.0\nFuentes: evaluacion_y_calificaciones.md · Sección 3 y evaluacion_y_calificaciones.md · Sección 4."
     }
   },
   {
@@ -124,7 +124,7 @@
     "offline": {
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "La definitiva es 30% del corte 1, 30% del corte 2 y 40% del corte 3, redondeada a una cifra decimal."
+      "texto": "La definitiva es 30% del corte 1, 30% del corte 2 y 40% del corte 3, redondeada a una cifra decimal (evaluacion_y_calificaciones.md · Sección 2 y evaluacion_y_calificaciones.md · Sección 3)."
     }
   },
   {
