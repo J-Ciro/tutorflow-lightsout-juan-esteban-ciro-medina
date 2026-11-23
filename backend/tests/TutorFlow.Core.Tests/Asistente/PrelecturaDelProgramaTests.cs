@@ -99,7 +99,7 @@ public sealed class PrelecturaDelProgramaTests
     [Trait("CA", "CA-19")]
     [Trait("ESC", "ESC-190")]
     [Trait("COMP", "COMP-08")]
-    public async Task ESC_190_La_prelectura_lee_solo_el_programa_propio_y_marca_uso_de_datos_con_la_cita_del_programa(string pregunta)
+    public async Task ESC_190_La_prelectura_lee_solo_el_programa_propio_y_marca_uso_de_datos_sin_citas_en_la_respuesta_sin_informacion(string pregunta)
     {
         var escenario = Con(Fijo(Textos.SinInformacion));
 
@@ -108,8 +108,26 @@ public sealed class PrelecturaDelProgramaTests
         Assert.All(EstudiantesDeIngSis, id => Assert.DoesNotContain(id, escenario.Api.LecturasNotas.Concat(escenario.Api.LecturasAsistencia)));
         Assert.Equal(EstudiantesDeAdm, escenario.Api.LecturasNotas.Distinct().Order().ToArray());
         Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
-        Assert.Contains(new Cita(Textos.DocumentoDatosPrograma, "ADM"), resultado.Respuesta.Citas);
+        Assert.Empty(resultado.Respuesta.Citas);
         Assert.False(PrimeraLlamada(escenario).Contains("Programa ING-SIS", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("¿Cuántos estudiantes tiene mi programa?")]
+    [InlineData(PreguntaQ10Seis)]
+    [Trait("CA", "CA-19")]
+    [Trait("ESC", "ESC-190")]
+    [Trait("COMP", "COMP-08")]
+    public async Task ESC_190_Una_respuesta_con_datos_del_programa_propio_cita_Datos_del_programa_ADM(string pregunta)
+    {
+        var escenario = Con(CopiaLaLineaDePerdidas());
+
+        var resultado = await escenario.PreguntarAsync(Coord02, pregunta);
+
+        Assert.Equal(EstudiantesDeAdm, escenario.Api.LecturasNotas.Distinct().Order().ToArray());
+        Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
+        Assert.Contains(new Cita(Textos.DocumentoDatosPrograma, "ADM"), resultado.Respuesta.Citas);
+        Assert.DoesNotContain(resultado.Respuesta.Citas, c => c.Seccion == "ING-SIS");
     }
 
     [Fact]

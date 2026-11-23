@@ -13,7 +13,22 @@ public sealed record ResultadoArranque(Exception? Error, IReadOnlyList<string> C
 
     public string TextoCompleto => string.Join("\n", MensajesDelError().Concat(Consola));
 
+    private const int IntentosAnteCarreraDelHost = 5;
+
     public static ResultadoArranque De(FabricaApi fabrica)
+    {
+        var resultado = Intentar(fabrica);
+        for (var intento = 1; intento < IntentosAnteCarreraDelHost && resultado.PerdioElMensajeEnLaCarreraDelHost; intento++)
+        {
+            resultado = Intentar(fabrica);
+        }
+
+        return resultado;
+    }
+
+    private bool PerdioElMensajeEnLaCarreraDelHost => Error is not null && MensajesDelError().Any(m => m.StartsWith("Cannot access a disposed object", StringComparison.Ordinal));
+
+    private static ResultadoArranque Intentar(FabricaApi fabrica)
     {
         try
         {
