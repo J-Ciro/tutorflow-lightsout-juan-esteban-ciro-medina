@@ -1,14 +1,14 @@
 # FABRICA.md · Cómo funciona la fábrica de agentes
 
-Herramienta: **Claude Code** (CLI). La sesión principal es el **orquestador**: recibe al humano, delega en subagentes especializados, verifica sus resultados ejecutando comandos y decide cuándo avanzar, iterar o detenerse. Toda la configuración está versionada en `.claude/`.
+Herramienta: **Claude Code** (CLI). La fábrica sigue el **patrón de orquestación**. La sesión principal es el **orquestador**: recibe al humano, planifica, divide el trabajo en tareas con archivos sin solapamiento, las delega a subagentes **en paralelo** (cada uno en su propio `git worktree` y rama, como máximo 4 a la vez), evalúa sus reportes, integra sus ramas y decide cuándo avanzar, iterar o detenerse. Los subagentes son quienes escriben la spec, las pruebas y el código, verifican, auditan y entregan resultados. El orquestador no escribe código, pruebas ni spec, y no verifica por su cuenta; solo edita la configuración de la fábrica y la bitácora cuando el humano lo pide. El detalle operativo está en la skill `implementar-spec`. Toda la configuración está versionada en `.claude/`.
 
 ## 1. Agentes y roles
 
 | Agente | Rol | Escribe en | Modelo | Por qué ese modelo |
 | --- | --- | --- | --- | --- |
-| Orquestador (sesión principal) | Coordina el ciclo, verifica y hace merge | git | Opus | Decide y juzga; pocas salidas largas |
+| Orquestador (sesión principal) | Planifica, delega en paralelo, evalúa reportes, integra ramas y decide | integración de ramas; configuración de la fábrica y bitácora a pedido del humano | Opus | Decide y juzga; pocas salidas largas |
 | `arquitecto-spec` | Requisito → spec, RN, SEG, CA y escenarios | `specs/<feature-id>/`, `escenarios/<feature-id>/`, índice de `SPEC.md` | Opus | La calidad de la spec define todo lo demás |
-| `qa-calidad` | Fase A: pruebas y evals desde la spec (antes del código). Fase B: revisión de calidad (clean code, complejidad, antipatrones, cobertura y commits) | `backend/tests/`, `backend/evals/` | Sonnet | Volumen alto de código y checklist mecánico |
+| `qa-calidad` | Fase A: pruebas y evals desde la spec (antes del código). Fase V: verificación independiente (build, pruebas, evals, Docker y Postman, con salida cruda). Fase B: revisión de calidad (clean code, complejidad, antipatrones, cobertura y commits) | `backend/tests/`, `backend/evals/` | Sonnet | Volumen alto de código y checklist mecánico |
 | `backend-dotnet` | Implementa `backend/src/` hasta poner las pruebas en verde | `backend/src/` | Sonnet | Buena relación calidad/costo para implementar |
 | `devops-cicd` | Docker, compose y GitHub Actions | `.github/`, `docker/`, `docker-compose.yml` | Sonnet | Tareas acotadas y verificables |
 | `frontend-react` | UI opcional | `frontend/` | Sonnet | Opcional; solo con el backend cerrado |

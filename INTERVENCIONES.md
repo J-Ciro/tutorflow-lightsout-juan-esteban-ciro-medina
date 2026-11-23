@@ -131,3 +131,21 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué se cambió:** commits `647bb37`, `182cea9` y `e9a3223` (prompt) y la resolución del modelo en Infrastructure. El agente quitó del prompt los ejemplos con datos inventados porque un modelo de 7B los copiaba en lugar de llamar a la herramienta.
 - **Costo:** pendiente (lo indica el humano).
 - **Prevención:** cuando el humano dé instrucciones directas a un agente, el agente las marca en su reporte como "pedido del humano" (así ocurrió aquí) y el orquestador las registra.
+
+### INT-015 · 2026-11-23 · correlationId en UUID v7
+- **Fase:** auditoría (corrida 1)
+- **Qué pasó:** la auditoría usaba como `correlationId` el `TraceIdentifier` de Kestrel (`0HNQ8V8C5VI9M:00000004`), que no es un estándar, y los `ProblemDetails` de error devolvían otro valor (`traceId` W3C), así que una misma petición no se podía correlacionar.
+- **Qué hizo el humano:** preguntó *"por qué el correlation id tiene ese formato en vez de UUID"*. Ante la propuesta, respondió *"Sí, usa UUID v7 y actualiza la spec para estar alineados"*, y con eso aprobó también el paquete de reglas correctivas de la auditoría, incluido el 415.
+- **Por qué:** un identificador estándar y único por petición permite cruzar la respuesta, la auditoría y los reportes de error.
+- **Qué se cambió:** D-26 en `SPEC.md`: UUID v7 generado por el servidor, el mismo valor en la auditoría, en el `traceId` de los errores y en el encabezado `X-Correlation-Id`, sin aceptar el del cliente. Lo aplica `arquitecto-spec` en la spec v1.4 junto con las demás reglas correctivas.
+- **Costo:** ~1 min humano.
+- **Prevención:** `qa-calidad` (fase B) revisa que los identificadores de trazabilidad sigan un estándar y sean consistentes entre respuesta y auditoría.
+
+### INT-016 · 2026-11-23 · Patrón de orquestación con subagentes en paralelo
+- **Fase:** configuración de la fábrica
+- **Qué pasó:** el orquestador hacía trabajo directo (verificaba ejecutando comandos, editaba la spec, escribía scripts) y los subagentes trabajaban casi siempre de a uno, en el mismo directorio y compitiendo por el índice de git.
+- **Qué hizo el humano:** pidió que *"la fábrica tenga la capacidad de lanzar varios sub agentes"* con *"el patrón de orquestación donde el modelo principal genera y da las órdenes y los sub agentes son quienes evalúan, editan, crean código, validan y entregan resultados al orquestador"*.
+- **Por qué:** paralelizar reduce el tiempo de cada corrida, y separar al que decide de los que ejecutan mantiene la verificación independiente.
+- **Qué se cambió:** `implementar-spec` se reescribió con el patrón de orquestación. El orquestador planifica tareas con archivos sin solapamiento y lanza hasta 4 subagentes en paralelo, cada uno en su `git worktree` y rama `feat/NNN-<slug>--<tarea>`. Integra con `merge --no-ff`, los conflictos los resuelve el agente dueño, y el orquestador no escribe código, pruebas ni spec ni verifica por su cuenta. Nueva fase V en `qa-calidad`: verificación independiente con salida cruda. Se actualizaron `FABRICA.md` y `CLAUDE.md`.
+- **Costo:** ~1 min humano.
+- **Prevención:** la skill obliga a escribir un plan de tareas (agente, archivos, dependencias) antes de lanzar a cualquier agente.
