@@ -24,6 +24,10 @@ public static class ServiciosTutorFlow
     private const string ClaveReservaSinPrecio = "Llm:ReservaSinPrecioUsd";
     private const string ClaveRelevanciaMinima = "Conocimiento:RelevanciaMinima";
     private const string ClaveApoyoMinimoRespaldo = "Conocimiento:ApoyoMinimoRespaldo";
+    private const string ClavePuntajeRelativoMinimo = "Conocimiento:PuntajeRelativoMinimo";
+    private const string ClavePuntajeRelativoRelevante = "Conocimiento:PuntajeRelativoRelevante";
+    private const int PuntajeRelativoMinimoPorDefecto = 55;
+    private const int PuntajeRelativoRelevantePorDefecto = 40;
     private const string ClaveTemperatura = "Llm:Temperatura";
     private const string ClaveSemilla = "Llm:Semilla";
     private const int SemillaPorDefecto = 1;
@@ -89,7 +93,7 @@ public static class ServiciosTutorFlow
             proveedor.GetRequiredService<IReloj>()));
         servicios.AddSingleton<IAuditoria, AuditoriaJsonConsola>();
         servicios.AddSingleton<IBaseConocimiento>(proveedor =>
-            CargadorConocimiento.Cargar(proveedor.GetRequiredService<IOptions<OpcionesConocimiento>>().Value));
+            CargadorConocimiento.Cargar(proveedor.GetRequiredService<IOptions<OpcionesConocimiento>>().Value, UmbralesDeEntregaDe(configuracion)));
         servicios.AddHttpClient<IApiAcademica, ClienteApiAcademica>((proveedor, cliente) =>
             {
                 var opciones = proveedor.GetRequiredService<IOptions<OpcionesApiAcademica>>().Value;
@@ -149,6 +153,12 @@ public static class ServiciosTutorFlow
             AdvertirPor(proveedor.GetRequiredService<ILoggerFactory>().CreateLogger("TutorFlow.Configuracion")),
             AjustesDelModelo(configuracion));
     }
+
+    private static UmbralesDeEntrega UmbralesDeEntregaDe(IConfiguration configuracion) =>
+        new(
+            Entero(configuracion, ClavePuntajeRelativoMinimo, PuntajeRelativoMinimoPorDefecto),
+            Entero(configuracion, ClavePuntajeRelativoRelevante, PuntajeRelativoRelevantePorDefecto),
+            Entero(configuracion, ClaveRelevanciaMinima, ConfiguracionAsistente.RelevanciaMinimaPorDefecto));
 
     internal static AjustesDelModelo AjustesDelModelo(IConfiguration configuracion) =>
         new(

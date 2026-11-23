@@ -4,6 +4,8 @@ using TutorFlow.Core.Conocimiento;
 
 namespace TutorFlow.Infrastructure.Conocimiento;
 
+public sealed record UmbralesDeEntrega(int PuntajeRelativoMinimo = 55, int PuntajeRelativoRelevante = 40, int RelevanciaMinima = 2);
+
 public sealed class BaseConocimientoEnMemoria : IBaseConocimiento
 {
     private const int LongitudMaximaDeRaiz = ConsultaDeRecuperacion.LongitudDeRaiz;
@@ -12,12 +14,16 @@ public sealed class BaseConocimientoEnMemoria : IBaseConocimiento
     private const double ParametroB = 0.75;
     private const double PesoDelTitulo = 4.0;
 
+    private const int MinimoDeRaicesDeLaRegla = 2;
+
+    private readonly UmbralesDeEntrega _umbrales;
     private readonly List<SeccionIndexada> _secciones;
     private readonly Dictionary<string, int> _frecuenciaDeDocumento;
     private readonly double _longitudPromedio;
 
-    public BaseConocimientoEnMemoria(IEnumerable<SeccionDocumento> secciones)
+    public BaseConocimientoEnMemoria(IEnumerable<SeccionDocumento> secciones, UmbralesDeEntrega? umbrales = null)
     {
+        _umbrales = umbrales ?? new UmbralesDeEntrega();
         _secciones = secciones.Select(seccion => new SeccionIndexada(seccion, ExtraerRaices(seccion.Titulo + " " + seccion.Texto))).ToList();
         _frecuenciaDeDocumento = _secciones
             .SelectMany(indexada => indexada.Frecuencias.Keys)
@@ -29,14 +35,42 @@ public sealed class BaseConocimientoEnMemoria : IBaseConocimiento
     public IReadOnlyList<SeccionDocumento> BuscarSecciones(string consulta, int maximo)
     {
         var terminos = ExpansionDeTerminos.Expandir(ExtraerRaices(consulta).Frecuencias.Keys);
-        return _secciones
-            .Select(indexada => (indexada.Seccion, Puntaje: Puntuar(indexada, terminos)))
-            .Where(par => par.Puntaje > 0)
-            .OrderByDescending(par => par.Puntaje)
+        var recuperadas = _secciones
+            .Select(indexada => new Recuperada(indexada.Seccion, Puntuar(indexada, terminos)))
+            .Where(recuperada => recuperada.Puntaje > 0)
+            .OrderByDescending(recuperada => recuperada.Puntaje)
             .Take(maximo)
-            .Select(par => par.Seccion)
             .ToList();
+        return Entregadas(recuperadas, RaicesDeContenido.De(consulta).ToList());
     }
+
+    private IReadOnlyList<SeccionDocumento> Entregadas(List<Recuperada> recuperadas, List<string> raicesDeLaPregunta)
+    {
+        if (recuperadas.Count == 0)
+        {
+            return [];
+        }
+
+        var puntajeMaximo = recuperadas[0].Puntaje;
+        var coincidencias = recuperadas.Select(recuperada => CoincidenciasDe(recuperada.Seccion, raicesDeLaPregunta)).ToList();
+        var minimoRelevante = Math.Min(_umbrales.RelevanciaMinima, (raicesDeLaPregunta.Count + 1) / 2);
+        var relevantes = Enumerable.Range(0, recuperadas.Count).Where(i => raicesDeLaPregunta.Count > 0 && coincidencias[i] >= minimoRelevante).ToList();
+        var entregadas = new HashSet<int> { 0 };
+        entregadas.UnionWith(relevantes.Take(1));
+        entregadas.UnionWith(Enumerable.Range(0, recuperadas.Count).Where(i => Porcentaje(recuperadas[i], puntajeMaximo) >= _umbrales.PuntajeRelativoMinimo));
+        entregadas.UnionWith(relevantes.Where(i => coincidencias[i] >= MinimoDeRaicesDeLaRegla && Porcentaje(recuperadas[i], puntajeMaximo) >= _umbrales.PuntajeRelativoRelevante));
+        return [.. entregadas.Order().Select(indice => recuperadas[indice].Seccion)];
+    }
+
+    private static double Porcentaje(Recuperada recuperada, double puntajeMaximo) => recuperada.Puntaje / puntajeMaximo * 100.0;
+
+    private static int CoincidenciasDe(SeccionDocumento seccion, List<string> raicesDeLaPregunta)
+    {
+        var delaSeccion = RaicesDeContenido.De($"{seccion.Titulo} {seccion.Texto}").ToHashSet(StringComparer.Ordinal);
+        return raicesDeLaPregunta.Count(delaSeccion.Contains);
+    }
+
+    private sealed record Recuperada(SeccionDocumento Seccion, double Puntaje);
 
     public SeccionDocumento? ObtenerSeccion(Cita cita) =>
         _secciones.Select(indexada => indexada.Seccion).FirstOrDefault(seccion => seccion.Documento == cita.Documento && seccion.Seccion == cita.Seccion);

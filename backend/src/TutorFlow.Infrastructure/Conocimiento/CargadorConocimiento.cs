@@ -20,13 +20,13 @@ public static partial class CargadorConocimiento
     private const string PrefijoArticulo = "Artículo";
     private const string PrefijoSeccion = "Sección";
 
-    public static BaseConocimientoEnMemoria Cargar(OpcionesConocimiento opciones)
+    public static BaseConocimientoEnMemoria Cargar(OpcionesConocimiento opciones, UmbralesDeEntrega? umbrales = null)
     {
         var carpeta = ResolverCarpeta(opciones.RutaReglamento);
         var secciones = opciones.DocumentosVigentes
             .SelectMany(documento => LeerDocumento(Path.Combine(carpeta, documento), documento))
             .ToList();
-        return new BaseConocimientoEnMemoria(secciones);
+        return new BaseConocimientoEnMemoria(secciones, umbrales);
     }
 
     public static string ResolverCarpeta(string? rutaConfigurada)
