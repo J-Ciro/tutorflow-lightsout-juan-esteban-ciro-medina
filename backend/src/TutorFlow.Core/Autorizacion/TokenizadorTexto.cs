@@ -25,9 +25,12 @@ internal static class TokenizadorTexto
     public static IReadOnlyList<TokenTexto> Tokenizar(string texto)
     {
         var acumulador = new AcumuladorTokens();
-        for (var indice = 0; indice < texto.Length; indice++)
+        var inicio = 0;
+        foreach (var rune in texto.EnumerateRunes())
         {
-            Procesar(acumulador, texto[indice], indice);
+            var fin = inicio + rune.Utf16SequenceLength;
+            ProcesarRune(acumulador, rune, inicio, fin);
+            inicio = fin;
         }
 
         acumulador.Cerrar();
@@ -53,18 +56,26 @@ internal static class TokenizadorTexto
     private static bool CoincideEn(IReadOnlyList<TokenTexto> tokens, int indice, IReadOnlyList<string> secuencia) =>
         secuencia.Select((valor, desplazamiento) => tokens[indice + desplazamiento].Valor == valor).All(coincide => coincide);
 
-    private static void Procesar(AcumuladorTokens acumulador, char caracter, int indice)
+    private static void ProcesarRune(AcumuladorTokens acumulador, Rune rune, int inicio, int fin)
+    {
+        foreach (var caracter in PlegadoCompatibilidad.De(rune))
+        {
+            Procesar(acumulador, caracter, inicio, fin);
+        }
+    }
+
+    private static void Procesar(AcumuladorTokens acumulador, char caracter, int inicio, int fin)
     {
         if (EsIgnorable(caracter))
         {
-            acumulador.Extender(indice);
+            acumulador.Extender(fin);
             return;
         }
 
         var plegado = Plegar(caracter);
         if (char.IsLetterOrDigit(plegado))
         {
-            acumulador.Agregar(plegado, indice);
+            acumulador.Agregar(plegado, inicio, fin);
             return;
         }
 
@@ -97,22 +108,22 @@ internal static class TokenizadorTexto
 
         public IReadOnlyList<TokenTexto> Tokens => _tokens;
 
-        public void Agregar(char caracter, int indice)
+        public void Agregar(char caracter, int inicio, int fin)
         {
             if (_valor.Length == 0)
             {
-                _inicio = indice;
+                _inicio = inicio;
             }
 
             _valor.Append(caracter);
-            _fin = indice + 1;
+            _fin = fin;
         }
 
-        public void Extender(int indice)
+        public void Extender(int fin)
         {
             if (_valor.Length > 0)
             {
-                _fin = indice + 1;
+                _fin = fin;
             }
         }
 
