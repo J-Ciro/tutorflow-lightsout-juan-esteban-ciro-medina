@@ -12,7 +12,7 @@ Las 10 preguntas de `preguntas_ejemplo.json`. Son el mínimo innegociable: las p
 ### ESC-002 · Mi promedio ponderado `@feliz`
 - **Dado** el estudiante `EST-001`
 - **Cuando** pregunta "¿Cuál es mi promedio ponderado del periodo?"
-- **Entonces** responde 200; la respuesta contiene "4.39" y las definitivas "4.5", "4.8", "4.1" y "4.0"; `citas` incluye `evaluacion_y_calificaciones.md · Sección 3` y `· Sección 4`; `usoDatosEstudiante` es `true`; no contiene datos de terceros. (RN-03, RN-04, RN-06)
+- **Entonces** responde 200; la respuesta contiene "4.39" y lista las definitivas con una línea por asignatura: "Cálculo Integral" con "4.5", "Programación Orientada a Objetos" con "4.8", "Bases de Datos" con "4.1" e "Inglés III" con "4.0" (como `preguntas_ejemplo.json`); `citas` incluye `evaluacion_y_calificaciones.md · Sección 3` y `· Sección 4`; `usoDatosEstudiante` es `true`; no contiene datos de terceros. Los valores salen del resumen propio entregado en la primera llamada al LLM (COMP-07, D-27). (RN-03, RN-04, RN-06, UX-02; CA-01, CA-14)
 
 ### ESC-003 · Mis faltas en Bases de Datos `@feliz`
 - **Dado** el estudiante `EST-001`

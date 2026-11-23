@@ -34,7 +34,7 @@
 - **Dado** que la API simulada no responde · **Cuando** `EST-001` pregunta por su promedio · **Entonces** 503 `ProblemDetails` genérico en menos de 7 s; no inventa datos; la auditoría registra `resultado: error`.
 
 ### ESC-109 · LLM caído o con timeout `@operacion`
-- **Dado** que el LLM no responde en 20 s · **Entonces** 503; sin URL, modelo ni llave en el cuerpo.
+- **Dado** que el LLM no responde dentro del timeout total de 20 s de la petición · **Entonces** 503; sin URL, modelo ni llave en el cuerpo. El caso con varias llamadas lentas está en ESC-158. (SEG-13)
 
 ### ESC-110 · Sin LLM disponible `@operacion`
 - **Dado** que `LLM_API_KEY` no está definida y Ollama no responde, o que la llave tiene un prefijo desconocido sin `LLM_URL_BASE` · **Entonces** la aplicación arranca, `/api/salud` responde 200, una pregunta que requiere el LLM devuelve 503 y una pregunta denegada sigue devolviendo 403 (la autorización no depende del LLM).
@@ -46,7 +46,7 @@
 - **Dado** cualquier respuesta · **Entonces** incluye `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` y `Referrer-Policy: no-referrer`; ninguna respuesta incluye `Access-Control-Allow-Origin: *`. (SEG-14)
 
 ### ESC-112 · Errores internos `@contrato`
-- **Dado** una excepción no controlada · **Entonces** 500 `ProblemDetails` con un `traceId` y sin stack trace, tipos .NET ni rutas.
+- **Dado** una excepción no controlada · **Entonces** 500 `ProblemDetails` con un `traceId` (UUID v7 igual a `X-Correlation-Id`, ESC-151) y sin stack trace, tipos .NET ni rutas.
 
 ### Auditoría
 

@@ -2,8 +2,8 @@
 
 | Campo | Valor |
 | --- | --- |
-| Versión | 1.3 · 2026-11-22 |
-| Estado | **Aprobada** por el humano (2026-11-22); D-16 confirmada; backend en .NET 11 (INT-008) |
+| Versión | 1.4 · 2026-11-22 |
+| Estado | **Aprobada** por el humano (2026-11-22); D-16 confirmada; backend en .NET 11 (INT-008). La 1.4 incorpora la corrección de la auditoría de la corrida 1 (415, `correlationId` UUID v7, D-26 y D-27) |
 | Contenido | Lo transversal del sistema: objetivo, prioridades, actores, contrato, matriz de acceso y decisiones |
 | Features | `specs/<feature-id>/spec.md` (§5) |
 | Escenarios | `escenarios/<feature-id>/` |
@@ -53,13 +53,16 @@ Arranque: docker compose up   (puerto 8080, variable LLM_API_KEY)
 | 403 | Ver SEG-01 a SEG-06 | **Salida del contrato** con la negativa (D-07) |
 | 405 | Método distinto al definido | Vacío o `ProblemDetails` |
 | 413 | Cuerpo de más de 16 KB | `ProblemDetails` |
+| 415 | `POST /api/asistente/preguntar` con un `Content-Type` distinto de `application/json` (con o sin `charset`; el tipo de medio se compara sin distinguir mayúsculas) o sin `Content-Type`. No se llama al LLM ni a la API académica; la auditoría registra `resultado: invalida` | `ProblemDetails` |
 | 429 | Se supera el límite de tasa por IP de SEG-13 | `ProblemDetails` con `Retry-After` |
 | 503 | El LLM o la API académica no responden a tiempo, se supera el límite de herramientas o el presupuesto diario (SEG-13) | `ProblemDetails` genérico |
 | 500 | Error no controlado | `ProblemDetails` con `traceId`, sin stack trace (SEG-12) |
 
 Las reglas `SEG-xx` y `D-xx` citadas se definen en [`specs/001-asistente-academico/spec.md` §7](specs/001-asistente-academico/spec.md) y en §6 de este documento.
 
-Reglas del JSON: propiedades en camelCase exactamente como el contrato; `citas` es `[]` cuando no hay citas, nunca `null`; `tokens` es un entero ≥ 0; `costoUsd` es un decimal ≥ 0 con hasta 6 decimales; `Content-Type: application/json; charset=utf-8`.
+Reglas del JSON: propiedades en camelCase exactamente como el contrato; `citas` es `[]` cuando no hay citas, nunca `null`; `tokens` es un entero ≥ 0; `costoUsd` es un decimal ≥ 0 con hasta 6 decimales; `Content-Type: application/json; charset=utf-8`. La forma de la entrada y de la salida exitosa no cambia con las reglas de esta sección.
+
+**Identificador de correlación (D-26):** el servidor genera un `correlationId` **UUID v7** (`Guid.CreateVersion7()`) al recibir cada petición, en todos los endpoints y con cualquier código de respuesta. El mismo valor, en formato canónico de 36 caracteres en minúsculas, aparece en: el encabezado de respuesta `X-Correlation-Id`, el campo `traceId` de todo `ProblemDetails` y el campo `correlationId` de la auditoría. Nunca se acepta un identificador enviado por el cliente (`X-Correlation-Id`, `X-Request-Id`, `traceparent` u otro): se ignora y no se registra.
 
 ## 4. Matriz de acceso global
 
@@ -104,3 +107,5 @@ Decisiones del sistema y de la feature 001. Las features nuevas registran las su
 | D-23 | Texto exacto en casos de abuso | Las inyecciones con terceros o agregados detectables → 403 (SEG-04/05). Las que no se detectan antes del LLM → se verifica la ausencia de datos de terceros, el código y `usoDatosEstudiante`, no el texto libre | Las aserciones deben ser deterministas |
 | D-24 | Cliente del LLM compatible con OpenAI | Se usa `Microsoft.Extensions.AI` (`IChatClient` + integración OpenAI) **solo en Infrastructure**, detrás del puerto `IClienteLlm`. Sin invocación automática de funciones: el ciclo de herramientas lo controla el caso de uso (SEG-06, máximo 4 invocaciones, 403 tardío). Anthropic sigue con su SDK oficial. No se usa `Microsoft.Agents.AI`: una pregunta por petición, sin historial ni multiagente | Menos código HTTP propio; Agent Framework sería sobreingeniería |
 | D-25 | Persistencia de la auditoría | Consola y archivo JSONL diario en un volumen de Docker. Confirmado por el humano | Los eventos sobreviven a reinicios y se pueden revisar |
+| D-26 | Identificador de correlación | UUID v7 generado por el servidor en cada petición (`Guid.CreateVersion7()`), igual en `X-Correlation-Id`, en el `traceId` de todo `ProblemDetails` y en el `correlationId` de la auditoría; el valor del cliente se ignora (§3.1). Reemplaza al `TraceIdentifier` de Kestrel (`0HN…:00000004`). Aprobada por el humano | Formato estándar y ordenable por tiempo; un solo valor correlaciona la respuesta con la auditoría. El `TraceIdentifier` no es estándar y no coincidía con el `traceId`; aceptar el valor del cliente permitiría falsear o colisionar la auditoría |
+| D-27 | El modelo pequeño no invoca la herramienta e inventa los datos propios | Cuando un estudiante pregunta por sus propios datos (activador de COMP-07), el backend calcula su resumen autorizado y lo entrega en la **primera** llamada al LLM como dato no confiable delimitado (SEG-09); las herramientas siguen disponibles para el detalle. Los coordinadores no reciben resumen. Aprobada por el humano | Con `qwen2.5:7b` y otros modelos pequeños el modelo no llama a la herramienta e inventa; el resumen elimina esa dependencia y ahorra una ida y vuelta al LLM (menos tokens y latencia). No amplía permisos: son los mismos datos que la herramienta del estudiante ya entrega |
