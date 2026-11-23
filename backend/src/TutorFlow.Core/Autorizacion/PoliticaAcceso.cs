@@ -14,7 +14,8 @@ public sealed class PoliticaAcceso
         var texto = NormalizadorTexto.Normalizar(pregunta);
         var motivo = MotivoTercero(usuario, texto, directorio)
             ?? MotivoPrograma(usuario, texto, directorio)
-            ?? MotivoAgregado(usuario, texto);
+            ?? MotivoAgregado(usuario, texto)
+            ?? MotivoCapacidadAjena(usuario, texto, directorio);
         return motivo is { } denegado ? DecisionAcceso.Denegar(denegado) : DecisionAcceso.Permitir();
     }
 
@@ -69,4 +70,7 @@ public sealed class PoliticaAcceso
 
     private static MotivoDenegacion? MotivoAgregado(Usuario usuario, string texto) =>
         usuario.Rol == Rol.Estudiante && DetectorAgregados.PideAgregados(texto) ? MotivoDenegacion.Agregado : null;
+
+    private static MotivoDenegacion? MotivoCapacidadAjena(Usuario usuario, string texto, DirectorioAcademico directorio) =>
+        DetectorCapacidadAjena.PideCapacidadAjena(usuario, texto, directorio) ? MotivoDenegacion.CapacidadAjena : null;
 }
