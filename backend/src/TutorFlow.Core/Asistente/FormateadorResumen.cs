@@ -3,17 +3,20 @@ using TutorFlow.Core.Conocimiento;
 
 namespace TutorFlow.Core.Asistente;
 
+internal sealed record ResumenEntregado(string Texto, IReadOnlyList<Cita> Reglas);
+
 internal static class FormateadorResumen
 {
-    public static string Resumir(ResumenEstudiante resumen)
+    public static ResumenEntregado Resumir(ResumenEstudiante resumen)
     {
+        var reglas = ReglasDe(resumen);
         var lineas = resumen.Asignaturas.Select(LineaDeAsignatura).ToList();
         lineas.Add($"Promedio ponderado del periodo: {FormateadorDatos.Promedio(resumen.Promedio)}.");
         lineas.Add($"Créditos matriculados: {resumen.CreditosMatriculados}.");
         lineas.Add($"Prueba académica: {(resumen.PruebaAcademica ? "sí" : "no")}.");
         lineas.Add($"Beca por rendimiento: {FormateadorDatos.TextoBeca(resumen.Beca)}.");
-        lineas.Add($"Reglas aplicadas a estos datos: {ReglasDe(resumen)}.");
-        return string.Join("\n", lineas);
+        lineas.Add($"Reglas aplicadas a estos datos: {string.Join("; ", reglas.Select(Describir))}.");
+        return new ResumenEntregado(string.Join("\n", lineas), reglas);
     }
 
     private static string LineaDeAsignatura(ResultadoAsignatura resultado)
@@ -23,11 +26,10 @@ internal static class FormateadorResumen
             + $"{FormateadorDatos.DescribirEstado(resultado)}; asistencia: {FormateadorDatos.DescribirAsistencia(resultado)}.";
     }
 
-    private static string ReglasDe(ResumenEstudiante resumen)
+    private static IReadOnlyList<Cita> ReglasDe(ResumenEstudiante resumen)
     {
         IReadOnlyList<ResumenEstudiante> resumenes = [resumen];
-        var reglas = ReglasAplicadas.DeNotas(resumenes).Concat(ReglasAplicadas.DeAsistencia(resumenes)).Distinct();
-        return string.Join("; ", reglas.Select(Describir));
+        return [.. ReglasAplicadas.DeNotas(resumenes).Concat(ReglasAplicadas.DeAsistencia(resumenes)).Distinct()];
     }
 
     private static string Describir(Cita cita) => $"{cita.Documento} · {cita.Seccion}";

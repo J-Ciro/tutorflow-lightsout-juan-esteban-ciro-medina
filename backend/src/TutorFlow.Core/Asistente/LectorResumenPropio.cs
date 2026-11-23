@@ -13,7 +13,7 @@ internal sealed class LectorResumenPropio
         _politicaAcceso = politicaAcceso;
     }
 
-    public async Task<string?> LeerAsync(
+    public async Task<ResumenEntregado?> LeerAsync(
         ContextoUsuario contexto,
         string pregunta,
         IApiAcademica api,
@@ -28,9 +28,9 @@ internal sealed class LectorResumenPropio
 
         var resumen = await ResumenesAcademicos.ResumirAsync(api, usuario.Id, cancellationToken);
         Registrar(contexto, resumen, registro);
-        var texto = FormateadorResumen.Resumir(resumen);
-        registro.AgregarFuente(texto);
-        return texto;
+        var entregado = FormateadorResumen.Resumir(resumen);
+        registro.AgregarFuente(entregado.Texto);
+        return entregado;
     }
 
     private bool PuedeLeerSusDatos(ContextoUsuario contexto) =>

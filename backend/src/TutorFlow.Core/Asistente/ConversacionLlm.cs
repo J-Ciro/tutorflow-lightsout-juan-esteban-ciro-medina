@@ -13,13 +13,13 @@ public enum EstadoConversacion
 
 public sealed record ResultadoConversacion(EstadoConversacion Estado, string? Texto, UsoTokens Uso);
 
-public sealed record EntradaConversacion(
+internal sealed record EntradaConversacion(
     string Pregunta,
     IReadOnlyList<SeccionDocumento> Secciones,
-    string? Resumen,
+    ResumenEntregado? Resumen,
     string PromptSistema);
 
-public sealed class ConversacionLlm
+internal sealed class ConversacionLlm
 {
     private readonly IClienteLlm _clienteLlm;
     private readonly HerramientasAsistente _herramientas;

@@ -42,13 +42,13 @@ public static class ConstructorPrompts
             : $"{prompt}{Environment.NewLine}{Environment.NewLine}Marcador interno confidencial: {marcadorCanario}";
     }
 
-    public static MensajeLlm MensajeInicial(string pregunta, IReadOnlyList<SeccionDocumento> secciones, string? resumen)
+    internal static MensajeLlm MensajeInicial(string pregunta, IReadOnlyList<SeccionDocumento> secciones, ResumenEntregado? resumen)
     {
         var constructor = new StringBuilder();
         if (resumen is not null)
         {
             constructor.AppendLine(EncabezadoResumen);
-            constructor.AppendLine(FormateadorDatos.Delimitar(Textos.FuenteResumenPropio, resumen));
+            constructor.AppendLine(FormateadorDatos.Delimitar(Textos.FuenteResumenPropio, resumen.Texto));
             constructor.AppendLine();
         }
 
