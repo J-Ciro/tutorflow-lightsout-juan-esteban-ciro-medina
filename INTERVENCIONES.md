@@ -241,3 +241,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** un "Pool overlaps" en la máquina del evaluador haría fallar el `docker compose up` evaluado. Eso contradice INT-027.
 - **Costo:** ~1 min humano.
 - **Prevención:** `docker-compose.yml` por defecto no fija subredes ni IP. Toda topología con valores fijos va en un archivo de override opcional (`docker-compose.web.yml`), y el CI verifica que el compose por defecto no declara `ipam` ni `ipv4_address`.
+
+### INT-030 · 2026-11-23 · Bloqueo simple por cantidad de peticiones, sin complejidad innecesaria
+- **Fase:** spec
+- **Qué pasó:** para atribuir la IP detrás del proxy de la interfaz, la fábrica fue acumulando mecanismos: un proxy de confianza con red e IP fijas (D-68), un bloqueo opcional por identidades múltiples (D-69), límites sin tope por defecto (D-70) y, tras INT-029, la propuesta de un archivo de override con subredes configurables.
+- **Qué hizo el humano:** *"No, simplemente no debes de ahcer bloqueos asi de ese estilo, realmente no debes de generar complejidad de manera innecesaria si se desea bloquear una IP debe ser por la cantidad de peticiones y bloquear por 30 segundos luegp 60, luegop 120, para que peuda vovler a intentar y ya esta."* Además eligió dos opciones: el umbral queda activo y holgado, en 600 peticiones por minuto por IP, y se eliminan D-68 y D-69.
+- **Por qué:** la complejidad no aportaba valor proporcional y añadía riesgos de despliegue (subredes fijas, INT-029).
+- **Costo:** ~2 min humanos.
+- **Prevención:** antes de proponer un mecanismo de seguridad u operación, la fábrica plantea primero la alternativa más simple que cumple el requisito y justifica por qué no basta. En `arquitecto-spec`, una propuesta que añade infraestructura (redes, IP fijas, overrides) requiere que el humano la apruebe antes de especificarla.
