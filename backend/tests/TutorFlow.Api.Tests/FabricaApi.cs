@@ -24,6 +24,7 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
     private readonly bool _reemplazarLlm;
     private readonly HttpMessageHandler? _manejadorHttp;
     private readonly bool _auditoriaReal;
+    private readonly IClienteLlm? _clienteLlm;
 
     public FabricaApi(
         ApiAcademicaDoble? api = null,
@@ -33,8 +34,10 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
         bool reemplazarLlm = true,
         HttpMessageHandler? manejadorHttp = null,
         bool conocimientoReal = false,
-        bool auditoriaReal = false)
+        bool auditoriaReal = false,
+        IClienteLlm? clienteLlm = null)
     {
+        _clienteLlm = clienteLlm;
         Api = api ?? new ApiAcademicaDoble();
         Llm = llm ?? ClienteLlmDoble.Texto("Respuesta de prueba.");
         _conocimiento = ElegirConocimiento(conocimiento, conocimientoReal);
@@ -94,6 +97,27 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
         return new RespuestaApi(respuesta.StatusCode, bytes, respuesta.Headers, respuesta.Content.Headers);
     }
 
+    public async Task<RespuestaApi> EnviarConTipoAsync(string cuerpo, string? tipoContenido, string ip = IpPorDefecto, IReadOnlyDictionary<string, string>? encabezados = null)
+    {
+        using var cliente = CreateClient();
+        using var peticion = new HttpRequestMessage(HttpMethod.Post, "/api/asistente/preguntar");
+        peticion.Headers.Add(FiltroIpRemota.Encabezado, ip);
+        foreach (var (clave, valor) in encabezados ?? new Dictionary<string, string>())
+        {
+            peticion.Headers.TryAddWithoutValidation(clave, valor);
+        }
+
+        peticion.Content = new ByteArrayContent(Encoding.UTF8.GetBytes(cuerpo));
+        if (tipoContenido is not null)
+        {
+            peticion.Content.Headers.TryAddWithoutValidation("Content-Type", tipoContenido);
+        }
+
+        using var respuesta = await cliente.SendAsync(peticion);
+        var bytes = await respuesta.Content.ReadAsByteArrayAsync();
+        return new RespuestaApi(respuesta.StatusCode, bytes, respuesta.Headers, respuesta.Content.Headers);
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Production");
@@ -136,11 +160,18 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
             servicios.ConfigureHttpClientDefaults(b => b.ConfigurePrimaryHttpMessageHandler(() => _manejadorHttp));
         }
 
-        if (_reemplazarLlm)
+        ReemplazarLlm(servicios);
+    }
+
+    private void ReemplazarLlm(IServiceCollection servicios)
+    {
+        if (!_reemplazarLlm)
         {
-            servicios.RemoveAll<IClienteLlm>();
-            servicios.AddSingleton<IClienteLlm>(Llm);
+            return;
         }
+
+        servicios.RemoveAll<IClienteLlm>();
+        servicios.AddSingleton(_clienteLlm ?? Llm);
     }
 }
 

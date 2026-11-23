@@ -27,6 +27,8 @@ public sealed class RelojControlado : IReloj
 
     public DateTimeOffset AhoraUtc => _ahora;
 
+    public void Fijar(DateTimeOffset instante) => _ahora = instante;
+
     public void Avanzar(TimeSpan intervalo) => _ahora += intervalo;
 }
 

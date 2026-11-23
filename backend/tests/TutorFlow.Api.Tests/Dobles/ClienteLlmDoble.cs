@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using TutorFlow.Core.Asistente;
 
@@ -73,7 +74,7 @@ public sealed partial class ClienteLlmDoble : IClienteLlm
         {
             var herramienta = ElegirHerramienta(solicitud.Herramientas);
             return n == 0 && herramienta is not null
-                ? new RespuestaLlm(null, [Llamada("pide-1", herramienta.Nombre, $$"""{"{{ParametroEstudianteId}}":"{{estudianteId}}"}""")], uso ?? UsoPorDefecto, false)
+                ? new RespuestaLlm(null, [Llamada("pide-1", herramienta.Nombre, JsonSerializer.Serialize(new Dictionary<string, string> { [ParametroEstudianteId] = estudianteId }))], uso ?? UsoPorDefecto, false)
                 : new RespuestaLlm("Sin datos", [], uso ?? UsoPorDefecto, false);
         });
 
