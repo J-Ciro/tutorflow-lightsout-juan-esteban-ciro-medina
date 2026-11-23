@@ -76,6 +76,33 @@ public sealed class ReferenciasEscritasTests
         Assert.Equal(esperada, resultado);
     }
 
+    [Theory]
+    [InlineData("Según el reglamento evaluación y calificaciones.md · Sección 4 tu promedio es 4.39.", "Tu promedio es 4.39.")]
+    [InlineData("Según el documento evaluación y calificaciones.md · Sección 4 tu promedio es 4.39.", "Tu promedio es 4.39.")]
+    [InlineData("Tu promedio es 4.39. Esta información proviene del documento de evaluación.", "Tu promedio es 4.39.")]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-198")]
+    [Trait("D", "D-60")]
+    public void ESC_198l_Un_nombre_de_documento_con_espacios_es_una_sola_referencia_y_la_atribucion_generica_se_evalua_sin_citas(string respuesta, string esperada)
+    {
+        var resultado = Limpiar(respuesta, []);
+
+        Assert.Equal(esperada, resultado);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-194")]
+    [Trait("D", "D-63")]
+    public void ESC_194e_El_texto_que_sigue_a_un_punto_y_coma_no_recibe_mayuscula_tras_eliminar_la_referencia()
+    {
+        const string respuesta = "Requisitos: promedio de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos; da 50% de descuento en la matrícula siguiente (reglamento_academico_2025.md · Artículo 20).";
+
+        var resultado = Limpiar(respuesta, [Beca31]);
+
+        Assert.Equal("Requisitos: promedio de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos; da 50% de descuento en la matrícula siguiente.", resultado);
+    }
+
     [Fact]
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-178")]
