@@ -20,7 +20,7 @@ public sealed class TimeoutTotalApiTests
     [Trait("CA", "CA-07")]
     [Trait("ESC", "ESC-158")]
     [Trait("SEG", "SEG-13")]
-    public async Task ESC_158_El_timeout_cubre_todas_las_llamadas_y_no_se_reinicia_por_llamada()
+    public async Task ESC_158a_El_timeout_desde_el_inicio_de_la_fase_del_llm_cubre_todas_las_llamadas_y_no_se_reinicia_por_llamada()
     {
         var llm = new ClienteLlmLento(DemoraPorLlamada, LlamadasConHerramienta);
         using var fabricaLenta = new FabricaApi(clienteLlm: llm, configuracion: ConTimeout());
@@ -34,6 +34,29 @@ public sealed class TimeoutTotalApiTests
         Assert.True(reloj.Elapsed < TimeSpan.FromSeconds(int.Parse(TimeoutTotalSegundos)) + MargenSobreElTimeout, $"tardó {reloj.Elapsed}");
         Assert.True(llm.Llamadas <= MaximoDeLlamadas, $"llamadas: {llm.Llamadas}");
         Assert.Equal(ResultadoAuditoria.Error, Assert.Single(fabricaLenta.Auditoria.Eventos).Resultado);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-07")]
+    [Trait("ESC", "ESC-158")]
+    [Trait("RF", "RNF-02")]
+    [Trait("D", "D-71")]
+    public async Task ESC_158b_La_api_lenta_y_el_llm_que_nunca_responde_dan_503_con_el_total_de_ambas_fases_sin_acumular_mas()
+    {
+        var demoraApi = TimeSpan.FromSeconds(1);
+        var timeoutLlm = TimeSpan.FromSeconds(int.Parse(TimeoutTotalSegundos));
+        var api = new ApiAcademicaDoble { Interceptor = (metodo, ct) => metodo == "ObtenerEstudiante" ? Task.Delay(demoraApi, ct) : Task.CompletedTask };
+        using var fabrica = new FabricaApi(api: api, clienteLlm: new ClienteLlmLento(TimeSpan.FromMinutes(5), 0), configuracion: ConTimeout());
+        _ = fabrica.Services;
+        var reloj = Stopwatch.StartNew();
+
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
+
+        reloj.Stop();
+        Afirmaciones.ProblemDetails(respuesta, 503);
+        Assert.True(reloj.Elapsed >= demoraApi + timeoutLlm, $"tardó {reloj.Elapsed}");
+        Assert.True(reloj.Elapsed < demoraApi + timeoutLlm + MargenSobreElTimeout, $"tardó {reloj.Elapsed}");
+        Assert.Equal(ResultadoAuditoria.Error, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 }
 
