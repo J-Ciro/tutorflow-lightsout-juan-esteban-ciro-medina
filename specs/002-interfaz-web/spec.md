@@ -6,7 +6,7 @@
 | Requisito original | Texto literal debajo de esta tabla |
 | Reglas globales | [`constitution.md`](../../constitution.md): contrato (§2) y matriz de acceso (§3), sin cambios |
 | Técnico | [`plan.md`](plan.md) · Decisiones: [`decisiones.md`](decisiones.md) · Escenarios: [`escenarios/002-interfaz-web/`](../../escenarios/002-interfaz-web/) (ESC-200…ESC-299) |
-| Afecta | Consume SPEC-001 (§2 "Interfaz web", COMP-03, `TEXTO_NEGATIVA`, `TEXTO_NO_VERIFICABLE`); el perfil `web` depende de D-68 (proxy de confianza) y D-69 (bloqueo de identidades) de la 001, que se especifican allí; agrega un servicio opcional a Docker Compose y un trabajo al CI |
+| Afecta | Consume SPEC-001 (§2 "Interfaz web", COMP-03, `TEXTO_NEGATIVA`, `TEXTO_NO_VERIFICABLE`); el 429 del perfil `web` viene de la tasa por IP de la 001 (D-72), que se especifica allí; agrega un servicio opcional a Docker Compose y un trabajo al CI |
 
 > Feature 002: interfaz web de TutorFlow en React + TypeScript + shadcn/ui (frontend/). Experiencia cómoda y llamativa para estudiantes y coordinadores, que consume el contrato de constitution.md §2 (POST /api/asistente/preguntar, GET /api/salud). Paleta #f7f7f7, #ff6a13, #2b1d19;
 > look and feel inspirado en https://www.q10.com/ (tipografía libre similar, radios 20/12/999 px, sombras cálidas, transiciones cortas) sin usar marca, logos, textos ni fuentes de Q10.
@@ -19,10 +19,10 @@ Que un estudiante o un coordinador pregunte a TutorFlow desde el navegador, en e
 **Dentro del alcance:**
 - App web de una sola página en `frontend/`: selector de usuario de prueba, envío de preguntas, historial en memoria, respuesta y tokens.
 - Estados de carga, sin información, negativa, errores y servicio caído; accesibilidad AA; diseño responsivo; seguridad del cliente.
-- Servicio opcional en Compose con un proxy que conserva la IP del cliente; modo de desarrollo; pruebas y CI.
+- Servicio opcional en Compose con un proxy que solo reenvía el contrato; modo de desarrollo; pruebas y CI.
 
 **Fuera del alcance:**
-- Autenticación real (D-01 de la 001); persistencia de cualquier tipo; historial enviado al backend; cambios en el contrato o en la matriz de acceso; cambios en el backend distintos de D-68 y D-69 de la 001.
+- Autenticación real (D-01 de la 001); persistencia de cualquier tipo; historial enviado al backend; cambios en el contrato o en la matriz de acceso; cambios en el backend; atribuir cada pregunta a la IP de su cliente (todos comparten la del proxy, D-002-14).
 - Un backend en otro origen (CORS); acceso a la interfaz desde otra máquina; lo que la persona vea de su propia sesión con las herramientas de desarrollo de su navegador.
 - Modo oscuro; idiomas distintos del español; marca, logos, textos y fuentes de Q10.
 - Mostrar los documentos y secciones citados (D-002-38) y el costo: la API los devuelve en `citas` y `costoUsd` y la interfaz los valida, pero no los muestra (D-002-33).
@@ -49,7 +49,7 @@ Que un estudiante o un coordinador pregunte a TutorFlow desde el navegador, en e
 - **RF-002-08** · Ser usable con teclado y lector de pantalla con nivel WCAG 2.2 AA, desde 320 px de ancho hasta escritorio. CA-002-09, CA-002-10, CA-002-11.
 - **RF-002-09** · Proteger el cliente: sin HTML interpretado, sin secretos, sin almacenamiento ni consola con datos, sin terceros y con política de contenido estricta. CA-002-08, CA-002-12.
 - **RF-002-10** · Desplegarse como servicio opcional de Docker Compose, solo en el equipo local, sin alterar el arranque evaluado en el puerto 8080, y bloquear regresiones en el CI. CA-002-14.
-- **RF-002-11** · Que el backend atribuya cada pregunta hecha por la interfaz a la IP del cliente y no a la del proxy, sin que el cliente pueda falsificarla. CA-002-15.
+- **RF-002-11** · Que una espera impuesta por el servicio (429) se muestre con la cuenta regresiva de su `Retry-After` (30, 60 o 120 s por la tasa del backend) y que ninguna cabecera enviada por el cliente cambie cómo el backend lo identifica. CA-002-05, CA-002-15.
 
 ## 5. Comportamiento y experiencia
 Textos fijos de la interfaz (los textos del asistente vienen del backend y se muestran sin cambios). `<espera>` es "<n> s" hasta 60 s y "mm:ss" por encima (p. ej. "02:00").
@@ -76,7 +76,7 @@ Textos fijos de la interfaz (los textos del asistente vienen del backend y se mu
 | Código de soporte | Código de soporte: <X-Correlation-Id> |
 | Salud | "Comprobando servicio…" · "Servicio en línea" · "Servicio no disponible" · aviso "El asistente no está disponible. Lo comprobamos de nuevo cada 30 s." |
 | Cambio de identidad (aviso visible y anuncio) | Conversación borrada: ahora preguntas como <ID>. El cambio de usuario queda registrado en la auditoría de la demostración. |
-| Cambio de identidad con espera pendiente (se añade) | La espera de <espera> se mantiene: el límite se aplica a todo el navegador. |
+| Cambio de identidad con espera pendiente (se añade) | La espera de <espera> se mantiene: el límite se aplica a todos los usuarios. |
 
 - **COMP-002-01** · El aviso de demostración está visible en la cabecera en todo momento y en todos los anchos.
 - **COMP-002-02** · Respuesta 200: el texto se muestra tal cual, conservando los saltos de línea; debajo, los metadatos con `tokens` entero; la insignia solo si `usoDatosEstudiante` es true; ni `costoUsd` ni las citas se muestran ("US$" aparece 0 veces en la página; SEG-002-18).
@@ -120,8 +120,8 @@ La matriz de [`constitution.md`](../../constitution.md) §3 no cambia. **La inte
 - **SEG-002-12** · Al salir de la página (navegar, cerrar, volver atrás) se borran historial, identidad, campo y anuncios; una página restaurada por el navegador (caché de ida y vuelta, reabrir pestaña o restauración de formularios) empieza sin identidad, sin turnos y con el campo vacío.
 - **SEG-002-13** · Los caracteres de control bidireccional y de ancho cero de la respuesta y la pregunta se muestran aislados: no reordenan ni ocultan el texto que los rodea (metadatos, otros turnos).
 - **SEG-002-14** · Por el puerto de la interfaz solo se alcanzan las 2 rutas del contrato con su método (POST y GET); otra ruta, método o variante codificada responde 404, 403 o 405 del servidor web sin llegar al backend, o llega a la ruta del contrato sin consulta.
-- **SEG-002-15** · El backend registra y limita cada pregunta hecha por la interfaz con la IP del cliente, distinta de la del proxy; `X-Forwarded-For`, `Forwarded` o `X-Real-IP` enviados por el cliente no cambian esa IP ni por el puerto de la interfaz ni por el 8080.
-- **SEG-002-16** · Por defecto el proxy no limita la tasa de preguntas (D-70 de la 001); solo la limita si el operador lo activa. Un 429 del proxy o del backend llega a la interfaz con su `Retry-After`. Las respuestas de `/api/*` llevan `Cache-Control: no-store` y nunca se guardan en el proxy.
+- **SEG-002-15** · El proxy no reenvía cabeceras de IP del cliente: el backend registra y limita toda pregunta hecha por la interfaz con la IP del proxy, compartida por todos (D-002-14); `X-Forwarded-For`, `Forwarded` o `X-Real-IP` enviados por el cliente no la cambian ni por el puerto de la interfaz ni por el 8080.
+- **SEG-002-16** · El proxy no limita la tasa de preguntas; el único límite es el del backend (600 por minuto por IP, D-72 de la 001), y su 429 llega a la interfaz con su `Retry-After`. Las respuestas de `/api/*` llevan `Cache-Control: no-store` y nunca se guardan en el proxy.
 - **SEG-002-17** · La interfaz del perfil `web` solo escucha en 127.0.0.1: desde otra máquina no se puede usar el selector de usuarios.
 - **SEG-002-18** · Ningún `documento` ni `seccion` de `citas` llega a la página (texto, atributos ni anuncios), con 1 o con 50 citas, en una respuesta 200 o en una negativa 403 → 0 apariciones en el DOM.
 
@@ -279,18 +279,18 @@ Característica: Interfaz web de TutorFlow
       | se reinicia el servicio "api" con el perfil web activo    | "GET 127.0.0.1:5173/api/salud" vuelve a responder 200 en ≤ 30 s sin reiniciar el contenedor web |
       | un pull request agrega "dangerouslySetInnerHTML"          | el trabajo "frontend" del CI falla                                                          |
       | un pull request agrega un paquete con un script de instalación | el script no se ejecuta en el CI y el trabajo "frontend" falla si el paquete no está en la lista |
-  Esquema del escenario: CA-002-15 · El proxy conserva la IP del cliente, no limita por defecto y solo reenvía el contrato (Detalle: ESC-294, ESC-295, ESC-299)
-    Dado el sistema con el perfil web recién iniciado y el bloqueo de identidades desactivado
+  Esquema del escenario: CA-002-15 · El proxy solo reenvía el contrato y el 429 del backend llega con su espera (Detalle: ESC-294, ESC-295, ESC-299)
+    Dado el sistema con el perfil web y la configuración por defecto salvo donde se indica, tras reiniciar el servicio "api"
     Cuando el cliente local <accion>
     Entonces <resultado>
     Ejemplos:
       | accion                                                                          | resultado                                                                                       |
-      | pregunta como EST-001…EST-004 por 5173                                          | los 4 eventos de auditoría tienen la misma "ipOrigen", distinta de las 2 IP de "web", y hay 1 evento "multiples_identidades" con los 4 IDs |
-      | pregunta por 5173 con "X-Forwarded-For: 203.0.113.7"                             | la "ipOrigen" del evento es distinta de 203.0.113.7 y de las 2 IP de "web"                       |
-      | pregunta por 8080 con "X-Forwarded-For: 203.0.113.7"                             | la "ipOrigen" del evento es distinta de 203.0.113.7                                              |
-      | envía 30 preguntas en menos de 5 s por 5173 con la configuración por defecto     | las 30 llegan al backend y responden 200, con 0 respuestas 429                                   |
+      | pregunta como EST-001…EST-004 por 5173                                          | las 4 responden 200 y sus 4 eventos de auditoría tienen la misma "ipOrigen"                     |
+      | pregunta por 5173 y por 8080 con "X-Forwarded-For: 203.0.113.7"                  | ninguna "ipOrigen" de los eventos es 203.0.113.7                                                 |
+      | envía 30 preguntas en menos de 5 s por 5173                                      | las 30 llegan al backend y responden 200, con 0 respuestas 429                                   |
+      | con el umbral de prueba del backend en 20, envía 20 preguntas por 5173 y la 21.ª desde la interfaz como EST-001 | la interfaz muestra "Hay muchas preguntas en este momento. Podrás preguntar de nuevo en 30 s." y habilita "Preguntar" a los 30 s, sin reenviar |
       | envía "OPTIONS /api/salud" y "GET /api/otra" por 5173                            | 405 o 403 y 404 del servidor web, y 0 peticiones al backend                                      |
 ```
 
 ## 10. Preguntas abiertas
-- Ninguna. D-002-14 fue aprobada por el humano como limitación del entorno.
+- Ninguna. D-002-14 (IP compartida tras el proxy, umbral holgado) fue aceptada por el humano en INT-030.

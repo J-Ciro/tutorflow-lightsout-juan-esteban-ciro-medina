@@ -5,7 +5,7 @@ Los escenarios se agrupan por feature en `escenarios/<feature-id>/`, con el mism
 ## Convenciones
 
 - **Formato:** una tabla por tema con las columnas `ID | Actor | Entrada | Resultado esperado | Regla`. Una fila por caso; las filas no pasan de ~400 caracteres (un texto más largo va en un bullet bajo la tabla). Las condiciones comunes se escriben una sola vez, sobre la tabla.
-- **ID:** `ESC-NNN`, único y nunca reutilizado. Los casos de un escenario se distinguen con una letra (`ESC-175 j`). Un escenario retirado se marca como `~~retirado~~` y no se borra.
+- **ID:** `ESC-NNN`, único y nunca reutilizado. Los casos de un escenario se distinguen con una letra (`ESC-175 j`). Un escenario retirado no se borra: queda en una línea, "ESC-NNN · retirado (D-xx)", sin texto tachado.
 - **Corrección:** cambiar un resultado actualiza la fila en su sitio y registra la D en `decisiones.md`; no se agrega historia ("hasta la v1.x…"): la historia está en git.
 - **Etiquetas:** `@feliz`, `@alterno` (límites, nulos, vacíos), `@permisos`, `@abuso` (ataque deliberado), `@contrato`, `@operacion`.
 - **Trazabilidad:** cada fila indica las reglas (RN, SEG, COMP, D) que verifica; cada archivo indica sus CA.
@@ -74,7 +74,7 @@ Los IDs son globales e inmutables: una feature nueva toma el siguiente bloque de
 | [03-estados-y-errores.md](002-interfaz-web/03-estados-y-errores.md) | Errores de la pregunta y estado del servicio | ESC-235…256 | CA-002-05, CA-002-06 |
 | [04-accesibilidad-y-diseno.md](002-interfaz-web/04-accesibilidad-y-diseno.md) | AA, teclado, responsivo, movimiento y tokens | ESC-257…269 | CA-002-09, CA-002-10, CA-002-11 |
 | [05-seguridad-del-cliente.md](002-interfaz-web/05-seguridad-del-cliente.md) | XSS, privacidad, secretos, política de contenido y permisos con el backend real | ESC-270…292 | CA-002-03, CA-002-08, CA-002-12, CA-002-13 |
-| [06-despliegue-y-ci.md](002-interfaz-web/06-despliegue-y-ci.md) | Perfil web de Compose, proxy con IP del cliente, CI y cadena de suministro | ESC-293…299 | CA-002-14, CA-002-15 |
+| [06-despliegue-y-ci.md](002-interfaz-web/06-despliegue-y-ci.md) | Perfil web de Compose, proxy con IP compartida y tasa del backend, CI y cadena de suministro | ESC-293…299 (retirados: ESC-299 d, f) | CA-002-14, CA-002-15 |
 
 ## Notación de la feature 002
 
