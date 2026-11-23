@@ -189,7 +189,7 @@ public sealed class ApoyoYSinRespaldoTests
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
         Assert.Equal(texto, resultado.Respuesta!.Respuesta);
         Assert.Equal(
-            [new Cita(Evaluacion, "Sección 3"), new Cita(Evaluacion, "Sección 4"), new Cita(Reglamento, "Artículo 11"), DatosNotas, DatosAsistencia],
+            [new Cita(Reglamento, "Artículo 11"), new Cita(Evaluacion, "Sección 3"), new Cita(Evaluacion, "Sección 4"), DatosNotas, DatosAsistencia],
             resultado.Respuesta.Citas.ToArray());
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
     }
@@ -328,11 +328,11 @@ public sealed class ApoyoYSinRespaldoTests
     public async Task Con_la_herramienta_de_programa_la_cita_fuera_del_bloque_y_sin_apoyo_se_descarta_sin_reemplazar_la_respuesta()
     {
         var texto = $"Valentina Castro: Microeconomía (1.8) y Estadística (2.3). ({Reglamento} · Artículo 22)";
-        var escenario = Con(GuionDePrograma(texto), Indice(Indexadas(Articulo5, Articulo6, Articulo20, Articulo22), [Articulo22]));
+        var escenario = Con(GuionDePrograma(texto), Indice(Indexadas(Articulo5, Articulo6, Articulo20, Articulo22, NotaDefinitiva), [Articulo22]));
 
         var resultado = await escenario.PreguntarAsync(Coord02, "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?");
 
-        AfirmarRespondida(resultado, texto, [new Cita(Reglamento, "Artículo 5"), new Cita(Reglamento, "Artículo 6"), new Cita(Reglamento, "Artículo 20"), DatosProgramaAdm]);
+        AfirmarRespondida(resultado, texto, [new Cita(Reglamento, "Artículo 6"), new Cita(Evaluacion, "Sección 3"), new Cita(Reglamento, "Artículo 5"), DatosProgramaAdm]);
         Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
     }
 
