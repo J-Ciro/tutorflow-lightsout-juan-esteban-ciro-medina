@@ -7,9 +7,6 @@ internal readonly record struct TokenTexto(string Valor, int Inicio, int Fin);
 
 internal static class TokenizadorTexto
 {
-    private const int DesplazamientoAnchoCompleto = 0xFEE0;
-    private const char PrimeroAnchoCompleto = '！';
-    private const char UltimoAnchoCompleto = '～';
     private const string CaracteresIgnorables = "​‌‍⁠﻿­";
 
     private static readonly IReadOnlyDictionary<char, char> SinAcento = ConstruirTablaSinAcento(
@@ -94,10 +91,7 @@ internal static class TokenizadorTexto
 
     private static char Plegar(char caracter)
     {
-        var sinAnchoCompleto = caracter is >= PrimeroAnchoCompleto and <= UltimoAnchoCompleto
-            ? (char)(caracter - DesplazamientoAnchoCompleto)
-            : caracter;
-        var minuscula = char.ToLowerInvariant(sinAnchoCompleto);
+        var minuscula = char.ToLowerInvariant(caracter);
         return SinAcento.GetValueOrDefault(minuscula, minuscula);
     }
 
