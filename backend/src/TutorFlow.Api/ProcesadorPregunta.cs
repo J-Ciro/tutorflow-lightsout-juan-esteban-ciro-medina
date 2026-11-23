@@ -18,7 +18,6 @@ public sealed partial class ProcesadorPregunta
 
     private readonly LimitesAsistente _limites;
     private readonly LimitadorTasaPorIp _limitadorTasa;
-    private readonly LimitadorIdentidades _limitadorIdentidades;
     private readonly AuditorPeticiones _auditor;
     private readonly PreguntarAsistente _preguntarAsistente;
     private readonly ILogger<ProcesadorPregunta> _logger;
@@ -26,14 +25,12 @@ public sealed partial class ProcesadorPregunta
     public ProcesadorPregunta(
         LimitesAsistente limites,
         LimitadorTasaPorIp limitadorTasa,
-        LimitadorIdentidades limitadorIdentidades,
         AuditorPeticiones auditor,
         PreguntarAsistente preguntarAsistente,
         ILogger<ProcesadorPregunta> logger)
     {
         _limites = limites;
         _limitadorTasa = limitadorTasa;
-        _limitadorIdentidades = limitadorIdentidades;
         _auditor = auditor;
         _preguntarAsistente = preguntarAsistente;
         _logger = logger;
@@ -102,26 +99,15 @@ public sealed partial class ProcesadorPregunta
     private async Task<IResult> ResponderAsync(HttpContext contexto, DatosPeticion peticion, SolicitudValidada solicitud, CancellationToken cancellationToken)
     {
         var usuario = new Usuario(solicitud.Rol!.Value, solicitud.UsuarioId!);
-        var identidades = _limitadorIdentidades.Registrar(peticion.Ip, usuario.Id);
-        if (identidades.SuperacionNueva)
-        {
-            _auditor.RegistrarMultiplesIdentidades(peticion.Ip, identidades.Ids);
-        }
-
-        if (identidades.Superado && _limites.BloquearMultiplesIdentidades)
-        {
-            return Rechazar429(contexto, peticion, solicitud, (int)TimeSpan.FromMinutes(_limites.VentanaIdentidadesMinutos).TotalSeconds);
-        }
-
-        return await PreguntarAsync(peticion, new PreguntaEntrada(solicitud.Pregunta!, usuario), cancellationToken);
+        return await PreguntarAsync(contexto, peticion, new PreguntaEntrada(solicitud.Pregunta!, usuario), cancellationToken);
     }
 
-    private async Task<IResult> PreguntarAsync(DatosPeticion peticion, PreguntaEntrada entrada, CancellationToken cancellationToken)
+    private async Task<IResult> PreguntarAsync(HttpContext contexto, DatosPeticion peticion, PreguntaEntrada entrada, CancellationToken cancellationToken)
     {
         try
         {
             var resultado = await _preguntarAsistente.EjecutarAsync(entrada, peticion.Ip, peticion.CorrelationId, cancellationToken);
-            return Mapear(resultado);
+            return Mapear(contexto, resultado);
         }
         catch (Exception excepcion) when (EsFalloDeDependencia(excepcion, cancellationToken))
         {
@@ -134,8 +120,13 @@ public sealed partial class ProcesadorPregunta
         excepcion is DependenciaNoDisponibleException or HttpRequestException or TimeoutException
         || (excepcion is OperationCanceledException && !cancellationToken.IsCancellationRequested);
 
-    private static IResult Mapear(ResultadoPregunta resultado)
+    private static IResult Mapear(HttpContext contexto, ResultadoPregunta resultado)
     {
+        if (resultado.Tipo == TipoResultadoPregunta.LimiteIdentidades)
+        {
+            return Responder429(contexto, resultado.SegundosParaReintentar);
+        }
+
         if (resultado.Respuesta is not { } respuesta)
         {
             return Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable, title: TituloServicioNoDisponible);
@@ -174,6 +165,11 @@ public sealed partial class ProcesadorPregunta
             solicitud?.Pregunta,
             ResultadoAuditoria.Denegada,
             peticion.Cronometro.ElapsedMilliseconds));
+        return Responder429(contexto, segundosParaReintentar);
+    }
+
+    private static IResult Responder429(HttpContext contexto, int segundosParaReintentar)
+    {
         contexto.Response.Headers.RetryAfter = segundosParaReintentar.ToString(CultureInfo.InvariantCulture);
         return Results.Problem(statusCode: StatusCodes.Status429TooManyRequests, title: TituloDemasiadasSolicitudes);
     }
