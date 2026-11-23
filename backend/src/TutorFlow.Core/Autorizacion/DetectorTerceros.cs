@@ -4,6 +4,8 @@ namespace TutorFlow.Core.Autorizacion;
 
 internal readonly record struct MencionPersona(string Clave, int Inicio, int Fin);
 
+internal readonly record struct MencionDeAutorizado(string Id, int Inicio);
+
 public static partial class DetectorTerceros
 {
     private const string MarcadorTercero = "[TERCERO]";
@@ -20,6 +22,27 @@ public static partial class DetectorTerceros
 
     public static bool TieneFormaDeIdPersona(string textoNormalizado, DirectorioAcademico directorio) =>
         MencionesDeId(TokenizadorTexto.Tokenizar(textoNormalizado), directorio).Count > 0;
+
+    public static bool MencionaIdFueraDe(string textoNormalizado, IReadOnlyCollection<string> idsAutorizados, DirectorioAcademico directorio)
+    {
+        var clavesAutorizadas = idsAutorizados.Select(AmbitoPersonal.Clave).ToHashSet();
+        return MencionesDeId(TokenizadorTexto.Tokenizar(textoNormalizado), directorio)
+            .Any(mencion => !clavesAutorizadas.Contains(mencion.Clave));
+    }
+
+    internal static IReadOnlyList<MencionDeAutorizado> MencionesDeAutorizados(
+        string texto,
+        IReadOnlyCollection<string> idsAutorizados,
+        DirectorioAcademico directorio)
+    {
+        var tokens = TokenizadorTexto.Tokenizar(texto);
+        var idPorClave = idsAutorizados.Distinct().ToDictionary(AmbitoPersonal.Clave);
+        return [.. MencionesDeId(tokens, directorio)
+            .Concat(MencionesDeNombre(tokens, directorio))
+            .Where(mencion => idPorClave.ContainsKey(mencion.Clave))
+            .Select(mencion => new MencionDeAutorizado(idPorClave[mencion.Clave], mencion.Inicio))
+            .OrderBy(mencion => mencion.Inicio)];
+    }
 
     public static bool MencionaNombreCompleto(string idPersona, string textoNormalizado, DirectorioAcademico directorio)
     {

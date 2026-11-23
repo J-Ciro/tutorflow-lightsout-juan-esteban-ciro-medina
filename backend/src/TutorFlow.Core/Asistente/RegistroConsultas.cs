@@ -1,3 +1,4 @@
+using TutorFlow.Core.Academico;
 using TutorFlow.Core.Conocimiento;
 
 namespace TutorFlow.Core.Asistente;
@@ -8,8 +9,9 @@ public sealed class RegistroConsultas
     private readonly List<RecursoConsultado> _recursos = [];
     private readonly List<DatoConsultado> _datos = [];
     private readonly List<Cita> _citas = [];
-    private readonly List<Cita> _reglas = [];
+    private readonly SortedSet<int> _entradasDeReglas = [];
     private readonly List<string> _fuentes = [];
+    private readonly Dictionary<string, ResumenEstudiante> _resumenes = [];
 
     public IReadOnlyList<string> Estudiantes => _estudiantes;
 
@@ -20,7 +22,9 @@ public sealed class RegistroConsultas
     public IReadOnlyList<Cita> Citas => _citas;
 
 
-    public IReadOnlyList<Cita> Reglas => _reglas;
+    public IReadOnlyList<Cita> Reglas => ReglasAplicadas.Citas(_entradasDeReglas);
+
+    public IReadOnlyDictionary<string, ResumenEstudiante> Resumenes => _resumenes;
 
     public IReadOnlyList<string> Fuentes => _fuentes;
 
@@ -58,13 +62,9 @@ public sealed class RegistroConsultas
         }
     }
 
-    public void RegistrarReglas(IEnumerable<Cita> reglas)
-    {
-        foreach (var regla in reglas)
-        {
-            AgregarSiFalta(_reglas, regla);
-        }
-    }
+    public void RegistrarResumen(ResumenEstudiante resumen) => _resumenes[resumen.EstudianteId] = resumen;
+
+    public void RegistrarReglas(IEnumerable<int> entradas) => _entradasDeReglas.UnionWith(entradas);
 
     public void RegistrarCita(Cita cita) => AgregarSiFalta(_citas, cita);
 

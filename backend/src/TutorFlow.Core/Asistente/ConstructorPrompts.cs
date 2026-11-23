@@ -1,11 +1,14 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using TutorFlow.Core.Autorizacion;
 using TutorFlow.Core.Conocimiento;
 
 namespace TutorFlow.Core.Asistente;
 
-public static class ConstructorPrompts
+public static partial class ConstructorPrompts
 {
+    private const string DocumentoDeEjemplo = "documento_ejemplo.md";
+
     private const string AlcanceEstudiante =
         "Hablas con un estudiante: puedes tratar el reglamento y sus propios datos académicos, nada más.";
 
@@ -32,8 +35,8 @@ public static class ConstructorPrompts
             Es ilustrativo: la forma de la respuesta, no su contenido.
 
             <ejemplo>
-            Pregunta: ¿Con qué nota se aprueba una asignatura?
-            Respuesta: Se aprueba con una definitiva de 3.0 o más, en una escala de 0.0 a 5.0 ({{Textos.DocumentoReglamentoVigente}} · {{Textos.SeccionNotaMinima}}).
+            Pregunta: ¿Dónde se entregan los trabajos del taller?
+            Respuesta: Los trabajos del taller se entregan en la oficina del programa ({{DocumentoDeEjemplo}} · Sección 1).
             </ejemplo>
             </ejemplos>
             """;
@@ -41,6 +44,11 @@ public static class ConstructorPrompts
             ? prompt
             : $"{prompt}{Environment.NewLine}{Environment.NewLine}Marcador interno confidencial: {marcadorCanario}";
     }
+
+    public static string Instrucciones(string promptSistema) => BloqueDeEjemplos().Replace(promptSistema, string.Empty);
+
+    [GeneratedRegex("<ejemplos>.*?</ejemplos>", RegexOptions.Singleline | RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex BloqueDeEjemplos();
 
     internal static MensajeLlm MensajeInicial(string pregunta, IReadOnlyList<SeccionDocumento> secciones, ResumenEntregado? resumen)
     {

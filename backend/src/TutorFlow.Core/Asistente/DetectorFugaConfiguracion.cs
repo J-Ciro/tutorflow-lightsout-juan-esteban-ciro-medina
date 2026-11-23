@@ -2,7 +2,10 @@ using TutorFlow.Core.Autorizacion;
 
 namespace TutorFlow.Core.Asistente;
 
-public sealed record MaterialConfidencial(string Marcador, string PromptSistema, IReadOnlyCollection<string> NombresDeHerramientas);
+public sealed record MaterialConfidencial(
+    string Marcador,
+    IReadOnlyCollection<string> TextosConfidenciales,
+    IReadOnlyCollection<string> NombresDeHerramientas);
 
 public static class DetectorFugaConfiguracion
 {
@@ -11,16 +14,19 @@ public static class DetectorFugaConfiguracion
     public static bool HayFuga(string respuesta, MaterialConfidencial material, IReadOnlyCollection<string> textosEntregados) =>
         Contiene(respuesta, material.Marcador)
         || material.NombresDeHerramientas.Any(nombre => Contiene(respuesta, nombre))
-        || ComparteFragmentoDelPrompt(respuesta, material.PromptSistema, textosEntregados);
+        || ComparteFragmentoConfidencial(respuesta, material.TextosConfidenciales, textosEntregados);
 
     private static bool Contiene(string texto, string valor) =>
         texto.Contains(valor, StringComparison.OrdinalIgnoreCase);
 
-    private static bool ComparteFragmentoDelPrompt(string respuesta, string prompt, IReadOnlyCollection<string> textosEntregados)
+    private static bool ComparteFragmentoConfidencial(
+        string respuesta,
+        IReadOnlyCollection<string> textosConfidenciales,
+        IReadOnlyCollection<string> textosEntregados)
     {
         var permitidos = TextosFijos().Concat(textosEntregados).SelectMany(FragmentosDe).ToHashSet(StringComparer.Ordinal);
-        var delPrompt = FragmentosDe(prompt);
-        return FragmentosDe(respuesta).Any(fragmento => delPrompt.Contains(fragmento) && !permitidos.Contains(fragmento));
+        var confidenciales = textosConfidenciales.SelectMany(FragmentosDe).ToHashSet(StringComparer.Ordinal);
+        return FragmentosDe(respuesta).Any(fragmento => confidenciales.Contains(fragmento) && !permitidos.Contains(fragmento));
     }
 
     private static string[] TextosFijos() =>

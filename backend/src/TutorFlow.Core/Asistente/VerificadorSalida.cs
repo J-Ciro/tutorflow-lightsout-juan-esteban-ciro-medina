@@ -60,9 +60,12 @@ public sealed partial class VerificadorSalida
     public IReadOnlyList<Cita> DescartarCitasInexistentes(IReadOnlyList<Cita> citas, IBaseConocimiento baseConocimiento) =>
         citas.Where(cita => !_documentosDerogados.Contains(cita.Documento) && baseConocimiento.ExisteCita(cita)).ToList();
 
-    public bool ContienePersonaNoAutorizada(string respuesta, IReadOnlyCollection<string> idsPersonasAutorizadas, DirectorioAcademico directorio) =>
-        DetectorTerceros.PersonasMencionadas(_normalizar(respuesta), directorio)
-            .Any(id => !idsPersonasAutorizadas.Contains(id));
+    public bool ContienePersonaNoAutorizada(string respuesta, IReadOnlyCollection<string> idsPersonasAutorizadas, DirectorioAcademico directorio)
+    {
+        var normalizada = _normalizar(respuesta);
+        return DetectorTerceros.PersonasMencionadas(normalizada, directorio).Any(id => !idsPersonasAutorizadas.Contains(id))
+            || DetectorTerceros.MencionaIdFueraDe(normalizada, idsPersonasAutorizadas, directorio);
+    }
 
     public bool TodosLosNumerosSonVerificables(string respuesta, IReadOnlyCollection<string> textosFuente)
     {
@@ -73,7 +76,7 @@ public sealed partial class VerificadorSalida
     }
 
     private IEnumerable<string> NumerosAVerificar(string respuesta) =>
-        _notaOPorcentaje.Matches(respuesta)
+        _notaOPorcentaje.Matches(ReferenciasASeccion.Quitar(TokenizadorTexto.Plegado(respuesta)))
             .Select(coincidencia => coincidencia.Groups["numero"].Value);
 
     [GeneratedRegex(@"(?<![0-9.])[0-9]+(\.[0-9]+)?")]

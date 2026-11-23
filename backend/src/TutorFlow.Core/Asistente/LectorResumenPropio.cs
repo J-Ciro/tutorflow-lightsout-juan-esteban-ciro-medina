@@ -46,6 +46,7 @@ internal sealed class LectorResumenPropio
         var resumen = await ResumirAsync(contexto, activacion, api, cancellationToken);
         Registrar(contexto, resumen, registro);
         var entregado = FormateadorResumen.Resumir(resumen);
+        registro.RegistrarReglas(entregado.EntradasDeReglas);
         registro.AgregarFuente(entregado.Texto);
         return entregado;
     }
@@ -77,5 +78,6 @@ internal sealed class LectorResumenPropio
         registro.Registrar(id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], new Cita(Textos.DocumentoDatosEstudiante, Textos.SeccionNotas));
         registro.RegistrarCita(new Cita(Textos.DocumentoDatosEstudiante, Textos.SeccionAsistencia));
         registro.RegistrarDatos(DatosLeidos.PorAsignatura(resumen, ProgramaDe(contexto), RecursoConsultado.Notas, RecursoConsultado.Asistencia));
+        registro.RegistrarResumen(resumen);
     }
 }

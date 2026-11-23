@@ -11,6 +11,7 @@ public enum ResultadoAuditoria
     Invalida,
     FugaBloqueada,
     NumeroNoVerificado,
+    EstadoNoVerificado,
     LimiteHerramientas,
     Error
 }
