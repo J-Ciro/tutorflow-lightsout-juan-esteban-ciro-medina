@@ -13,6 +13,7 @@ ENV ASPNETCORE_HTTP_PORTS=8080
 WORKDIR /app
 COPY --from=build /out ./
 COPY reglamento ./reglamento
+RUN mkdir /app/auditoria && chown $APP_UID:$APP_UID /app/auditoria
 USER $APP_UID
 EXPOSE 8080
 HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=3 \
