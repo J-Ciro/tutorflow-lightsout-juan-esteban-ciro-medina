@@ -144,7 +144,9 @@ public sealed class LimitesApiTests
         }
 
         Afirmaciones.ProblemDetails(ultima!, 429);
-        Assert.NotNull(ultima!.Encabezado("Retry-After"));
+        Assert.Equal("30", ultima!.Encabezado("Retry-After"));
+        Assert.Equal(61, fabrica.Auditoria.Eventos.Count);
+        Assert.All(fabrica.Auditoria.Eventos, e => Assert.Equal("10.0.0.5", e.IpOrigen));
     }
 
     [Fact]

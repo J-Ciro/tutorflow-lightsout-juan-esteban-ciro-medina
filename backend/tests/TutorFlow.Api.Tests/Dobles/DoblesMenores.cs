@@ -32,6 +32,11 @@ public sealed class RelojControlado : IReloj
     public void Avanzar(TimeSpan intervalo) => _ahora += intervalo;
 }
 
+public sealed class TiempoDeRelojControlado(RelojControlado reloj) : TimeProvider
+{
+    public override DateTimeOffset GetUtcNow() => reloj.AhoraUtc;
+}
+
 public sealed class CapturaLogs : ILoggerProvider
 {
     private readonly ConcurrentQueue<string> _mensajes = new();

@@ -163,6 +163,8 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
     {
         servicios.RemoveAll<IApiAcademica>();
         servicios.RemoveAll<IReloj>();
+        servicios.RemoveAll<TimeProvider>();
+        servicios.AddSingleton<TimeProvider>(new TiempoDeRelojControlado(Reloj));
         if (_variablesEntorno is not null)
         {
             servicios.RemoveAll<IVariablesEntorno>();

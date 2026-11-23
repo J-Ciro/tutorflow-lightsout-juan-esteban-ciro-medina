@@ -9,13 +9,17 @@ public sealed class SinTopePorDefectoApiTests
     private const string Pregunta = "¿Cuál es mi promedio?";
     private const string ClaveTasa = "Limites:PreguntasPorMinutoPorIp";
     private const string ClavePresupuesto = "Limites:PresupuestoDiarioUsd";
-    private const string LineaSinTopeTasa = "Límite sin tope: Limites:PreguntasPorMinutoPorIp";
+    private const string LineaTasaPorDefecto = "Tasa por IP: 600 preguntas por minuto";
+    private const string LineaTasaMaxima = "Tasa por IP: 10000 preguntas por minuto";
     private const string LineaSinTopePresupuesto = "Límite sin tope: Limites:PresupuestoDiarioUsd";
     private const string IpDelEvaluador = "172.17.0.1";
-    private const int TotalDePeticiones = 2000;
+    private const int Tandas = 4;
+    private const int PeticionesPorTanda = 500;
+    private const int SegundosEntreTandas = 60;
     private const int Concurrencia = 8;
     private const int LlegadasAlLlm = 600;
     private const int PeticionesPorCiclo = 20;
+    private const int PeticionesPorMinutoPorDefecto = 600;
     private const string Q1 = "¿Cuál es la nota mínima para aprobar una asignatura?";
     private const string Q2 = "¿Cuál es mi promedio ponderado del periodo?";
     private const string Q6 = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
@@ -64,11 +68,12 @@ public sealed class SinTopePorDefectoApiTests
                 : "Tu promedio es 4.39.";
         });
 
-    private static async Task<RespuestaApi[]> EnviarRafagaAsync(FabricaApi fabrica)
+    private static async Task<RespuestaApi[]> EnviarTandaAsync(FabricaApi fabrica, DateTimeOffset origen, int tanda)
     {
-        var respuestas = new RespuestaApi[TotalDePeticiones];
+        fabrica.Reloj.Fijar(origen + TimeSpan.FromSeconds(tanda * SegundosEntreTandas));
+        var respuestas = new RespuestaApi[PeticionesPorTanda];
         var opciones = new ParallelOptions { MaxDegreeOfParallelism = Concurrencia };
-        await Parallel.ForEachAsync(Enumerable.Range(0, TotalDePeticiones), opciones, async (i, _) =>
+        await Parallel.ForEachAsync(Enumerable.Range(0, PeticionesPorTanda), opciones, async (i, _) =>
         {
             var (rol, id, pregunta, _) = Ciclo[i % PeticionesPorCiclo];
             respuestas[i] = await fabrica.PreguntarAsync(rol, id, pregunta, IpDelEvaluador);
@@ -80,39 +85,43 @@ public sealed class SinTopePorDefectoApiTests
     [Trait("CA", "CA-12")]
     [Trait("ESC", "ESC-084")]
     [Trait("SEG", "SEG-13")]
-    [Trait("D", "D-70")]
-    public async Task ESC_084d_Dos_mil_peticiones_en_rafaga_con_los_valores_por_defecto_no_reciben_429_ni_503()
+    [Trait("D", "D-72")]
+    public async Task ESC_084d_Cuatro_tandas_de_500_con_los_valores_por_defecto_no_reciben_429_ni_503()
     {
         var llm = LlmDeLaRafaga();
         using var fabrica = new FabricaApi(llm: llm, variablesEntorno: EntornoSinPrecio());
         await fabrica.EnviarAsync(HttpMethod.Get, "/api/salud", null);
+        var origen = fabrica.Reloj.AhoraUtc;
+        var respuestas = new List<RespuestaApi>();
 
-        var respuestas = await EnviarRafagaAsync(fabrica);
+        for (var tanda = 0; tanda < Tandas; tanda++)
+        {
+            respuestas.AddRange(await EnviarTandaAsync(fabrica, origen, tanda));
+        }
 
         Assert.Equal(0, respuestas.Count(r => r.Estado == 429));
         Assert.Equal(0, respuestas.Count(r => r.Estado == 503));
         Assert.Equal(LlegadasAlLlm, llm.Llamadas);
-        for (var i = 0; i < TotalDePeticiones; i++)
+        for (var i = 0; i < respuestas.Count; i++)
         {
             Assert.Equal(Ciclo[i % PeticionesPorCiclo].Esperado, respuestas[i].Estado);
         }
 
         Assert.NotEmpty(fabrica.Auditoria.MultiplesIdentidades);
-        Assert.All(fabrica.Auditoria.MultiplesIdentidades, e => Assert.False(e.Bloqueada));
     }
 
     [Fact]
     [Trait("CA", "CA-12")]
     [Trait("ESC", "ESC-084")]
     [Trait("RF", "RNF-05")]
-    [Trait("D", "D-70")]
-    public async Task ESC_084d_El_log_de_arranque_registra_la_tasa_y_el_presupuesto_sin_tope()
+    [Trait("D", "D-72")]
+    public async Task ESC_084d_El_log_de_arranque_registra_la_tasa_de_600_y_el_presupuesto_sin_tope()
     {
         using var fabrica = new FabricaApi(variablesEntorno: EntornoSinPrecio());
 
         await fabrica.EnviarAsync(HttpMethod.Get, "/api/salud", null);
 
-        Assert.Contains(LineaSinTopeTasa, fabrica.Logs.Mensajes);
+        Assert.Contains(LineaTasaPorDefecto, fabrica.Logs.Mensajes);
         Assert.Contains(LineaSinTopePresupuesto, fabrica.Logs.Mensajes);
     }
 
@@ -146,31 +155,35 @@ public sealed class SinTopePorDefectoApiTests
     [Trait("CA", "CA-15")]
     [Trait("ESC", "ESC-181")]
     [Trait("SEG", "SEG-13")]
-    [Trait("D", "D-70")]
-    public async Task ESC_181ag_Una_tasa_vacia_o_ausente_arranca_sin_tope_y_las_61_preguntas_dan_200(string? tasa)
+    [Trait("D", "D-72")]
+    public async Task ESC_181ag_Una_tasa_vacia_o_ausente_vale_600_las_600_primeras_dan_200_y_la_601_da_429_con_30_s(string? tasa)
     {
         var configuracion = new Dictionary<string, string?> { [ClaveTasa] = tasa };
         using var fabrica = new FabricaApi(configuracion: configuracion);
         await fabrica.EnviarAsync(HttpMethod.Get, "/api/salud", null);
-
         var respuestas = new List<RespuestaApi>();
-        for (var i = 0; i < 61; i++)
+
+        for (var i = 0; i <= PeticionesPorMinutoPorDefecto; i++)
         {
             respuestas.Add(await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta, "10.0.0.5"));
         }
 
-        Assert.All(respuestas, r => Assert.Equal(200, r.Estado));
-        Assert.Contains(LineaSinTopeTasa, fabrica.Logs.Mensajes);
+        Assert.All(respuestas.Take(PeticionesPorMinutoPorDefecto), r => Assert.Equal(200, r.Estado));
+        Assert.Equal(429, respuestas[^1].Estado);
+        Assert.Equal("30", respuestas[^1].Encabezado("Retry-After"));
+        Assert.Contains(LineaTasaPorDefecto, fabrica.Logs.Mensajes);
+        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains("Límite sin tope: Limites:PreguntasPorMinutoPorIp", StringComparison.Ordinal));
+        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains(ResultadoArranque.PrefijoIgnorada, StringComparison.Ordinal));
     }
 
     [Fact]
     [Trait("CA", "CA-15")]
     [Trait("ESC", "ESC-181")]
     [Trait("SEG", "SEG-13")]
-    [Trait("D", "D-70")]
-    public async Task ESC_181ah_Con_tasa_60_y_presupuesto_5_no_hay_linea_de_sin_tope_y_ambos_se_aplican()
+    [Trait("D", "D-72")]
+    public async Task ESC_181ah_Con_tasa_10000_y_presupuesto_5_ambos_se_aplican_y_no_hay_linea_de_sin_tope()
     {
-        var configuracion = new Dictionary<string, string?> { [ClaveTasa] = "60", [ClavePresupuesto] = "5", ["Llm:ReservaSinPrecioUsd"] = "3" };
+        var configuracion = new Dictionary<string, string?> { [ClaveTasa] = "10000", [ClavePresupuesto] = "5", ["Llm:ReservaSinPrecioUsd"] = "3" };
         using var fabrica = new FabricaApi(configuracion: configuracion, variablesEntorno: EntornoSinPrecio());
         await fabrica.EnviarAsync(HttpMethod.Get, "/api/salud", null);
 
@@ -179,6 +192,7 @@ public sealed class SinTopePorDefectoApiTests
 
         Assert.Equal(200, primera.Estado);
         Assert.Equal(503, segunda.Estado);
+        Assert.Contains(LineaTasaMaxima, fabrica.Logs.Mensajes);
         Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains("Límite sin tope", StringComparison.Ordinal));
     }
 
@@ -186,19 +200,45 @@ public sealed class SinTopePorDefectoApiTests
     [Trait("CA", "CA-15")]
     [Trait("ESC", "ESC-181")]
     [Trait("SEG", "SEG-13")]
-    [Trait("D", "D-70")]
-    public async Task ESC_181ah_Con_tasa_60_la_pregunta_61_da_429()
+    [Trait("D", "D-72")]
+    public async Task ESC_181ah_Con_tasa_10000_la_pregunta_601_en_un_minuto_sigue_dando_200()
     {
-        var configuracion = new Dictionary<string, string?> { [ClaveTasa] = "60", [ClavePresupuesto] = "5" };
-        using var fabrica = new FabricaApi(configuracion: configuracion);
+        using var fabrica = new FabricaApi(configuracion: TasaPorMinuto(10000));
         RespuestaApi ultima = null!;
 
-        for (var i = 0; i < 61; i++)
+        for (var i = 0; i <= PeticionesPorMinutoPorDefecto; i++)
         {
             ultima = await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta, "10.0.0.5");
         }
 
-        Assert.Equal(429, ultima.Estado);
-        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains("Límite sin tope", StringComparison.Ordinal));
+        Assert.Equal(200, ultima.Estado);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-15")]
+    [Trait("ESC", "ESC-181")]
+    [Trait("SEG", "SEG-16")]
+    [Trait("D", "D-72")]
+    public async Task ESC_181ai_Las_claves_retiradas_se_ignoran_sin_advertencia_ni_429_por_identidades()
+    {
+        var configuracion = new Dictionary<string, string?>
+        {
+            ["Limites:BloquearMultiplesIdentidades"] = "true",
+            ["Proxy:IpsConfiables:0"] = "abc"
+        };
+        using var fabrica = new FabricaApi(configuracion: configuracion);
+        await fabrica.EnviarAsync(HttpMethod.Get, "/api/salud", null);
+        var encabezados = new Dictionary<string, string> { ["X-Forwarded-For"] = "203.0.113.7" };
+        var respuestas = new List<RespuestaApi>();
+
+        foreach (var id in new[] { "EST-001", "EST-002", "EST-003", "EST-004" })
+        {
+            respuestas.Add(await fabrica.PreguntarAsync("estudiante", id, Pregunta, "10.0.0.5", encabezados));
+        }
+
+        Assert.All(respuestas, r => Assert.Equal(200, r.Estado));
+        Assert.All(fabrica.Auditoria.Eventos, e => Assert.Equal("10.0.0.5", e.IpOrigen));
+        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains(ResultadoArranque.PrefijoInvalida, StringComparison.Ordinal));
+        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains(ResultadoArranque.PrefijoIgnorada, StringComparison.Ordinal));
     }
 }
