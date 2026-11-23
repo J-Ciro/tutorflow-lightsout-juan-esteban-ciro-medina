@@ -14,8 +14,7 @@ public sealed class RecuperacionDelReglamentoTests : IDisposable
 
     public static TheoryData<string, string, string> PrimerasDosSecciones => new()
     {
-        { "¿Cómo se calcula la nota definitiva de una asignatura?", "Sección 2", "Sección 3" },
-        { "¿Cuál es mi promedio ponderado del periodo?", "Sección 3", "Sección 4" }
+        { "¿Cómo se calcula la nota definitiva de una asignatura?", "Sección 2", "Sección 3" }
     };
 
     private IBaseConocimiento Base => _fabrica.Services.GetRequiredService<IBaseConocimiento>();
@@ -32,6 +31,17 @@ public sealed class RecuperacionDelReglamentoTests : IDisposable
         var primeras = secciones.Take(PrimerasPosiciones).Select(s => (s.Documento, s.Seccion)).ToList();
         Assert.Contains((BaseConocimientoFalsa.Evaluacion, primera), primeras);
         Assert.Contains((BaseConocimientoFalsa.Evaluacion, segunda), primeras);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-01")]
+    [Trait("D", "D-66")]
+    public void La_pregunta_del_promedio_ponderado_entrega_exactamente_la_seccion_4_de_evaluacion()
+    {
+        var secciones = Base.BuscarSecciones("¿Cuál es mi promedio ponderado del periodo?", MaximoDeSecciones);
+
+        var primeras = secciones.Take(PrimerasPosiciones).Select(s => (s.Documento, s.Seccion)).ToList();
+        Assert.Equal([(BaseConocimientoFalsa.Evaluacion, "Sección 4")], primeras);
     }
 
     [Fact]
