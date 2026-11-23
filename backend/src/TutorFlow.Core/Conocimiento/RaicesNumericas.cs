@@ -16,9 +16,9 @@ public static partial class RaicesNumericas
 
     private static string SinEspacios(string valor) => valor.Replace(" ", string.Empty, StringComparison.Ordinal);
 
-    [GeneratedRegex(@"(?<!\d)(?<!\d\.)\d+(?:\.\d{1,2})?\s*%")]
+    [GeneratedRegex(@"(?<!\d)(?<!\d\.)\d+(?:\.\d{1,2})?\s*%", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex Porcentaje();
 
-    [GeneratedRegex(@"(?<!\d)(?<!\d\.)\d\.\d{1,2}(?!\d)(?!\.\d)")]
+    [GeneratedRegex(@"(?<!\d)(?<!\d\.)\d\.\d{1,2}(?!\d)(?!\.\d)", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex FormaDeNota();
 }

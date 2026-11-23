@@ -11,6 +11,7 @@ public sealed class RegistroConsultas
     private readonly List<Cita> _citas = [];
     private readonly SortedSet<int> _entradasDeReglas = [];
     private readonly List<string> _fuentes = [];
+    private bool _usoDatos;
     private readonly Dictionary<string, ResumenEstudiante> _resumenes = [];
 
     public IReadOnlyList<string> Estudiantes => _estudiantes;
@@ -28,10 +29,11 @@ public sealed class RegistroConsultas
 
     public IReadOnlyList<string> Fuentes => _fuentes;
 
-    public bool UsoDatos => _estudiantes.Count > 0;
+    public bool UsoDatos => _usoDatos;
 
     public void Registrar(string estudianteId, IEnumerable<RecursoConsultado> recursos, Cita? cita)
     {
+        _usoDatos = true;
         AgregarSiFalta(_estudiantes, estudianteId);
         foreach (var recurso in recursos)
         {
@@ -44,8 +46,9 @@ public sealed class RegistroConsultas
         }
     }
 
-    public void RegistrarVerificacion(IEnumerable<RecursoConsultado> recursos, IEnumerable<DatoConsultado> datos)
+    public void RegistrarVerificacion(string estudianteId, IEnumerable<RecursoConsultado> recursos, IEnumerable<DatoConsultado> datos)
     {
+        AgregarSiFalta(_estudiantes, estudianteId);
         foreach (var recurso in recursos)
         {
             AgregarSiFalta(_recursos, recurso);

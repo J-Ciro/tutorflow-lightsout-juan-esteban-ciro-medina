@@ -10,12 +10,12 @@ public static partial class Identificadores
 
     public static bool EsIdPrograma(string? id) => id is not null && IdPrograma().IsMatch(id);
 
-    [GeneratedRegex(@"^EST-[0-9]{3}\z")]
+    [GeneratedRegex(@"^EST-[0-9]{3}\z", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex IdEstudiante();
 
-    [GeneratedRegex(@"^COORD-[0-9]{2}\z")]
+    [GeneratedRegex(@"^COORD-[0-9]{2}\z", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex IdCoordinador();
 
-    [GeneratedRegex(@"^[A-Z]{2,5}(-[A-Z]{2,5})?\z")]
+    [GeneratedRegex(@"^[A-Z]{2,5}(-[A-Z]{2,5})?\z", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex IdPrograma();
 }

@@ -7,9 +7,9 @@ internal readonly record struct TokenTexto(string Valor, int Inicio, int Fin);
 
 internal static class TokenizadorTexto
 {
-    private const int DesplazamientoAnchoCompleto = 0xFEE0;
-    private const char PrimeroAnchoCompleto = '！';
-    private const char UltimoAnchoCompleto = '～';
+    private const int UnDigito = 1;
+    private const int HastaDosDigitos = 2;
+    private const int SinLimite = int.MaxValue;
     private const string CaracteresIgnorables = "​‌‍⁠﻿­";
 
     private static readonly IReadOnlyDictionary<char, char> SinAcento = ConstruirTablaSinAcento(
@@ -37,18 +37,28 @@ internal static class TokenizadorTexto
         return acumulador.Tokens;
     }
 
-    public static int BuscarSecuencia(IReadOnlyList<TokenTexto> tokens, IReadOnlyList<string> secuencia)
+    public static IReadOnlyList<TokenTexto> TokenizarConCifras(string texto)
     {
-        for (var indice = 0; indice + secuencia.Count <= tokens.Count; indice++)
+        var tokens = Tokenizar(texto);
+        var resultado = new List<TokenTexto>();
+        for (var indice = 0; indice < tokens.Count; indice++)
         {
-            if (CoincideEn(tokens, indice, secuencia))
-            {
-                return indice;
-            }
+            var esCifra = EsCifraDeNota(texto, tokens, indice);
+            resultado.Add(esCifra
+                ? new TokenTexto(tokens[indice].Valor + "." + tokens[indice + 1].Valor, tokens[indice].Inicio, tokens[indice + 1].Fin)
+                : tokens[indice]);
+            indice += esCifra ? 1 : 0;
         }
 
-        return -1;
+        return resultado;
     }
+
+    public static int BuscarSecuencia(IReadOnlyList<TokenTexto> tokens, IReadOnlyList<string> secuencia) =>
+        BuscarSecuencias(tokens, secuencia).DefaultIfEmpty(-1).First();
+
+    public static IEnumerable<int> BuscarSecuencias(IReadOnlyList<TokenTexto> tokens, IReadOnlyList<string> secuencia) =>
+        Enumerable.Range(0, Math.Max(0, tokens.Count - secuencia.Count + 1))
+            .Where(indice => CoincideEn(tokens, indice, secuencia));
 
     public static string Plegado(string texto) =>
         string.Concat(texto.EnumerateRunes()
@@ -58,6 +68,28 @@ internal static class TokenizadorTexto
 
     public static IReadOnlyList<string> Valores(string texto) =>
         Tokenizar(texto).Select(token => token.Valor).ToList();
+
+    private static bool EsCifraDeNota(string texto, IReadOnlyList<TokenTexto> tokens, int indice) =>
+        indice + 1 < tokens.Count
+        && FormaDeCifra(texto, tokens[indice], tokens[indice + 1])
+        && !ContinuaUnaCifra(texto, tokens, indice - 1, indice)
+        && !ContinuaUnaCifra(texto, tokens, indice + 1, indice + 2);
+
+    private static bool FormaDeCifra(string texto, TokenTexto entera, TokenTexto decimales) =>
+        EsDigitos(entera.Valor, UnDigito) && EsDigitos(decimales.Valor, HastaDosDigitos) && UnidosPorPunto(texto, entera, decimales);
+
+    private static bool ContinuaUnaCifra(string texto, IReadOnlyList<TokenTexto> tokens, int desde, int hasta) =>
+        desde >= 0
+        && hasta < tokens.Count
+        && EsDigitos(tokens[desde].Valor, SinLimite)
+        && EsDigitos(tokens[hasta].Valor, SinLimite)
+        && UnidosPorPunto(texto, tokens[desde], tokens[hasta]);
+
+    private static bool EsDigitos(string valor, int maximo) =>
+        valor.Length <= maximo && valor.All(char.IsAsciiDigit);
+
+    private static bool UnidosPorPunto(string texto, TokenTexto anterior, TokenTexto siguiente) =>
+        PlegadoCompatibilidad.Aplicar(texto[anterior.Fin..siguiente.Inicio]) == ".";
 
     private static bool CoincideEn(IReadOnlyList<TokenTexto> tokens, int indice, IReadOnlyList<string> secuencia) =>
         secuencia.Select((valor, desplazamiento) => tokens[indice + desplazamiento].Valor == valor).All(coincide => coincide);
@@ -94,10 +126,7 @@ internal static class TokenizadorTexto
 
     private static char Plegar(char caracter)
     {
-        var sinAnchoCompleto = caracter is >= PrimeroAnchoCompleto and <= UltimoAnchoCompleto
-            ? (char)(caracter - DesplazamientoAnchoCompleto)
-            : caracter;
-        var minuscula = char.ToLowerInvariant(sinAnchoCompleto);
+        var minuscula = char.ToLowerInvariant(caracter);
         return SinAcento.GetValueOrDefault(minuscula, minuscula);
     }
 

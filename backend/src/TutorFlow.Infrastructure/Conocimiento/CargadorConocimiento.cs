@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
+using TutorFlow.Core;
 using TutorFlow.Core.Conocimiento;
 
 namespace TutorFlow.Infrastructure.Conocimiento;
@@ -96,10 +97,10 @@ public static partial class CargadorConocimiento
 
     private static string Titulo(string texto) => texto.Trim().TrimEnd('.');
 
-    [GeneratedRegex(@"^\*\*Art[ií]culo (?<n>\d+)\.\s*(?<t>[^*]+?)\*\*\s*(?<x>.*)$")]
+    [GeneratedRegex(@"^\*\*Art[ií]culo (?<n>\d+)\.\s*(?<t>[^*]+?)\*\*\s*(?<x>.*)$", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex ArticuloRegex();
 
-    [GeneratedRegex(@"^#{2,3}\s+(?<n>\d+(?:\.\d+)?)\.?\s+(?<t>.+)$")]
+    [GeneratedRegex(@"^#{2,3}\s+(?<n>\d+(?:\.\d+)?)\.?\s+(?<t>.+)$", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex EncabezadoRegex();
 
     private sealed class SeccionEnConstruccion

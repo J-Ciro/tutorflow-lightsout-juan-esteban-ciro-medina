@@ -24,18 +24,18 @@ public static partial class DetectorValorMonetario
             .Distinct(StringComparer.Ordinal);
     }
 
-    [GeneratedRegex(@"\$\s*(?<n>\d[\d.,]*)")]
+    [GeneratedRegex(@"\$\s*(?<n>\d[\d.,]*)", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex ConSimbolo();
 
-    [GeneratedRegex(@"\b(?:cop|usd)\s*(?<n>\d[\d.,]*)")]
+    [GeneratedRegex(@"\b(?:cop|usd)\s*(?<n>\d[\d.,]*)", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex ConMoneda();
 
-    [GeneratedRegex(@"(?<![\d.,])(?<n>\d[\d.,]*)\s*(?:pesos|dolares|cop|usd)\b")]
+    [GeneratedRegex(@"(?<![\d.,])(?<n>\d[\d.,]*)\s*(?:pesos|dolares|cop|usd)\b", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex ConMonedaDespues();
 
-    [GeneratedRegex(@"(?<![\d.,])(?<n>\d{1,3}(?:[.,]\d{3})+)(?!\d)")]
+    [GeneratedRegex(@"(?<![\d.,])(?<n>\d{1,3}(?:[.,]\d{3})+)(?!\d)", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex ConSeparadorDeMiles();
 
-    [GeneratedRegex(@"\d[\d.,]*\d|\d")]
+    [GeneratedRegex(@"\d[\d.,]*\d|\d", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex Numero();
 }

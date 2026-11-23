@@ -5,18 +5,6 @@ namespace TutorFlow.Core.Asistente;
 
 internal sealed class AfirmacionesDePerdida
 {
-    private const int PalabrasDeNegacion = 2;
-
-    private static readonly HashSet<string> FormasDePerdida = new(StringComparer.Ordinal)
-    {
-        "perdi", "perdio", "perdiste", "perdieron", "perdido", "perdidos", "perdida", "perdidas"
-    };
-
-    private static readonly HashSet<string> Negaciones = new(StringComparer.Ordinal)
-    {
-        "no", "ni", "sin", "ningun", "ninguna"
-    };
-
     private static readonly HashSet<string> Inasistencias = new(StringComparer.Ordinal)
     {
         "inasistencia", "inasistencias"
@@ -31,71 +19,70 @@ internal sealed class AfirmacionesDePerdida
 
     public bool SonVerificables(
         string respuesta,
+        Rol rol,
         IReadOnlyCollection<string> idsAutorizados,
         DirectorioAcademico directorio,
         IReadOnlyDictionary<string, ResumenEstudiante> resumenesLeidos) =>
-        TramosDePersonas.Oraciones(respuesta)
-            .SelectMany(oracion => TramosDePersonas.De(oracion, idsAutorizados, directorio))
+        TramosDePersonas.DeRespuesta(respuesta, rol, idsAutorizados, directorio)
+            .SelectMany(oracion => oracion.Tramos)
             .All(tramo => TramoEsVerificable(tramo, resumenesLeidos));
 
     private bool TramoEsVerificable(TramoDePersona tramo, IReadOnlyDictionary<string, ResumenEstudiante> resumenesLeidos)
     {
-        var nombradas = AsignaturasNombradas(tramo.Tokens);
-        if (nombradas.Count == 0 || !HayPerdidaNoNegada(tramo.Tokens))
+        var exigencias = Exigencias(tramo.Tokens);
+        return exigencias.Count == 0
+            || (resumenesLeidos.TryGetValue(tramo.PersonaId, out var resumen) && exigencias.All(exigencia => exigencia.Cumple(resumen)));
+    }
+
+    private List<ExigenciaDePerdida> Exigencias(IReadOnlyList<TokenTexto> tokens)
+    {
+        var formas = FormasDePerdida.En([.. tokens.Select(token => token.Valor)]);
+        if (formas.Count == 0)
         {
-            return true;
+            return [];
         }
 
-        return resumenesLeidos.TryGetValue(tramo.PersonaId, out var resumen)
-            && ExigenciasPorAsignatura(tramo.Tokens, nombradas).All(exigencia => Cumple(exigencia, resumen));
+        var nombradas = PrimerasApariciones(tokens);
+        var asociadas = nombradas.Select(nombrada => (Nombrada: nombrada, Forma: FormaMasCercana(formas, nombrada))).ToList();
+        var porAsignatura = asociadas
+            .Where(asociada => !asociada.Forma.Negada)
+            .Select(asociada => new ExigenciaDePerdida(asociada.Nombrada.Clave, PorInasistencia(tokens, nombradas, asociada.Nombrada)));
+        var sinAsignatura = formas
+            .Where(forma => forma.Nominal && !forma.Negada && asociadas.All(asociada => asociada.Forma != forma))
+            .Select(forma => new ExigenciaDePerdida(null, forma.PorInasistencia));
+        return [.. porAsignatura.Concat(sinAsignatura)];
     }
 
-    private static bool HayPerdidaNoNegada(IReadOnlyList<TokenTexto> tokens) =>
-        Enumerable.Range(0, tokens.Count).Any(indice => FormasDePerdida.Contains(tokens[indice].Valor) && !EstaNegada(tokens, indice));
+    private List<AparicionDeAsignatura> PrimerasApariciones(IReadOnlyList<TokenTexto> tokens) =>
+        [.. CatalogoAsignaturas.Apariciones(tokens, _catalogo)
+            .GroupBy(aparicion => aparicion.Clave)
+            .Select(grupo => grupo.MinBy(aparicion => aparicion.Inicio)!)
+            .OrderBy(aparicion => aparicion.Inicio)];
 
-    private static bool EstaNegada(IReadOnlyList<TokenTexto> tokens, int indice) =>
-        Enumerable.Range(Math.Max(0, indice - PalabrasDeNegacion), Math.Min(PalabrasDeNegacion, indice))
-            .Any(anterior => Negaciones.Contains(tokens[anterior].Valor));
+    private static FormaDePerdida FormaMasCercana(IReadOnlyList<FormaDePerdida> formas, AparicionDeAsignatura asignatura) =>
+        formas.MinBy(forma => (Distancia(forma, asignatura), forma.Fin >= asignatura.Inicio))!;
 
-    private List<AsignaturaNombrada> AsignaturasNombradas(IReadOnlyList<TokenTexto> tokens) =>
-        [.. _catalogo
-            .Select(asignatura => new AsignaturaNombrada(AmbitoPersonal.Clave(asignatura.Codigo), PrimeraAparicion(tokens, asignatura)))
-            .Where(nombrada => nombrada.Indice >= 0)
-            .OrderBy(nombrada => nombrada.Indice)];
+    private static int Distancia(FormaDePerdida forma, AparicionDeAsignatura asignatura) =>
+        forma.Fin < asignatura.Inicio ? asignatura.Inicio - forma.Fin : Math.Max(0, forma.Inicio - asignatura.Fin);
 
-    private static int PrimeraAparicion(IReadOnlyList<TokenTexto> tokens, AsignaturaCatalogo asignatura)
-    {
-        var apariciones = new[] { asignatura.Nombre, asignatura.Codigo }
-            .Select(texto => TokenizadorTexto.BuscarSecuencia(tokens, TokenizadorTexto.Valores(texto)))
-            .Where(indice => indice >= 0)
-            .ToList();
-        return apariciones.Count == 0 ? -1 : apariciones.Min();
-    }
-
-    private static IEnumerable<ExigenciaDeAsignatura> ExigenciasPorAsignatura(
+    private static bool PorInasistencia(
         IReadOnlyList<TokenTexto> tokens,
-        IReadOnlyList<AsignaturaNombrada> nombradas)
+        List<AparicionDeAsignatura> nombradas,
+        AparicionDeAsignatura asignatura)
     {
         var inasistencias = Enumerable.Range(0, tokens.Count).Where(indice => Inasistencias.Contains(tokens[indice].Valor)).ToList();
-        var antesDeLaPrimera = inasistencias.Any(indice => indice < nombradas[0].Indice);
-        return nombradas.Select((nombrada, posicion) =>
-        {
-            var hasta = posicion + 1 < nombradas.Count ? nombradas[posicion + 1].Indice : int.MaxValue;
-            var porInasistencia = antesDeLaPrimera || inasistencias.Any(indice => indice >= nombrada.Indice && indice < hasta);
-            return new ExigenciaDeAsignatura(nombrada.Clave, porInasistencia);
-        });
+        var siguiente = nombradas.Where(nombrada => nombrada.Inicio > asignatura.Inicio).Select(nombrada => nombrada.Inicio).DefaultIfEmpty(int.MaxValue).Min();
+        return inasistencias.Any(indice => indice < nombradas[0].Inicio || (indice >= asignatura.Inicio && indice < siguiente));
     }
 
-    private static bool Cumple(ExigenciaDeAsignatura exigencia, ResumenEstudiante resumen)
+    private sealed record ExigenciaDePerdida(string? Clave, bool PorInasistencia)
     {
-        var resultado = resumen.Asignaturas.FirstOrDefault(r => AmbitoPersonal.Clave(r.Asignatura.Codigo) == exigencia.Clave);
-        return resultado is not null
-            && (exigencia.PorInasistencia
+        public bool Cumple(ResumenEstudiante resumen) =>
+            resumen.Asignaturas.Any(resultado => (Clave is null || AmbitoPersonal.Clave(resultado.Asignatura.Codigo) == Clave) && Satisface(resultado));
+
+        private bool Satisface(ResultadoAsignatura resultado) =>
+            PorInasistencia
                 ? resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia
-                : resultado.Estado is EstadoAsignatura.Perdida or EstadoAsignatura.PerdidaPorInasistencia);
+                : resultado.Estado is EstadoAsignatura.Perdida or EstadoAsignatura.PerdidaPorInasistencia;
     }
-
-    private sealed record AsignaturaNombrada(string Clave, int Indice);
-
-    private sealed record ExigenciaDeAsignatura(string Clave, bool PorInasistencia);
 }

@@ -70,7 +70,7 @@ public static class FormateadorDatos
     private static string DescribirHabilitacion(ResultadoAsignatura resultado) =>
         resultado.Habilitable
             ? "puede presentar examen de habilitación"
-            : "no es habilitable porque la definitiva es menor a 2.0";
+            : "no es habilitable porque su nota final es menor a 2.0";
 
     private static string DescribirSinDefinitiva(ResultadoAsignatura resultado) =>
         resultado.Acumulada is { } acumulada

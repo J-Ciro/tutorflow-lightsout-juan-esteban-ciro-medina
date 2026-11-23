@@ -79,9 +79,9 @@ public sealed partial class VerificadorSalida
         _notaOPorcentaje.Matches(ReferenciasASeccion.Quitar(TokenizadorTexto.Plegado(respuesta)))
             .Select(coincidencia => coincidencia.Groups["numero"].Value);
 
-    [GeneratedRegex(@"(?<![0-9.])[0-9]+(\.[0-9]+)?")]
+    [GeneratedRegex(@"(?<![0-9.])[0-9]+(\.[0-9]+)?", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex Numero();
 
-    [GeneratedRegex(@"(?<![0-9.])(?<numero>[0-9]\.[0-9]{1,2})(?![0-9])|(?<![0-9.])(?<numero>[0-9]+(\.[0-9]+)?)(?=\s*%)")]
+    [GeneratedRegex(@"(?<![0-9.])(?<numero>[0-9]\.[0-9]{1,2})(?![0-9])|(?<![0-9.])(?<numero>[0-9]+(\.[0-9]+)?)(?=\s*%)", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex NotaOPorcentaje();
 }

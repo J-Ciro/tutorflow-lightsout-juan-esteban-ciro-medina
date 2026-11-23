@@ -26,6 +26,6 @@ public static partial class ExtractorCitas
     private static string Prefijo(string palabra) =>
         palabra.StartsWith("Art", StringComparison.OrdinalIgnoreCase) ? PrefijoArticulo : PrefijoSeccion;
 
-    [GeneratedRegex(@"(?<doc>[A-Za-z0-9_]+\.md)\s*·\s*(?<sec>Art[ií]culo\s+\d+|Secci[oó]n\s+\d+(?:\.\d+)?|Anexo)", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(?<doc>[A-Za-z0-9_]+\.md)\s*·\s*(?<sec>Art[ií]culo\s+\d+|Secci[oó]n\s+\d+(?:\.\d+)?|Anexo)", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
     private static partial Regex CitaEnTexto();
 }
