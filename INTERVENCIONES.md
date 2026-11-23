@@ -233,3 +233,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** un control de abuso que hace fallar las pruebas ocultas del evaluador anula la entrega.
 - **Costo:** ~1 min humano.
 - **Prevención:** el análisis de toda regla de límites o bloqueos considera al evaluador automático como un cliente legítimo: una IP, muchas identidades, ráfagas. Los valores por defecto nunca lo bloquean; endurecerlos es una configuración explícita.
+
+### INT-029 · 2026-11-23 · Subredes fijas en el compose por defecto
+- **Fase:** CI
+- **Qué pasó:** con D-68, `docker-compose.yml` por defecto creaba la red `web-api` con la subred fija `172.30.80.0/29` y una IP fija para `api` (merge `68502db`).
+- **Qué hizo el humano:** objetó que las IP estáticas pueden fallar si quien ejecuta el proyecto tiene otros servicios, VPN o redes que se solapan, o en GitHub Actions. La objeción llegó a través del agente `devops-cicd`.
+- **Por qué:** un "Pool overlaps" en la máquina del evaluador haría fallar el `docker compose up` evaluado. Eso contradice INT-027.
+- **Costo:** ~1 min humano.
+- **Prevención:** `docker-compose.yml` por defecto no fija subredes ni IP. Toda topología con valores fijos va en un archivo de override opcional (`docker-compose.web.yml`), y el CI verifica que el compose por defecto no declara `ipam` ni `ipv4_address`.
