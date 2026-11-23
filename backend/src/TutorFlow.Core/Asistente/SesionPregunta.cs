@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using TutorFlow.Core.Autorizacion;
+using TutorFlow.Core.Conocimiento;
 
 namespace TutorFlow.Core.Asistente;
 
@@ -25,4 +26,6 @@ internal sealed class SesionPregunta(
     public DirectorioAcademico Directorio { get; } = directorio;
 
     public UsoAcumulado Uso { get; } = new();
+
+    public IReadOnlyList<SeccionDocumento> Secciones { get; set; } = [];
 }

@@ -14,6 +14,9 @@ public static partial class ExtractorCitas
             .Distinct()
             .ToList();
 
+    public static string SinCitas(string texto) =>
+        CitaEnTexto().Replace(texto, " ");
+
     private static string Normalizar(string seccion)
     {
         var partes = seccion.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);

@@ -50,6 +50,12 @@ internal static class TokenizadorTexto
         return -1;
     }
 
+    public static string Plegado(string texto) =>
+        string.Concat(texto.EnumerateRunes()
+            .SelectMany(PlegadoCompatibilidad.De)
+            .Where(caracter => !EsIgnorable(caracter))
+            .Select(Plegar));
+
     public static IReadOnlyList<string> Valores(string texto) =>
         Tokenizar(texto).Select(token => token.Valor).ToList();
 

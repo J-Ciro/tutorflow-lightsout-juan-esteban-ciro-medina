@@ -18,18 +18,21 @@ public static class ActivadorResumenPropio
         "perdidas", "aprobe"
     };
 
-    public static bool Activa(Rol rol, string pregunta)
+    public static bool Activa(ContextoUsuario contexto, string pregunta)
     {
-        if (rol != Rol.Estudiante)
+        if (contexto.Usuario.Rol != Rol.Estudiante)
         {
             return false;
         }
 
         var palabras = TokenizadorTexto.Valores(pregunta);
-        return palabras.Any(MarcadoresDePrimeraPersona.Contains) && PideDatosAcademicos(palabras);
+        return PideDatosAcademicos(palabras) && (palabras.Any(MarcadoresDePrimeraPersona.Contains) || MencionaSuNombre(contexto, palabras));
     }
 
-    private static bool PideDatosAcademicos(IReadOnlyList<string> palabras) =>
+    internal static bool PideDatosAcademicos(IReadOnlyList<string> palabras) =>
         palabras.Any(TerminosDeDatosAcademicos.Contains)
         || $" {string.Join(' ', palabras)} ".Contains(PruebaAcademica, StringComparison.Ordinal);
+
+    private static bool MencionaSuNombre(ContextoUsuario contexto, IReadOnlyList<string> palabras) =>
+        DetectorTerceros.MencionaNombreCompleto(contexto.Usuario.Id, string.Join(' ', palabras), contexto.Directorio);
 }

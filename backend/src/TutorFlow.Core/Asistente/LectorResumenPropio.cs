@@ -21,7 +21,7 @@ internal sealed class LectorResumenPropio
         CancellationToken cancellationToken)
     {
         var usuario = contexto.Usuario;
-        if (!ActivadorResumenPropio.Activa(usuario.Rol, pregunta) || !PuedeLeerSusDatos(contexto))
+        if (!ActivadorResumenPropio.Activa(contexto, pregunta) || !PuedeLeerSusDatos(contexto))
         {
             return null;
         }

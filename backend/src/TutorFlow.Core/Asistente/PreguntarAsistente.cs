@@ -27,8 +27,6 @@ public sealed record ResultadoPregunta(
 
 public sealed class PreguntarAsistente
 {
-    private const int MaximoCitasDeRespaldo = 2;
-
     private readonly IApiAcademica _apiAcademica;
     private readonly IClienteLlm _clienteLlm;
     private readonly IBaseConocimiento _baseConocimiento;
@@ -39,6 +37,8 @@ public sealed class PreguntarAsistente
     private readonly ConfiguracionAsistente _configuracion;
     private readonly PresupuestoDiario _presupuesto;
     private readonly LectorResumenPropio _lectorResumen;
+    private readonly RelevanciaPrevia _relevancia;
+    private readonly CitasDeRespuesta _citasDeRespuesta;
 
     public PreguntarAsistente(
         IApiAcademica apiAcademica,
@@ -61,6 +61,8 @@ public sealed class PreguntarAsistente
         _configuracion = configuracion;
         _presupuesto = presupuesto;
         _lectorResumen = new LectorResumenPropio(politicaAcceso);
+        _relevancia = new RelevanciaPrevia(politicaAcceso, configuracion.RelevanciaMinima);
+        _citasDeRespuesta = new CitasDeRespuesta(configuracion.ApoyoMinimoRespaldo);
     }
 
     public async Task<ResultadoPregunta> EjecutarAsync(
@@ -80,8 +82,18 @@ public sealed class PreguntarAsistente
         var sesion = new SesionPregunta(entrada, ipOrigen, correlationId, api, directorio ?? ConstructorDirectorio.Vacio);
         var decision = Autorizar(sesion);
         return decision.Permitido
-            ? await ResponderConReservaAsync(sesion, cancellationToken)
+            ? await ResponderSiEsRelevanteAsync(sesion, cancellationToken)
             : Denegar(sesion, decision.Motivo, 0);
+    }
+
+    private async Task<ResultadoPregunta> ResponderSiEsRelevanteAsync(SesionPregunta sesion, CancellationToken cancellationToken)
+    {
+        var pregunta = sesion.Entrada.Pregunta;
+        var contexto = new ContextoUsuario(sesion.Entrada.Usuario, sesion.Directorio);
+        sesion.Secciones = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(pregunta), _limites.MaximoSeccionesRecuperadas);
+        return _relevancia.DebeResponderSinInformacion(contexto, pregunta, sesion.Secciones)
+            ? Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, usoDatos: false)
+            : await ResponderConReservaAsync(sesion, cancellationToken);
     }
 
     private DecisionAcceso Autorizar(SesionPregunta sesion)
@@ -143,9 +155,8 @@ public sealed class PreguntarAsistente
     private async Task<EntradaConversacion> PrepararEntradaAsync(SesionPregunta sesion, ContextoUsuario contexto, CancellationToken cancellationToken)
     {
         var pregunta = sesion.Entrada.Pregunta;
-        var secciones = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(pregunta), _limites.MaximoSeccionesRecuperadas);
         var resumen = await _lectorResumen.LeerAsync(contexto, pregunta, sesion.Api, sesion.Registro, cancellationToken);
-        return new EntradaConversacion(pregunta, secciones, resumen, ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
+        return new EntradaConversacion(pregunta, sesion.Secciones, resumen, ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
     }
 
     private ResultadoPregunta Completar(SesionPregunta sesion, string texto, EntradaConversacion entrada)
@@ -162,32 +173,36 @@ public sealed class PreguntarAsistente
 
         var directorio = sesion.Directorio;
         var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, directorio);
-        var candidatas = CitasEntregadasYCitadas(texto, entrada, sesion.Registro.Reglas);
+        var candidatas = _citasDeRespuesta.EscritasConApoyo(texto, entrada.Secciones, ReglasDeDatos(sesion, entrada));
         var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio, Confidencial(entrada));
-        return Responder(sesion, verificada.Respuesta, CitasFinales(sesion, verificada, entrada), verificada.Resultado);
+        return verificada.Resultado == ResultadoAuditoria.Respondida
+            ? ResponderVerificada(sesion, verificada, entrada)
+            : Responder(sesion, verificada.Respuesta, verificada.Citas, verificada.Resultado);
     }
+
+    private ResultadoPregunta ResponderVerificada(SesionPregunta sesion, SalidaVerificada verificada, EntradaConversacion entrada)
+    {
+        var citasDeTextoFijo = Textos.CitasDeTextoFijo(verificada.Respuesta);
+        if (citasDeTextoFijo is not null)
+        {
+            return Responder(sesion, verificada.Respuesta, citasDeTextoFijo, verificada.Resultado);
+        }
+
+        var respaldo = verificada.Citas.Count > 0 ? [] : _citasDeRespuesta.Respaldo(verificada.Respuesta, entrada.Secciones);
+        if (verificada.Citas.Count + respaldo.Count == 0 && !sesion.Registro.UsoDatos)
+        {
+            return Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, usoDatos: false);
+        }
+
+        IReadOnlyList<Cita> citas = [.. verificada.Citas.Concat(respaldo).Concat(sesion.Registro.Citas).Distinct()];
+        return Responder(sesion, verificada.Respuesta, citas, verificada.Resultado);
+    }
+
+    private static IReadOnlyCollection<Cita> ReglasDeDatos(SesionPregunta sesion, EntradaConversacion entrada) =>
+        [.. (entrada.Resumen?.Reglas ?? []).Concat(sesion.Registro.Reglas)];
 
     private MaterialConfidencial Confidencial(EntradaConversacion entrada) =>
         new(_configuracion.MarcadorCanario, entrada.PromptSistema, HerramientasAsistente.NombresInternos);
-
-    private static IReadOnlyList<Cita> CitasFinales(SesionPregunta sesion, SalidaVerificada verificada, EntradaConversacion entrada) =>
-        verificada.Resultado == ResultadoAuditoria.Respondida
-            ? [.. ConRespaldo(verificada.Citas, entrada.Secciones).Concat(sesion.Registro.Citas).Distinct()]
-            : verificada.Citas;
-
-    private static IEnumerable<Cita> ConRespaldo(IReadOnlyList<Cita> escritas, IReadOnlyList<SeccionDocumento> entregadas) =>
-        escritas.Count > 0
-            ? escritas
-            : entregadas.Take(MaximoCitasDeRespaldo).Select(s => new Cita(s.Documento, s.Seccion));
-
-    private static IReadOnlyList<Cita> CitasEntregadasYCitadas(string texto, EntradaConversacion entrada, IReadOnlyList<Cita> reglasDeHerramientas)
-    {
-        var entregadas = entrada.Secciones.Select(s => new Cita(s.Documento, s.Seccion))
-            .Concat(entrada.Resumen?.Reglas ?? [])
-            .Concat(reglasDeHerramientas)
-            .ToHashSet();
-        return [.. ExtractorCitas.De(texto).Where(entregadas.Contains)];
-    }
 
     private ResultadoPregunta Responder(
         SesionPregunta sesion,

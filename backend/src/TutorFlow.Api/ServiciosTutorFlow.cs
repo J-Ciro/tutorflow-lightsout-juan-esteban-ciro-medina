@@ -20,6 +20,8 @@ public static class ServiciosTutorFlow
     private const string SeccionCodigosAsignatura = "Autorizacion:CodigosAsignatura";
     private const string ClaveMarcadorCanario = "Llm:MarcadorCanario";
     private const string ClaveReservaPorPeticion = "Llm:ReservaPorPeticionUsd";
+    private const string ClaveRelevanciaMinima = "Conocimiento:RelevanciaMinima";
+    private const string ClaveApoyoMinimoRespaldo = "Conocimiento:ApoyoMinimoRespaldo";
     private const string ClaveSeccionLimites = "Limites";
     private const string ClaveTraceId = "traceId";
     private const string VariableLlaveLlm = "LLM_API_KEY";
@@ -129,6 +131,12 @@ public static class ServiciosTutorFlow
         var resuelto = proveedor.GetRequiredService<ProveedorResuelto>();
         var precio = resuelto.PrecioDesconocido ? null : new PrecioModelo(resuelto.PrecioEntradaPorMillon, resuelto.PrecioSalidaPorMillon);
         var codigos = configuracion.GetSection(SeccionCodigosAsignatura).Get<string[]>() ?? [];
-        return new ConfiguracionAsistente(precio, configuracion[ClaveMarcadorCanario], codigos, LeerDecimal(configuracion[ClaveReservaPorPeticion]));
+        return new ConfiguracionAsistente(
+            precio,
+            configuracion[ClaveMarcadorCanario],
+            codigos,
+            LeerDecimal(configuracion[ClaveReservaPorPeticion]),
+            configuracion.GetValue(ClaveRelevanciaMinima, ConfiguracionAsistente.RelevanciaMinimaPorDefecto),
+            configuracion.GetValue(ClaveApoyoMinimoRespaldo, ConfiguracionAsistente.ApoyoMinimoPorDefecto));
     }
 }
