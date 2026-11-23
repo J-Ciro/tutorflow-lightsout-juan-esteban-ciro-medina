@@ -95,6 +95,45 @@ public sealed partial class PlegadoUnicodeRecursoTests
         Assert.Equal(esperado, NormalizadorTexto.Normalizar(entrada));
     }
 
+    private static List<(string Tipo, int Origen, string Destino)> Filas() =>
+        TextoDelRecurso().Split('\n').Skip(2).Where(l => l.Length > 0)
+            .Select(l => l.Split('\t'))
+            .Select(c => (c[0], int.Parse(c[1], System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture), c.Length > 2 ? c[2] : string.Empty))
+            .ToList();
+
+    private static bool EsLetraODigitoAscii(string destino) =>
+        destino.Length == 4 && int.TryParse(destino, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var punto)
+        && (punto is >= 0x30 and <= 0x39 or >= 0x41 and <= 0x5A or >= 0x61 and <= 0x7A);
+
+    [Fact]
+    [Trait("CA", "CA-24")]
+    [Trait("ESC", "ESC-199")]
+    [Trait("D", "D-66")]
+    public void ESC_199b_Ninguna_fila_conf_tiene_un_origen_de_digito_Nd_ni_un_origen_Latin_1_ni_de_trazo_y_su_destino_es_una_letra_o_digito_ASCII()
+    {
+        var confusables = Filas().Where(f => f.Tipo == "conf").ToList();
+        var trazo = Filas().Where(f => f.Tipo == "trazo").Select(f => f.Origen).ToHashSet();
+
+        Assert.NotEmpty(confusables);
+        Assert.DoesNotContain(confusables, f => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(f.Origen) == System.Globalization.UnicodeCategory.DecimalDigitNumber);
+        Assert.DoesNotContain(confusables, f => f.Origen <= 0xFF);
+        Assert.DoesNotContain(confusables, f => trazo.Contains(f.Origen));
+        Assert.DoesNotContain(confusables, f => !EsLetraODigitoAscii(f.Destino));
+    }
+
+    [Fact]
+    [Trait("CA", "CA-24")]
+    [Trait("ESC", "ESC-199")]
+    [Trait("D", "D-66")]
+    public void ESC_199b_Las_filas_nd_llevan_un_digito_ASCII_y_el_recurso_no_repite_pares_de_tipo_y_origen()
+    {
+        var filas = Filas();
+
+        Assert.All(filas.Where(f => f.Tipo == "nd"), f => Assert.Matches("^003[0-9]$", f.Destino));
+        Assert.Equal(filas.Count, filas.Select(f => (f.Tipo, f.Origen)).Distinct().Count());
+        Assert.Equal(8, filas.Count(f => f.Tipo == "trazo"));
+    }
+
     [Fact]
     [Trait("CA", "CA-24")]
     [Trait("ESC", "ESC-196")]
