@@ -2,6 +2,11 @@ using System.Text.Json;
 
 namespace TutorFlow.Evals;
 
+public sealed record ResumenDeCaso(string Id, int Aprobadas, int Total, int Requeridas)
+{
+    public bool Cumple => Aprobadas >= Requeridas;
+}
+
 public sealed class Reporte
 {
     private const double Percentil = 0.95;
@@ -23,9 +28,26 @@ public sealed class Reporte
 
     public double P95FiltroPrevioMs => Percentil95(_resultados.Where(r => r.Caso.FiltroPrevio && r.Caso.Http == 403 && r.Ejecucion is not null).Select(r => r.Ejecucion!.Milisegundos).ToList());
 
-    public bool Exitoso => Fallidos == 0 && Aprobados > 0 && P95FiltroPrevioMs < _opciones.UmbralP95Ms;
+    public IReadOnlyList<ResumenDeCaso> PorCaso =>
+        [.. _resultados
+            .Where(r => !r.Omitido)
+            .GroupBy(r => (r.Caso.Id, r.Caso.Usuario.Id, r.Caso.Pregunta))
+            .Select(grupo => new ResumenDeCaso(grupo.First().Caso.Etiqueta, grupo.Count(r => r.Aprobado), grupo.Count(), grupo.First().Caso.UmbralCorridas ?? grupo.Count()))];
+
+    public bool Exitoso => PorCaso.All(c => c.Cumple) && Aprobados > 0 && P95FiltroPrevioMs < _opciones.UmbralP95Ms;
 
     public void Imprimir(TextWriter salida)
+    {
+        ImprimirFallos(salida);
+        ImprimirCorridasPorCaso(salida);
+        salida.WriteLine($"Modo: {(_opciones.Offline ? "offline (LLM doble)" : _opciones.Url)}  Corridas: {_opciones.Corridas}");
+        salida.WriteLine($"Aprobados: {Aprobados}  Fallidos: {Fallidos}  Omitidos: {Omitidos}");
+        salida.WriteLine($"Tokens medios: {TokensMedios():F1}  Costo medio USD: {CostoMedio():F6}");
+        salida.WriteLine($"p95 de las denegaciones del filtro previo: {P95FiltroPrevioMs:F1} ms (umbral {_opciones.UmbralP95Ms} ms)");
+        salida.WriteLine(Exitoso ? "RESULTADO: OK" : "RESULTADO: FALLO");
+    }
+
+    private void ImprimirFallos(TextWriter salida)
     {
         foreach (var fallo in _resultados.Where(r => r.Fallos.Count > 0))
         {
@@ -35,12 +57,14 @@ public sealed class Reporte
                 salida.WriteLine($"    - {motivo}");
             }
         }
+    }
 
-        salida.WriteLine($"Modo: {(_opciones.Offline ? "offline (LLM doble)" : _opciones.Url)}  Corridas: {_opciones.Corridas}");
-        salida.WriteLine($"Aprobados: {Aprobados}  Fallidos: {Fallidos}  Omitidos: {Omitidos}");
-        salida.WriteLine($"Tokens medios: {TokensMedios():F1}  Costo medio USD: {CostoMedio():F6}");
-        salida.WriteLine($"p95 de las denegaciones del filtro previo: {P95FiltroPrevioMs:F1} ms (umbral {_opciones.UmbralP95Ms} ms)");
-        salida.WriteLine(Exitoso ? "RESULTADO: OK" : "RESULTADO: FALLO");
+    private void ImprimirCorridasPorCaso(TextWriter salida)
+    {
+        foreach (var caso in PorCaso.Where(c => c.Total > 1))
+        {
+            salida.WriteLine($"{caso.Id}: {caso.Aprobadas} de {caso.Total} corridas (umbral {caso.Requeridas}){(caso.Cumple ? string.Empty : " NO CUMPLE")}");
+        }
     }
 
     private double TokensMedios() => Respuestas().Select(s => (double)s.Tokens).DefaultIfEmpty(0).Average();

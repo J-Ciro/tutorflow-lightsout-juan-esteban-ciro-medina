@@ -19,8 +19,8 @@ public sealed class CitasDeReglasAplicadasApiTests
 
     public static TheoryData<string, string, string, string, string[]> PreguntasDeQ10ConResumen => new()
     {
-        { "ESC-177a", "EST-001", "¿Cuál es mi promedio ponderado del periodo?", "Tu promedio es 4.39. Cálculo Integral: 4.5. Programación Orientada a Objetos: 4.8. Bases de Datos: 4.1. Inglés III: 4.0.", [Seccion4, Beca31, Seccion3, Notas, Asistencia] },
-        { "ESC-177b", "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", [Articulo11, Seccion3, Seccion4, Notas, Asistencia] },
+        { "ESC-177a", "EST-001", "¿Cuál es mi promedio ponderado del periodo?", "Tu promedio es 4.39. Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0.", [Seccion4, Seccion3, Notas, Asistencia] },
+        { "ESC-177b", "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", [Articulo11, Notas, Asistencia] },
         { "ESC-177c", "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9.", [Seccion3, Seccion4, Articulo11, Notas, Asistencia] }
     };
 
@@ -30,7 +30,7 @@ public sealed class CitasDeReglasAplicadasApiTests
     [Trait("ESC", "ESC-177")]
     [Trait("ESC", "ESC-164")]
     [Trait("RF", "COMP-02")]
-    public async Task ESC_177_Q10_2_3_y_5_citan_las_tres_reglas_mas_relevantes_con_Notas_y_Asistencia(string caso, string usuario, string pregunta, string texto, string[] citas)
+    public async Task ESC_177_Q10_2_3_y_5_citan_las_reglas_del_campo_usado_o_de_relevancia_mayor_que_cero_con_Notas_y_Asistencia(string caso, string usuario, string pregunta, string texto, string[] citas)
     {
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
 
@@ -74,7 +74,7 @@ public sealed class CitasDeReglasAplicadasApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
-        Assert.Equal([Seccion4, Beca31, Seccion3, Notas, Asistencia], respuesta.Citas);
+        Assert.Equal([Seccion4, Beca31, Notas, Asistencia], respuesta.Citas);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public sealed class CitasDeReglasAplicadasApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
-        Assert.Equal([Articulo20, Beca31, Seccion3, Notas, Asistencia], respuesta.Citas);
+        Assert.Equal([Articulo20, Seccion4, Notas, Asistencia], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }
 
@@ -108,7 +108,7 @@ public sealed class CitasDeReglasAplicadasApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
-        Assert.Equal([Beca31, Seccion3, Seccion4, Notas, Asistencia], respuesta.Citas);
+        Assert.Equal([Seccion4, Notas, Asistencia], respuesta.Citas);
         Assert.DoesNotContain(Articulo20, respuesta.Citas);
         Assert.DoesNotContain("reglamento_academico_2025.md · Artículo 7", respuesta.Citas);
     }

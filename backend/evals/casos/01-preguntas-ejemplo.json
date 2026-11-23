@@ -40,19 +40,18 @@
     "pregunta": "¿Cuál es mi promedio ponderado del periodo?",
     "http": 200,
     "contiene": [
-      "4.39",
-      "Cálculo Integral: 4.5",
-      "Programación Orientada a Objetos: 4.8",
-      "Bases de Datos: 4.1",
-      "Inglés III: 4.0"
+      "4.39"
     ],
     "noContiene": [],
     "citasIncluye": [
-      "evaluacion_y_calificaciones.md · Sección 3",
       "evaluacion_y_calificaciones.md · Sección 4",
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
+    "citasProhibidas": [
       "bienestar_y_becas.md · Sección 3.1"
     ],
-    "citasProhibidas": [],
     "citasVacias": false,
     "usoDatosEstudiante": true,
     "respuestaExacta": null,
@@ -60,10 +59,28 @@
     "filtroPrevio": false,
     "requiereLlm": true,
     "offline": {
-      "herramientas": "todas",
+      "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "Tu promedio ponderado del periodo es 4.39.\nCálculo Integral: 4.5\nProgramación Orientada a Objetos: 4.8\nBases de Datos: 4.1\nInglés III: 4.0\nFuentes: evaluacion_y_calificaciones.md · Sección 3 y evaluacion_y_calificaciones.md · Sección 4."
-    }
+      "texto": "Tu promedio es 4.39. Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0."
+    },
+    "parejas": [
+      {
+        "nombre": "Cálculo Integral",
+        "valor": "4.5"
+      },
+      {
+        "nombre": "Programación Orientada a Objetos",
+        "valor": "4.8"
+      },
+      {
+        "nombre": "Bases de Datos",
+        "valor": "4.1"
+      },
+      {
+        "nombre": "Inglés III",
+        "valor": "4.0"
+      }
+    ]
   },
   {
     "id": "ESC-003",
@@ -76,18 +93,19 @@
     "http": 200,
     "contiene": [
       "2",
-      "48"
+      "48 clases"
     ],
     "noContiene": [
       "20%"
     ],
     "citasIncluye": [
       "Datos del estudiante · Asistencia",
-      "reglamento_academico_2025.md · Artículo 11",
+      "reglamento_academico_2025.md · Artículo 11"
+    ],
+    "citasProhibidas": [
       "evaluacion_y_calificaciones.md · Sección 3",
       "evaluacion_y_calificaciones.md · Sección 4"
     ],
-    "citasProhibidas": [],
     "citasVacias": false,
     "usoDatosEstudiante": true,
     "respuestaExacta": null,
@@ -95,9 +113,9 @@
     "filtroPrevio": false,
     "requiereLlm": true,
     "offline": {
-      "herramientas": "todas",
+      "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "{herramientas}"
+      "texto": "Bases de Datos: 2 faltas de 48 clases."
     }
   },
   {
@@ -146,9 +164,7 @@
     "noContiene": [],
     "citasIncluye": [
       "Datos del estudiante · Notas",
-      "evaluacion_y_calificaciones.md · Sección 3",
-      "evaluacion_y_calificaciones.md · Sección 4",
-      "reglamento_academico_2025.md · Artículo 11"
+      "evaluacion_y_calificaciones.md · Sección 3"
     ],
     "citasProhibidas": [],
     "citasVacias": false,
@@ -158,9 +174,9 @@
     "filtroPrevio": false,
     "requiereLlm": true,
     "offline": {
-      "herramientas": "todas",
+      "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "{herramientas}"
+      "texto": "Tu definitiva en Contabilidad es 3.9."
     }
   },
   {
@@ -186,9 +202,7 @@
     ],
     "citasIncluye": [
       "Datos del programa · ADM",
-      "reglamento_academico_2025.md · Artículo 5",
-      "reglamento_academico_2025.md · Artículo 6",
-      "evaluacion_y_calificaciones.md · Sección 3"
+      "reglamento_academico_2025.md · Artículo 5"
     ],
     "citasProhibidas": [],
     "citasVacias": false,
@@ -198,10 +212,11 @@
     "filtroPrevio": false,
     "requiereLlm": true,
     "offline": {
-      "herramientas": "todas",
+      "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "{herramientas}"
-    }
+      "texto": "Estudiantes con asignaturas perdidas: Valentina Castro (Microeconomía 1.8; Estadística 2.3)"
+    },
+    "respondida": true
   },
   {
     "id": "ESC-007",
@@ -217,7 +232,7 @@
       "17:00",
       "12:00",
       "sábado",
-      "edificio B"
+      "edificio B, piso 2"
     ],
     "noContiene": [],
     "citasIncluye": [
@@ -247,8 +262,7 @@
     "http": 200,
     "contiene": [
       "4.3",
-      "12 créditos",
-      "50%"
+      "12 créditos"
     ],
     "noContiene": [
       "EST-",
@@ -257,7 +271,9 @@
     "citasIncluye": [
       "bienestar_y_becas.md · Sección 3.1"
     ],
-    "citasProhibidas": [],
+    "citasProhibidas": [
+      "bienestar_y_becas.md · Sección 3.2"
+    ],
     "citasVacias": false,
     "usoDatosEstudiante": false,
     "respuestaExacta": null,
@@ -267,8 +283,17 @@
     "offline": {
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "La beca da 50% de descuento. Requisitos: promedio de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos matriculados."
-    }
+      "texto": "Requisitos: promedio de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos; da 50% de descuento en la matrícula siguiente."
+    },
+    "contieneAlguna": [
+      [
+        "50%",
+        "50 %"
+      ]
+    ],
+    "citasExactas": [
+      "bienestar_y_becas.md · Sección 3.1"
+    ]
   },
   {
     "id": "ESC-009",

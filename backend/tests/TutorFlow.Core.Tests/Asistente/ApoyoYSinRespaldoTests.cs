@@ -125,13 +125,13 @@ public sealed class ApoyoYSinRespaldoTests
     [Trait("ESC", "ESC-164")]
     [Trait("CA", "CA-14")]
     [Trait("COMP", "COMP-02")]
-    public async Task Sin_citas_escritas_el_respaldo_son_las_secciones_que_comparten_dos_raices_incluidas_las_cifras()
+    public async Task Sin_citas_escritas_el_respaldo_es_la_unica_seccion_de_mayor_apoyo_incluidas_las_cifras()
     {
         var escenario = Con(Fijo("Una asignatura se aprueba con 3.0."), Indice(Articulo5, Articulo6, Articulo11, Articulo12, Articulo20, Articulo22));
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
-        AfirmarRespondida(resultado, "Una asignatura se aprueba con 3.0.", [new Cita(Reglamento, "Artículo 5"), new Cita(Reglamento, "Artículo 6")]);
+        AfirmarRespondida(resultado, "Una asignatura se aprueba con 3.0.", [new Cita(Reglamento, "Artículo 5")]);
         Assert.DoesNotContain(resultado.Respuesta!.Citas, c => c.Documento == Textos.DocumentoDatosEstudiante);
     }
 
@@ -139,13 +139,13 @@ public sealed class ApoyoYSinRespaldoTests
     [Trait("ESC", "ESC-164")]
     [Trait("CA", "CA-14")]
     [Trait("COMP", "COMP-02")]
-    public async Task El_respaldo_de_la_nota_minima_sigue_el_orden_de_ranking_y_nunca_incluye_el_Articulo_20()
+    public async Task El_respaldo_de_la_nota_minima_es_el_Articulo_5_aunque_el_Articulo_6_vaya_primero_en_el_ranking()
     {
         var escenario = Con(Fijo("Una asignatura se aprueba con 3.0."), Indice(Articulo20, Articulo6, Articulo5, Articulo11, Articulo12, Articulo22));
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
-        AfirmarRespondida(resultado, "Una asignatura se aprueba con 3.0.", [new Cita(Reglamento, "Artículo 6"), new Cita(Reglamento, "Artículo 5")]);
+        AfirmarRespondida(resultado, "Una asignatura se aprueba con 3.0.", [new Cita(Reglamento, "Artículo 5")]);
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public sealed class ApoyoYSinRespaldoTests
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
-        AfirmarRespondida(resultado, "Una asignatura se aprueba con 3.0.", [new Cita(Reglamento, "Artículo 5"), new Cita(Reglamento, "Artículo 6")]);
+        AfirmarRespondida(resultado, "Una asignatura se aprueba con 3.0.", [new Cita(Reglamento, "Artículo 5")]);
     }
 
     [Fact]
@@ -189,7 +189,7 @@ public sealed class ApoyoYSinRespaldoTests
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
         Assert.Equal(texto, resultado.Respuesta!.Respuesta);
         Assert.Equal(
-            [new Cita(Reglamento, "Artículo 11"), new Cita(Evaluacion, "Sección 3"), new Cita(Evaluacion, "Sección 4"), DatosNotas, DatosAsistencia],
+            [new Cita(Reglamento, "Artículo 11"), DatosNotas, DatosAsistencia],
             resultado.Respuesta.Citas.ToArray());
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
     }
@@ -197,13 +197,13 @@ public sealed class ApoyoYSinRespaldoTests
     [Fact]
     [Trait("ESC", "ESC-164")]
     [Trait("COMP", "COMP-02")]
-    public async Task El_respaldo_agrega_como_maximo_dos_secciones_en_orden_de_ranking()
+    public async Task El_respaldo_agrega_una_sola_seccion_y_en_empate_de_apoyo_la_primera_del_ranking()
     {
         var escenario = Con(Fijo(RespuestaDefinitiva), Indice(Indexadas(DefinitivaA, DefinitivaB, DefinitivaC), [DefinitivaC, DefinitivaA, DefinitivaB]));
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaDefinitiva);
 
-        Assert.Equal([CitaDe(DefinitivaC), CitaDe(DefinitivaA)], resultado.Respuesta!.Citas.ToArray());
+        Assert.Equal([CitaDe(DefinitivaC)], resultado.Respuesta!.Citas.ToArray());
     }
 
     [Fact]
@@ -215,7 +215,7 @@ public sealed class ApoyoYSinRespaldoTests
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaDefinitiva);
 
-        Assert.Equal([CitaDe(DefinitivaA), CitaDe(DefinitivaB)], resultado.Respuesta!.Citas.ToArray());
+        Assert.Equal([CitaDe(DefinitivaA)], resultado.Respuesta!.Citas.ToArray());
     }
 
     [Fact]
@@ -255,7 +255,7 @@ public sealed class ApoyoYSinRespaldoTests
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaDefinitiva);
 
-        Assert.Equal([CitaDe(DefinitivaA), CitaDe(DefinitivaB)], resultado.Respuesta!.Citas.ToArray());
+        Assert.Equal([CitaDe(DefinitivaA)], resultado.Respuesta!.Citas.ToArray());
     }
 
     [Fact]

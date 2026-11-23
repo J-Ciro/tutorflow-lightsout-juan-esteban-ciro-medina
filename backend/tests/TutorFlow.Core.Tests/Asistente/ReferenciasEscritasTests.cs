@@ -98,7 +98,7 @@ public sealed class ReferenciasEscritasTests
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
         Assert.Equal("Contabilidad: 3.9. La definitiva se calcula con los pesos.", resultado.Respuesta!.Respuesta);
-        Assert.Equal([Texto(Sec3), Texto(Sec4), Texto(Art11)], CitasDeDocumento(resultado.Respuesta));
+        Assert.Equal([Texto(Sec3)], CitasDeDocumento(resultado.Respuesta));
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
     }
 
@@ -129,7 +129,7 @@ public sealed class ReferenciasEscritasTests
         var resultado = await escenario.PreguntarAsync(Est005, "¿Estoy en prueba académica?");
 
         Assert.Equal("Sí, estás en prueba académica: tu promedio es 2.65.", resultado.Respuesta!.Respuesta);
-        Assert.Equal([Texto(Art20), Texto(Beca31), Texto(Sec3)], CitasDeDocumento(resultado.Respuesta));
+        Assert.Equal([Texto(Art20), Texto(Sec4)], CitasDeDocumento(resultado.Respuesta));
     }
 
     [Fact]

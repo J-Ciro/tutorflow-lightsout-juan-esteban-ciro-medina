@@ -10,7 +10,6 @@ public sealed class CifrasComoApoyoApiTests
     private const string CitaSeccion2 = "evaluacion_y_calificaciones.md · Sección 2";
     private const string CitaSeccion3 = "evaluacion_y_calificaciones.md · Sección 3";
     private const string CitasEscritas = $"({CitaSeccion2}) ({CitaSeccion3})";
-    private static readonly string[] RespaldoPermitido = ["reglamento_academico_2025.md · Artículo 5", "reglamento_academico_2025.md · Artículo 6"];
 
     public static TheoryData<string, string[], string> RespuestasConApoyoNumerico => new()
     {
@@ -120,7 +119,7 @@ public sealed class CifrasComoApoyoApiTests
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-164")]
     [Trait("RF", "COMP-02")]
-    public async Task ESC_164a_El_respaldo_de_la_nota_minima_son_las_entregadas_de_Articulo_5_y_6_en_orden_de_ranking()
+    public async Task ESC_164a_El_respaldo_de_la_nota_minima_es_solo_el_Articulo_5()
     {
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Una asignatura se aprueba con 3.0."), conocimientoReal: true);
 
@@ -129,7 +128,7 @@ public sealed class CifrasComoApoyoApiTests
         var entregadas = GuionesLlm.Bloques(Assert.Single(fabrica.Llm.Solicitudes)).Select(b => b.Fuente).ToList();
         Assert.Equal(200, respuesta.Estado);
         Assert.Contains("reglamento_academico_2025.md · Artículo 5", entregadas);
-        Assert.Equal(entregadas.Where(RespaldoPermitido.Contains), respuesta.Citas);
+        Assert.Equal(["reglamento_academico_2025.md · Artículo 5"], respuesta.Citas);
         Assert.False(respuesta.UsoDatosEstudiante);
     }
 }

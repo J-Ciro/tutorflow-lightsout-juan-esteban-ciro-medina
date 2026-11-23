@@ -9,6 +9,8 @@ public static class Principal
     private const int UmbralP95PorDefectoMs = 500;
     private const int SalidaFallos = 1;
     private const int SalidaSinCasos = 2;
+    private const int CorridasDeLaFaseV = 5;
+    private const string FuenteDeLasPreguntasDeQ10 = "CA-01 pregunta";
 
     public static async Task<int> Main(string[] args)
     {
@@ -29,14 +31,16 @@ public static class Principal
     private static OpcionesEvals LeerOpciones(string[] args)
     {
         var valores = ParesDeArgumentos(args);
+        var faseV = args.Contains("--fase-v");
         return new OpcionesEvals(
             valores.GetValueOrDefault("--url") ?? UrlPorDefecto,
             args.Contains("--offline"),
             valores.GetValueOrDefault("--casos", Path.Combine(Pruebas.Soporte.DatosReferencia.RutaRepositorio(), "backend", "evals", "casos")),
-            int.Parse(valores.GetValueOrDefault("--corridas", "1"), System.Globalization.CultureInfo.InvariantCulture),
+            faseV ? CorridasDeLaFaseV : int.Parse(valores.GetValueOrDefault("--corridas", "1"), System.Globalization.CultureInfo.InvariantCulture),
             int.Parse(valores.GetValueOrDefault("--pausa-ms", PausaPorDefectoMs.ToString(System.Globalization.CultureInfo.InvariantCulture)), System.Globalization.CultureInfo.InvariantCulture),
             int.Parse(valores.GetValueOrDefault("--umbral-p95-ms", UmbralP95PorDefectoMs.ToString(System.Globalization.CultureInfo.InvariantCulture)), System.Globalization.CultureInfo.InvariantCulture),
-            valores.GetValueOrDefault("--filtro"));
+            valores.GetValueOrDefault("--filtro"),
+            faseV);
     }
 
     private static Dictionary<string, string> ParesDeArgumentos(string[] args) =>
@@ -49,6 +53,7 @@ public static class Principal
             .Order(StringComparer.Ordinal)
             .SelectMany(ruta => JsonSerializer.Deserialize<List<CasoEval>>(File.ReadAllText(ruta), Json.Opciones) ?? [])
             .Where(c => opciones.Filtro is null || c.Id.StartsWith(opciones.Filtro, StringComparison.Ordinal))
+            .Where(c => !opciones.FaseV || c.Fuente.StartsWith(FuenteDeLasPreguntasDeQ10, StringComparison.Ordinal))
             .ToList();
 
     private static async Task<List<ResultadoCaso>> Ejecutar(OpcionesEvals opciones, List<CasoEval> casos)

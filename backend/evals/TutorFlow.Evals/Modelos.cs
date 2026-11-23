@@ -4,6 +4,8 @@ namespace TutorFlow.Evals;
 
 public sealed record UsuarioEval(string Rol, string Id);
 
+public sealed record ParejaEval(string Nombre, string Valor);
+
 public sealed record GuionOffline(string Herramientas, string? EstudianteIdCoordinador, string? Texto);
 
 public sealed record CasoEval(
@@ -27,12 +29,20 @@ public sealed record CasoEval(
     bool SoloOffline,
     GuionOffline? Offline)
 {
+    public IReadOnlyList<ParejaEval>? Parejas { get; init; }
+
+    public IReadOnlyList<IReadOnlyList<string>>? ContieneAlguna { get; init; }
+
+    public bool Respondida { get; init; }
+
+    public int? UmbralCorridas { get; init; }
+
     public string Etiqueta => $"{Id} [{Usuario.Rol}:{Usuario.Id}] {Resumen(Pregunta)}";
 
     private static string Resumen(string texto) => texto.Length <= 48 ? texto : texto[..48] + "...";
 }
 
-public sealed record OpcionesEvals(string Url, bool Offline, string RutaCasos, int Corridas, int PausaMs, int UmbralP95Ms, string? Filtro);
+public sealed record OpcionesEvals(string Url, bool Offline, string RutaCasos, int Corridas, int PausaMs, int UmbralP95Ms, string? Filtro, bool FaseV);
 
 public sealed record Ejecucion(int Estado, string Cuerpo, double Milisegundos);
 
