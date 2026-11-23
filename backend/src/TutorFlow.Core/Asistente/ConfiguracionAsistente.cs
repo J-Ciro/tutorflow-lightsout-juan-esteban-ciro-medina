@@ -23,7 +23,7 @@ public sealed class ConfiguracionAsistente
         IReadOnlyList<AsignaturaCatalogo>? catalogo = null,
         decimal reservaSinPrecioUsd = ReservaSinPrecioPorDefectoUsd)
     {
-        Catalogo = catalogo is { Count: > 0 } ? catalogo : CatalogoAsignaturas.PorDefecto;
+        Catalogo = catalogo ?? throw new ArgumentNullException(nameof(catalogo));
         Precio = precio;
         MarcadorCanario = string.IsNullOrWhiteSpace(marcadorCanarioConfigurado)
             ? Convert.ToHexString(RandomNumberGenerator.GetBytes(BytesDelMarcadorAleatorio))
