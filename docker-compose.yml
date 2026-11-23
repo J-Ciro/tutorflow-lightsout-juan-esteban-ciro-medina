@@ -52,7 +52,7 @@ services:
   mock-api-dev:
     profiles:
       - dev
-    image: alpine/socat:1.8.0.3
+    image: alpine/socat:1.8.0.3@sha256:beb4a68d9e4fe6b0f21ea774a0fde6c31f580dde6368939ed70100c5385b015e
     command: tcp-listen:4000,fork,reuseaddr tcp:mock-api:4000
     ports:
       - "4000:4000"
