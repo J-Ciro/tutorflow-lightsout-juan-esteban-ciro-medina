@@ -34,18 +34,12 @@ internal static class TokenizadorTexto
         return acumulador.Tokens;
     }
 
-    public static int BuscarSecuencia(IReadOnlyList<TokenTexto> tokens, IReadOnlyList<string> secuencia)
-    {
-        for (var indice = 0; indice + secuencia.Count <= tokens.Count; indice++)
-        {
-            if (CoincideEn(tokens, indice, secuencia))
-            {
-                return indice;
-            }
-        }
+    public static int BuscarSecuencia(IReadOnlyList<TokenTexto> tokens, IReadOnlyList<string> secuencia) =>
+        BuscarSecuencias(tokens, secuencia).DefaultIfEmpty(-1).First();
 
-        return -1;
-    }
+    public static IEnumerable<int> BuscarSecuencias(IReadOnlyList<TokenTexto> tokens, IReadOnlyList<string> secuencia) =>
+        Enumerable.Range(0, Math.Max(0, tokens.Count - secuencia.Count + 1))
+            .Where(indice => CoincideEn(tokens, indice, secuencia));
 
     public static string Plegado(string texto) =>
         string.Concat(texto.EnumerateRunes()

@@ -130,13 +130,11 @@ public static partial class DetectorTerceros
         }
 
         IReadOnlyList<string>[] ordenes = [nombre, [.. nombre.Reverse()]];
-        return ordenes
-            .Select(orden => (Orden: orden, Indice: TokenizadorTexto.BuscarSecuencia(tokens, orden)))
-            .Where(encontrado => encontrado.Indice >= 0)
-            .Select(encontrado => new MencionPersona(
+        return ordenes.SelectMany(orden => TokenizadorTexto.BuscarSecuencias(tokens, orden)
+            .Select(indice => new MencionPersona(
                 AmbitoPersonal.Clave(persona.Id),
-                tokens[encontrado.Indice].Inicio,
-                tokens[encontrado.Indice + encontrado.Orden.Count - 1].Fin));
+                tokens[indice].Inicio,
+                tokens[indice + orden.Count - 1].Fin)));
     }
 
     private static IEnumerable<(string Id, string Nombre)> PersonasDelRegistro(DirectorioAcademico directorio) =>
