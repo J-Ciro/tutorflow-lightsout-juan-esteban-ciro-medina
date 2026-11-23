@@ -224,3 +224,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** probar con varios usuarios desde la interfaz es el uso principal de la demo, así que no puede degradarse por cómo está montada.
 - **Costo:** ~2 min humanos.
 - **Prevención:** un riesgo propuesto como "aceptado" que afecta el uso principal se analiza con los agentes de cada disciplina implicada antes de llegar a la puerta humana.
+
+### INT-028 · 2026-11-23 · La interfaz no muestra los documentos citados
+- **Fase:** spec
+- **Qué pasó:** el borrador de la spec 002 mostraba cada cita como un chip "documento · sección" (RF-002-03, COMP-002-02, CA-002-03 y CA-002-04).
+- **Qué hizo el humano:** *"El usuario no deberia de ver cual es el documento que se referencio ya que esto no es relevante para el usuario ver ese pill ya que es algo interno"*.
+- **Por qué:** el nombre del archivo y la sección son detalles internos que no aportan a quien pregunta.
+- **Costo:** ~1 min humano.
+- **Prevención:** la spec de una interfaz distingue entre lo que el contrato expone (para pruebas, auditoría y verificación) y lo que se muestra a la persona usuaria. Mostrar un campo del contrato es una decisión explícita de experiencia, no algo automático.
