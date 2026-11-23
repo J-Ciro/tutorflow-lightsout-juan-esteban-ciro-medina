@@ -13,7 +13,7 @@ public sealed class NoInvencionApiTests
     private const string CitaSeccion32 = "bienestar_y_becas.md · Sección 3.2";
     private const string CitaArticulo5 = "reglamento_academico_2025.md · Artículo 5";
     private const string CitaArticulo6 = "reglamento_academico_2025.md · Artículo 6";
-    private const string CitaArticulo20 = "reglamento_academico_2025.md · Artículo 20";
+    private const string CitaSeccion3 = "evaluacion_y_calificaciones.md · Sección 3";
     private const string CitaDatosPrograma = "Datos del programa · ADM";
     private const string RespuestaDeCoordinador = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
 
@@ -126,13 +126,13 @@ public sealed class NoInvencionApiTests
     [Trait("RF", "SEG-10a")]
     public async Task ESC_170d_Una_cita_del_bloque_reglas_aplicadas_se_conserva_aunque_no_comparta_raices()
     {
-        using var fabrica = new FabricaApi(llm: ProgramaYResponde(CitaArticulo5));
+        using var fabrica = new FabricaApi(llm: ProgramaYResponde(CitaArticulo5), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaDeCoordinador);
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Contains(RespuestaDeCoordinador, respuesta.Respuesta, StringComparison.Ordinal);
-        Assert.Equal([CitaArticulo5, CitaArticulo6, CitaArticulo20, CitaDatosPrograma], respuesta.Citas);
+        Assert.Equal([CitaArticulo5, CitaArticulo6, CitaSeccion3, CitaDatosPrograma], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }
 
@@ -142,13 +142,13 @@ public sealed class NoInvencionApiTests
     [Trait("RF", "SEG-10a")]
     public async Task ESC_170e_Una_cita_fuera_del_bloque_y_sin_raices_compartidas_se_descarta_aunque_se_leyeran_datos()
     {
-        using var fabrica = new FabricaApi(llm: ProgramaYResponde(Afirmaciones.CitaNegativa));
+        using var fabrica = new FabricaApi(llm: ProgramaYResponde(Afirmaciones.CitaNegativa), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaDeCoordinador);
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Contains(RespuestaDeCoordinador, respuesta.Respuesta, StringComparison.Ordinal);
-        Assert.Equal([CitaArticulo5, CitaArticulo6, CitaArticulo20, CitaDatosPrograma], respuesta.Citas);
+        Assert.Equal([CitaArticulo6, CitaSeccion3, CitaArticulo5, CitaDatosPrograma], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }
 

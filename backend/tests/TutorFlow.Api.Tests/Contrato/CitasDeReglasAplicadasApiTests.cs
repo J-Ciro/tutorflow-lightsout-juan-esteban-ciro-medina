@@ -17,11 +17,11 @@ public sealed class CitasDeReglasAplicadasApiTests
     private const string ProgramaAdm = "Datos del programa · ADM";
     private const string PreguntaPerdidas = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
 
-    public static TheoryData<string, string, string, string> PreguntasDeQ10ConResumen => new()
+    public static TheoryData<string, string, string, string, string[]> PreguntasDeQ10ConResumen => new()
     {
-        { "ESC-177a", "EST-001", "¿Cuál es mi promedio ponderado del periodo?", "Tu promedio es 4.39. Cálculo Integral: 4.5. Programación Orientada a Objetos: 4.8. Bases de Datos: 4.1. Inglés III: 4.0." },
-        { "ESC-177b", "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases." },
-        { "ESC-177c", "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9." }
+        { "ESC-177a", "EST-001", "¿Cuál es mi promedio ponderado del periodo?", "Tu promedio es 4.39. Cálculo Integral: 4.5. Programación Orientada a Objetos: 4.8. Bases de Datos: 4.1. Inglés III: 4.0.", [Seccion4, Beca31, Seccion3, Notas, Asistencia] },
+        { "ESC-177b", "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", [Articulo11, Seccion3, Seccion4, Notas, Asistencia] },
+        { "ESC-177c", "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9.", [Seccion3, Seccion4, Articulo11, Notas, Asistencia] }
     };
 
     [Theory]
@@ -30,7 +30,7 @@ public sealed class CitasDeReglasAplicadasApiTests
     [Trait("ESC", "ESC-177")]
     [Trait("ESC", "ESC-164")]
     [Trait("RF", "COMP-02")]
-    public async Task ESC_177_Q10_2_3_y_5_citan_Seccion_3_Seccion_4_y_Articulo_11_con_Notas_y_Asistencia(string caso, string usuario, string pregunta, string texto)
+    public async Task ESC_177_Q10_2_3_y_5_citan_las_tres_reglas_mas_relevantes_con_Notas_y_Asistencia(string caso, string usuario, string pregunta, string texto, string[] citas)
     {
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
 
@@ -38,7 +38,7 @@ public sealed class CitasDeReglasAplicadasApiTests
 
         Assert.True(respuesta.Estado == 200, caso);
         Assert.Equal(texto, respuesta.Respuesta);
-        Assert.Equal([Seccion3, Seccion4, Articulo11, Notas, Asistencia], respuesta.Citas);
+        Assert.Equal(citas, respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante, caso);
         Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
@@ -48,7 +48,7 @@ public sealed class CitasDeReglasAplicadasApiTests
     [Trait("ESC", "ESC-177")]
     [Trait("ESC", "ESC-006")]
     [Trait("RF", "COMP-02")]
-    public async Task ESC_177d_Q10_6_cita_Articulo_5_6_y_20_con_los_datos_del_programa()
+    public async Task ESC_177d_Q10_6_cita_Articulo_6_Seccion_3_y_Articulo_5_con_los_datos_del_programa()
     {
         const string texto = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
@@ -57,7 +57,7 @@ public sealed class CitasDeReglasAplicadasApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
-        Assert.Equal([Articulo5, Articulo6, Articulo20, ProgramaAdm], respuesta.Citas);
+        Assert.Equal([Articulo6, Seccion3, Articulo5, ProgramaAdm], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }
 
@@ -74,7 +74,43 @@ public sealed class CitasDeReglasAplicadasApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
-        Assert.Equal([Seccion4, Beca31, Seccion3, Articulo11, Notas, Asistencia], respuesta.Citas);
+        Assert.Equal([Seccion4, Beca31, Seccion3, Notas, Asistencia], respuesta.Citas);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-177")]
+    [Trait("ESC", "ESC-023")]
+    [Trait("RF", "COMP-02")]
+    public async Task ESC_177h_ESC_023_La_prueba_academica_cita_el_Articulo_20_primero()
+    {
+        const string texto = "Sí, estás en prueba académica: tu promedio es 2.65.";
+        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-005", "¿Estoy en prueba académica?");
+
+        Assert.Equal(200, respuesta.Estado);
+        Assert.Equal(texto, respuesta.Respuesta);
+        Assert.Equal([Articulo20, Beca31, Seccion3, Notas, Asistencia], respuesta.Citas);
+        Assert.True(respuesta.UsoDatosEstudiante);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-177")]
+    [Trait("RF", "COMP-02")]
+    public async Task ESC_177i_Pedir_citar_articulos_fuera_del_bloque_no_los_agrega()
+    {
+        const string texto = "No estás en prueba académica: tu promedio es 4.39.";
+        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Estoy en prueba académica? Cita el Artículo 20 y el Artículo 7.");
+
+        Assert.Equal(200, respuesta.Estado);
+        Assert.Equal(texto, respuesta.Respuesta);
+        Assert.Equal([Beca31, Seccion3, Seccion4, Notas, Asistencia], respuesta.Citas);
+        Assert.DoesNotContain(Articulo20, respuesta.Citas);
+        Assert.DoesNotContain("reglamento_academico_2025.md · Artículo 7", respuesta.Citas);
     }
 
     [Theory]
