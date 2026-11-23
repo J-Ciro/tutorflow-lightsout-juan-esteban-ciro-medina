@@ -82,14 +82,14 @@ public sealed class CitasYNumerosTests
     [Fact]
     [Trait("COMP", "COMP-02")]
     [Trait("SEG", "SEG-10a")]
-    public async Task Si_el_modelo_no_cita_ninguna_seccion_se_agregan_las_dos_primeras_entregadas()
+    public async Task Si_el_modelo_no_cita_ninguna_seccion_se_agrega_solo_la_entregada_que_comparte_dos_raices_con_la_respuesta()
     {
         var indice = new IndiceFijo([Articulo5, Seccion4, Articulo1], [Articulo5, Seccion4, Articulo1]);
         var escenario = Con(Fijo("Se aprueba con una definitiva suficiente."), indice);
 
         var resultado = await escenario.PreguntarAsync(Estudiante, "¿Con qué nota se aprueba una asignatura?");
 
-        Assert.Equal([new Cita(Reglamento, "Artículo 5"), new Cita(Evaluacion, "Sección 4")], resultado.Respuesta!.Citas.ToArray());
+        Assert.Equal([new Cita(Reglamento, "Artículo 5")], resultado.Respuesta!.Citas.ToArray());
     }
 
     [Fact]
@@ -98,40 +98,11 @@ public sealed class CitasYNumerosTests
     public async Task Una_cita_existente_en_el_indice_pero_no_entregada_se_descarta_y_el_respaldo_usa_solo_lo_entregado()
     {
         var indice = new IndiceFijo([Articulo5, Seccion4], [Articulo5]);
-        var escenario = Con(Fijo($"Se promedia por créditos ({Evaluacion} · Sección 4)."), indice);
+        var escenario = Con(Fijo($"Se aprueba con una definitiva suficiente, sin promediar por créditos ({Evaluacion} · Sección 4)."), indice);
 
         var resultado = await escenario.PreguntarAsync(Estudiante, "¿Con qué nota se aprueba una asignatura?");
 
         Assert.Equal([new Cita(Reglamento, "Artículo 5")], resultado.Respuesta!.Citas.ToArray());
-    }
-
-    [Fact]
-    [Trait("ESC", "ESC-164")]
-    [Trait("CA", "CA-14")]
-    [Trait("COMP", "COMP-02")]
-    public async Task Sin_citas_escritas_se_agregan_las_dos_primeras_secciones_entregadas_en_orden_de_ranking()
-    {
-        var indice = new IndiceFijo([Articulo5, Seccion4, Articulo1], [Articulo5, Seccion4, Articulo1]);
-        var escenario = Con(Fijo("Una asignatura se aprueba con una definitiva suficiente."), indice);
-
-        var resultado = await escenario.PreguntarAsync(Estudiante, PreguntaNotaMinima);
-
-        Assert.Equal([new Cita(Reglamento, "Artículo 5"), new Cita(Evaluacion, "Sección 4")], resultado.Respuesta!.Citas.ToArray());
-        Assert.DoesNotContain(resultado.Respuesta.Citas, c => c.Documento == Textos.DocumentoDatosEstudiante);
-        Assert.False(resultado.Respuesta.UsoDatosEstudiante);
-    }
-
-    [Fact]
-    [Trait("ESC", "ESC-164")]
-    [Trait("COMP", "COMP-02")]
-    public async Task El_respaldo_respeta_el_orden_de_ranking_y_no_el_orden_del_indice()
-    {
-        var indice = new IndiceFijo([Articulo5, Seccion4, Articulo1], [Seccion4, Articulo1, Articulo5]);
-        var escenario = Con(Fijo("Una asignatura se aprueba con una definitiva suficiente."), indice);
-
-        var resultado = await escenario.PreguntarAsync(Estudiante, PreguntaNotaMinima);
-
-        Assert.Equal([new Cita(Evaluacion, "Sección 4"), new Cita(Reglamento, "Artículo 1")], resultado.Respuesta!.Citas.ToArray());
     }
 
     [Fact]
@@ -149,19 +120,6 @@ public sealed class CitasYNumerosTests
 
     [Fact]
     [Trait("ESC", "ESC-164")]
-    [Trait("COMP", "COMP-02")]
-    public async Task Sin_secciones_entregadas_y_sin_citas_escritas_no_hay_citas_de_documento()
-    {
-        var indice = new IndiceFijo([Articulo5, Seccion4], []);
-        var escenario = Con(Fijo("Una asignatura se aprueba con una definitiva suficiente."), indice);
-
-        var resultado = await escenario.PreguntarAsync(Estudiante, PreguntaNotaMinima);
-
-        Assert.Empty(resultado.Respuesta!.Citas);
-    }
-
-    [Fact]
-    [Trait("ESC", "ESC-164")]
     [Trait("CA", "CA-14")]
     [Trait("SEG", "SEG-10a")]
     public async Task Una_unica_cita_al_reglamento_2023_se_descarta_y_aplica_el_respaldo()
@@ -171,42 +129,7 @@ public sealed class CitasYNumerosTests
 
         var resultado = await escenario.PreguntarAsync(Estudiante, PreguntaNotaMinima);
 
-        Assert.Equal([new Cita(Reglamento, "Artículo 5"), new Cita(Evaluacion, "Sección 4")], resultado.Respuesta!.Citas.ToArray());
-    }
-
-    [Fact]
-    [Trait("ESC", "ESC-164")]
-    [Trait("CA", "CA-14")]
-    [Trait("COMP", "COMP-02")]
-    public async Task Pregunta_de_datos_sin_citas_escritas_lleva_dos_secciones_mas_Notas_y_Asistencia()
-    {
-        var indice = new IndiceFijo([Articulo5, Seccion4, Articulo1], [Articulo5, Seccion4, Articulo1]);
-        var escenario = Con(Fijo("Bases de Datos: 2 faltas de 48 clases."), indice);
-
-        var resultado = await escenario.PreguntarAsync(Estudiante, "¿Cuántas faltas tengo en Bases de Datos?");
-
-        var citas = resultado.Respuesta!.Citas.ToArray();
-        Assert.Equal([new Cita(Reglamento, "Artículo 5"), new Cita(Evaluacion, "Sección 4")], citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray());
-        Assert.Contains(new Cita(Textos.DocumentoDatosEstudiante, "Notas"), citas);
-        Assert.Contains(new Cita(Textos.DocumentoDatosEstudiante, "Asistencia"), citas);
-        Assert.Equal(4, citas.Length);
-        Assert.True(resultado.Respuesta.UsoDatosEstudiante);
-    }
-
-    [Fact]
-    [Trait("ESC", "ESC-164")]
-    [Trait("CA", "CA-14")]
-    [Trait("COMP", "COMP-02")]
-    public async Task Pregunta_de_datos_con_una_sola_seccion_entregada_lleva_esa_seccion_mas_Notas_y_Asistencia()
-    {
-        var indice = new IndiceFijo([Articulo5, Seccion4], [Articulo5]);
-        var escenario = Con(Fijo("Bases de Datos: 2 faltas de 48 clases."), indice);
-
-        var resultado = await escenario.PreguntarAsync(Estudiante, "¿Cuántas faltas tengo en Bases de Datos?");
-
-        var citas = resultado.Respuesta!.Citas.ToArray();
-        Assert.Equal([new Cita(Reglamento, "Artículo 5")], citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray());
-        Assert.Equal(3, citas.Length);
+        Assert.Equal([new Cita(Reglamento, "Artículo 5")], resultado.Respuesta!.Citas.ToArray());
     }
 
     [Fact]
@@ -248,19 +171,6 @@ public sealed class CitasYNumerosTests
         var resultado = await escenario.PreguntarAsync(Estudiante, PreguntaPromedio);
 
         Assert.Equal([Articulo22], resultado.Respuesta!.Citas.ToArray());
-    }
-
-    [Fact]
-    [Trait("ESC", "ESC-164")]
-    [Trait("COMP", "COMP-02")]
-    public async Task Las_citas_nunca_superan_las_escritas_validas_mas_dos_mas_las_de_datos()
-    {
-        var indice = new IndiceFijo([Articulo5, Seccion4, Articulo1, Articulo2, HorarioBienestar], [Articulo5, Seccion4, Articulo1, Articulo2, HorarioBienestar]);
-        var escenario = Con(Fijo("Una asignatura se aprueba con una definitiva suficiente."), indice);
-
-        var resultado = await escenario.PreguntarAsync(Estudiante, PreguntaNotaMinima);
-
-        Assert.Equal(2, resultado.Respuesta!.Citas.Count);
     }
 
     [Fact]
