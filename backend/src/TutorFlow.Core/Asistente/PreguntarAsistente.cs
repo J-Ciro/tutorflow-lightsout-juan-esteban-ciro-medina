@@ -107,7 +107,7 @@ public sealed class PreguntarAsistente
         {
             if (CatalogoAsignaturas.EsIdDePersona(catalogo[indice].Codigo, directorio))
             {
-                _configuracion.Advertir($"{Textos.PrefijoConfiguracionIgnorada}: Autorizacion:Asignaturas:{indice}:Codigo = \"{catalogo[indice].Codigo}\" (coincide con el ID de una persona del registro); se excluye del catálogo");
+                _configuracion.AdvertirUnaVez($"{Textos.PrefijoConfiguracionIgnorada}: Autorizacion:Asignaturas:{indice}:Codigo = \"{catalogo[indice].Codigo}\" (coincide con el ID de una persona del registro); se excluye del catálogo");
             }
         }
 
@@ -177,15 +177,22 @@ public sealed class PreguntarAsistente
         var usuario = sesion.Entrada.Usuario;
         var contexto = new ContextoUsuario(usuario, sesion.Directorio);
         var entrada = await PrepararEntradaAsync(sesion, contexto, cancellationToken);
-        var conversacion = new ConversacionLlm(_clienteLlm, new HerramientasAsistente(sesion.Api, _politicaAcceso), _limites, sesion.Uso);
+        var conversacion = new ConversacionLlm(_clienteLlm, new HerramientasAsistente(sesion.Api, _politicaAcceso), _limites, sesion.Uso, _configuracion);
         var resultado = await conversacion.EjecutarAsync(contexto, entrada, sesion.Registro, cancellationToken);
         return resultado.Estado switch
         {
             EstadoConversacion.IdAjeno => _emisor.Denegar(sesion, MotivoDenegacion.HerramientaIdAjeno, sesion.Uso.Valor.Total, resultado.IdSolicitado),
             EstadoConversacion.LimiteHerramientas => _emisor.NoDisponible(sesion, ResultadoAuditoria.LimiteHerramientas),
             EstadoConversacion.Rechazada => _emisor.Responder(sesion, Textos.NoVerificable, [], ResultadoAuditoria.Error),
+            EstadoConversacion.ContextoTruncado => ResponderContextoTruncado(sesion),
             _ => _cierre.Completar(sesion, resultado.Texto ?? string.Empty, entrada)
         };
+    }
+
+    private ResultadoPregunta ResponderContextoTruncado(SesionPregunta sesion)
+    {
+        sesion.ContextoTruncado = true;
+        return _emisor.Responder(sesion, Textos.NoVerificable, [], ResultadoAuditoria.Error);
     }
 
     private async Task<EntradaConversacion> PrepararEntradaAsync(SesionPregunta sesion, ContextoUsuario contexto, CancellationToken cancellationToken)

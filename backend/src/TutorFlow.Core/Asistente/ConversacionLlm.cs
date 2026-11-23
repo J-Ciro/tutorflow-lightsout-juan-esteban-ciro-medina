@@ -8,7 +8,8 @@ public enum EstadoConversacion
     Completada,
     Rechazada,
     LimiteHerramientas,
-    IdAjeno
+    IdAjeno,
+    ContextoTruncado
 }
 
 public sealed record ResultadoConversacion(EstadoConversacion Estado, string? Texto, string? IdSolicitado = null);
@@ -25,13 +26,20 @@ internal sealed class ConversacionLlm
     private readonly HerramientasAsistente _herramientas;
     private readonly LimitesAsistente _limites;
     private readonly UsoAcumulado _uso;
+    private readonly ConfiguracionAsistente _configuracion;
 
-    public ConversacionLlm(IClienteLlm clienteLlm, HerramientasAsistente herramientas, LimitesAsistente limites, UsoAcumulado uso)
+    public ConversacionLlm(
+        IClienteLlm clienteLlm,
+        HerramientasAsistente herramientas,
+        LimitesAsistente limites,
+        UsoAcumulado uso,
+        ConfiguracionAsistente configuracion)
     {
         _clienteLlm = clienteLlm;
         _herramientas = herramientas;
         _limites = limites;
         _uso = uso;
+        _configuracion = configuracion;
     }
 
     public async Task<ResultadoConversacion> EjecutarAsync(
@@ -56,7 +64,7 @@ internal sealed class ConversacionLlm
 
     private async Task<ResultadoConversacion?> AvanzarAsync(Turnos estado, CancellationToken cancellationToken)
     {
-        var respuesta = await LlamarAsync(estado, cancellationToken);
+        var respuesta = await _clienteLlm.CompletarAsync(Solicitar(estado), cancellationToken);
         _uso.Sumar(respuesta.Uso);
         estado.Invocaciones += respuesta.Llamadas.Count;
         var terminal = Terminal(estado, respuesta);
@@ -65,6 +73,12 @@ internal sealed class ConversacionLlm
 
     private ResultadoConversacion? Terminal(Turnos estado, RespuestaLlm respuesta)
     {
+        if (respuesta.ContextoTruncado is { } truncado)
+        {
+            _configuracion.Advertir($"Contexto del proveedor local truncado: estimación de {truncado.TokensEstimados} tokens y prompt_tokens reportados {truncado.TokensReportados}.");
+            return new ResultadoConversacion(EstadoConversacion.ContextoTruncado, null);
+        }
+
         if (respuesta.Rechazada)
         {
             return new ResultadoConversacion(EstadoConversacion.Rechazada, null);
@@ -98,15 +112,14 @@ internal sealed class ConversacionLlm
         return null;
     }
 
-    private async Task<RespuestaLlm> LlamarAsync(Turnos estado, CancellationToken cancellationToken)
-    {
-        var solicitud = new SolicitudLlm(
+    private SolicitudLlm Solicitar(Turnos estado) =>
+        new(
             estado.PromptSistema,
             [.. estado.Mensajes],
             HerramientasAsistente.Definir(estado.Contexto.Usuario.Rol),
-            _limites.MaximoTokensSalida);
-        return await _clienteLlm.CompletarAsync(solicitud, cancellationToken);
-    }
+            _limites.MaximoTokensSalida,
+            _configuracion.Ajustes.Temperatura,
+            _configuracion.Ajustes.Semilla);
 
     private sealed class Turnos(ContextoUsuario contexto, RegistroConsultas registro, List<MensajeLlm> mensajes, string promptSistema)
     {

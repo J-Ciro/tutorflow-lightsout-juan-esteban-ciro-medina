@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.AspNetCore.Hosting;
 using System.Net;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Http;
@@ -23,13 +24,16 @@ public static class ServiciosTutorFlow
     private const string ClaveReservaSinPrecio = "Llm:ReservaSinPrecioUsd";
     private const string ClaveRelevanciaMinima = "Conocimiento:RelevanciaMinima";
     private const string ClaveApoyoMinimoRespaldo = "Conocimiento:ApoyoMinimoRespaldo";
+    private const string ClaveTemperatura = "Llm:Temperatura";
+    private const string ClaveSemilla = "Llm:Semilla";
+    private const int SemillaPorDefecto = 1;
     private const string ClaveSeccionLimites = "Limites";
     private const string ClaveTraceId = "traceId";
     private const string VariableLlaveLlm = "LLM_API_KEY";
 
     public static IServiceCollection AgregarTutorFlow(this IServiceCollection servicios, IConfiguration configuracion)
     {
-        servicios.AddHostedService<ValidacionDeArranque>();
+        servicios.AddTransient<IStartupFilter, ValidacionDeArranque>();
         AgregarOpciones(servicios);
         AgregarNucleo(servicios, configuracion);
         AgregarInfraestructura(servicios, configuracion);
@@ -137,11 +141,20 @@ public static class ServiciosTutorFlow
             precio,
             configuracion[ClaveMarcadorCanario],
             null,
-            LeerDecimal(configuracion[ClaveReservaPorPeticion]),
-            configuracion.GetValue(ClaveRelevanciaMinima, ConfiguracionAsistente.RelevanciaMinimaPorDefecto),
-            configuracion.GetValue(ClaveApoyoMinimoRespaldo, ConfiguracionAsistente.ApoyoMinimoPorDefecto),
+            ValidadorDeConfiguracion.Efectivo(configuracion, ClaveReservaPorPeticion),
+            Entero(configuracion, ClaveRelevanciaMinima, ConfiguracionAsistente.RelevanciaMinimaPorDefecto),
+            Entero(configuracion, ClaveApoyoMinimoRespaldo, ConfiguracionAsistente.ApoyoMinimoPorDefecto),
             configuracion.GetSection(SeccionAsignaturas).Get<AsignaturaCatalogo[]>(),
-            LeerDecimal(configuracion[ClaveReservaSinPrecio]) ?? ConfiguracionAsistente.ReservaSinPrecioPorDefectoUsd,
-            AdvertirPor(proveedor.GetRequiredService<ILoggerFactory>().CreateLogger("TutorFlow.Configuracion")));
+            ValidadorDeConfiguracion.Efectivo(configuracion, ClaveReservaSinPrecio) ?? ConfiguracionAsistente.ReservaSinPrecioPorDefectoUsd,
+            AdvertirPor(proveedor.GetRequiredService<ILoggerFactory>().CreateLogger("TutorFlow.Configuracion")),
+            AjustesDelModelo(configuracion));
     }
+
+    internal static AjustesDelModelo AjustesDelModelo(IConfiguration configuracion) =>
+        new(
+            ValidadorDeConfiguracion.Efectivo(configuracion, ClaveTemperatura) ?? 0m,
+            Entero(configuracion, ClaveSemilla, SemillaPorDefecto));
+
+    private static int Entero(IConfiguration configuracion, string clave, int porDefecto) =>
+        (int?)ValidadorDeConfiguracion.Efectivo(configuracion, clave) ?? porDefecto;
 }

@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace TutorFlow.Api;
 
 internal static class ValorDeMensaje
@@ -14,6 +16,9 @@ internal static class ValorDeMensaje
     private static int Corte(string escapado) =>
         char.IsHighSurrogate(escapado[LongitudMaxima - 1]) ? LongitudMaxima - 1 : LongitudMaxima;
 
+    private static bool EsInvisible(char caracter) =>
+        char.IsControl(caracter) || char.GetUnicodeCategory(caracter) is UnicodeCategory.LineSeparator or UnicodeCategory.ParagraphSeparator or UnicodeCategory.Format;
+
     private static string Escapar(char caracter) => caracter switch
     {
         '"' => "\\\"",
@@ -21,7 +26,7 @@ internal static class ValorDeMensaje
         '\n' => "\\n",
         '\r' => "\\r",
         '\t' => "\\t",
-        _ when char.IsControl(caracter) => $"\\u{(int)caracter:X4}",
+        _ when EsInvisible(caracter) =>$"\\u{(int)caracter:X4}",
         _ => caracter.ToString()
     };
 }

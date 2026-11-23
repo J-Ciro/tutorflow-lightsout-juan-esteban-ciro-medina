@@ -10,6 +10,7 @@ public sealed class ClienteLlmAnthropic : IClienteLlm, IDisposable
 {
     private const string MotivoRechazo = "refusal";
     private const int ReintentosMaximos = 0;
+    private const string CampoTemperatura = "temperature";
 
     private readonly AnthropicClient _cliente;
     private readonly string _modelo;
@@ -41,13 +42,20 @@ public sealed class ClienteLlmAnthropic : IClienteLlm, IDisposable
         };
         try
         {
-            var mensaje = await _cliente.Messages.Create(parametros, cancellationToken);
+            var mensaje = await _cliente.Messages.Create(ConTemperatura(parametros, solicitud.Temperatura), cancellationToken);
             return LeerRespuesta(mensaje);
         }
         catch (AnthropicException)
         {
             throw new DependenciaNoDisponibleException("El proveedor del LLM respondió con un error.");
         }
+    }
+
+    private static MessageCreateParams ConTemperatura(MessageCreateParams parametros, decimal temperatura)
+    {
+        var cuerpo = parametros.RawBodyData.ToDictionary(campo => campo.Key, campo => campo.Value);
+        cuerpo[CampoTemperatura] = JsonSerializer.SerializeToElement(temperatura);
+        return MessageCreateParams.FromRawUnchecked(parametros.RawHeaderData, parametros.RawQueryData, cuerpo);
     }
 
     private static List<MessageParam> Mensajes(IReadOnlyList<MensajeLlm> mensajes)

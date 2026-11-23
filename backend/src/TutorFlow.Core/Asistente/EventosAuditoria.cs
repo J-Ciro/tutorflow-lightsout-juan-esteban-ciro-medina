@@ -50,6 +50,10 @@ public sealed record EventoAuditoria(
     public IReadOnlyList<DatoConsultado> DatosConsultados { get; init; } = [];
 
     public string? IdSolicitado { get; init; }
+
+    public bool Reintento { get; init; }
+
+    public bool ContextoTruncado { get; init; }
 }
 
 public sealed record EventoMultiplesIdentidades(

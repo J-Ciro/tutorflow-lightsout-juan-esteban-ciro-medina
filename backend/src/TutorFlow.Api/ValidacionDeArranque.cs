@@ -1,8 +1,9 @@
+using Microsoft.AspNetCore.Hosting;
 using TutorFlow.Infrastructure.Configuracion;
 
 namespace TutorFlow.Api;
 
-internal sealed partial class ValidacionDeArranque : IHostedLifecycleService
+internal sealed partial class ValidacionDeArranque : IStartupFilter
 {
     private static readonly string[] VariablesDePrecio = ["LLM_PRECIO_ENTRADA", "LLM_PRECIO_SALIDA"];
 
@@ -17,7 +18,7 @@ internal sealed partial class ValidacionDeArranque : IHostedLifecycleService
         _logger = fabricaDeLogs.CreateLogger("TutorFlow.Configuracion");
     }
 
-    public Task StartingAsync(CancellationToken cancellationToken)
+    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> siguiente)
     {
         var efectiva = ConEntorno();
         var errores = ValidadorDeConfiguracion.Validar(efectiva);
@@ -31,19 +32,8 @@ internal sealed partial class ValidacionDeArranque : IHostedLifecycleService
             RegistrarAdvertencia(_logger, advertencia);
         }
 
-        AnularValoresIgnorados(ValidadorDeConfiguracion.ClavesParaAnular(efectiva));
-        return Task.CompletedTask;
+        return siguiente;
     }
-
-    public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-
-    public Task StartedAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-
-    public Task StoppingAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-
-    public Task StoppedAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     private IConfiguration ConEntorno()
     {
@@ -51,14 +41,6 @@ internal sealed partial class ValidacionDeArranque : IHostedLifecycleService
             .Select(nombre => new KeyValuePair<string, string?>(nombre, _variables.Leer(nombre)))
             .Where(par => par.Value is not null);
         return new ConfigurationBuilder().AddConfiguration(_configuracion).AddInMemoryCollection(delEntorno).Build();
-    }
-
-    private void AnularValoresIgnorados(IEnumerable<string> claves)
-    {
-        if (_configuracion is IConfigurationBuilder constructor)
-        {
-            constructor.AddInMemoryCollection(claves.Select(clave => new KeyValuePair<string, string?>(clave, null)));
-        }
     }
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "{Mensaje}")]

@@ -11,18 +11,19 @@ public static class ValidadorDeConfiguracion
     public static IReadOnlyList<string> Validar(IConfiguration configuracion) =>
         [.. ReglasDeError(configuracion)
             .Where(regla => EsInvalido(configuracion, regla))
-            .Select(regla => $"{PrefijoInvalida}: {regla.Clave} = \"{ValorDeMensaje.De(configuracion[regla.Clave])}\" ({regla.Texto})")
+            .Select(regla => LineaInvalida(regla.Clave, configuracion[regla.Clave], regla.Texto))
             .Concat(ValidadorDeCatalogo.Validar(configuracion))];
+
+    internal static string LineaInvalida(string clave, string? valor, string regla) =>
+        $"{PrefijoInvalida}: {clave} = \"{ValorDeMensaje.De(valor)}\" ({regla})";
 
     internal static IReadOnlyList<string> Advertencias(IConfiguration configuracion) =>
         [.. ReglaDeConfiguracion.ConAdvertencia
             .Where(regla => EsInvalido(configuracion, regla))
             .Select(regla => $"{PrefijoIgnorada}: {regla.Clave} = \"{ValorDeMensaje.De(configuracion[regla.Clave])}\" ({regla.Texto}); se usa {regla.Defecto}")];
 
-    internal static IReadOnlyList<string> ClavesParaAnular(IConfiguration configuracion) =>
-        [.. ReglasDeError(configuracion).Concat(ReglaDeConfiguracion.ConAdvertencia)
-            .Where(regla => EstaEnBlanco(configuracion[regla.Clave]) || (regla.Defecto is not null && EsInvalido(configuracion, regla)))
-            .Select(regla => regla.Clave)];
+    internal static decimal? Efectivo(IConfiguration configuracion, string clave) =>
+        ReglaDeConfiguracion.Buscar(clave).LeerValido(configuracion[clave]);
 
     private static IEnumerable<ReglaDeConfiguracion> ReglasDeError(IConfiguration configuracion) =>
         ReglaDeConfiguracion.Todas.Concat(ClavesDePrecioPorModelo(configuracion).Select(ReglaDeConfiguracion.Precio));
@@ -37,6 +38,4 @@ public static class ValidadorDeConfiguracion
         var valor = configuracion[regla.Clave];
         return !string.IsNullOrWhiteSpace(valor) && !regla.Cumple(valor);
     }
-
-    private static bool EstaEnBlanco(string? valor) => valor is not null && string.IsNullOrWhiteSpace(valor);
 }

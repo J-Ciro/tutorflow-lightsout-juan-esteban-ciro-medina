@@ -68,7 +68,9 @@ internal sealed class EmisorDeResultados
             sesion.Cronometro.ElapsedMilliseconds, sesion.ReservaHecha && _configuracion.Precio is null)
         {
             DatosConsultados = registro.DatosConsultados,
-            IdSolicitado = idSolicitado
+            IdSolicitado = idSolicitado,
+            Reintento = sesion.Reintento,
+            ContextoTruncado = sesion.ContextoTruncado
         });
     }
 
