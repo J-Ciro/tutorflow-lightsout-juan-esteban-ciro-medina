@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace TutorFlow.Core.Autorizacion;
@@ -10,7 +11,7 @@ public static partial class DetectorTerceros
 {
     private const string MarcadorTercero = "[TERCERO]";
     private const int MinimoTokensNombreCompleto = 2;
-    private static readonly string[] PrefijosId = ["est", "coord"];
+    private const int MaximoTokensDeId = 12;
 
     public static bool MencionaTercero(Usuario usuario, string textoNormalizado, DirectorioAcademico directorio)
     {
@@ -95,26 +96,38 @@ public static partial class DetectorTerceros
     private static List<MencionPersona> MencionesDeId(IReadOnlyList<TokenTexto> tokens, DirectorioAcademico directorio)
     {
         var codigos = directorio.CodigosAsignatura.Select(AmbitoPersonal.Clave).ToHashSet();
-        return Enumerable.Range(0, tokens.Count)
-            .Select(indice => MencionDeIdEn(tokens, indice))
-            .OfType<MencionPersona>()
-            .Where(mencion => !codigos.Contains(mencion.Clave))
-            .ToList();
-    }
-
-    private static MencionPersona? MencionDeIdEn(IReadOnlyList<TokenTexto> tokens, int indice)
-    {
-        var actual = tokens[indice];
-        if (IdPegado().IsMatch(actual.Valor))
+        var menciones = new List<MencionPersona>();
+        var indice = 0;
+        while (indice < tokens.Count)
         {
-            return new MencionPersona(actual.Valor, actual.Inicio, actual.Fin);
+            var id = IdDesde(tokens, indice);
+            menciones.AddRange(id is null || codigos.Contains(id.Mencion.Clave) ? [] : [id.Mencion]);
+            indice = id is null ? indice + 1 : id.UltimoToken + 1;
         }
 
-        var hayDigitos = indice + 1 < tokens.Count && SoloDigitos().IsMatch(tokens[indice + 1].Valor);
-        return hayDigitos && PrefijosId.Contains(actual.Valor)
-            ? new MencionPersona(actual.Valor + tokens[indice + 1].Valor, actual.Inicio, tokens[indice + 1].Fin)
-            : null;
+        return menciones;
     }
+
+    private static IdEncontrado? IdDesde(IReadOnlyList<TokenTexto> tokens, int inicio)
+    {
+        var acumulado = new StringBuilder();
+        IdEncontrado? mejor = null;
+        for (var fin = inicio; fin < Math.Min(tokens.Count, inicio + MaximoTokensDeId); fin++)
+        {
+            acumulado.Append(tokens[fin].Valor);
+            var texto = acumulado.ToString();
+            if (!PrefijoDeId().IsMatch(texto))
+            {
+                break;
+            }
+
+            mejor = IdCompleto().IsMatch(texto) ? new IdEncontrado(new MencionPersona(texto, tokens[inicio].Inicio, tokens[fin].Fin), fin) : mejor;
+        }
+
+        return mejor;
+    }
+
+    private sealed record IdEncontrado(MencionPersona Mencion, int UltimoToken);
 
     private static List<MencionPersona> MencionesDeNombre(IReadOnlyList<TokenTexto> tokens, DirectorioAcademico directorio) =>
         PersonasDelRegistro(directorio)
@@ -142,8 +155,8 @@ public static partial class DetectorTerceros
             .Concat(directorio.Coordinadores.Select(coordinador => (coordinador.Id, coordinador.Nombre)));
 
     [GeneratedRegex(@"^(est|coord)[0-9]+\z", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
-    private static partial Regex IdPegado();
+    private static partial Regex IdCompleto();
 
-    [GeneratedRegex(@"^[0-9]+\z", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
-    private static partial Regex SoloDigitos();
+    [GeneratedRegex(@"^(e|es|est[0-9]*|c|co|coo|coor|coord[0-9]*)\z", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
+    private static partial Regex PrefijoDeId();
 }

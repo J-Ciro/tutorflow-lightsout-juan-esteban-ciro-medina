@@ -2,4 +2,8 @@
   <PropertyGroup>
     <RootNamespace>TutorFlow.Core</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Autorizacion\PlegadoUnicode.tsv" LogicalName="TutorFlow.Core.Autorizacion.PlegadoUnicode.tsv" />
+    <InternalsVisibleTo Include="TutorFlow.Core.Tests" />
+  </ItemGroup>
 </Project>
