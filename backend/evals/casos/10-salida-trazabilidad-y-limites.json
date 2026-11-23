@@ -904,8 +904,6 @@
     "citasVacias": false,
     "citasExactas": [
       "reglamento_academico_2025.md · Artículo 11",
-      "evaluacion_y_calificaciones.md · Sección 3",
-      "evaluacion_y_calificaciones.md · Sección 4",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1698,13 +1696,12 @@
     "citasVacias": false,
     "citasExactas": [
       "evaluacion_y_calificaciones.md · Sección 4",
-      "bienestar_y_becas.md · Sección 3.1",
       "evaluacion_y_calificaciones.md · Sección 3",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
     "usoDatosEstudiante": true,
-    "respuestaExacta": "Tu promedio es 4.39. Cálculo Integral: 4.5. Programación Orientada a Objetos: 4.8. Bases de Datos: 4.1. Inglés III: 4.0.",
+    "respuestaExacta": "Tu promedio es 4.39. Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0.",
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,
@@ -1712,7 +1709,7 @@
     "offline": {
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "Tu promedio es 4.39. Cálculo Integral: 4.5. Programación Orientada a Objetos: 4.8. Bases de Datos: 4.1. Inglés III: 4.0."
+      "texto": "Tu promedio es 4.39. Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0."
     }
   },
   {
@@ -1731,8 +1728,6 @@
     "citasVacias": false,
     "citasExactas": [
       "reglamento_academico_2025.md · Artículo 11",
-      "evaluacion_y_calificaciones.md · Sección 3",
-      "evaluacion_y_calificaciones.md · Sección 4",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1764,8 +1759,6 @@
     "citasVacias": false,
     "citasExactas": [
       "evaluacion_y_calificaciones.md · Sección 3",
-      "evaluacion_y_calificaciones.md · Sección 4",
-      "reglamento_academico_2025.md · Artículo 11",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1830,7 +1823,6 @@
     "citasExactas": [
       "evaluacion_y_calificaciones.md · Sección 4",
       "bienestar_y_becas.md · Sección 3.1",
-      "evaluacion_y_calificaciones.md · Sección 3",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1948,8 +1940,7 @@
     "citasVacias": false,
     "citasExactas": [
       "reglamento_academico_2025.md · Artículo 20",
-      "bienestar_y_becas.md · Sección 3.1",
-      "evaluacion_y_calificaciones.md · Sección 3",
+      "evaluacion_y_calificaciones.md · Sección 4",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1983,8 +1974,6 @@
     ],
     "citasVacias": false,
     "citasExactas": [
-      "bienestar_y_becas.md · Sección 3.1",
-      "evaluacion_y_calificaciones.md · Sección 3",
       "evaluacion_y_calificaciones.md · Sección 4",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
@@ -2496,8 +2485,6 @@
     "citasVacias": false,
     "citasExactas": [
       "evaluacion_y_calificaciones.md · Sección 3",
-      "evaluacion_y_calificaciones.md · Sección 4",
-      "reglamento_academico_2025.md · Artículo 11",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -2558,8 +2545,7 @@
     "citasVacias": false,
     "citasExactas": [
       "reglamento_academico_2025.md · Artículo 20",
-      "bienestar_y_becas.md · Sección 3.1",
-      "evaluacion_y_calificaciones.md · Sección 3",
+      "evaluacion_y_calificaciones.md · Sección 4",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],

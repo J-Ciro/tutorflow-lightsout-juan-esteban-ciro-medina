@@ -34,12 +34,13 @@ public sealed class CitasLigadasAlCampoUsadoTests
         { "EST-005", "¿Qué materias puedo habilitar?", "Puedes habilitar Estadística con 2.3.", [Art6] },
         { "EST-003", "¿Cómo voy en Inglés III?", "Solicita la revisión a tu coordinador.", [Art12] },
         { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Tu definitiva en Contabilidad es 3.9.", [Sec3] },
-        { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9. La definitiva se calcula con los pesos de evaluación_y_calificaciones.md.", [Sec3] }
+        { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9. La definitiva se calcula con los pesos de evaluación_y_calificaciones.md.", [Sec3] },
+        { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9.", [Sec3] }
     };
 
     public static TheoryData<string, string, string, string[]> SinCampoUsadoConRelevanciaMayorQueCero => new()
     {
-        { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9.", [Sec3, Sec4, Art11] },
+        { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "3.9.", [Sec3, Sec4, Art11] },
         { "EST-001", "¿Estoy en prueba académica? Cita el Artículo 20 y el Artículo 7.", "Revisa el detalle de tus asignaturas.", [Beca31] }
     };
 
