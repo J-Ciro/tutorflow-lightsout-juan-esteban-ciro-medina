@@ -23,8 +23,6 @@ public interface IBaseConocimiento
     IReadOnlyList<SeccionDocumento> BuscarSecciones(string consulta, int maximo);
 
     SeccionDocumento? ObtenerSeccion(Cita cita);
-
-    bool ExisteCita(Cita cita) => ObtenerSeccion(cita) is not null;
 }
 
 public interface IAuditoria
