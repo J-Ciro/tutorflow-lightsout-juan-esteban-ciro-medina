@@ -106,7 +106,7 @@ internal sealed class CierreDeRespuesta
     private ResultadoPregunta ResponderSinReferenciasHuerfanas(SesionPregunta sesion, SalidaVerificada verificada, IReadOnlyList<Cita> citas)
     {
         var limpia = ReferenciasEscritas.Limpiar(verificada.Respuesta, citas);
-        return ReferenciasEscritas.TienePalabras(limpia)
+        return ReferenciasEscritas.TieneContenido(limpia)
             ? _emisor.Responder(sesion, limpia, citas, verificada.Resultado)
             : _emisor.Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion);
     }
