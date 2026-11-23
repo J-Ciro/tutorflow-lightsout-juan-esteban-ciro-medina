@@ -35,7 +35,8 @@ Los escenarios se agrupan por feature en `escenarios/<feature-id>/`, con el mism
 | Feature | Carpeta | Bloque |
 | --- | --- | --- |
 | 001 · Asistente académico | [001-asistente-academico/](001-asistente-academico/) | ESC-001…ESC-199 |
-| 002 · (siguiente) | `002-<slug>/` | ESC-200…ESC-299 |
+| 002 · Interfaz web | [002-interfaz-web/](002-interfaz-web/) | ESC-200…ESC-299 |
+| 003 · (siguiente) | `003-<slug>/` | ESC-300…ESC-399 |
 
 Los IDs son globales e inmutables: una feature nueva toma el siguiente bloque de 100 libre.
 
@@ -63,3 +64,24 @@ Los IDs son globales e inmutables: una feature nueva toma el siguiente bloque de
 | [12-configuracion-y-proveedor.md](001-asistente-academico/12-configuracion-y-proveedor.md) | Configuración, prompt y proveedor del LLM | ESC-181, ESC-182, ESC-188, ESC-191, ESC-192, ESC-199 c1, c2, d, e1–e5, f | CA-15, CA-20, CA-23 |
 
 `10-salida-trazabilidad-y-limites.md`, `11-ronda-4-verificacion-datos-y-determinismo.md` y `12-v1-12-riesgos-y-ambiguedades.md` quedaron retirados (organizados por ronda) y deben eliminarse con `git rm`.
+
+## Índice de la feature 002
+
+| Archivo | Tema | Escenarios | CA |
+| --- | --- | --- | --- |
+| [01-identidad-e-historial.md](002-interfaz-web/01-identidad-e-historial.md) | Selector de usuario de prueba e historial en memoria | ESC-200…214 | CA-002-01, CA-002-07, CA-002-13 |
+| [02-pregunta-y-respuesta.md](002-interfaz-web/02-pregunta-y-respuesta.md) | Validación de la pregunta, respuesta y mensajes informativos | ESC-215…234 | CA-002-02, CA-002-03, CA-002-04, CA-002-13 |
+| [03-estados-y-errores.md](002-interfaz-web/03-estados-y-errores.md) | Errores de la pregunta y estado del servicio | ESC-235…256 | CA-002-05, CA-002-06 |
+| [04-accesibilidad-y-diseno.md](002-interfaz-web/04-accesibilidad-y-diseno.md) | AA, teclado, responsivo, movimiento y tokens | ESC-257…269 | CA-002-09, CA-002-10, CA-002-11 |
+| [05-seguridad-del-cliente.md](002-interfaz-web/05-seguridad-del-cliente.md) | XSS, privacidad, secretos, política de contenido y permisos con el backend real | ESC-270…292 | CA-002-03, CA-002-08, CA-002-12, CA-002-13 |
+| [06-despliegue-y-ci.md](002-interfaz-web/06-despliegue-y-ci.md) | Perfil web de Compose, proxy con IP del cliente, CI y cadena de suministro | ESC-293…299 | CA-002-14, CA-002-15 |
+
+## Notación de la feature 002
+
+| Abreviatura | Significado |
+| --- | --- |
+| Doble del backend · doble de salud | Respuesta simulada en el navegador (`page.route` de Playwright o `fetch` simulado en Vitest) con el código, el cuerpo y los encabezados indicados |
+| Cuerpo ESC-223, ESC-224, ESC-225 | Los cuerpos de `specs/002-interfaz-web/plan.md` §8.2 |
+| COMP-03 · NEG · TNV · Art. 22 | Los textos y la cita de la 001 (tabla de notación de arriba) |
+| Turno | Una pregunta del historial con su identidad y su resultado |
+| `@real` | Contra `docker compose --profile web up` en `127.0.0.1:5173`, sin `LLM_API_KEY`; el resto usa dobles |

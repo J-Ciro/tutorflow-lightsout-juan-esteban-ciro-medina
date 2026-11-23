@@ -28,5 +28,6 @@ La matriz de acceso completa está en [`constitution.md`](constitution.md) §3.
 | ID | Feature | Estado | Spec | Plan | Decisiones | Escenarios |
 | --- | --- | --- | --- | --- | --- | --- |
 | 001 | Asistente académico (PDF Q10) | Aprobada | [spec.md](specs/001-asistente-academico/spec.md) | [plan.md](specs/001-asistente-academico/plan.md) | [decisiones.md](specs/001-asistente-academico/decisiones.md) | [escenarios/001-asistente-academico/](escenarios/001-asistente-academico/) |
+| 002 | Interfaz web (React + shadcn/ui) | Aprobada; implementación tras cerrar la 001 | [spec.md](specs/002-interfaz-web/spec.md) | [plan.md](specs/002-interfaz-web/plan.md) | [decisiones.md](specs/002-interfaz-web/decisiones.md) | [escenarios/002-interfaz-web/](escenarios/002-interfaz-web/) |
 
 Una feature nueva agrega su fila con los cuatro enlaces. Sus decisiones van en su `decisiones.md` (`D-NNN-xx`); una regla que afecte a todo el sistema se propone para `constitution.md` con aprobación humana.
