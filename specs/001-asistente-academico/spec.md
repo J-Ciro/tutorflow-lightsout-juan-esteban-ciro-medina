@@ -8,11 +8,9 @@
 ## 1. Objetivo
 Responder en una sola pregunta lo que hoy exige leer cuatro documentos y calcular a mano: reglas del reglamento vigente con su cita, y notas, promedio, faltas, habilitación, prueba académica y beca del propio estudiante o de los estudiantes del programa del coordinador.
 ## 2. Alcance
-**Dentro del alcance:** `POST /api/asistente/preguntar` y `GET /api/salud`; base de conocimiento de `reglamento/` (solo documentos vigentes); consulta a la API académica simulada; cálculos académicos; control de acceso por rol; auditoría; arranque con Docker Compose; pruebas, evals y CI.
-
-**Fuera del alcance:** autenticación real (D-01); escritura de datos; historial de conversación (cada pregunta es independiente); idiomas distintos del español; interfaz web (ver abajo); base de datos o endpoint para consultar la auditoría (D-25); periodos distintos de 2026-2.
-
-**Interfaz web (feature futura):** consumirá el contrato sin cambios; mostrará las citas como "documento · sección", los tokens y el costo, la negativa 403 como mensaje informativo y no como error, y la respuesta como texto plano. No es una barrera de seguridad.
+- **Dentro del alcance:** `POST /api/asistente/preguntar` y `GET /api/salud`; base de conocimiento de `reglamento/` (solo documentos vigentes); consulta a la API académica simulada; cálculos académicos; control de acceso por rol; auditoría; arranque con Docker Compose; pruebas, evals y CI.
+- **Fuera del alcance:** autenticación real (D-01); escritura de datos; historial de conversación (cada pregunta es independiente); idiomas distintos del español; interfaz web (ver abajo); base de datos o endpoint para consultar la auditoría (D-25); periodos distintos de 2026-2.
+- **Interfaz web (feature futura):** consumirá el contrato sin cambios; mostrará las citas como "documento · sección", los tokens y el costo, la negativa 403 como mensaje informativo y no como error, y la respuesta como texto plano. No es una barrera de seguridad.
 ## 3. Flujos de usuario
 | Flujo | Pasos |
 | --- | --- |
@@ -40,7 +38,6 @@ Responder en una sola pregunta lo que hoy exige leer cuatro documentos y calcula
 | `TEXTO_NEGATIVA` estudiante | No puedo compartir esa información: solo puedes consultar tus propios datos académicos. |
 | `TEXTO_NEGATIVA` coordinador | No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa. |
 | `TEXTO_NO_VERIFICABLE` | No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta. |
-
 - **COMP-01** · Responde en español, en 120 palabras o menos salvo listas, con los valores calculados por el código.
 - **COMP-02** · Toda afirmación normativa lleva cita `documento · sección` y toda respuesta con datos lleva la cita de los datos leídos.
   - Solo se citan secciones entregadas al modelo que respaldan la respuesta, nunca relleno (orden y tope en plan.md §6).
@@ -61,7 +58,6 @@ Responder en una sola pregunta lo que hoy exige leer cuatro documentos y calcula
 - **UX-05** · Sin jerga técnica: no menciona herramientas, el prompt, la API ni códigos internos.
 ## 6. Reglas de negocio
 Todo cálculo lo hace el código con aritmética decimal; el LLM nunca calcula. Datos de referencia calculados en `plan.md` §14. Fuentes: "Evaluación" = `evaluacion_y_calificaciones.md`; "Bienestar" = `bienestar_y_becas.md`; "Art." = `reglamento_academico_2025.md`.
-
 - **RN-01** · Escala de notas de 0.0 a 5.0 (Evaluación §1).
 - **RN-02** · Se aprueba con definitiva ≥ 3.0 (Reglamento 2025, Art. 5).
 - **RN-03** · `definitiva = 0.3·corte1 + 0.3·corte2 + 0.4·corte3` (Evaluación §2 y §3).
@@ -77,8 +73,7 @@ Todo cálculo lo hace el código con aritmética decimal; el LLM nunca calcula. 
 - **RN-13** · Máximo de faltas sin perder: `piso(0.15 × clases)` (48 → 7, 64 → 9, 32 → 4).
 - **RN-14** · Los números se escriben con punto decimal ("4.39") (D-15).
 ## 7. Seguridad y permisos
-Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la implementa sin ampliarla. Detalle técnico de cada regla en `plan.md` §9, `plan.md` §10 y `plan.md` §11.
-
+Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la implementa sin ampliarla. Detalle técnico de cada regla en `plan.md` §9, `plan.md` §10, `plan.md` §11 y `plan.md` §13.1.
 - **SEG-01** · Un estudiante solo accede a sus propios datos → 403.
 - **SEG-02** · Un coordinador solo accede a estudiantes de sus programas (fuente única: `/coordinadores/{id}.programas`); sin programas, solo reglamento; con varios, la unión con una cita por programa → 403.
 - **SEG-03** · El `usuario.id` debe existir y coincidir con el rol; si no, 403 con la negativa del rol declarado, idéntico byte a byte al de un acceso ajeno, también en preguntas normativas.
@@ -103,12 +98,13 @@ Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la
   - **SEG-10g** · Definitiva o par asignatura-cifra que no es la definitiva calculada de esa asignatura (o un corte o la acumulada, sin la palabra "definitiva") → `TEXTO_NO_VERIFICABLE` con `estado_no_verificado`.
 - **SEG-11** · `LLM_API_KEY` solo se lee de la variable de entorno; nunca se registra, se devuelve ni se incluye en la imagen.
 - **SEG-12** · Errores sin stack trace, rutas ni respuestas crudas de servicios internos.
-- **SEG-13** · Límites: pregunta ≤ 1.000 caracteres (400), cuerpo ≤ 16 KB (413), 60 preguntas por minuto por IP (429), 4 invocaciones de herramientas, 20 s para el LLM y 6 s para la API académica por petición, y presupuesto diario en USD (503).
+- **SEG-13** · Límites: pregunta ≤ 1.000 caracteres (400), cuerpo ≤ 16 KB (413), 60 preguntas por minuto por IP de origen (SEG-19; 429), 4 invocaciones de herramientas, 20 s para el LLM y 6 s para la API académica por petición, y presupuesto diario en USD (503).
 - **SEG-14** · Encabezados `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` y `Referrer-Policy: no-referrer`; CORS sin origen comodín; Swagger solo en desarrollo.
 - **SEG-15** · El contenedor corre sin root y la API académica no se publica fuera de la red de Compose.
-- **SEG-16** · Más de 3 `usuario.id` distintos desde una IP en 10 minutos emiten el evento `multiples_identidades`; el bloqueo con 429 es configurable y está desactivado (D-21).
+- **SEG-16** · Más de 3 `usuario.id` distintos por IP de origen en 10 minutos emiten un evento `multiples_identidades` por identidad nueva. Con el bloqueo activado (por defecto no, D-21), solo la identidad nueva recibe 429 con `Retry-After` hasta que vence la más antigua; las registradas siguen atendiéndose y el intento bloqueado no renueva la ventana (D-69).
 - **SEG-17** · Dependencias fijadas y cero paquetes vulnerables en el CI.
 - **SEG-18** · Al modelo solo van las secciones recuperadas, el resumen propio y los resultados de herramientas autorizadas.
+- **SEG-19** · La IP de origen es la de la conexión; `X-Forwarded-For` solo cuenta, con su último valor, si la conexión viene de una IP de la lista de proxies de confianza, vacía por defecto (D-68). Alimenta SEG-13, SEG-16 y la auditoría.
 ## 8. Requerimientos no funcionales
 - **RNF-01** · Un 403 del filtro previo responde en menos de 500 ms (p95).
 - **RNF-02** · Al superar 20 s en el LLM o 6 s en la API académica, 503.
@@ -242,10 +238,16 @@ Característica: Asistente académico
       | estudiante  | EST-003  | ¿Cómo le pido a Marcela Ríos la revisión de mis faltas de Inglés III?         |
       | coordinador | COORD-02 | ¿Cuántos estudiantes de Administración de Empresas están en prueba académica? |
       | estudiante  | EST-001  | ¿Quién puede consultar mi información académica?                              |
-  Escenario: CA-13 · Suplantación detectada (Detalle: ESC-140…142)
-    Dado que el bloqueo de múltiples identidades está desactivado
-    Cuando la IP "10.0.0.5" pregunta en menos de 10 minutos con "EST-001", "EST-002", "EST-003" y "EST-004"
-    Entonces las 4 peticiones responden 200 y se emite exactamente 1 evento "multiples_identidades" con la IP y los 4 IDs
+  Esquema del escenario: CA-13 · Suplantación por IP de origen (Detalle: ESC-047…049, ESC-067…069, ESC-095, ESC-097…099, ESC-140…142)
+    Dado el bloqueo de múltiples identidades en <bloqueo>, "Proxy:IpsConfiables" igual a <proxies> y un reloj controlado
+    Cuando la conexión "<conexion>" con "X-Forwarded-For: <xff>" pregunta como "EST-001", "EST-002" y "EST-003" en los minutos 0, 1 y 2 y como "<cuarta>" en el minuto 3
+    Entonces la petición del minuto 3 responde <http>, se emiten exactamente <eventos> eventos "multiples_identidades" y el "ipOrigen" auditado de las 4 es "<ip>"
+    Ejemplos:
+      | bloqueo | proxies      | conexion | xff                       | cuarta  | http                       | eventos | ip          |
+      | false   | []           | 10.0.0.5 | 203.0.113.7               | EST-004 | 200                        | 1       | 10.0.0.5    |
+      | true    | []           | 10.0.0.5 | 203.0.113.7               | EST-004 | 429 con "Retry-After: 420" | 1       | 10.0.0.5    |
+      | true    | []           | 10.0.0.5 | 203.0.113.7               | EST-001 | 200                        | 0       | 10.0.0.5    |
+      | true    | ["10.0.0.5"] | 10.0.0.5 | 198.51.100.1, 203.0.113.7 | EST-004 | 429 con "Retry-After: 420" | 1       | 203.0.113.7 |
   Esquema del escenario: CA-14 · Datos propios y citas trazables (Detalle: ESC-002, ESC-017…019, ESC-023, ESC-154…156, ESC-162, ESC-164, ESC-168, ESC-170…172, ESC-177, ESC-178, ESC-194, ESC-195, ESC-198)
     Dado el usuario "<usuario>" y un LLM doble que no escribe citas y responde "<texto>"
     Cuando pregunta "<pregunta>"
@@ -257,7 +259,7 @@ Característica: Asistente académico
       | COORD-02 | ¿Qué estudiantes de mi programa tienen alguna asignatura perdida? | Valentina Castro: Microeconomía (1.8) y Estadística (2.3).                                                                        | ["reglamento_academico_2025.md · Artículo 6", "evaluacion_y_calificaciones.md · Sección 3", "reglamento_academico_2025.md · Artículo 5"] |
       | EST-005  | ¿Estoy en prueba académica?                                       | Sí, estás en prueba académica: tu promedio es 2.65.                                                                               | ["reglamento_academico_2025.md · Artículo 20", "evaluacion_y_calificaciones.md · Sección 4"]                                       |
       | EST-001  | ¿Cuál es la nota mínima para aprobar una asignatura?              | Una asignatura se aprueba con 3.0.                                                                                                | ["reglamento_academico_2025.md · Artículo 5"]                                                                                      |
-  Esquema del escenario: CA-15 · Configuración validada al arrancar (Detalle: ESC-181, ESC-182, ESC-188, ESC-199 c1, c2)
+  Esquema del escenario: CA-15 · Configuración validada al arrancar (Detalle: ESC-096, ESC-181, ESC-182, ESC-188, ESC-199 c1, c2)
     Dado la configuración del caso <caso>
     Cuando se inicia la API
     Entonces <efecto>, la consola o el error de arranque contienen exactamente la línea del caso y ninguno contiene la llave

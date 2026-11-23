@@ -1,6 +1,6 @@
 # 08 · Contrato HTTP, auditoría, límites y operación
 
-> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §12, §13.1 · Contrato: [`constitution.md`](../../constitution.md) §2 · CA-07…CA-11
+> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §12, §13.1 · Contrato: [`constitution.md`](../../constitution.md) §2 · CA-07…CA-11, CA-13
 
 Notación en [`README.md`](../README.md#notación).
 
@@ -36,6 +36,26 @@ Notación en [`README.md`](../README.md#notación).
 | ESC-180 a `@alterno` `@abuso` `@operacion` | Presupuesto 0.03; doble de plan §4.4 (salida 200); sin precio; `Llm:ReservaSinPrecioUsd` 0.01 | EST-001, 4 veces "¿Cuál es mi promedio?" | Peticiones 1–3: 200, tokens = lo reportado, costo 0, `precioDesconocido: true`, 0.01 de gasto cada una (3 × 0.01 = 0.03); la 4.ª: 503 sin LLM (0.03 + 0.01 > 0.03); 3 llamadas | SEG-13, D-39 |
 | ESC-180 b | Igual con `Llm:ReservaSinPrecioUsd` 0 (se usa 0.01 con advertencia al arrancar) | Igual | Igual que (a) | SEG-13, D-39, D-40 |
 | ESC-180 c `@operacion` | Igual con `ollama` a precio 0 / 0 | Igual | Las 4 responden 200 con costo 0; ningún `precioDesconocido`; 4 llamadas | D-39 |
+
+## IP de origen y proxy de confianza (CA-13)
+
+Salvo que se indique otra cosa: la prueba fija la IP de la conexión (plan §15.4); EST-001 pregunta "¿Cuál es la nota mínima para aprobar una asignatura?" con un LLM doble; "proxy" = `Proxy:IpsConfiables` = `["10.0.0.5"]`; "XFF" = `X-Forwarded-For`.
+
+| ID | Actor | Entrada | Resultado esperado | Regla |
+| --- | --- | --- | --- | --- |
+| ESC-047 `@abuso` | Sin `Proxy:IpsConfiables` (defecto); conexión 10.0.0.5 | XFF `203.0.113.7` | 200; `ipOrigen` "10.0.0.5"; la petición cuenta para el límite de 10.0.0.5 (ESC-084 sigue dando 429 a la 61.ª) | SEG-19, D-68 |
+| ESC-048 a `@feliz` | Proxy; conexión 10.0.0.5 | XFF `203.0.113.7` | 200; `ipOrigen` "203.0.113.7"; cuenta para el límite de 203.0.113.7 y no para el de 10.0.0.5 | SEG-19, D-68 |
+| ESC-048 b `@abuso` | Proxy; conexión 10.0.0.5 | XFF `198.51.100.1, 203.0.113.7` | `ipOrigen` "203.0.113.7": solo cuenta el último valor | SEG-19, D-68 |
+| ESC-048 c `@alterno` | Proxy; conexión `::ffff:10.0.0.5` | XFF `203.0.113.7` | `ipOrigen` "203.0.113.7" | D-68 |
+| ESC-048 d `@alterno` | Proxy; conexión 10.0.0.5 | Sin XFF | `ipOrigen` "10.0.0.5" | D-68 |
+| ESC-048 e `@abuso` | Proxy; conexión 10.0.0.5 | XFF `EST-002`, luego `203.0.113.7, abc`; luego sin XFF y con `Forwarded: for=203.0.113.9`, `X-Real-IP: 203.0.113.9` y `X-Forwarded-Host: evil.example` | Las 3: 200 y `ipOrigen` "10.0.0.5"; ningún evento contiene "EST-002" en `ipOrigen` ni "203.0.113.9" | SEG-19, D-68 |
+| ESC-049 `@permisos` `@abuso` | Proxy; conexión 10.0.0.6 (no está en la lista) | XFF `203.0.113.7` | `ipOrigen` "10.0.0.6"; cuenta para el límite de 10.0.0.6 | SEG-19, D-68 |
+| ESC-067 `@abuso` | (a) proxy y (b) sin `Proxy:IpsConfiables`; conexión 127.0.0.1 y luego `::1` | XFF `203.0.113.7` | `ipOrigen` "127.0.0.1" y "::1" en (a) y (b): loopback nunca se confía implícitamente | D-68 |
+| ESC-068 `@permisos` | Proxy; conexión 10.0.0.5 | 61 preguntas en un minuto con XFF `203.0.113.7` y 1 con XFF `203.0.113.8` | La 61.ª de 203.0.113.7 recibe 429 con `Retry-After`; la de 203.0.113.8, 200: límites independientes tras el proxy | SEG-13, SEG-19 |
+| ESC-069 `@abuso` | Proxy; conexión 10.0.0.5; bloqueo desactivado; reloj controlado | "¿Cuál es mi promedio?": EST-001…EST-004 en los min 0–3 con XFF `203.0.113.7`; EST-005 en el min 3 con XFF `203.0.113.8` | Las 5: 200; exactamente 1 evento con `ipOrigen` "203.0.113.7" y `usuarioIds` EST-001…EST-004; 0 eventos con "10.0.0.5" o "203.0.113.8" | SEG-16, SEG-19 |
+| ESC-095 a `@operacion` `@abuso` | `docker compose up` sin perfil | `curl` a `localhost:8080/api/asistente/preguntar` con XFF `203.0.113.99` | `ipOrigen` distinto de "203.0.113.99" y de "172.30.80.2"; salud 200; no existe el contenedor `web` | SEG-19, D-68 |
+| ESC-095 b `@operacion` | `docker compose --profile web up` | Una pregunta por `localhost:5173` | `ipOrigen` distinto de toda IP del contenedor `web` (`docker inspect`), en particular de "172.30.80.2" | SEG-19, D-68 |
+| ESC-095 c `@abuso` | Igual que (b) | XFF `203.0.113.99` por el 5173 y, aparte, por el 8080 | En las 2, `ipOrigen` distinto de "203.0.113.99" (el proxy de la 002 sobrescribe la cabecera; el 8080 no viene de la IP confiada) | SEG-19, D-68 |
 
 ## Auditoría
 

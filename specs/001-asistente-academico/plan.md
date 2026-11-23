@@ -10,7 +10,7 @@
 - Sin invocación automática de funciones ni `Microsoft.Agents.AI`: el caso de uso controla el ciclo de herramientas (SEG-06).
 
 ## 2. Flujo de procesamiento (D-41)
-0. Generar el `correlationId` UUID v7 con `Guid.CreateVersion7()` (D-26) y aplicar el límite de tasa por IP (SEG-13).
+0. Resolver la IP de origen (SEG-19, §13.1), generar el `correlationId` UUID v7 con `Guid.CreateVersion7()` (D-26) y aplicar el límite de tasa por IP (SEG-13). SEG-16 se evalúa tras el paso 2, con la identidad ya validada (§13.1).
 1. Validar la entrada (415, 400, 413). 2. Resolver la identidad en la API académica y verificar el rol (SEG-03). 3. Filtro previo de terceros, programas ajenos, agregados y capacidades de otro rol (SEG-04, SEG-04b, SEG-05, SEG-04c; §9) → 403 sin LLM.
 4. Recuperar secciones (BM25 por sección con el título ponderado, máx. 6, sin base vectorial) y elegir las entregadas (§7.4, D-54); evaluar sin leer datos los activadores (i) y (ii) de COMP-07 y la coincidencia de (iii) con el catálogo (§8.1).
    - Periodo no disponible → COMP-03 sin LLM (§7.5 (2)). Si (iii) coincide y no aplica (i) ni (ii), leer las notas propias para verificar la matrícula (D-30). Sin exención y sin sección relevante → COMP-03 sin LLM ni reserva (§7.5 (1)).
@@ -395,25 +395,35 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - `<cifra>`, `<valor>` y `<asignatura>` se copian del texto del modelo; `<persona>` es el nombre completo de una persona autorizada. La instrucción no contiene valores calculados, otros nombres o IDs, el canario ni el fragmento confidencial.
 
 ## 12. Auditoría (RF-08, D-13, D-25)
-- Un evento JSON en una línea por cada llamada a `/api/asistente/preguntar` (también 400, 403, 413, 415, 429 y 503): `timestamp` (UTC), `correlationId` (D-26), `ipOrigen`, `usuario.rol`, `usuario.id`, `pregunta` (≤ 1.000 caracteres, controles escapados, terceros como `[TERCERO]`).
+- Un evento JSON en una línea por cada llamada a `/api/asistente/preguntar` (también 400, 403, 413, 415, 429 y 503): `timestamp` (UTC), `correlationId` (D-26), `ipOrigen` (IP de origen de §13.1, D-68), `usuario.rol`, `usuario.id`, `pregunta` (≤ 1.000 caracteres, controles escapados, terceros como `[TERCERO]`).
 - `resultado`: `respondida` | `sin_informacion` | `denegada` | `invalida` | `fuga_bloqueada` | `numero_no_verificado` | `estado_no_verificado` | `limite_herramientas` | `error`.
 - `motivoDenegacion`: `identidad_invalida` | `tercero_mencionado` | `programa_ajeno` | `agregado` | `capacidad_ajena` | `herramienta_id_ajeno`. Además `estudiantesConsultados`, `recursosConsultados` (`datos_basicos` | `notas` | `asistencia` | `programa`), `datosConsultados`, `citas`, `tokens`, `costoUsd`, `duracionMs`.
 - `datosConsultados`: una entrada por dato leído, sin valores (D-13): `{"estudianteId":"EST-001","programaId":"ING-SIS","recurso":"asistencia","asignatura":"BD-203"}` (`asignatura` por código, si aplica).
 - Opcionales, omitidos si no aplican: `precioDesconocido: true` (D-39), `reintento: true` (§11.5), `contextoTruncado: true` con `resultado: error` (§4.4), `idSolicitado` en el 403 tardío (el ID si cumple SEG-07, si no `[FORMATO_INVALIDO]`; no entra en los consultados).
-- La prelectura se registra como la herramienta de programa. `multiples_identidades` (SEG-16) es un evento aparte.
+- La prelectura se registra como la herramienta de programa. `multiples_identidades` (SEG-16) es un evento aparte con `evento`, `timestamp`, `ipOrigen`, `usuarioIds` (las registradas en la ventana más la nueva, en orden de llegada) y `bloqueada` (`true` si la petición que lo dispara recibió 429; D-69).
 - **Enmascarado en todas las rutas** (200, 400, 403 incluido `identidad_invalida`, 413, 415, 429, 503) con SEG-04a y el registro en caché, sin llamar a la API. Sin identidad validada (400, 413, 415, 429, `identidad_invalida`), toda persona mencionada es tercero.
 - Si no se puede evaluar (413, 415, cuerpo no parseable, `pregunta` ausente o de otro tipo, registro no cargado), `pregunta` es exactamente `[NO_EVALUADA]`; nunca se registra sin enmascarar. No se registran valores, la respuesta completa ni la llave. Retención configurable, 90 días.
 - **Persistencia (D-25):** consola y `auditoria-AAAA-MM-DD.jsonl` en `Auditoria:Ruta` (Docker: volumen `auditoria` en `/app/auditoria`, escribible con el contenedor de solo lectura). Solo se agrega; si no se puede escribir, la petición no falla y se emite un error en consola.
 - RNF-06: logs JSON por consola con el `correlationId` de la petición.
 
-## 13. Límites y configuración (SEG-13, SEG-16, SEG-17, RNF-05, D-39, D-40, D-43)
-### 13.1 Límites (SEG-13, D-39)
-- Pregunta ≤ 1.000 caracteres; cuerpo ≤ 16 KB; máx. 6 secciones; 60 preguntas por minuto por IP de la conexión (`X-Forwarded-For` se ignora salvo con un proxy de confianza configurado; se aplica antes de validar la identidad); salida configurable, 2.000 tokens por defecto (incluye razonamiento).
+## 13. Límites y configuración (SEG-13, SEG-16, SEG-17, SEG-19, RNF-05, D-39, D-40, D-43, D-68, D-69)
+### 13.1 Límites (SEG-13, SEG-16, SEG-19, D-39, D-68, D-69)
+- Pregunta ≤ 1.000 caracteres; cuerpo ≤ 16 KB; máx. 6 secciones; 60 preguntas por minuto por IP de origen (se aplica antes de validar la identidad); salida configurable, 2.000 tokens por defecto (incluye razonamiento).
 - Máx. 4 invocaciones de herramientas (la 5.ª da 503 con `limite_herramientas`; resumen y prelectura no cuentan). Timeout total de 20 s para la fase del LLM, sin reiniciarse por llamada; al agotarse se cancela lo pendiente y se responde 503 con `error`. API académica: 6 s totales, sin reintentos.
 - **Presupuesto diario:** antes de la primera llamada se reserva de forma atómica el costo máximo estimado (`Llm:ReservaPorPeticionUsd`; por defecto 8.000 tokens de entrada y 2.000 de salida a los precios del modelo). Si gastado + reservado + nueva reserva supera el presupuesto → 503 sin LLM.
 - Al terminar, la reserva se sustituye por el costo real; las concurrentes no pueden superarlo. El reintento exige una segunda reserva del mismo importe. Una reserva efectiva ≤ 0 que llegue al núcleo usa su defecto (D-43).
 - **Sin precio (D-39):** sin precio en `appsettings.json` ni en `LLM_PRECIO_*`, reserva y gasto son `Llm:ReservaSinPrecioUsd` (0.01 USD) por reserva hecha (1, o 2 con reintento; las invocaciones de herramientas no suman; D-66 C5), la respuesta reporta `costoUsd: 0` y la auditoría `precioDesconocido: true`. Ollama tiene precio 0 conocido: reserva y gasto 0.
-- **SEG-16:** más de `Limites:MaximoIdentidadesPorIp` (3) IDs distintos desde una IP en `Limites:VentanaIdentidadesMinutos` (10) emiten `multiples_identidades`; con `Limites:BloquearMultiplesIdentidades` en `true`, 429.
+- **IP de origen (SEG-19, D-68):** con `Proxy:IpsConfiables` vacía, `HttpContext.Connection.RemoteIpAddress` sin más; no se registra `UseForwardedHeaders` y `X-Forwarded-For` se ignora siempre (ESC-084, ESC-084c, ESC-047).
+  - Con valores: `ForwardedHeadersOptions` con `ForwardedHeaders.XForwardedFor` solamente y `ForwardLimit` 1; `KnownNetworks` y `KnownProxies` se vacían antes de añadir las IPs configuradas (por defecto traen loopback y 127.0.0.0/8, que nunca se confían implícitamente). Va antes del límite de tasa.
+  - Solo una conexión cuya IP está en la lista aporta el **último** valor de `X-Forwarded-For`; `::ffff:a.b.c.d` se compara como `a.b.c.d`. Sin cabecera o con un último valor que no es una IP (`abc`, `EST-002`), se conserva la IP de la conexión. `Forwarded`, `X-Forwarded-Host`, `X-Forwarded-Proto` y `X-Real-IP` se ignoran siempre.
+  - La IP resultante, con `ToString()`, es la clave del límite de tasa, la de SEG-16 y el `ipOrigen` de §12; `ProcesadorPregunta` no lee cabeceras.
+- **Compose (D-68):** red `web-api` (`internal: true`, subred `172.30.80.0/29`, gateway `172.30.80.1`); el servicio `web` (perfil `web` de la 002) con `ipv4_address` `172.30.80.2`; `api` en `web-api` con el alias `api-web`, que solo resuelve en esa red; `api` con `Proxy__IpsConfiables__0: "172.30.80.2"`.
+  - El proxy de la 002 usa `api-web:8080` (no `api`, que también resuelve en `publica`) y sobrescribe `X-Forwarded-For` con `$remote_addr`. Nunca se configura la subred ni el gateway de `publica` o de `web-api`: el gateway del bridge origina las peticiones del host al 8080.
+  - Sin el perfil `web`, ningún contenedor tiene `172.30.80.2`: el comportamiento observable por el 8080 es idéntico (ESC-095 a, ESC-116; ESC-293 de la 002).
+- **SEG-16 (D-21, D-69):** tras validar la identidad (paso 2 de §2), por IP de origen se guarda cada `usuario.id` registrado con la hora de su última petición atendida; una entrada vence a los `Limites:VentanaIdentidadesMinutos` (10) exactos y desde ese instante no cuenta. `Limites:MaximoIdentidadesPorIp` (3) es el umbral.
+  - ID ya registrado: se atiende y renueva su hora. ID nuevo con menos entradas vigentes que el umbral: se registra. ID nuevo con entradas vigentes ≥ umbral: emite `multiples_identidades` salvo que ese ID ya se haya reportado para esa IP dentro de la ventana (el reporte vence igual que una entrada; las entradas y reportes vencidos se purgan).
+  - Con `Limites:BloquearMultiplesIdentidades` `false` (defecto), se registra y se atiende. Con `true`, no se registra ni renueva nada y responde 429 con `Retry-After` = ⌈segundos hasta que vence la entrada más antigua⌉, mínimo 1; sin LLM ni lecturas de datos académicos (salvo la validación de identidad).
+  - Ejemplo de cálculo: entradas en los minutos 0, 1 y 2; un ID nuevo en el minuto 3 → 600 − 180 = 420 s; en el minuto 9 → 60 s; a los 9 min 59.5 s → ⌈0.5⌉ = 1 s; en el minuto 10 vence la del minuto 0 y el ID nuevo se atiende.
 - **SEG-17:** `packages.lock.json` versionado, imagen base fijada por digest y `dotnet list package --vulnerable --include-transitive` sin resultados en el CI.
 ### 13.2 Validación al arrancar (RNF-05, D-40, D-43, D-59, D-63 F6)
 - Proveedor, modelo, precios, límites, umbrales, catálogo y URL de la API académica están en `appsettings.json`, sobreescribibles por variables de entorno; `LLM_API_KEY` solo por variable (SEG-11). Toda clave de la tabla y el catálogo se validan antes de aceptar peticiones.
@@ -441,12 +451,15 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 | `Limites:MaximoIdentidadesPorIp` | 3 | `entero de 1 a 100` | No arranca |
 | `Limites:VentanaIdentidadesMinutos` | 10 | `entero de 1 a 1440` | No arranca |
 | `Limites:BloquearMultiplesIdentidades` | `false` | `true o false` | No arranca |
+| `Proxy:IpsConfiables:<i>` (variable `Proxy__IpsConfiables__<i>`) | Lista vacía | `IP individual IPv4 o IPv6, sin red, rango, puerto ni zona` | No arranca |
 | Precios (`Llm:Proveedores:<p>:Modelos:<n>:PrecioEntradaPorMillon`, `…:PrecioSalidaPorMillon`, `LLM_PRECIO_ENTRADA`, `LLM_PRECIO_SALIDA`) | Sin precio (D-39) | `decimal de 0 a 1000` | No arranca |
 | `Llm:ReservaPorPeticionUsd` | Estimado de 8.000 / 2.000 tokens (este plan, §13.1) | `decimal mayor que 0` | Defecto con advertencia; `<defecto>` = `el estimado de 8000 tokens de entrada y 2000 de salida` |
 | `Llm:ReservaSinPrecioUsd` | 0.01 | `decimal mayor que 0` | Defecto con advertencia; `<defecto>` = `0.01` |
 
 - Ejemplos: `Conocimiento:RelevanciaMinima` = `0` → `Configuración inválida: Conocimiento:RelevanciaMinima = "0" (entero de 1 a 10)`; `Llm:ReservaPorPeticionUsd` = `0` con `claude-haiku-5-5` → advertencia y reserva 8000 × 0.10 / 10⁶ + 2000 × 0.50 / 10⁶ = 0.0018 USD.
-- Cada clave agrupada en una fila se valida y se informa por separado. Resto de casos: ESC-181, ESC-188, ESC-199 c1 y c2.
+- Cada clave agrupada en una fila se valida y se informa por separado. Resto de casos: ESC-096, ESC-181, ESC-188, ESC-199 c1 y c2.
+- **`Proxy:IpsConfiables` (D-68):** IPv4 = 4 números decimales de 0 a 255 separados por puntos, sin ceros a la izquierda (`IPAddress.TryParse` sola acepta `10.1` y no basta); IPv6 en texto RFC 4291 sin `%zona` ni `/prefijo`. Inválidos además `0.0.0.0` y `::`, y un valor escalar en `Proxy:IpsConfiables` (no lista).
+  - Una línea por entrada inválida con `<clave>` = `Proxy:IpsConfiables:<i>`; una entrada vacía se ignora sin advertencia (equivale a no configurarla); un duplicado no es error. Las IPs efectivas se registran en el log de arranque.
 ### 13.3 Catálogo de asignaturas (D-40, D-43)
 - Fuente de COMP-07 (iii), de la excepción de códigos de SEG-04a y SEG-10b y de las asignaturas de SEG-10f y g. Se configura en `Autorizacion:Asignaturas` como lista `{ "Codigo", "Nombre" }`: 0 `CAL-201` Cálculo Integral; 1 `POO-202` Programación Orientada a Objetos; 2 `BD-203` Bases de Datos.
 - 3 `ING-204` Inglés III; 4 `CON-101` Contabilidad; 5 `MIC-102` Microeconomía; 6 `EST-103` Estadística; 7 `COM-104` Comunicación Oral y Escrita.
@@ -528,9 +541,9 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 | CA-10 | PR de sabotaje controlado | ESC-117 | 5/5 regresiones bloqueadas |
 | CA-11 | Integración con consumo reportado por el doble (§4.4) | ESC-004, 008, 079, 106, 180 | Detalle abajo |
 | CA-12 | Integración + unitarias del filtro | ESC-036, 037 i–k, 039 e, f, 120…129, 187 d–f | 0 falsos 403, también con superlativos propios y "mejorar" (ESC-187 d–f) y con normativas de SEG-04c (ESC-036, 037 i–k, 039 e, f, 018, 123, 126, 165 d); ESC-036 a con exactamente [Art. 22] y uso false |
-| CA-13 | Integración con reloj controlado | ESC-140…142 | 1 evento al 4.º ID en 10 min |
+| CA-13 | Integración con reloj e IP de conexión controlados + unitarias del registro de identidades + humo de Compose | ESC-047…049, 067…069, 095, 097…099, 140…142 | Detalle abajo |
 | CA-14 | Integración con espía + unitarias de citas + evals | ESC-002, 017…019, 023, 154…156, 162, 164, 168, 170…172, 177, 178, 194, 195, 198 | Detalle abajo |
-| CA-15 | Unitarias del validador + integración con configuración en memoria | ESC-181, 182, 188, 199 c1, c2 | Detalle abajo |
+| CA-15 | Unitarias del validador + integración con configuración en memoria | ESC-096, 181, 182, 188, 199 c1, c2 | Detalle abajo |
 | CA-16 | Integración + unitarias del cierre | ESC-183 | 100% de las explotaciones N-01 bloqueadas con texto, citas y `resultado` exactos; 100% de referencias válidas conservadas; 100% de respuestas idénticas al texto verificado; 0 fusiones de tokens |
 | CA-17 | Unitarias de §11.4 + integración | ESC-175, 179, 184, 185, 198 g1–g5, 199 h1, h2 | Detalle abajo |
 | CA-18 | Unitarias del formateador + integración | ESC-189 a–g | 100% de las 14 líneas exactas y de las 2 de ESC-189 g; 0 `perdida` en el bloque de `EST-006`; 0 líneas con pérdida y "Sin definitiva"; 0 campos vacíos; frase de consecuencia en la primera llamada |
@@ -556,11 +569,14 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
   - Genéricas (D-66 B1): ESC-035 a, b y g entregadas sin cambios; ESC-035 c–e con `estado_no_verificado`; ESC-035 f con `TEXTO_NEGATIVA`; ESC-011 offline `respondida`.
 - **CA-07:** 100% contra el esquema; cada código de `constitution.md` §2.1 con un caso; 415 con 0 llamadas; `X-Correlation-Id` UUID v7 = `traceId` = auditoría en el 100%; 503 por timeout en < 21 s; 0 USD sobre el presupuesto con 5 concurrentes; 0 peticiones a una redirección.
 - **CA-11:** `tokens` = Σ (`prompt_tokens` reportado + salida) de todas las llamadas y costo exacto con esos valores (tolerancia 1e-6); 0 `contextoTruncado` con los dobles. Sin precio: `costoUsd` 0, `precioDesconocido: true` en el 100% de los eventos con LLM y 503 sin LLM en la 4.ª petición (0.03 USD, reserva 0.01, también configurada en 0). Ollama a precio 0: 0 marcas y 0 rechazos (ESC-180).
+- **CA-13 (D-21, D-68, D-69):** `ipOrigen`, clave del límite y clave de SEG-16 iguales a la IP de la conexión en el 100% de ESC-047, 049 y 067, y a la del cliente en ESC-048 a–c; ESC-048 d, e con la IP de la conexión; ESC-068 con 429 solo para el cliente que agotó sus 60; ESC-069 con 1 evento con la IP del cliente y 0 con la del proxy.
+  - Bloqueo `false`: 100% de 200 y exactamente 1 evento por identidad nueva y ventana (ESC-140, 097). Bloqueo `true`: 429 solo para la identidad nueva, con `Retry-After` exacto (ESC-141, 098, 099); 200 para las registradas; 0 renovaciones por intentos bloqueados; 0 llamadas al LLM y 0 lecturas académicas en los 429.
+  - Compose (ESC-095): `ipOrigen` del `curl` directo al 8080 distinto del `X-Forwarded-For` falso en el 100%; por el 5173, distinto de toda IP del contenedor `web`; sin el perfil `web`, salud y ESC-084c como hoy.
 - **CA-14 (D-49, D-50, D-53…D-56, D-60):** con campo usado, citas de reglas aplicadas exactamente las de ese campo (P2 → Sec. 4 y Sec. 3, 0 a Sec. 3.1) y 0 fuera del bloque; sin campo, relevancia > 0; respaldo de exactamente 1 sección, la de mayor apoyo.
   - 0 citas escritas devueltas con < 2 raíces salvo las del bloque con datos (conservadas al 100%, nunca sin datos); 100% de ESC-171, ESC-178, ESC-195 y ESC-198 l exactos; 0 cambios en atribuciones a documentos citados o sin conector.
   - Activadores de ESC-172 a–d con resumen en la primera llamada; 0 resúmenes en ESC-155 a–f y ESC-172 e–g; 1 lectura de notas y 0 de asistencia en ESC-172 e; negativas con su cita propia; 0 citas de secciones no entregadas.
   - 0 respuestas con más de escritas + 3 + tema + datos; ESC-017, ESC-019 y ESC-018 a con su cita normativa vigente; ESC-018 b con exactamente [Art. 22] por respaldo y uso false (D-66 B2); ESC-002 con las 4 definitivas en 3 corridas con LLM real.
-- **CA-15 (D-40, D-43, D-59, D-63 F6):** 100% de los inválidos "No arranca" (ESC-181 a–n, x–af; ESC-188 b, c; ESC-199 c1) sin arrancar con la línea exacta de cada uno, todos y no solo el primero; 0 correcciones silenciosas.
+- **CA-15 (D-40, D-43, D-59, D-63 F6):** 100% de los inválidos "No arranca" (ESC-181 a–n, x–af; ESC-188 b, c; ESC-199 c1) sin arrancar con la línea exacta de cada uno, todos y no solo el primero; 0 correcciones silenciosas. ESC-096 a–g sin arrancar con su línea; ESC-096 h–j arrancan sin advertencia.
   - 100% de los códigos con salto de línea final o dígitos de ancho completo rechazados con la línea de `formato ^[A-Z]{2,4}-[0-9]{3}\z` (ESC-181 y, z).
   - Reservas inválidas (ESC-181 o–q) con la advertencia exacta y 503 en la 3.ª concurrente; límites y vacíos (ESC-181 r–w) sin advertencia; 0 mensajes en varias líneas; `Zl`, `Zp`, `Cf` escapados y 0 caracteres crudos.
   - 1 advertencia por código en 3 peticiones (ESC-188 a); 0 reservas ≤ 0 en el núcleo (ESC-188 d); código igual a un ID excluido con 403 y 0 llamadas, 0 falsos 403 por `EST-103` (ESC-182); `0`, `0.3`, `0.30` arrancan (ESC-199 c2); 0 apariciones de la llave.
@@ -595,7 +611,9 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - Limpieza: `.md` entre dígitos, dentro de un ID o nombre y entre `definitiva` y su cifra; nombre con tilde, genérico o con espacios; `Secciones 3 y 5`; 2023 sin sección; oración con ≤ 2 palabras; respuesta vacía; "3.9." frente a "(·)"; "…créditos; da 50%…" sin mayúscula.
 - Reintento que corrige, persiste, empeora (SEG-10b en el segundo turno), se agota o no tiene presupuesto. Presupuesto: concurrencia, 3 × 0.01 = 0.03 (entra) y 0.04 > 0.03 (503), reserva en 0, Ollama a 0; timeout acumulado; `prompt_tokens` = ⌈0.75 × E⌉ frente a uno menos.
 - Configuración: límites de cada rango, `0.000001` frente a `0`, `0,5`, `2.0`, vacío por variable, reserva nunca en 0 (2 × 0.0018 = 0.0036), varios inválidos, salto final (`$` lo aceptaría, `\z` no), dígitos anchos, `CodigosAsignatura`, espacios al borde, `Nombre` ausente, 65 caracteres con comilla en la 64, catálogo vacío, `0.3`/`0.30` frente a `0.31`.
+- IP de origen e identidades: lista vacía frente a configurada, loopback no configurado, `::ffff:10.0.0.5`, XFF ausente o no IP, cadena de 2 valores; 3.ª identidad (entra) frente a 4.ª, `MaximoIdentidadesPorIp` 1, `Retry-After` de 0.5 s → 1, minuto 10 exacto (vence).
 ### 15.4 Dobles y datos de prueba
+- **IP de conexión:** en integración, un filtro de inicio de prueba fija `RemoteIpAddress` antes de la cadena de middleware de la API (antes de `UseForwardedHeaders`); el reloj de SEG-16 es `TimeProvider` falso.
 - **LLM doble** programable por escenario y por turno (respuesta fija, herramienta, citas propuestas, consumo de salida fijo con entrada según §4.4, demora, retención, 302) y espía; uno falla si se invoca; otros nunca invocan herramientas y copian el resumen o una línea, copian el bloque de ejemplos o descripciones, o responden textos reales (Q10 #1, #5, #6, #8).
 - Salvo que el escenario diga otra cosa, repite en el reintento el texto del primer turno: los bloqueos de (c), (d), (f) o (g) conservan su resultado, la auditoría lleva `reintento: true` y las llamadas se cuentan con el reintento.
 - **Servidor doble del proveedor** que registra el cuerpo (temperatura y semilla) y reporta `usage.prompt_tokens` según los dobles de §4.4 (D-66 A5). **API académica doble** que cuenta lecturas por recurso y estudiante y sirve `mock-api/datos.json`.

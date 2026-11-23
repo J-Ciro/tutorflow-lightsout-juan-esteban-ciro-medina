@@ -1,6 +1,6 @@
 # 12 · Configuración, prompt y proveedor del LLM
 
-> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §4, §5, §13 · CA-15, CA-20, CA-23
+> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §4, §5, §13 · CA-15 (también ESC-096), CA-20, CA-23
 
 Salvo que se indique otra cosa:
 
@@ -70,6 +70,23 @@ Notación en [`README.md`](../README.md#notación).
 - **ESC-182 a:** advertencia exacta `Configuración ignorada: Autorizacion:Asignaturas:8:Codigo = "EST-002" (coincide con el ID de una persona del registro); se excluye del catálogo`.
 - **ESC-188 b:** `Autorizacion:Asignaturas:2:Codigo` = "BD-203" + un carácter + "Arranque correcto", una corrida por U+2028, U+2029, U+202E y U+200B.
 - **ESC-199 c1:** `Configuración inválida: Llm:Temperatura = "<valor>" (decimal de 0 a 0.3)`, `… PuntajeRelativoRelevante = "<valor>" (entero de 1 a 100)`, `… PuntajeRelativoMinimo = " 55" (entero de 1 a 100)` y `… Llm:Semilla = "1 " (entero de 0 a 2147483647)`.
+
+## Proxy de confianza (ESC-096)
+
+Una corrida por valor. `<regla>` = `IP individual IPv4 o IPv6, sin red, rango, puerto ni zona`; la línea esperada es `Configuración inválida: <clave> = "<valor>" (<regla>)`.
+
+| ID | Actor | Entrada | Resultado esperado | Regla |
+| --- | --- | --- | --- | --- |
+| ESC-096 a `@abuso` | `Proxy:IpsConfiables:0` | `10.0.0.0/8`, `172.30.80.0/29`, `2001:db8::/32` | No arranca; línea con la clave `Proxy:IpsConfiables:0` y el valor | RNF-05, D-68 |
+| ESC-096 b `@abuso` | `Proxy:IpsConfiables:0` | `10.0.0.5-10.0.0.9` | No arranca; su línea | RNF-05, D-68 |
+| ESC-096 c | `Proxy:IpsConfiables:0` | `abc`, `10.0.0.256`, `10.1`, `010.0.0.5`, ` 10.0.0.5` | No arranca; su línea (`10.1` es inválido aunque `IPAddress.TryParse` lo acepte) | RNF-05, D-68 |
+| ESC-096 d `@abuso` | `Proxy:IpsConfiables:0` | `10.0.0.5:8080`, `fe80::1%eth0` | No arranca; su línea | RNF-05, D-68 |
+| ESC-096 e `@abuso` | `Proxy:IpsConfiables:0` | `0.0.0.0`, `::` | No arranca; su línea | RNF-05, D-68 |
+| ESC-096 f | `Proxy:IpsConfiables:0` = `10.0.0.5` y `Proxy:IpsConfiables:1` = `abc` | — | No arranca con exactamente 1 línea, la de `Proxy:IpsConfiables:1` | RNF-05, D-68 |
+| ESC-096 g | Variable `Proxy__IpsConfiables` (escalar, no lista) | `172.30.80.2` | No arranca; línea con la clave `Proxy:IpsConfiables` | RNF-05, D-68 |
+| ESC-096 h | `Proxy:IpsConfiables:0` | `10.0.0.5`; con `Proxy:IpsConfiables:1` = `10.0.0.5` (duplicado) | Arranca sin advertencia; el log de arranque registra `10.0.0.5` como IP de confianza | D-68 |
+| ESC-096 i | `Proxy:IpsConfiables:0` | `2001:db8::5` | Arranca sin advertencia | D-68 |
+| ESC-096 j `@alterno` | Variable `Proxy__IpsConfiables__0` vacía | — | Arranca sin advertencia con la lista vacía: se comporta como ESC-047 | RNF-05, D-68 |
 
 ## Prompt y proveedor
 

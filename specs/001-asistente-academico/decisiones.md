@@ -2,7 +2,8 @@
 
 > Regla: cada decisión ocupa como máximo 3 líneas (decisión · por qué · estado). Una corrección actualiza la regla en `spec.md` o `plan.md` y deja aquí su D; la historia está en git.
 
-Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022; D-65, ambigüedades de QA; D-66, arbitraje de la ronda 4; D-67, INT-024 (humano). Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitution.md). D-11, D-12, D-18 y D-19 no existen.
+Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022; D-65, ambigüedades de QA; D-66, arbitraje de la ronda 4; D-67, INT-024 (humano); D-68 y D-69, INT-025 (humano).
+Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitution.md). D-11, D-12, D-18 y D-19 no existen.
 
 ## Decisiones
 
@@ -25,7 +26,7 @@ Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del 
 - **D-16** · LLM independiente del proveedor: se detecta por el prefijo de `LLM_API_KEY` y se puede forzar; sin llave, Ollama `qwen2.5:7b`; modelo pequeño por defecto. · Por qué: cualquier evaluador usa su llave; el LLM solo redacta. · Vigente, confirmada.
 - **D-17** · El Anexo de `bienestar_y_becas.md` se excluye del índice y además se prueba la inyección indirecta con documentos sintéticos. · Por qué: material no confiable; defensa en profundidad. · Vigente.
 - **D-20** · Beca con asignaturas sin definitiva → "no determinable aún". · Por qué: el promedio del periodo no está completo. · Vigente.
-- **D-21** · La suplantación (SEG-16) solo se detecta y audita por defecto; el bloqueo es configurable. · Por qué: las pruebas ocultas usan varias identidades desde una IP. · Vigente.
+- **D-21** · La suplantación (SEG-16) solo se detecta y audita por defecto; el bloqueo es configurable. · Por qué: las pruebas ocultas usan varias identidades desde una IP. · Vigente; el comportamiento del bloqueo lo fija D-69.
 - **D-22** · Si el modelo pide un ID ajeno: 403 tardío con el consumo real y `herramienta_id_ajeno`; se acepta que una inyección convierta una pregunta legítima en 403. · Por qué: fallar cerrado. · Vigente.
 - **D-23** · En abuso, lo detectable antes del LLM da 403; lo no detectable se afirma por código, citas, `usoDatosEstudiante` y ausencia de datos de terceros, no por el texto libre. · Por qué: aserciones deterministas. · Vigente.
 - **D-24** · `Microsoft.Extensions.AI` solo en Infrastructure tras `IClienteLlm`, sin invocación automática de funciones; Anthropic con su SDK; sin `Microsoft.Agents.AI`. · Por qué: menos HTTP propio, sin sobreingeniería. · Vigente.
@@ -82,6 +83,10 @@ Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del 
   B3 evals ESC-023, 155e, 176a obsoletos; C1 nota mínima y equivalente; C2 prompt de 11 pasos conforme; C3 (d) solo con `.`/`!`/`?` y sin cifra; C4 COMP-03 siempre `citas: []`; C5 sin precio, 0.01 por reserva; C6 `conf` sin `Nd` ni trazo; C7 `D` solo ASCII; D `consultar_cortes` con reglas aplicadas. · Por qué: sin bloqueos indebidos ni evasiones (INT-020). · Vigente; A5 aprobada por el humano.
 - **D-67** · (Humano, INT-024) Las capacidades de otro rol solo se responden con el Art. 22: SEG-04c da 403 `capacidad_ajena` a rol ajeno + capacidad con contenido (qué, cuáles, cuántos) o con permisos, herramientas, lo que vería o simulación; pasan quién y sí o no. Entre coordinadores, igual; del coordinador a un estudiante, solo lo segundo. SEG-10d (d)(2): toda herramienta.
   Por qué: describir capacidades ajenas expone el modelo de permisos; la frontera léxica cerrada no bloquea normativas (INT-020). · Vigente; decisión del humano; no amplía la matriz ni cambia el contrato (403 de D-07).
+- **D-68** · (Humano, INT-025) Proxy de confianza (SEG-19): `Proxy:IpsConfiables`, IPs individuales, vacía por defecto (IP inválida, red o rango → no arranca). Solo una conexión desde esa lista aporta el último valor de `X-Forwarded-For` (`ForwardLimit` 1, sin redes ni loopback implícitos); en Compose, solo la IP fija del contenedor `web` en la red `web-api`.
+  Por qué: tras el proxy de la 002 todos compartían su IP (D-002-14); confiar en una subred o en el gateway del bridge dejaría falsificar la IP desde el host por el 8080. · Vigente; decisión del humano; no cambia el contrato ni la matriz.
+- **D-69** · (Humano, INT-025) Corrige SEG-16 con bloqueo: solo la identidad nueva que supera el umbral recibe 429; las registradas siguen atendiéndose; el intento bloqueado no se registra; `Retry-After` = segundos, hacia arriba y mínimo 1, hasta que vence la entrada más antigua; un evento por identidad nueva y ventana.
+  Por qué: el bloqueo alcanzaba a las 3 primeras y cada intento renovaba la ventana (bloqueo indefinido). · Vigente; decisión del humano; por defecto sigue solo auditando (D-21).
 
 ## Riesgos y su decisión
 
@@ -114,3 +119,11 @@ Ningún riesgo queda aceptado salvo D-01 (aprobado por el humano). Evidencia de 
 | Escape léxico (`c00rdinador`, sinónimo fuera de lista) | Mitigado: el estudiante nunca recibe herramientas del coordinador y SEG-10d bloquea identificadores de cualquier rol | ESC-038 i (COMP-03 sin LLM), 038 j (`fuga_bloqueada`); espía con 0 herramientas del coordinador | D-67 | CA-04 |
 | Simulación en dos turnos | Eliminado: sin historial; cada petición se filtra sola | ESC-038 h | D-67 | CA-04 |
 | Confusable de un dígito `Nd` plegado a otro dígito | Eliminado: `conf` sin orígenes `Nd` | Esquema fila por fila: 0 orígenes `conf` `Nd` | D-66 C6 | CA-24, ESC-199 b |
+| IP falsificada con `X-Forwarded-For` (límite, SEG-16 o `ipOrigen` ajenos) | Eliminado: solo cuenta desde una IP exacta de la lista, vacía por defecto; loopback y redes nunca implícitos | Cabecera ignorada sin lista, desde otra IP, desde loopback y por el 8080 de Compose | D-68 | CA-13, ESC-047, 049, 067, 095 a |
+| Gateway del bridge o subred confiados: el host falsifica la IP por el 8080 | Eliminado: solo IPs individuales (red o rango no arranca) y red `web-api` dedicada e interna | ESC-096 a, b, e sin arrancar; ESC-095 a con la IP real | D-68 | CA-13, CA-15 |
+| IP compartida tras el proxy de la 002 (D-002-14) | Eliminado con la IP fija del contenedor `web` configurada | Dos clientes con límites independientes; 4.ª identidad con la IP del cliente; ESC-095 b | D-68 | CA-13, ESC-068, 069 |
+| Cadena de `X-Forwarded-For` con valores puestos por el cliente | Mitigado: solo el último valor (`ForwardLimit` 1), el que escribe el proxy; el proxy de la 002 sobrescribe | "198.51.100.1, 203.0.113.7" → 203.0.113.7; ESC-095 c | D-68 | CA-13, ESC-048 b |
+| Valor no IP o con cabeceras `Forwarded`, `X-Forwarded-Host`/`-Proto` inyectadas | Eliminado: solo se lee `X-Forwarded-For`; un valor inválido conserva la IP de la conexión | ESC-048 e con `ipOrigen` "10.0.0.5" | D-68 | CA-13 |
+| Bloqueo indefinido y legítimos bloqueados con SEG-16 activado | Eliminado: solo la identidad nueva; el intento bloqueado no se registra | ESC-141, 098, 099 con reloj controlado | D-69 | CA-13 |
+| Eventos `multiples_identidades` repetidos por reintentos | Eliminado: uno por identidad nueva y ventana | ESC-097, 098 b | D-69 | CA-13 |
+| Con bloqueo, 429 (ID válido nuevo) frente a 403 (ID inexistente) revela si un ID existe | Mitigado: la misma inferencia ya existe con una normativa (D-08); acotada por SEG-13 y por el bloqueo por defecto desactivado | ESC-141 c | D-08, D-69 | CA-13 |
