@@ -208,3 +208,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** una spec ilegible no sirve como fuente de verdad, ni para el humano ni para los agentes, y desperdicia contexto.
 - **Costo:** ~3 min humanos.
 - **Prevención:** aplicada tras la decisión del humano (una feature, tres archivos): `constitution.md` (global), `SPEC.md` (índice), `spec.md` (producto, ≤ 350 líneas), `plan.md` (técnico, ≤ 700) y `decisiones.md` (≤ 3 líneas por D); ninguna línea de más de 400 caracteres; escenarios por tema. Reglas en `arquitecto-spec`, `nueva-spec` y las plantillas; "corrección por reorganización, no por acumulación". El CI lo verifica (`.github/scripts/verificar-limites-specs.sh`). Una verificación independiente confirmó que no se perdió ninguna regla.
+
+### INT-024 · 2026-11-23 · El estudiante no debe descubrir qué puede consultar su coordinador
+- **Fase:** spec
+- **Qué pasó:** la spec 001 y sus escenarios no cubrían que un estudiante pregunte qué puede consultar o ver su coordinador. Solo existían D-09 (el estudiante puede nombrar a su coordinador) y ESC-018 (pregunta normativa hecha por un coordinador). Ni la fábrica ni las auditorías de seguridad detectaron el hueco.
+- **Qué hizo el humano:** *"no se si tuviste encuenta evitar que un estuidante pueda consultar que cosas PUEDE consultar su coordinador"*. Decidió la opción "Solo lo del reglamento": se responde lo que dice el reglamento con su cita (Art. 22) y se niega todo lo demás. Eso incluye los datos y las herramientas del coordinador, los estudiantes que ve, lo que vería si preguntara por alguien, simular ser el coordinador y sus permisos en el sistema.
+- **Por qué:** describir las capacidades de otro rol expone el modelo de permisos y la configuración, y abre caminos a datos de terceros.
+- **Costo:** ~2 min humanos.
+- **Prevención:** en `nueva-spec`, la revisión adversarial de `seguridad` debe enumerar, por cada par de roles, las preguntas de un rol sobre las capacidades, datos o permisos del otro, y exigir un escenario para cada una.
