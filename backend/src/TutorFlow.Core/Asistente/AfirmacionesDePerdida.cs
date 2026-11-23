@@ -25,16 +25,16 @@ internal sealed class AfirmacionesDePerdida
         IReadOnlyDictionary<string, ResumenEstudiante> resumenesLeidos) =>
         TramosDePersonas.DeRespuesta(respuesta, rol, idsAutorizados, directorio)
             .SelectMany(oracion => oracion.Tramos)
-            .All(tramo => TramoEsVerificable(tramo, resumenesLeidos));
+            .All(tramo => TramoEsVerificable(tramo, CatalogoAsignaturas.Vigente(_catalogo, directorio), resumenesLeidos));
 
-    private bool TramoEsVerificable(TramoDePersona tramo, IReadOnlyDictionary<string, ResumenEstudiante> resumenesLeidos)
+    private static bool TramoEsVerificable(TramoDePersona tramo, IReadOnlyList<AsignaturaCatalogo> catalogo, IReadOnlyDictionary<string, ResumenEstudiante> resumenesLeidos)
     {
-        var exigencias = Exigencias(tramo.Tokens);
+        var exigencias = Exigencias(tramo.Tokens, catalogo);
         return exigencias.Count == 0
             || (resumenesLeidos.TryGetValue(tramo.PersonaId, out var resumen) && exigencias.All(exigencia => exigencia.Cumple(resumen)));
     }
 
-    private List<ExigenciaDePerdida> Exigencias(IReadOnlyList<TokenTexto> tokens)
+    private static List<ExigenciaDePerdida> Exigencias(IReadOnlyList<TokenTexto> tokens, IReadOnlyList<AsignaturaCatalogo> catalogo)
     {
         var formas = FormasDePerdida.En([.. tokens.Select(token => token.Valor)]);
         if (formas.Count == 0)
@@ -42,7 +42,7 @@ internal sealed class AfirmacionesDePerdida
             return [];
         }
 
-        var nombradas = PrimerasApariciones(tokens);
+        var nombradas = PrimerasApariciones(tokens, catalogo);
         var asociadas = nombradas.Select(nombrada => (Nombrada: nombrada, Forma: FormaMasCercana(formas, nombrada))).ToList();
         var porAsignatura = asociadas
             .Where(asociada => !asociada.Forma.Negada)
@@ -53,8 +53,8 @@ internal sealed class AfirmacionesDePerdida
         return [.. porAsignatura.Concat(sinAsignatura)];
     }
 
-    private List<AparicionDeAsignatura> PrimerasApariciones(IReadOnlyList<TokenTexto> tokens) =>
-        [.. CatalogoAsignaturas.Apariciones(tokens, _catalogo)
+    private static List<AparicionDeAsignatura> PrimerasApariciones(IReadOnlyList<TokenTexto> tokens, IReadOnlyList<AsignaturaCatalogo> catalogo) =>
+        [.. CatalogoAsignaturas.Apariciones(tokens, catalogo)
             .GroupBy(aparicion => aparicion.Clave)
             .Select(grupo => grupo.MinBy(aparicion => aparicion.Inicio)!)
             .OrderBy(aparicion => aparicion.Inicio)];

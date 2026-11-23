@@ -21,18 +21,22 @@ public sealed class ConfiguracionAsistente
         int relevanciaMinima = RelevanciaMinimaPorDefecto,
         int apoyoMinimoRespaldo = ApoyoMinimoPorDefecto,
         IReadOnlyList<AsignaturaCatalogo>? catalogo = null,
-        decimal reservaSinPrecioUsd = ReservaSinPrecioPorDefectoUsd)
+        decimal reservaSinPrecioUsd = ReservaSinPrecioPorDefectoUsd,
+        Action<string>? advertir = null)
     {
-        Catalogo = catalogo is { Count: > 0 } ? catalogo : CatalogoAsignaturas.PorDefecto;
+        Catalogo = catalogo ?? throw new ArgumentNullException(nameof(catalogo));
+        Advertir = AdvertenciaOSilencio(advertir);
         Precio = precio;
         MarcadorCanario = string.IsNullOrWhiteSpace(marcadorCanarioConfigurado)
             ? Convert.ToHexString(RandomNumberGenerator.GetBytes(BytesDelMarcadorAleatorio))
             : marcadorCanarioConfigurado;
-        CodigosAsignatura = codigosAsignatura ?? [.. Catalogo.Select(asignatura => asignatura.Codigo)];
+        CodigosAsignatura = CodigosOCatalogo(codigosAsignatura, Catalogo);
         ReservaPorPeticionUsd = reservaPorPeticionUsd ?? ReservaPorDefecto(precio, reservaSinPrecioUsd);
         RelevanciaMinima = Math.Max(MinimoPermitido, relevanciaMinima);
         ApoyoMinimoRespaldo = Math.Max(MinimoPermitido, apoyoMinimoRespaldo);
     }
+
+    public Action<string> Advertir { get; }
 
     public PrecioModelo? Precio { get; }
 
@@ -47,6 +51,11 @@ public sealed class ConfiguracionAsistente
     public int RelevanciaMinima { get; }
 
     public int ApoyoMinimoRespaldo { get; }
+
+    private static Action<string> AdvertenciaOSilencio(Action<string>? advertir) => advertir ?? (_ => { });
+
+    private static IReadOnlyCollection<string> CodigosOCatalogo(IReadOnlyCollection<string>? codigos, IReadOnlyList<AsignaturaCatalogo> catalogo) =>
+        codigos ?? [.. catalogo.Select(asignatura => asignatura.Codigo)];
 
     public decimal GastoDe(UsoTokens uso) =>
         Precio is null ? ReservaPorPeticionUsd : CalculadoraCosto.Calcular(uso, Precio);

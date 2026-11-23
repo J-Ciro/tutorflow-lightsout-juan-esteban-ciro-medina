@@ -91,7 +91,7 @@ public sealed class PreguntarAsistente
         if (directorio is not null)
         {
             _auditor.RecordarPersonas(directorio);
-            sesion.Directorio = directorio;
+            sesion.Directorio = ExcluirCodigosDePersonas(directorio);
         }
 
         var decision = Autorizar(sesion);
@@ -100,12 +100,26 @@ public sealed class PreguntarAsistente
             : _emisor.Denegar(sesion, decision.Motivo, 0);
     }
 
+    private DirectorioAcademico ExcluirCodigosDePersonas(DirectorioAcademico directorio)
+    {
+        var catalogo = _configuracion.Catalogo;
+        for (var indice = 0; indice < catalogo.Count; indice++)
+        {
+            if (CatalogoAsignaturas.EsIdDePersona(catalogo[indice].Codigo, directorio))
+            {
+                _configuracion.Advertir($"{Textos.PrefijoConfiguracionIgnorada}: Autorizacion:Asignaturas:{indice}:Codigo = \"{catalogo[indice].Codigo}\" (coincide con el ID de una persona del registro); se excluye del catálogo");
+            }
+        }
+
+        return directorio with { CodigosAsignatura = [.. directorio.CodigosAsignatura.Where(codigo => !CatalogoAsignaturas.EsIdDePersona(codigo, directorio))] };
+    }
+
     private async Task<ResultadoPregunta> ResponderSiEsRelevanteAsync(SesionPregunta sesion, CancellationToken cancellationToken)
     {
         var pregunta = sesion.Entrada.Pregunta;
         var contexto = new ContextoUsuario(sesion.Entrada.Usuario, sesion.Directorio);
         sesion.Secciones = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(pregunta), _limites.MaximoSeccionesRecuperadas);
-        var activacion = ActivadorResumenPropio.Evaluar(contexto, pregunta, _configuracion.Catalogo);
+        var activacion = ActivadorResumenPropio.Evaluar(contexto, pregunta, CatalogoAsignaturas.Vigente(_configuracion.Catalogo, sesion.Directorio));
         if (_relevancia.PeriodoNoDisponible(contexto, pregunta, activacion))
         {
             return _emisor.SinInformacion(sesion);
