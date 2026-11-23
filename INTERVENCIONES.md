@@ -158,3 +158,12 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué se cambió:** `exportar-log.js` ahora exporta la sesión del orquestador y todos sus subagentes a `logs/sesiones/<session-id>/{sesion.jsonl, subagentes/}`, de forma idempotente y con redacción. Tiene un modo `--todo` para recuperar lo pendiente, que exportó 21 transcripciones. Se agregó el hook `SubagentStop`, se recreó la lista de términos privados y se verificó con `grep` que no quedaran apariciones. Se actualizaron `logs/README.md` y la skill `cerrar-corrida`.
 - **Costo:** ~1 min humano.
 - **Prevención:** la exportación se dispara al terminar cada subagente y en `cerrar-corrida`, y esa skill verifica que la lista de redacción exista antes de hacer commit de los logs.
+
+### INT-018 · 2026-11-23 · No inventar: el "no sé" pasa a ser determinista
+- **Fase:** implementación (corrida 1, bucle de corrección)
+- **Qué pasó:** la decisión de responder "no encuentro esa información" dependía del modelo. Una respuesta inventada sin números (como el "usa el botón de asistencia" de Ollama) no se bloqueaba, y con el respaldo acotado de citas (D-28) habría salido con 2 citas que parecían respaldarla.
+- **Qué hizo el humano:** indicó que *"JAMÁS se debe de inventar información, hacer supuestos"*, y que si lo preguntado no está en las fuentes *"lo correcto sería poder responder con un mensaje claro de fallback"*, usando las herramientas y pasando el reglamento como contexto.
+- **Por qué:** "no inventar" es un requisito del PDF y no puede depender del comportamiento de un modelo concreto.
+- **Qué se cambió:** se encargó a `arquitecto-spec` la spec v1.6 con: umbral de relevancia previo al LLM (COMP-03 sin llamar al modelo), reemplazo por COMP-03 de toda respuesta sin cita válida ni datos, respaldo de citas condicionado a que la sección comparta términos con la respuesta (modifica D-28), D-29 y escenarios desde ESC-165. Después sigue el ciclo de TDD.
+- **Costo:** ~2 min humanos.
+- **Prevención:** cualquier regla de comportamiento del asistente que proteja al usuario debe tener una verificación en código, no solo una instrucción en el prompt.
