@@ -117,6 +117,7 @@ Checklist mínimo, auditado por el agente `seguridad`:
 - Debilitar una regla de autorización para que un eval pase.
 - Trabajar directamente en `main` o hacer merge sin el visto bueno de `seguridad` y `qa-calidad`.
 - **Usar la nube de Postman sin aprobación humana:** `postman login`, sincronizar o publicar en workspaces, publicar mocks o documentación, crear monitores, usar runners `postman-cloud`, escribir mediante el servidor MCP remoto de Postman o ejecutar `postman application test` sin `--report-events=false`. Todo lo de Postman corre en local, salvo aprobación explícita.
+- **Entregar el informe con procesos propios vivos.** Antes de reportar, todo agente termina lo que lanzó en segundo plano (bucles de pruebas, `dotnet run`, `node`, servidores y `docker compose`, este último con `down` y sin borrar volúmenes) y lo confirma en el informe con una línea "Procesos en segundo plano: ninguno".
 
 ## 8. Definición de terminado
 

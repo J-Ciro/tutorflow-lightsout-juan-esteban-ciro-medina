@@ -217,3 +217,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Costo:** ~2 min humanos.
 - **Decisión adicional del humano:** *"Sí, que aplique también entre coordinadores"*: la misma regla rige cuando un coordinador pregunta por las capacidades de otro coordinador (o del estudiante en el sistema).
 - **Prevención:** aprobada por el humano y aplicada: en `nueva-spec`, la revisión adversarial de `seguridad` debe enumerar, por cada par de roles, las preguntas de un rol sobre las capacidades, datos o permisos del otro, y exigir un escenario para cada una.
+
+### INT-026 · 2026-11-23 · Agentes que entregan el informe con procesos vivos
+- **Fase:** otro
+- **Qué pasó:** tres agentes entregaron su informe y quedaron "esperando" porque dejaron procesos de shell en segundo plano. Uno era de `seguridad` (ronda 3) y dos de `qa-calidad` (frente de datos de la ronda 4 y cierre de pruebas). Eran bucles de `dotnet test` y sondas. Un bucle vivo bloqueó un archivo y provocó un fallo de compilación MSB3026.
+- **Qué hizo el humano:** *"Se debe de revisar por que hay 3 agentes 1 de seguridad y 2 de calidad en un estado de wating on 1 shell?"*. Aprobó la regla de prevención.
+- **Por qué:** los procesos huérfanos consumen recursos, bloquean archivos y puertos, y dejan el estado de la fábrica opaco.
+- **Costo:** ~1 min humano.
+- **Prevención:** aprobada por el humano y aplicada: `AGENTS.md` §7 prohíbe entregar el informe con procesos propios vivos y exige la línea "Procesos en segundo plano: ninguno". El orquestador detuvo los tres agentes y verificó que no quedaban procesos `dotnet`, `testhost` ni contenedores.
