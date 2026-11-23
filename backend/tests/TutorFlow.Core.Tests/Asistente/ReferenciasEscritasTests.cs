@@ -35,7 +35,9 @@ public sealed class ReferenciasEscritasTests
         { [Texto(Sec3)], "La definitiva se calcula según evaluacion_y_calificaciones.md · Secciones 3 y 5.", "La definitiva se calcula." },
         { [Texto(Beca31)], "Requisitos: promedio 4.3 o más. Estos requisitos se respaldan en bienestar_y_becas.md · Sección 3.1.", "Requisitos: promedio 4.3 o más. Estos requisitos se respaldan en bienestar_y_becas.md · Sección 3.1." },
         { [], "El documento_academico_2025.md establece la escala.", "Establece la escala." },
-        { [Texto(Sec3), Texto(Sec4)], "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).", "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4)." }
+        { [Texto(Sec3), Texto(Sec4)], "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).", "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4)." },
+        { [], "Contabilidad: 3.9 (Documento.md · Sección 3).", "Contabilidad: 3.9." },
+        { [], "Asignaturas aprobadas:\n- Inglés III (Documento.md)\n- Bases de Datos", "Asignaturas aprobadas:\n- Inglés III\n- Bases de Datos" }
     };
 
     private static string Limpiar(string respuesta, IReadOnlyList<Cita> citas)
@@ -132,6 +134,21 @@ public sealed class ReferenciasEscritasTests
         Assert.Equal("Contabilidad: 3.9. La definitiva se calcula con los pesos.", resultado.Respuesta!.Respuesta);
         Assert.Equal([Texto(Sec3)], CitasDeDocumento(resultado.Respuesta));
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-178")]
+    [Trait("D", "D-66")]
+    public async Task ESC_178k_La_oracion_de_dos_palabras_con_una_cifra_de_nota_no_se_elimina_tras_quitar_su_referencia()
+    {
+        var escenario = Con(Fijo("Contabilidad: 3.9 (Documento.md · Sección 3)."), IndiceConLasReglas());
+
+        var resultado = await escenario.PreguntarAsync(Est004, "¿Qué nota definitiva tengo en Contabilidad?");
+
+        Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
+        Assert.Equal("Contabilidad: 3.9.", resultado.Respuesta!.Respuesta);
+        Assert.Equal([Texto(Sec3)], CitasDeDocumento(resultado.Respuesta));
     }
 
     [Fact]
