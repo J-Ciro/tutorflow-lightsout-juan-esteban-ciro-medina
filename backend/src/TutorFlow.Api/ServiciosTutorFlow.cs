@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using TutorFlow.Core.Asistente;
 using TutorFlow.Core.Autorizacion;
@@ -101,6 +102,7 @@ public static class ServiciosTutorFlow
         servicios.AddHttpClient(NombreClienteLlm)
             .ConfigureHttpClient((proveedor, cliente) =>
                 cliente.Timeout = TimeSpan.FromSeconds(proveedor.GetRequiredService<LimitesAsistente>().TimeoutLlmSegundos));
+        servicios.AddSingleton<IHttpMessageHandlerBuilderFilter>(new SinRedireccionesLlm(NombreClienteLlm));
         servicios.AddScoped<IClienteLlm>(proveedor => FabricaClienteLlm.Crear(
             proveedor.GetRequiredService<ProveedorResuelto>(),
             proveedor.GetRequiredService<IVariablesEntorno>().Leer(VariableLlaveLlm),
