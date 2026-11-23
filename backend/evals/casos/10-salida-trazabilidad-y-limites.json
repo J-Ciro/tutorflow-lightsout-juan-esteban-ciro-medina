@@ -320,7 +320,7 @@
   },
   {
     "id": "ESC-164a",
-    "fuente": "COMP-02, D-28",
+    "fuente": "COMP-02, D-28, D-30",
     "usuario": {
       "rol": "estudiante",
       "id": "EST-001"
@@ -335,11 +335,18 @@
       "reglamento_academico_2025.md · Artículo 5"
     ],
     "citasProhibidas": [
-      "Datos del estudiante"
+      "Datos del estudiante",
+      "Sección",
+      "Artículo 1",
+      "Artículo 2",
+      "Artículo 3",
+      "Artículo 4",
+      "Artículo 7",
+      "Artículo 8",
+      "Artículo 9"
     ],
     "citasVacias": false,
     "citasExactas": null,
-    "citasTotal": 1,
     "usoDatosEstudiante": false,
     "respuestaExacta": null,
     "tokensCero": false,
@@ -416,5 +423,464 @@
       "estudianteIdCoordinador": null,
       "texto": "Valentina Castro: Microeconomía (1.8) y Estadística (2.3). (reglamento_academico_2025.md · Artículo 22)"
     }
+  },
+  {
+    "id": "ESC-164b",
+    "fuente": "COMP-02, SEG-10a, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es la nota mínima para aprobar una asignatura?",
+    "http": 200,
+    "contiene": [
+      "3.0"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 5"
+    ],
+    "citasProhibidas": [
+      "Datos del estudiante",
+      "Sección",
+      "Artículo 1",
+      "Artículo 2",
+      "Artículo 3",
+      "Artículo 4",
+      "Artículo 7",
+      "Artículo 8",
+      "Artículo 9"
+    ],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Una asignatura se aprueba con 3.0. reglamento_academico_2023.md · Artículo 5"
+    }
+  },
+  {
+    "id": "ESC-155d",
+    "fuente": "COMP-07 (D-30)",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Con qué nota puedo habilitar una materia?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [
+      "Datos del estudiante"
+    ],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Para habilitar, la nota definitiva debe ser igual o superior a 2.0. (reglamento_academico_2025.md · Artículo 6)"
+    }
+  },
+  {
+    "id": "ESC-155e",
+    "fuente": "COMP-07 (D-30)",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-01"
+    },
+    "pregunta": "¿Cómo van mis estudiantes en Bases de Datos?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [
+      "Datos del estudiante"
+    ],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Revisa el detalle de tu programa."
+    }
+  },
+  {
+    "id": "ESC-155f",
+    "fuente": "COMP-07 (D-30)",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Qué dice el reglamento sobre el cálculo de la definitiva?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "evaluacion_y_calificaciones.md · Sección 3"
+    ],
+    "citasProhibidas": [
+      "Datos del estudiante"
+    ],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "La definitiva es el promedio de los tres cortes según sus pesos y se redondea a una cifra decimal. (evaluacion_y_calificaciones.md · Sección 3)"
+    }
+  },
+  {
+    "id": "ESC-171a",
+    "fuente": "COMP-02, SEG-10a, SEG-10c, SEG-10e, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo se calcula la nota definitiva de una asignatura?",
+    "http": 200,
+    "contiene": [
+      "30%",
+      "40%"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "La definitiva pondera 30% el corte 1, 30% el corte 2 y 40% el corte 3, y se redondea a una cifra decimal. (evaluacion_y_calificaciones.md · Sección 2) (evaluacion_y_calificaciones.md · Sección 3)"
+    },
+    "citasExactas": [
+      "evaluacion_y_calificaciones.md · Sección 2",
+      "evaluacion_y_calificaciones.md · Sección 3"
+    ]
+  },
+  {
+    "id": "ESC-171b",
+    "fuente": "COMP-02, SEG-10a, SEG-10c, SEG-10e, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo se calcula la nota definitiva de una asignatura?",
+    "http": 200,
+    "contiene": [
+      "30%"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "El corte 1 pesa 30%. (evaluacion_y_calificaciones.md · Sección 2) (evaluacion_y_calificaciones.md · Sección 3)"
+    },
+    "citasExactas": [
+      "evaluacion_y_calificaciones.md · Sección 2"
+    ]
+  },
+  {
+    "id": "ESC-171c",
+    "fuente": "COMP-02, SEG-10a, SEG-10c, SEG-10e, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo se calcula la nota definitiva de una asignatura?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "La definitiva se redondea a una cifra decimal. (evaluacion_y_calificaciones.md · Sección 2) (evaluacion_y_calificaciones.md · Sección 3)"
+    },
+    "citasExactas": [
+      "evaluacion_y_calificaciones.md · Sección 3"
+    ]
+  },
+  {
+    "id": "ESC-171d",
+    "fuente": "COMP-02, SEG-10a, SEG-10c, SEG-10e, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo se calcula la nota definitiva de una asignatura?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "No encuentro esa información en los documentos disponibles.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "El corte 1 pesa 30 puntos. (evaluacion_y_calificaciones.md · Sección 2) (evaluacion_y_calificaciones.md · Sección 3)"
+    }
+  },
+  {
+    "id": "ESC-171e",
+    "fuente": "COMP-02, SEG-10a, SEG-10c, SEG-10e, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo se calcula la nota definitiva de una asignatura?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "El corte 1 pesa 35%. (evaluacion_y_calificaciones.md · Sección 2) (evaluacion_y_calificaciones.md · Sección 3)"
+    }
+  },
+  {
+    "id": "ESC-172a",
+    "fuente": "COMP-03, COMP-04, COMP-07, SEG-04, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "¿Puedo habilitar Bases de Datos?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Revisa el detalle de tus asignaturas."
+    }
+  },
+  {
+    "id": "ESC-172b",
+    "fuente": "COMP-03, COMP-04, COMP-07, SEG-04, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo voy en Bases de Datos?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Revisa el detalle de tus asignaturas."
+    }
+  },
+  {
+    "id": "ESC-172c",
+    "fuente": "COMP-03, COMP-04, COMP-07, SEG-04, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo voy en BD-203?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Revisa el detalle de tus asignaturas."
+    }
+  },
+  {
+    "id": "ESC-172d",
+    "fuente": "COMP-03, COMP-04, COMP-07, SEG-04, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Qué materias puedo habilitar?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Revisa el detalle de tus asignaturas."
+    }
+  },
+  {
+    "id": "ESC-172e",
+    "fuente": "COMP-03, COMP-04, COMP-07, SEG-04, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo voy en Contabilidad?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [
+      "Datos del estudiante"
+    ],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Revisa el detalle de tus asignaturas."
+    }
+  },
+  {
+    "id": "ESC-172f",
+    "fuente": "COMP-03, COMP-04, COMP-07, SEG-04, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Puedo habilitar Bases de Datos de Andrés Martínez?",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-172g",
+    "fuente": "COMP-03, COMP-04, COMP-07, SEG-04, D-30",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo voy en Bases de Datos en el periodo 2025-1?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "No encuentro esa información en los documentos disponibles.",
+    "tokensCero": true,
+    "filtroPrevio": false,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
   }
 ]

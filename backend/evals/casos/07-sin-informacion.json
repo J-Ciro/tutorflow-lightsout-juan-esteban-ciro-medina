@@ -285,7 +285,9 @@
     "citasIncluye": [
       "bienestar_y_becas.md · Sección 3.2"
     ],
-    "citasProhibidas": [],
+    "citasProhibidas": [
+      "evaluacion_y_calificaciones.md · Sección 2"
+    ],
     "citasVacias": false,
     "usoDatosEstudiante": false,
     "respuestaExacta": null,
@@ -353,6 +355,34 @@
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
       "texto": "Las tutorías se agendan escribiendo al buzón virtual de la decanatura."
+    }
+  },
+  {
+    "id": "ESC-169g",
+    "fuente": "CA-06 / COMP-03 (1), COMP-07 (D-30)",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "¿Puedo habilitar Bases de Datos?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Revisa el detalle de tus asignaturas."
     }
   }
 ]
