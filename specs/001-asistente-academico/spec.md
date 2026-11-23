@@ -2,8 +2,8 @@
 
 | Campo | Valor |
 | --- | --- |
-| Versión | 1.4 · 2026-11-22 |
-| Estado | **Aprobada** por el humano (2026-11-22). La 1.4 incorpora la corrección de la auditoría de la corrida 1 (415 y UUID v7 de `SPEC.md` §3.1, SEG-10d, COMP-07, CA-14, ESC-145…163) |
+| Versión | 1.5 · 2026-11-22 |
+| Estado | **Aprobada** por el humano (2026-11-22). La 1.4 incorpora la corrección de la auditoría de la corrida 1 (415 y UUID v7 de `SPEC.md` §3.1, SEG-10d, COMP-07, CA-14, ESC-145…163). La 1.5 agrega el respaldo acotado de citas (COMP-02, §11.1, CA-14, D-28, ESC-164) |
 | Spec del sistema | [`SPEC.md`](../../SPEC.md): objetivo, actores, contrato, matriz de acceso y decisiones |
 | Componentes en esta spec | Backend .NET 11, datos, comportamiento conversacional y QA |
 | Fuera de esta spec | Interfaz web React (spec futura, §10) |
@@ -44,7 +44,7 @@ Definidos en [`SPEC.md` §2](../../SPEC.md). Esta feature no agrega roles.
 | ID | Regla |
 | --- | --- |
 | COMP-01 | Responde en español, breve (≤ 120 palabras salvo listas), con los valores calculados por el código. |
-| COMP-02 | Toda afirmación normativa lleva cita. Las respuestas con datos llevan además la cita de datos. **Solo** se devuelven citas de las secciones entregadas al modelo en esa petición que el modelo efectivamente citó, y de los datos efectivamente leídos (§11.1); prohibido agregar citas de relleno. Una negativa lleva solo su cita propia: el 403 (previo o tardío) y `TEXTO_NEGATIVA` de SEG-10b → exactamente [`reglamento_academico_2025.md` · `Artículo 22`]; el texto de COMP-03 y `TEXTO_NO_VERIFICABLE` → `[]`. |
+| COMP-02 | Toda afirmación normativa lleva cita. Las respuestas con datos llevan además la cita de datos. Se devuelven (1) las citas de documento que el modelo escribió y que corresponden a secciones entregadas en esa petición (SEG-10a); (2) **respaldo acotado (D-28):** si tras SEG-10a no queda ninguna cita de documento y la respuesta no es una negativa ni un texto fijo, las **2 secciones entregadas mejor rankeadas** por la recuperación para esa pregunta (1 si solo se entregó una; ninguna si no se entregó ninguna); y (3) las citas de los datos efectivamente leídos (§11.1). Tope: citas escritas válidas + 2 de respaldo + citas de datos; prohibida cualquier otra cita de relleno. Una negativa lleva solo su cita propia y nunca respaldo: el 403 (previo o tardío) y `TEXTO_NEGATIVA` de SEG-10b → exactamente [`reglamento_academico_2025.md` · `Artículo 22`]; el texto de COMP-03 (incluido el de SEG-10d) y `TEXTO_NO_VERIFICABLE` → `[]`. |
 | COMP-03 | Si la información no está en los documentos vigentes ni en los datos autorizados, responde exactamente: **"No encuentro esa información en los documentos disponibles."**, con `citas: []` y `usoDatosEstudiante: false`. Aplica también a preguntas fuera del dominio académico. |
 | COMP-04 | `usoDatosEstudiante` es `true` si y solo si se leyeron datos académicos de algún estudiante para responder (resumen de COMP-07 entregado o herramienta de datos ejecutada). La lectura de identidad de SEG-03 no cuenta. Una pregunta normativa (p. ej. requisitos de la beca) no lee datos: `false`. |
 | COMP-05 | Si preguntan por el reglamento 2023, responde que fue derogado y cita `reglamento_academico_2025.md · Artículo 3`. |
@@ -196,7 +196,8 @@ Formato de citas (D-14):
 - Otros documentos: `"seccion": "Sección 3"`, `"Sección 3.1"`. Una cita por sección (las "Secciones 3 y 4" se citan como dos entradas).
 - Datos propios: `{ "documento": "Datos del estudiante", "seccion": "Notas" | "Asistencia" | "Datos básicos" }`.
 - Datos de un coordinador: `{ "documento": "Datos del programa", "seccion": "<id del programa>" }`.
-- Solo se devuelven citas que existen en la base de conocimiento indexada **y** que corresponden a una sección entregada al modelo en esa petición y citada por él. El índice **no contiene** el reglamento 2023 ni el Anexo de bienestar, así que una cita a ellos se descarta (SEG-10a).
+- Citas de documento escritas por el modelo: solo se devuelven si existen en la base de conocimiento indexada **y** corresponden a una sección entregada al modelo en esa petición. El índice **no contiene** el reglamento 2023 ni el Anexo de bienestar, así que una cita a ellos se descarta (SEG-10a).
+- Respaldo acotado (COMP-02, D-28): si no queda ninguna cita de documento válida y la respuesta no es una negativa, COMP-03 ni `TEXTO_NO_VERIFICABLE`, se agregan como máximo las 2 secciones entregadas con mejor posición en la recuperación de esa pregunta, en ese orden. Nunca se agrega una sección no entregada.
 - Citas de datos, solo por lo efectivamente leído: `Notas` si se leyeron notas (resumen de COMP-07 o herramienta), `Asistencia` si se leyó asistencia, `Datos básicos` solo si se ejecutó la herramienta de datos básicos (la lectura de identidad de SEG-03 no genera cita), y `Datos del programa · <id>` por cada programa leído. Sin citas de relleno.
 - Negativas: el 403 y `TEXTO_NEGATIVA` llevan exactamente [`reglamento_academico_2025.md` · `Artículo 22`]; COMP-03 y `TEXTO_NO_VERIFICABLE` llevan `[]` (COMP-02).
 
@@ -815,11 +816,11 @@ Característica: Detectar la suplantación de identidad
     Y la IP "10.0.0.9" recibe 200
 ```
 
-### CA-14 · Datos propios entregados y citas solo de lo usado
+### CA-14 · Datos propios entregados y citas trazables con respaldo acotado
 
 ```gherkin
 # language: es
-Característica: Responder con el resumen propio y citar solo lo usado
+Característica: Responder con el resumen propio y citar lo usado, con un respaldo de como máximo 2 secciones entregadas
 
   Antecedentes:
     Dado que el LLM y la API académica son dobles que registran cada llamada
@@ -882,6 +883,32 @@ Característica: Responder con el resumen propio y citar solo lo usado
     Cuando pregunta "¿Cuál es el horario de atención de Bienestar?"
     Entonces cada cita de documento de la salida está entre las secciones entregadas al LLM en esa petición
     Y "citas" no contiene ninguna cita de "Datos del estudiante"
+
+  Escenario: Respaldo acotado cuando el modelo no escribe citas
+    Dado el usuario "estudiante" con id "EST-001"
+    Y un LLM doble que nunca invoca herramientas, no escribe ninguna cita y responde "Una asignatura se aprueba con 3.0."
+    Cuando pregunta "¿Cuál es la nota mínima para aprobar una asignatura?"
+    Entonces el código HTTP es 200
+    Y "citas" tiene exactamente 2 entradas
+    Y esas 2 entradas son las 2 primeras secciones entregadas al LLM en esa petición, en orden de ranking
+    Y "citas" incluye "reglamento_academico_2025.md · Artículo 5"
+    Y "citas" no contiene ninguna cita de "Datos del estudiante"
+    Y "usoDatosEstudiante" es false
+
+  Esquema del escenario: Nunca más que las citas escritas válidas, 2 de respaldo y las de datos
+    Dado el usuario "estudiante" con id "EST-001"
+    Y un LLM doble que nunca invoca herramientas, escribe las citas <escritas> y responde "<texto>"
+    Cuando pregunta "<pregunta>"
+    Entonces el código HTTP es 200
+    Y las citas de documento de "citas" son <documentos>
+    Y las citas de datos de "citas" son <datos>
+
+    Ejemplos:
+      | pregunta                                              | escritas                                     | texto                                       | documentos                                                           | datos                                                                  |
+      | ¿Cuál es la nota mínima para aprobar una asignatura?  | "reglamento_academico_2025.md · Artículo 5"  | Se aprueba con 3.0 (Artículo 5).            | exactamente ["reglamento_academico_2025.md · Artículo 5"]            | ninguna                                                                |
+      | ¿Cuál es la nota mínima para aprobar una asignatura?  | "reglamento_academico_2023.md · Artículo 5"  | Se aprueba con 3.0.                         | las 2 primeras secciones entregadas, en orden de ranking             | ninguna                                                                |
+      | ¿Cuántas faltas tengo en Bases de Datos?              | ninguna                                      | Bases de Datos: 2 faltas de 48 clases.      | las min(2, entregadas) primeras secciones entregadas, en orden de ranking | exactamente ["Datos del estudiante · Notas", "Datos del estudiante · Asistencia"] |
+      | ¿Cuál es la nota mínima para aprobar una asignatura?  | ninguna                                      | Se aprueba con 3.7.                         | ninguna (la respuesta es TEXTO_NO_VERIFICABLE y "citas" es [])        | ninguna                                                                |
 ```
 
 ## 13. Plan de QA
@@ -916,7 +943,7 @@ Característica: Responder con el resumen propio y citar solo lo usado
 | CA-11 | Metadatos de la respuesta | Integración con LLM doble de consumo fijo | ESC-004, ESC-008, ESC-079, ESC-106 | Costo exacto (tolerancia 1e-6) |
 | CA-12 | Sin falsos 403 | Integración + unitarias del filtro | ESC-120…129 | 0 falsos 403 |
 | CA-13 | Suplantación | Integración con reloj controlado | ESC-140…142 | 1 evento al 4.º ID en 10 min |
-| CA-14 | Resumen propio y citas solo de lo usado | Integración con LLM doble espía + evals con LLM | ESC-002, ESC-154…156, ESC-162 | 100% en integración: 1 sola llamada al LLM con el resumen y "2" y "48" en la respuesta; 0 resúmenes sin activador; negativas con exactamente su cita propia; 0 citas de secciones no entregadas. ESC-002 con las 4 definitivas en 3 corridas consecutivas con LLM real |
+| CA-14 | Resumen propio, citas trazables y respaldo acotado | Integración con LLM doble espía + unitarias del armado de citas + evals con LLM | ESC-002, ESC-154…156, ESC-162, ESC-164 | 100% en integración: 1 sola llamada al LLM con el resumen y "2" y "48" en la respuesta; 0 resúmenes sin activador; negativas con exactamente su cita propia; 0 citas de secciones no entregadas; sin citas válidas del modelo, exactamente min(2, entregadas) citas de respaldo y en orden de ranking; 0 respuestas con más citas que escritas válidas + 2 + datos leídos; 0 respaldos en negativas, COMP-03 y `TEXTO_NO_VERIFICABLE`. ESC-002 con las 4 definitivas en 3 corridas consecutivas con LLM real |
 
 ### 13.3 Casos límite obligatorios
 
@@ -933,7 +960,7 @@ Característica: Responder con el resumen propio y citar solo lo usado
 
 - **LLM doble:** programable por escenario (respuesta fija, invocación de herramienta, cita inventada, nombre de un tercero, consumo de tokens fijo) y espía (cuenta las llamadas).
 - **API académica doble:** `mock-api/datos.json` más variantes para casos sin cobertura en los datos reales: coordinador sin programas, coordinador con dos programas, `programaId` malicioso y asignatura con texto de inyección. Las pruebas de integración usan dobles en .NET; las pruebas de punta a punta, la simulación de Postman.
-- **LLM doble adicional:** que tarda un tiempo fijo por llamada, que retiene llamadas hasta que la prueba lo libera, que responde 302, que nunca invoca herramientas y copia el resumen recibido, y que propone citas no entregadas.
+- **LLM doble adicional:** que tarda un tiempo fijo por llamada, que retiene llamadas hasta que la prueba lo libera, que responde 302, que nunca invoca herramientas y copia el resumen recibido, que propone citas no entregadas y que no escribe ninguna cita (respaldo acotado, D-28).
 - **Canarios:** el marcador del prompt de sistema (configurado en las pruebas o aleatorio por defecto, SEG-10d) y una llave falsa en `LLM_API_KEY` para detectar fugas.
 
 ### 13.5 Criterios de salida
@@ -942,7 +969,7 @@ Se integra a `main` cuando se cumplen los umbrales de §13.2, el build no tiene 
 
 ## 14. Decisiones
 
-Las decisiones D-01…D-27 de esta feature están en [`SPEC.md` §6](../../SPEC.md). La 1.4 agrega D-26 (`correlationId` UUID v7) y D-27 (resumen propio entregado al modelo), aprobadas por el humano.
+Las decisiones D-01…D-28 de esta feature están en [`SPEC.md` §6](../../SPEC.md). La 1.4 agrega D-26 (`correlationId` UUID v7) y D-27 (resumen propio entregado al modelo); la 1.5 agrega D-28 (respaldo acotado de citas). Todas aprobadas por el humano.
 
 ## 15. Preguntas abiertas
 
