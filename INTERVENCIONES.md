@@ -191,7 +191,7 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué hizo el humano:** *"De esos riesgos que quedan registrados debes de analizalros con el agente arquitecto para tomar una desicion y evitar, corregir, solucionar, entender y mitrigar estos riesgos o eliminarlos."*
 - **Por qué:** un riesgo anotado sin decisión es un defecto aplazado, igual que en INT-020.
 - **Costo:** ~1 min humano.
-- **Prevención:** en la skill `nueva-spec` y en `arquitecto-spec`, todo riesgo identificado lleva una decisión explícita: eliminarlo, mitigarlo con un control verificable o aceptarlo con la aprobación del humano. Queda pendiente del visto bueno del humano.
+- **Prevención:** aprobada por el humano y aplicada: en la skill `nueva-spec` y en `arquitecto-spec`, todo riesgo identificado lleva una decisión explícita: eliminarlo, mitigarlo con un control verificable o aceptarlo con la aprobación del humano.
 
 ### INT-022 · 2026-11-23 · Rango de temperatura del LLM
 - **Fase:** spec

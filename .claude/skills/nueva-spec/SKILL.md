@@ -23,3 +23,4 @@ Entrada: el texto del requisito (en `$ARGUMENTS` o en el mensaje).
 - [ ] Los valores esperados calculados muestran su cálculo.
 - [ ] No contradice `SPEC.md` ni copia su contenido transversal; si lo modifica, lo dice explícitamente.
 - [ ] El contrato de API no cambió, o el cambio está marcado como "requiere aprobación".
+- [ ] Cada riesgo identificado tiene una decisión: eliminado, mitigado con un control verificable o aceptado con aprobación humana explícita. Ninguno queda solo "registrado" (INT-021).
