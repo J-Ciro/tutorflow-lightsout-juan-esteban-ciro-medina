@@ -65,6 +65,9 @@ public static class ConfiguracionDePrueba
     public const string LlaveFalsa = "sk-ant-canario-d40-no-debe-aparecer";
     public const string LlaveFalsaSinPrecio = "sk-canario-d40-no-debe-aparecer";
 
+    public static Dictionary<string, string?> TasaPorMinuto(int preguntas) =>
+        new() { ["Limites:PreguntasPorMinutoPorIp"] = preguntas.ToString(System.Globalization.CultureInfo.InvariantCulture) };
+
     public static Dictionary<string, string?> EntornoConLlave() =>
         new() { ["LLM_API_KEY"] = LlaveFalsa };
 

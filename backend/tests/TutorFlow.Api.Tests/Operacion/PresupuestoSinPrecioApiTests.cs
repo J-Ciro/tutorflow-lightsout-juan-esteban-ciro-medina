@@ -94,6 +94,24 @@ public sealed class PresupuestoSinPrecioApiTests
     [Trait("CA", "CA-07")]
     [Trait("ESC", "ESC-180")]
     [Trait("SEG", "SEG-13")]
+    [Trait("D", "D-70")]
+    public async Task ESC_180a_El_503_por_presupuesto_a_las_23_utc_lleva_retry_after_3600_y_no_llama_al_llm()
+    {
+        var llm = LlmDeLaPrueba();
+        using var fabrica = new FabricaApi(llm: llm, configuracion: Configuracion(null), variablesEntorno: ModeloSinPrecio());
+        fabrica.Reloj.Fijar(new DateTimeOffset(2026, 11, 22, 23, 0, 0, TimeSpan.Zero));
+
+        var respuestas = await PreguntarSeguidoAsync(fabrica);
+
+        Assert.Equal([200, 200, 200, 503], respuestas.Select(r => r.Estado).ToArray());
+        Assert.Equal("3600", respuestas[3].Encabezado("Retry-After"));
+        Assert.Equal(Aceptadas, llm.Llamadas);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-07")]
+    [Trait("ESC", "ESC-180")]
+    [Trait("SEG", "SEG-13")]
     public async Task ESC_180_La_reserva_sin_precio_configurada_se_respeta_en_el_presupuesto_diario()
     {
         var llm = LlmDeLaPrueba();
