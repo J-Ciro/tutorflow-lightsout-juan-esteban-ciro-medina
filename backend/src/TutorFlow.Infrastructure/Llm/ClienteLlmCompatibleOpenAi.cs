@@ -44,7 +44,7 @@ public sealed class ClienteLlmCompatibleOpenAi : IClienteLlm
         try
         {
             var respuesta = await _cliente.GetResponseAsync(Mensajes(solicitud), opciones, cancellationToken);
-            return ConControlDeContexto(solicitud, Traducir(respuesta));
+            return ConControlDeContexto(solicitud, Traducir(respuesta), respuesta.Usage?.InputTokenCount is not null);
         }
         catch (ClientResultException)
         {
@@ -52,8 +52,8 @@ public sealed class ClienteLlmCompatibleOpenAi : IClienteLlm
         }
     }
 
-    private RespuestaLlm ConControlDeContexto(SolicitudLlm solicitud, RespuestaLlm respuesta) =>
-        _controlaContexto ? respuesta with { ContextoTruncado = EstimadorDeContexto.Evaluar(solicitud, respuesta.Uso) } : respuesta;
+    private RespuestaLlm ConControlDeContexto(SolicitudLlm solicitud, RespuestaLlm respuesta, bool usoReportado) =>
+        _controlaContexto && usoReportado ? respuesta with { ContextoTruncado = EstimadorDeContexto.Evaluar(solicitud, respuesta.Uso) } : respuesta;
 
     private static Uri ConstruirEndpoint(string urlBase)
     {
