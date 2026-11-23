@@ -196,18 +196,8 @@ public sealed class HerramientasAsistente
         return ResultadoHerramienta.Texto(FormateadorDatos.Delimitar($"{cita.Documento} · {cita.Seccion}", contenido));
     }
 
-    private async Task<ResumenEstudiante> ResumirAsync(string estudianteId, CancellationToken cancellationToken)
-    {
-        var notas = await _apiAcademica.ObtenerNotasAsync(estudianteId, cancellationToken);
-        var asistencia = await _apiAcademica.ObtenerAsistenciaAsync(estudianteId, cancellationToken);
-        var asignaturas = notas.Select(nota => new Asignatura(
-            nota.Codigo,
-            nota.Nombre,
-            nota.Creditos,
-            nota.Cortes,
-            asistencia.FirstOrDefault(a => a.Codigo == nota.Codigo)?.Asistencia ?? new Asistencia(0, null))).ToList();
-        return CalculosAcademicos.ResumirEstudiante(estudianteId, asignaturas);
-    }
+    private Task<ResumenEstudiante> ResumirAsync(string estudianteId, CancellationToken cancellationToken) =>
+        ResumenesAcademicos.ResumirAsync(_apiAcademica, estudianteId, cancellationToken);
 
     private sealed record SolicitudHerramienta(
         ContextoUsuario Contexto,

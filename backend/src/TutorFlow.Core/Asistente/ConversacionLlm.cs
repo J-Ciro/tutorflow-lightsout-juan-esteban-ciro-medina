@@ -13,37 +13,36 @@ public enum EstadoConversacion
 
 public sealed record ResultadoConversacion(EstadoConversacion Estado, string? Texto, UsoTokens Uso);
 
+public sealed record EntradaConversacion(
+    string Pregunta,
+    IReadOnlyList<SeccionDocumento> Secciones,
+    string? Resumen,
+    string PromptSistema);
+
 public sealed class ConversacionLlm
 {
     private readonly IClienteLlm _clienteLlm;
     private readonly HerramientasAsistente _herramientas;
     private readonly LimitesAsistente _limites;
-    private readonly ConfiguracionAsistente _configuracion;
 
-    public ConversacionLlm(
-        IClienteLlm clienteLlm,
-        HerramientasAsistente herramientas,
-        LimitesAsistente limites,
-        ConfiguracionAsistente configuracion)
+    public ConversacionLlm(IClienteLlm clienteLlm, HerramientasAsistente herramientas, LimitesAsistente limites)
     {
         _clienteLlm = clienteLlm;
         _herramientas = herramientas;
         _limites = limites;
-        _configuracion = configuracion;
     }
 
     public async Task<ResultadoConversacion> EjecutarAsync(
         ContextoUsuario contexto,
-        string pregunta,
-        IReadOnlyList<SeccionDocumento> secciones,
+        EntradaConversacion entrada,
         RegistroConsultas registro,
         CancellationToken cancellationToken)
     {
         var estado = new Turnos(
             contexto,
             registro,
-            [ConstructorPrompts.MensajeInicial(pregunta, secciones)],
-            ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
+            [ConstructorPrompts.MensajeInicial(entrada.Pregunta, entrada.Secciones, entrada.Resumen)],
+            entrada.PromptSistema);
         ResultadoConversacion? final = null;
         while (final is null)
         {

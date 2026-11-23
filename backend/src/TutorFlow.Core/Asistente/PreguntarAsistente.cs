@@ -26,22 +26,6 @@ public sealed record ResultadoPregunta(
     ResultadoAuditoria Auditoria,
     MotivoDenegacion? Motivo);
 
-public sealed class LimitesAsistente
-{
-    public int MaximoCaracteresPregunta { get; init; } = 1000;
-    public int MaximoBytesCuerpo { get; init; } = 16 * 1024;
-    public int PreguntasPorMinutoPorIp { get; init; } = 60;
-    public int MaximoSeccionesRecuperadas { get; init; } = 6;
-    public int MaximoTokensSalida { get; init; } = 2000;
-    public int MaximoInvocacionesHerramientas { get; init; } = 4;
-    public int TimeoutLlmSegundos { get; init; } = 20;
-    public int PresupuestoApiAcademicaSegundos { get; init; } = 6;
-    public decimal PresupuestoDiarioUsd { get; init; } = 5m;
-    public int MaximoIdentidadesPorIp { get; init; } = 3;
-    public int VentanaIdentidadesMinutos { get; init; } = 10;
-    public bool BloquearMultiplesIdentidades { get; init; }
-}
-
 public sealed class PreguntarAsistente
 {
     private readonly IApiAcademica _apiAcademica;
@@ -53,6 +37,7 @@ public sealed class PreguntarAsistente
     private readonly LimitesAsistente _limites;
     private readonly ConfiguracionAsistente _configuracion;
     private readonly PresupuestoDiario _presupuesto;
+    private readonly LectorResumenPropio _lectorResumen;
 
     public PreguntarAsistente(
         IApiAcademica apiAcademica,
@@ -74,6 +59,7 @@ public sealed class PreguntarAsistente
         _limites = limites;
         _configuracion = configuracion;
         _presupuesto = presupuesto;
+        _lectorResumen = new LectorResumenPropio(politicaAcceso);
     }
 
     public async Task<ResultadoPregunta> EjecutarAsync(
@@ -83,8 +69,10 @@ public sealed class PreguntarAsistente
         CancellationToken cancellationToken)
     {
         var presupuestoApi = TimeSpan.FromSeconds(_limites.PresupuestoApiAcademicaSegundos);
-        var sesion = new SesionPregunta(entrada, ipOrigen, correlationId, new ApiAcademicaConPresupuesto(_apiAcademica, presupuestoApi));
-        sesion.Directorio = await ConstructorDirectorio.ConstruirAsync(entrada.Usuario, sesion.Api, _configuracion.CodigosAsignatura, cancellationToken);
+        var api = new ApiAcademicaConPresupuesto(_apiAcademica, presupuestoApi);
+        var directorio = await ConstructorDirectorio.ConstruirAsync(entrada.Usuario, api, _configuracion.CodigosAsignatura, cancellationToken)
+            ?? ConstructorDirectorio.Vacio;
+        var sesion = new SesionPregunta(entrada, ipOrigen, correlationId, api, directorio);
         var decision = Autorizar(sesion);
         if (!decision.Permitido)
         {
@@ -98,24 +86,19 @@ public sealed class PreguntarAsistente
 
     private DecisionAcceso Autorizar(SesionPregunta sesion)
     {
-        if (sesion.Directorio is not { } directorio)
-        {
-            return DecisionAcceso.Denegar(MotivoDenegacion.IdentidadInvalida);
-        }
-
-        var identidad = _politicaAcceso.EvaluarIdentidad(sesion.Entrada.Usuario, directorio);
+        var identidad = _politicaAcceso.EvaluarIdentidad(sesion.Entrada.Usuario, sesion.Directorio);
         return identidad.Permitido
-            ? _politicaAcceso.EvaluarPregunta(sesion.Entrada.Usuario, sesion.Entrada.Pregunta, directorio)
+            ? _politicaAcceso.EvaluarPregunta(sesion.Entrada.Usuario, sesion.Entrada.Pregunta, sesion.Directorio)
             : identidad;
     }
 
     private async Task<ResultadoPregunta> ResponderAsync(SesionPregunta sesion, CancellationToken cancellationToken)
     {
-        var directorio = sesion.Directorio!;
-        var secciones = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(sesion.Entrada.Pregunta), _limites.MaximoSeccionesRecuperadas);
-        var conversacion = new ConversacionLlm(_clienteLlm, new HerramientasAsistente(sesion.Api, _politicaAcceso), _limites, _configuracion);
-        var contexto = new ContextoUsuario(sesion.Entrada.Usuario, directorio);
-        var resultado = await conversacion.EjecutarAsync(contexto, sesion.Entrada.Pregunta, secciones, sesion.Registro, cancellationToken);
+        var usuario = sesion.Entrada.Usuario;
+        var contexto = new ContextoUsuario(usuario, sesion.Directorio);
+        var entrada = await PrepararEntradaAsync(sesion, contexto, cancellationToken);
+        var conversacion = new ConversacionLlm(_clienteLlm, new HerramientasAsistente(sesion.Api, _politicaAcceso), _limites);
+        var resultado = await conversacion.EjecutarAsync(contexto, entrada, sesion.Registro, cancellationToken);
         sesion.Uso = resultado.Uso;
         _presupuesto.Registrar(CalculadoraCosto.Calcular(resultado.Uso, _configuracion.Precio));
         return resultado.Estado switch
@@ -123,25 +106,33 @@ public sealed class PreguntarAsistente
             EstadoConversacion.IdAjeno => Denegar(sesion, MotivoDenegacion.HerramientaIdAjeno, resultado.Uso.Total),
             EstadoConversacion.LimiteHerramientas => NoDisponible(sesion, ResultadoAuditoria.LimiteHerramientas),
             EstadoConversacion.Rechazada => Responder(sesion, Textos.NoVerificable, [], ResultadoAuditoria.Error),
-            _ => Completar(sesion, resultado.Texto ?? string.Empty, secciones)
+            _ => Completar(sesion, resultado.Texto ?? string.Empty, entrada)
         };
     }
 
-    private ResultadoPregunta Completar(SesionPregunta sesion, string texto, IReadOnlyList<SeccionDocumento> secciones)
+    private async Task<EntradaConversacion> PrepararEntradaAsync(SesionPregunta sesion, ContextoUsuario contexto, CancellationToken cancellationToken)
+    {
+        var pregunta = sesion.Entrada.Pregunta;
+        var secciones = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(pregunta), _limites.MaximoSeccionesRecuperadas);
+        var resumen = await _lectorResumen.LeerAsync(contexto, pregunta, sesion.Api, sesion.Registro, cancellationToken);
+        return new EntradaConversacion(pregunta, secciones, resumen, ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
+    }
+
+    private ResultadoPregunta Completar(SesionPregunta sesion, string texto, EntradaConversacion entrada)
     {
         if (texto.Trim() == Textos.SinInformacion)
         {
             return Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, usoDatos: false);
         }
 
-        foreach (var seccion in secciones)
+        foreach (var seccion in entrada.Secciones)
         {
             sesion.Registro.AgregarFuente($"{seccion.Titulo}. {seccion.Texto}");
         }
 
-        var directorio = sesion.Directorio!;
+        var directorio = sesion.Directorio;
         var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, directorio);
-        var candidatas = CitasEntregadasYCitadas(texto, secciones);
+        var candidatas = CitasEntregadasYCitadas(texto, entrada.Secciones);
         var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio);
         return Responder(sesion, verificada.Respuesta, CitasFinales(sesion, verificada), verificada.Resultado);
     }
@@ -192,7 +183,7 @@ public sealed class PreguntarAsistente
     private void Auditar(SesionPregunta sesion, ResultadoAuditoria resultado, MotivoDenegacion? motivo, IReadOnlyList<Cita> citas)
     {
         var usuario = sesion.Entrada.Usuario;
-        var pregunta = AuditorPeticiones.SanearPregunta(usuario, sesion.Entrada.Pregunta, sesion.Directorio ?? ConstructorDirectorio.Vacio);
+        var pregunta = AuditorPeticiones.SanearPregunta(usuario, sesion.Entrada.Pregunta, sesion.Directorio);
         var costo = CalculadoraCosto.Calcular(sesion.Uso, _configuracion.Precio);
         var registro = sesion.Registro;
         _auditor.Registrar(new EventoAuditoria(
@@ -204,7 +195,12 @@ public sealed class PreguntarAsistente
         });
     }
 
-    private sealed class SesionPregunta(PreguntaEntrada entrada, string ipOrigen, string correlationId, ApiAcademicaConPresupuesto api)
+    private sealed class SesionPregunta(
+        PreguntaEntrada entrada,
+        string ipOrigen,
+        string correlationId,
+        ApiAcademicaConPresupuesto api,
+        DirectorioAcademico directorio)
     {
         public PreguntaEntrada Entrada { get; } = entrada;
 
@@ -218,7 +214,7 @@ public sealed class PreguntarAsistente
 
         public RegistroConsultas Registro { get; } = new();
 
-        public DirectorioAcademico? Directorio { get; set; }
+        public DirectorioAcademico Directorio { get; } = directorio;
 
         public UsoTokens Uso { get; set; } = new(0, 0);
     }

@@ -9,6 +9,8 @@ public static class ConstructorPrompts
     private const string AlcanceEstudiante =
         "Hablas con un estudiante: puedes tratar el reglamento y sus propios datos académicos, nada más.";
 
+    private const string EncabezadoResumen = "Resumen académico de quien pregunta, calculado por el sistema:";
+
     private const string AlcanceCoordinador =
         "Hablas con un coordinador: puedes tratar el reglamento y los datos de los estudiantes de sus programas, nada más.";
 
@@ -18,7 +20,7 @@ public static class ConstructorPrompts
         var prompt = $$"""
             Eres TutorFlow, el asistente académico de la Corporación Educativa Horizonte. Atiendes a estudiantes y a coordinadores de programa: respondes con el reglamento académico vigente y con los datos académicos del periodo 2026-2 de la persona que pregunta. {{alcance}}
 
-            Tus fuentes son las secciones del reglamento que llegan con la pregunta y los resultados de las herramientas. El reglamento explica las reglas pero no contiene los datos de nadie, así que para cualquier pregunta sobre notas, promedio, asistencia, habilitación, beca o datos del programa llama primero a la herramienta correspondiente, sin avisar y sin pedir confirmación: ya sabe quién pregunta y solo devuelve lo que esa persona puede ver. Responde después de recibir su resultado. Las definitivas, los promedios, las faltas y la elegibilidad de beca llegan calculados por el sistema con las reglas institucionales: cópialos tal cual, con punto decimal, porque cualquier cálculo propio podría diferir de ellas.
+            Tus fuentes son las secciones del reglamento que llegan con la pregunta, el resumen académico propio cuando llega y los resultados de las herramientas. Si llega el resumen académico de quien pregunta, respóndele con él sin llamar a las herramientas, salvo que pidan el detalle de los cortes. El reglamento explica las reglas pero no contiene los datos de nadie, así que para cualquier otra pregunta sobre notas, promedio, asistencia, habilitación, beca o datos del programa llama primero a la herramienta correspondiente, sin avisar y sin pedir confirmación: ya sabe quién pregunta y solo devuelve lo que esa persona puede ver. Responde después de recibir su resultado. Las definitivas, los promedios, las faltas y la elegibilidad de beca llegan calculados por el sistema con las reglas institucionales: cópialos tal cual, con punto decimal, porque cualquier cálculo propio podría diferir de ellas.
 
             Empieza por el dato que pidieron y explica después la regla que lo respalda, citándola como documento.md · Artículo N o documento.md · Sección N. Escribe en español, en segunda persona y con un tono cordial y directo. Las respuestas son breves, normalmente de menos de 120 palabras, y cuando hay varias asignaturas van en una línea por asignatura con el formato Asignatura: valor. Evita la jerga técnica: a quien pregunta le interesa su resultado, no cómo se obtuvo.
 
@@ -40,9 +42,24 @@ public static class ConstructorPrompts
             : $"{prompt}{Environment.NewLine}{Environment.NewLine}Marcador interno confidencial: {marcadorCanario}";
     }
 
-    public static MensajeLlm MensajeInicial(string pregunta, IReadOnlyList<SeccionDocumento> secciones)
+    public static MensajeLlm MensajeInicial(string pregunta, IReadOnlyList<SeccionDocumento> secciones, string? resumen)
     {
         var constructor = new StringBuilder();
+        if (resumen is not null)
+        {
+            constructor.AppendLine(EncabezadoResumen);
+            constructor.AppendLine(FormateadorDatos.Delimitar(Textos.FuenteResumenPropio, resumen));
+            constructor.AppendLine();
+        }
+
+        AgregarSecciones(constructor, secciones);
+        constructor.AppendLine();
+        constructor.Append($"Pregunta: {pregunta}");
+        return new MensajeLlm(RolMensaje.Usuario, constructor.ToString(), null, []);
+    }
+
+    private static void AgregarSecciones(StringBuilder constructor, IReadOnlyList<SeccionDocumento> secciones)
+    {
         constructor.AppendLine(secciones.Count == 0
             ? "No se recuperaron secciones del reglamento para esta pregunta."
             : "Secciones recuperadas del reglamento:");
@@ -50,9 +67,5 @@ public static class ConstructorPrompts
         {
             constructor.AppendLine(FormateadorDatos.Delimitar($"{seccion.Documento} · {seccion.Seccion}", $"{seccion.Titulo}. {seccion.Texto}"));
         }
-
-        constructor.AppendLine();
-        constructor.Append($"Pregunta: {pregunta}");
-        return new MensajeLlm(RolMensaje.Usuario, constructor.ToString(), null, []);
     }
 }

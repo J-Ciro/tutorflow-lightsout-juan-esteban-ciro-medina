@@ -59,7 +59,7 @@ public static class FormateadorDatos
         return $"{asignatura.Nombre} ({asignatura.Codigo}, {asignatura.Creditos} créditos): {DescribirEstado(resultado)}.";
     }
 
-    private static string DescribirEstado(ResultadoAsignatura resultado) => resultado.Estado switch
+    internal static string DescribirEstado(ResultadoAsignatura resultado) => resultado.Estado switch
     {
         EstadoAsignatura.Aprobada => $"definitiva {Nota(resultado.Definitiva)}, aprobada",
         EstadoAsignatura.Perdida => $"definitiva {Nota(resultado.Definitiva)}, perdida, {DescribirHabilitacion(resultado)}",
@@ -101,14 +101,16 @@ public static class FormateadorDatos
         return Lista(calificados);
     }
 
-    private static string LineaDeAsistencia(ResultadoAsignatura resultado)
+    internal static string DescribirAsistencia(ResultadoAsignatura resultado)
     {
-        var asignatura = resultado.Asignatura;
-        var clases = asignatura.Asistencia.ClasesProgramadas;
-        return asignatura.Asistencia.Inasistencias is { } faltas
-            ? $"{asignatura.Nombre}: {faltas} inasistencias de {clases} clases programadas; máximo permitido sin perder: {resultado.FaltasPermitidas}; faltas restantes: {resultado.FaltasRestantes}{(resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia ? "; perdida por inasistencia" : string.Empty)}."
-            : $"{asignatura.Nombre}: sin registro de inasistencias en {clases} clases programadas; no se declara pérdida y se debe solicitar la revisión al coordinador (Artículo 12).";
+        var clases = resultado.Asignatura.Asistencia.ClasesProgramadas;
+        return resultado.Asignatura.Asistencia.Inasistencias is { } faltas
+            ? $"{faltas} inasistencias de {clases} clases programadas; máximo permitido sin perder: {resultado.FaltasPermitidas}; faltas restantes: {resultado.FaltasRestantes}{(resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia ? "; perdida por inasistencia" : string.Empty)}"
+            : $"sin registro de inasistencias en {clases} clases programadas; no se declara pérdida y se debe solicitar la revisión al coordinador (Artículo 12)";
     }
+
+    private static string LineaDeAsistencia(ResultadoAsignatura resultado) =>
+        $"{resultado.Asignatura.Nombre}: {DescribirAsistencia(resultado)}.";
 
     private static string DescribirPerdida(ResultadoAsignatura resultado) =>
         resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia
@@ -124,7 +126,7 @@ public static class FormateadorDatos
     private static bool SinRegistro(ResultadoAsignatura resultado) =>
         resultado.EstadoAsistencia == EstadoAsistencia.SinRegistro;
 
-    private static string TextoBeca(ElegibilidadBeca beca) => beca switch
+    internal static string TextoBeca(ElegibilidadBeca beca) => beca switch
     {
         ElegibilidadBeca.Elegible => "elegible",
         ElegibilidadBeca.NoElegible => "no elegible",
@@ -137,9 +139,9 @@ public static class FormateadorDatos
         return lista.Count == 0 ? Ninguna : string.Join(", ", lista);
     }
 
-    private static string Nota(decimal? valor) =>
+    internal static string Nota(decimal? valor) =>
         valor is { } nota ? nota.ToString(FormatoNota, CultureInfo.InvariantCulture) : SinCalificar;
 
-    private static string Promedio(decimal? valor) =>
+    internal static string Promedio(decimal? valor) =>
         valor is { } promedio ? promedio.ToString(FormatoPromedio, CultureInfo.InvariantCulture) : "no disponible";
 }
