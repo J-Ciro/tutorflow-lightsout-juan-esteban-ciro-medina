@@ -1,4 +1,4 @@
-# 10 · Verificación de la salida, trazabilidad, límites y resumen propio (CA-01, CA-04, CA-05, CA-06, CA-07, CA-08, CA-11, CA-14)
+# 10 · Verificación de la salida, trazabilidad, límites, configuración y resumen propio (CA-01, CA-04, CA-05, CA-06, CA-07, CA-08, CA-11, CA-14, CA-15)
 
 > Spec: [`specs/001-asistente-academico/spec.md`](../../specs/001-asistente-academico/spec.md) · Sistema: [`SPEC.md`](../../SPEC.md)
 
@@ -221,7 +221,7 @@ Salvo que se indique otra cosa, la base de conocimiento es la real (`reglamento/
 - (COMP-02, COMP-03, COMP-05, SEG-10a, spec §11.1 "Referencias escritas en la respuesta", D-37; CA-14, CA-01 casos 2 y 5)
 
 ### ESC-179 · La definitiva afirmada para una asignatura es la calculada para esa asignatura `@feliz` `@alterno` `@permisos` `@abuso`
-- **Dado** un LLM doble que responde el texto indicado; estudiantes sin herramientas (el activador de COMP-07 entrega el resumen) y `COORD-02` con la herramienta de detalle de `EST-005`
+- **Dado** un LLM doble que responde el texto indicado; estudiantes sin herramientas (el activador de COMP-07 entrega el resumen); en (g)–(j), `COORD-02` con un doble que, en la misma petición y antes de responder, invoca la herramienta de programa (lee ADM) **y** la herramienta de detalle con `EST-005`; en (k) y (l), `COORD-02` con un doble que solo invoca la herramienta de programa (su resultado lista de `EST-005` Microeconomía 1.8 y Estadística 2.3 como perdidas y no lista las definitivas de las aprobadas, como Contabilidad 3.2)
 - **Cuando**
   - (a) caso real: `EST-006` pregunta "¿Cuál es mi nota definitiva en Estadística?" y el doble responde "Tu nota definitiva en Estadística (EST-103) es 4.0."
   - (b) `EST-004` pregunta "¿Qué nota definitiva tengo en Contabilidad?" y el doble responde "Tu definitiva en Contabilidad es 3.9."
@@ -233,10 +233,14 @@ Salvo que se indique otra cosa, la base de conocimiento es la real (`reglamento/
   - (h) la pregunta de (g) y el doble responde "La definitiva de Valentina Castro en Estadística es 2.3."
   - (i) la pregunta de (g) y el doble responde en lista "Valentina Castro:\n- Definitiva en Estadística: 3.2" (`\n` es un salto de línea; la línea de lista hereda a `EST-005`, SEG-10f "Herencia en listas")
   - (j) la pregunta de (g) y el doble responde "Valentina Castro:\n- Definitiva en Estadística: 2.3"
+  - (k) la pregunta de (g), solo con la lectura del programa, y el doble responde "La definitiva de Valentina Castro en Estadística es 3.2."
+  - (l) la pregunta de (g), solo con la lectura del programa, y el doble responde "La definitiva de Valentina Castro en Estadística es 2.3."
 - **Entonces**
+  - (k): 200 con `TEXTO_NO_VERIFICABLE`, `citas: []`, `usoDatosEstudiante: true` y auditoría `numero_no_verificado`: 3.2 no está en el resultado de la herramienta de programa ni en otra fuente entregada, así que SEG-10c la reemplaza antes de evaluar SEG-10g (con la lectura de detalle de (g), 3.2 sí está y termina en `estado_no_verificado`).
+  - (l): 200 con la respuesta sin cambios, `citas` incluye `Datos del programa · ADM` y auditoría `respondida`: 2.3 está en el resultado del programa (Estadística perdida de `EST-005`) y es su definitiva (2.30 → 2.3).
   - (i): igual que (g): 200 con `TEXTO_NO_VERIFICABLE`, `citas: []` y auditoría `estado_no_verificado` (3.2 ≠ 2.3).
   - (j): igual que (h): 200 con la respuesta sin cambios y auditoría `respondida`.
-  - (a), (c), (d) y (g): 200 con `TEXTO_NO_VERIFICABLE`, `citas: []`, `usoDatosEstudiante: true` y auditoría `estado_no_verificado`. (a): la cifra `4.0` pasa SEG-10c (es el equivalente de la acumulada, 2.4 / 0.6 = 4.0, D-05), pero Estadística de `EST-006` no tiene definitiva (corte 3 `null`; `EST-103` es su código, no un ID de persona). (c): 3.3 es la definitiva de Microeconomía (3.4·0.3 + 3.0·0.3 + 3.5·0.4 = 3.32 → 3.3), no la de Contabilidad (3.9). (d): Bases de Datos de `EST-002` está perdida por inasistencia (9 × 100 = 900 > 15 × 48 = 720) y su definitiva es 0.0; 3.5 es la de Programación Orientada a Objetos (3.45 → 3.5). (g): 3.2 es Contabilidad de `EST-005` (3.18 → 3.2); Estadística es 2.3.
+  - (a), (c), (d) y (g): 200 con `TEXTO_NO_VERIFICABLE`, `citas: []`, `usoDatosEstudiante: true` y auditoría `estado_no_verificado`. (a): la cifra `4.0` pasa SEG-10c (es el equivalente de la acumulada, 2.4 / 0.6 = 4.0, D-05), pero Estadística de `EST-006` no tiene definitiva (corte 3 `null`; `EST-103` es su código, no un ID de persona). (c): 3.3 es la definitiva de Microeconomía (3.4·0.3 + 3.0·0.3 + 3.5·0.4 = 3.32 → 3.3), no la de Contabilidad (3.9). (d): Bases de Datos de `EST-002` está perdida por inasistencia (9 × 100 = 900 > 15 × 48 = 720) y su definitiva es 0.0; 3.5 es la de Programación Orientada a Objetos (3.45 → 3.5). (g): 3.2 es Contabilidad de `EST-005` (3.2·0.3 + 3.0·0.3 + 3.3·0.4 = 3.18 → 3.2), presente en el resultado de la herramienta de detalle, así que pasa SEG-10c; Estadística es 2.3.
   - (b), (e), (f) y (h): 200 con la respuesta sin cambios y auditoría `respondida`; `citas` incluye `Datos del estudiante · Notas` en (b), (e) y (f), y `Datos del programa · ADM` en (h). (b): 3.6·0.3 + 3.9·0.3 + 4.1·0.4 = 3.89 → 3.9. (f): `no` está a 3 palabras de `definitiva` ("no tiene nota definitiva"), así que no se verifica. (h): 2.4·0.3 + 2.2·0.3 + 2.3·0.4 = 2.30 → 2.3, en el tramo de Valentina Castro.
 - (SEG-10g, SEG-10c, RN-04, RN-05, RN-07, D-05, D-38; CA-06)
 
@@ -250,6 +254,57 @@ Salvo que se indique otra cosa, la base de conocimiento es la real (`reglamento/
   - (a) y (b): las peticiones 1 a 3 responden 200 con `tokens: 1200` y `costoUsd: 0`, y sus eventos de auditoría llevan `precioDesconocido: true`; cada una deja 0.01 USD de gasto en el presupuesto (3 × 0.01 = 0.03, que no supera 0.03); la petición 4 responde 503 sin llamar al LLM (0.03 + 0.01 = 0.04 > 0.03); el LLM recibió exactamente 3 llamadas.
   - (c): las 4 peticiones responden 200 con `costoUsd: 0`; ningún evento contiene `precioDesconocido`; el LLM recibió exactamente 4 llamadas.
 - (SEG-13, §9.4, §11.3, D-39; CA-11, CA-07)
+
+## Configuración al arrancar (RNF-05, §11.4, D-40, CA-15)
+
+### ESC-181 · Configuración inválida: falla rápida o defecto seguro con advertencia, nunca desactivada `@alterno` `@abuso` `@operacion`
+- **Dado** la configuración de `appsettings.json` del repositorio, `LLM_API_KEY` con la llave falsa de prueba y la clave indicada con el valor indicado (configuración en memoria o variable de entorno; "vacío" es la cadena vacía, p. ej. `Limites__PresupuestoDiarioUsd=`)
+- **Cuando** se inicia la API con:
+
+| Caso | Clave | Valor | Efecto | Línea esperada en el error de arranque o en la consola |
+| --- | --- | --- | --- | --- |
+| (a) | `Conocimiento:RelevanciaMinima` | `0` | No arranca | `Configuración inválida: Conocimiento:RelevanciaMinima = "0" (entero de 1 a 10)` |
+| (b) | `Conocimiento:RelevanciaMinima` | `11` | No arranca | `Configuración inválida: Conocimiento:RelevanciaMinima = "11" (entero de 1 a 10)` |
+| (c) | `Conocimiento:ApoyoMinimoRespaldo` | `dos` | No arranca | `Configuración inválida: Conocimiento:ApoyoMinimoRespaldo = "dos" (entero de 1 a 10)` |
+| (d) | `Conocimiento:ApoyoMinimoRespaldo` | `2.0` | No arranca | `Configuración inválida: Conocimiento:ApoyoMinimoRespaldo = "2.0" (entero de 1 a 10)` |
+| (e) | `Limites:PreguntasPorMinutoPorIp` | `0` | No arranca | `Configuración inválida: Limites:PreguntasPorMinutoPorIp = "0" (entero de 1 a 10000)` |
+| (f) | `Limites:TimeoutLlmSegundos` | `-5` | No arranca | `Configuración inválida: Limites:TimeoutLlmSegundos = "-5" (entero de 1 a 60)` |
+| (g) | `Limites:MaximoSeccionesRecuperadas` | `7` | No arranca | `Configuración inválida: Limites:MaximoSeccionesRecuperadas = "7" (entero de 1 a 6)` |
+| (h) | `Limites:PresupuestoDiarioUsd` | `0` | No arranca | `Configuración inválida: Limites:PresupuestoDiarioUsd = "0" (decimal mayor que 0 y hasta 1000)` |
+| (i) | `Limites:PresupuestoDiarioUsd` | `0,5` | No arranca | `Configuración inválida: Limites:PresupuestoDiarioUsd = "0,5" (decimal mayor que 0 y hasta 1000)` |
+| (j) | `LLM_PRECIO_ENTRADA` | `-1` | No arranca | `Configuración inválida: LLM_PRECIO_ENTRADA = "-1" (decimal de 0 a 1000)` |
+| (k) | `Autorizacion:Asignaturas:2:Codigo` | `bd203` | No arranca | `Configuración inválida: Autorizacion:Asignaturas:2:Codigo = "bd203" (formato ^[A-Z]{2,4}-\d{3}$)` |
+| (l) | `Autorizacion:Asignaturas:7:Codigo` | `BD-203` | No arranca | `Configuración inválida: Autorizacion:Asignaturas:7:Codigo = "BD-203" (código duplicado de Autorizacion:Asignaturas:2:Codigo)` |
+| (m) | `Autorizacion:Asignaturas:6:Nombre` | vacío | No arranca | `Configuración inválida: Autorizacion:Asignaturas:6:Nombre = "" (nombre vacío)` |
+| (n) | (a) y (h) a la vez | `0` y `0` | No arranca | Las 2 líneas de (a) y (h) |
+| (o) | `Llm:ReservaSinPrecioUsd`, modelo sin precio, presupuesto 0.02 | `-0.5` | Arranca con advertencia | `Configuración ignorada: Llm:ReservaSinPrecioUsd = "-0.5" (decimal mayor que 0); se usa 0.01` |
+| (p) | `Llm:ReservaSinPrecioUsd`, modelo sin precio, presupuesto 0.02 | `abc` | Arranca con advertencia | `Configuración ignorada: Llm:ReservaSinPrecioUsd = "abc" (decimal mayor que 0); se usa 0.01` |
+| (q) | `Llm:ReservaPorPeticionUsd`, `claude-haiku-5-5` (0.10 / 0.50 USD por millón), presupuesto 0.0036 | `0` | Arranca con advertencia | `Configuración ignorada: Llm:ReservaPorPeticionUsd = "0" (decimal mayor que 0); se usa el estimado de 8000 tokens de entrada y 2000 de salida` |
+| (r) | `Conocimiento:RelevanciaMinima` | `1` | Arranca sin advertencia; efectivo 1 | — |
+| (s) | `Conocimiento:RelevanciaMinima` | `10` | Arranca sin advertencia; efectivo 10 | — |
+| (t) | `Limites:MaximoSeccionesRecuperadas` | `6` | Arranca sin advertencia; efectivo 6 | — |
+| (u) | `Limites:PresupuestoDiarioUsd` | `0.000001` | Arranca sin advertencia; efectivo 0.000001 | — |
+| (v) | `Limites:PresupuestoDiarioUsd` | vacío | Arranca sin advertencia; efectivo 5 | — |
+| (w) | `Llm:ReservaSinPrecioUsd` | vacío | Arranca sin advertencia; efectivo 0.01 | — |
+| (x) | `Autorizacion:Asignaturas:2:Codigo` | `BD-203`, un salto de línea real y `Arranque correcto` | No arranca | `Configuración inválida: Autorizacion:Asignaturas:2:Codigo = "BD-203\nArranque correcto" (formato ^[A-Z]{2,4}-\d{3}$)`, con `\n` como los 2 caracteres barra invertida y `n` |
+
+- **Entonces**
+  - (a)–(n) y (x): el arranque falla antes de escuchar en el puerto 8080 (código de salida distinto de 0; en integración, la creación del host lanza una excepción) y el error de arranque contiene la línea o líneas indicadas, completas y en una sola línea cada una. Hasta esta corrección, (a) se recortaba a 1 en silencio y arrancaba. En (x), ninguna línea de la consola empieza por `Arranque correcto`.
+  - (o)–(q): `GET /api/salud` responde 200 y la consola contiene la advertencia indicada; con un LLM doble que retiene cada llamada hasta que la prueba lo libera, de 3 peticiones simultáneas de `EST-001` con "¿Cuál es mi promedio?" exactamente 2 responden 200 y 1 responde 503 sin llamar al LLM, y el LLM recibió exactamente 2 llamadas. Cálculo: (o) y (p) 2 × 0.01 = 0.02 ≤ 0.02 y 0.02 + 0.01 = 0.03 > 0.02; (q) 8000 × 0.10 / 10⁶ + 2000 × 0.50 / 10⁶ = 0.0008 + 0.001 = 0.0018, 2 × 0.0018 = 0.0036 ≤ 0.0036 y 0.0036 + 0.0018 = 0.0054 > 0.0036. Con la reserva tomada como 0, las 3 responderían 200 (control desactivado).
+  - (r)–(w): `GET /api/salud` responde 200, la consola no contiene `Configuración inválida` ni `Configuración ignorada` y el valor efectivo de la clave es el indicado.
+  - En todos los casos, ni el error de arranque ni la consola contienen la llave falsa de prueba.
+- (RNF-05, §11.4, SEG-11, SEG-13, D-39, D-40; CA-15)
+
+### ESC-182 · Un código del catálogo igual al ID de una persona no la exceptúa `@permisos` `@abuso`
+- **Dado** el catálogo de §11.4 más la entrada 8 con `Codigo` = `EST-002` (formato válido, así que la API arranca) y `Nombre` = `Electiva de prueba`, y un LLM doble que responde sin invocar herramientas
+- **Cuando**
+  - (a) `EST-001` pregunta "¿Cuáles son las notas de EST-002?"
+  - (b) `EST-006` pregunta "¿Cuál es mi nota en EST-103?"
+- **Entonces**
+  - Al cargar el registro de personas, la consola contiene la advertencia `Configuración ignorada: Autorizacion:Asignaturas:8:Codigo = "EST-002" (coincide con el ID de una persona del registro); se excluye del catálogo`.
+  - (a): 403 con el cuerpo de D-07 del estudiante, 0 llamadas al LLM, 0 lecturas de `EST-002` y auditoría `denegada` con `motivoDenegacion: tercero_mencionado` (`EST-002` es un ID de persona, no un código exceptuado).
+  - (b): 200, el LLM recibió 1 llamada y la auditoría registra `respondida` (`EST-103` no es el ID de ninguna persona y sigue exceptuado; sin falso 403).
+- (SEG-04, SEG-04a, SEG-10b, §11.4, D-40; CA-15)
 
 ### ESC-176 · ID con forma de persona no autorizado en la salida, exista o no `@abuso` `@permisos` `@alterno`
 - **Dado** un LLM doble que responde el texto indicado
