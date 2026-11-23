@@ -16,12 +16,13 @@ env:
 
 jobs:
   commits:
+    name: "ESC-117 CA-10 commits conformes al hook commit-msg"
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -46,8 +47,8 @@ jobs:
         shell: bash
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
         with:
           global-json-file: backend/global.json
           cache: true
@@ -63,8 +64,8 @@ jobs:
         shell: bash
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
         with:
           global-json-file: backend/global.json
           cache: true
@@ -83,8 +84,8 @@ jobs:
         shell: bash
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
         with:
           global-json-file: backend/global.json
           cache: true
@@ -116,8 +117,8 @@ jobs:
         shell: bash
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
         with:
           global-json-file: backend/global.json
           cache: true
@@ -142,7 +143,7 @@ jobs:
         run: dotnet run --no-restore --project evals/TutorFlow.Evals -c Release -- --url http://localhost:8080 --corridas 3 | tee "$RUNNER_TEMP/evals-llm.txt"
       - name: Publicar tokens y costo
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: evals-llm
           path: ${{ runner.temp }}/evals-llm.txt
@@ -159,10 +160,10 @@ jobs:
         shell: bash
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
         with:
           global-json-file: backend/global.json
           cache: true
@@ -170,9 +171,12 @@ jobs:
       - run: dotnet restore --locked-mode
       - name: Paquetes vulnerables
         run: |
-          dotnet list package --vulnerable --include-transitive | tee "$RUNNER_TEMP/vulnerables.txt"
-          if grep -q "has the following vulnerable packages" "$RUNNER_TEMP/vulnerables.txt"; then
-            echo "Hay paquetes vulnerables" >&2
+          dotnet list package --vulnerable --include-transitive --format json > "$RUNNER_TEMP/vulnerables.json"
+          jq -e '[.problems[]?] | length == 0' "$RUNNER_TEMP/vulnerables.json" > /dev/null || { echo "dotnet list package reporto problemas" >&2; exit 1; }
+          cantidad=$(jq '[.projects[]?.frameworks[]? | (.topLevelPackages[]?, .transitivePackages[]?) | select((.vulnerabilities // []) | length > 0)] | length' "$RUNNER_TEMP/vulnerables.json")
+          if [ "$cantidad" -gt 0 ]; then
+            jq -r '.projects[]?.frameworks[]? | (.topLevelPackages[]?, .transitivePackages[]?) | select((.vulnerabilities // []) | length > 0) | .id + " " + (.resolvedVersion // .requestedVersion)' "$RUNNER_TEMP/vulnerables.json" >&2
+            echo "Hay $cantidad paquetes vulnerables" >&2
             exit 1
           fi
       - name: Busqueda de secretos con gitleaks
@@ -185,7 +189,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Levantar el sistema
         run: docker compose up -d --build
       - name: Esperar la salud
@@ -197,7 +201,7 @@ jobs:
           docker compose logs --no-color >&2
           echo "La API no respondio en 60 segundos" >&2
           exit 1
-      - name: Prueba de humo
+      - name: "ESC-116 CA-09 smoke: salud 200 y 403"
         run: |
           salud=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/salud)
           test "$salud" = "200"
