@@ -100,7 +100,7 @@ public sealed class AfirmacionesDePerdidaApiTests
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaHabilitacion);
 
         AfirmarEstadoNoVerificado(respuesta, fabrica, usoDatos: false);
-        Assert.Equal(1, fabrica.Llm.Llamadas);
+        Assert.Equal(2, fabrica.Llm.Llamadas);
     }
 
     [Fact]
