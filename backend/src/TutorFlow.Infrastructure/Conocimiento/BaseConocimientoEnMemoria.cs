@@ -10,7 +10,7 @@ public sealed class BaseConocimientoEnMemoria : IBaseConocimiento
     private const int LongitudMinimaDeTermino = 3;
     private const double ParametroK1 = 1.5;
     private const double ParametroB = 0.75;
-    private const double PesoDelTitulo = 2.0;
+    private const double PesoDelTitulo = 4.0;
 
     private static readonly HashSet<string> PalabrasVacias = new(StringComparer.Ordinal)
     {
@@ -36,9 +36,9 @@ public sealed class BaseConocimientoEnMemoria : IBaseConocimiento
 
     public IReadOnlyList<SeccionDocumento> BuscarSecciones(string consulta, int maximo)
     {
-        var terminos = ExtraerRaices(consulta).Frecuencias.Keys.ToList();
+        var terminos = ExpansionDeTerminos.Expandir(ExtraerRaices(consulta).Frecuencias.Keys);
         return _secciones
-            .Select(indexada => (indexada.Seccion, Puntaje: Puntuar(indexada, terminos, consulta)))
+            .Select(indexada => (indexada.Seccion, Puntaje: Puntuar(indexada, terminos)))
             .Where(par => par.Puntaje > 0)
             .OrderByDescending(par => par.Puntaje)
             .Take(maximo)
@@ -60,10 +60,10 @@ public sealed class BaseConocimientoEnMemoria : IBaseConocimiento
         return new Raices(frecuencias);
     }
 
-    private double Puntuar(SeccionIndexada indexada, IReadOnlyList<string> terminos, string consulta)
+    private double Puntuar(SeccionIndexada indexada, IReadOnlyList<string> terminos)
     {
         var puntaje = terminos.Sum(termino => PuntajeDelTermino(indexada, termino));
-        return puntaje + PuntajeDeTitulo(indexada.Seccion, consulta);
+        return puntaje + PuntajeDeTitulo(indexada.Seccion, terminos);
     }
 
     private double PuntajeDelTermino(SeccionIndexada indexada, string termino)
@@ -79,10 +79,10 @@ public sealed class BaseConocimientoEnMemoria : IBaseConocimiento
         return idf * frecuencia * (ParametroK1 + 1) / (frecuencia + ParametroK1 * normalizacion);
     }
 
-    private static double PuntajeDeTitulo(SeccionDocumento seccion, string consulta)
+    private static double PuntajeDeTitulo(SeccionDocumento seccion, IReadOnlyList<string> terminos)
     {
         var titulo = ExtraerRaices(seccion.Titulo).Frecuencias.Keys;
-        var coincidencias = ExtraerRaices(consulta).Frecuencias.Keys.Count(titulo.Contains);
+        var coincidencias = terminos.Count(titulo.Contains);
         return coincidencias * PesoDelTitulo;
     }
 
