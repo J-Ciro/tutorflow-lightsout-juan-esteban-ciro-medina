@@ -118,15 +118,16 @@ public sealed class CifrasComoApoyoApiTests
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-164")]
     [Trait("RF", "COMP-02")]
-    public async Task ESC_164a_El_respaldo_de_la_nota_minima_incluye_el_Articulo_5_y_solo_secciones_de_Articulo_5_y_6()
+    public async Task ESC_164a_El_respaldo_de_la_nota_minima_son_las_entregadas_de_Articulo_5_y_6_en_orden_de_ranking()
     {
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Una asignatura se aprueba con 3.0."), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar una asignatura?");
 
+        var entregadas = GuionesLlm.Bloques(Assert.Single(fabrica.Llm.Solicitudes)).Select(b => b.Fuente).ToList();
         Assert.Equal(200, respuesta.Estado);
-        Assert.Contains("reglamento_academico_2025.md · Artículo 5", respuesta.Citas);
-        Assert.All(respuesta.Citas, c => Assert.Contains(c, RespaldoPermitido));
+        Assert.Contains("reglamento_academico_2025.md · Artículo 5", entregadas);
+        Assert.Equal(entregadas.Where(RespaldoPermitido.Contains), respuesta.Citas);
         Assert.False(respuesta.UsoDatosEstudiante);
     }
 }
