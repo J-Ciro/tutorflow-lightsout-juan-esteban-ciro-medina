@@ -86,9 +86,7 @@ public sealed class ReintentoAcotadoTests
         Assert.Equal("Tu promedio es 4.39.", resultado.Respuesta!.Respuesta);
         var instruccion = guion.Capturas[^1][^1];
         Assert.Equal(RolMensaje.Usuario, instruccion.Rol);
-        Assert.StartsWith($"{ReintentoDeLlm.Prefijo}el valor ", instruccion.Contenido, StringComparison.Ordinal);
-        Assert.Contains("1.500.000", instruccion.Contenido, StringComparison.Ordinal);
-        Assert.EndsWith(" no está en las fuentes. Responde de nuevo usando solo los datos y las secciones entregados.", instruccion.Contenido, StringComparison.Ordinal);
+        Assert.Equal(ReintentoDeLlm.Instruccion("el valor 1.500.000 no está en las fuentes"), instruccion.Contenido);
     }
 
     [Fact]
@@ -125,9 +123,7 @@ public sealed class ReintentoAcotadoTests
         Assert.Equal(2, escenario.Llm.Solicitudes.Count);
         SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
         ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
-        var instruccion = guion.Capturas[^1][^1].Contenido;
-        Assert.StartsWith($"{ReintentoDeLlm.Prefijo}la definitiva 4.0 de Estadística de ", instruccion, StringComparison.Ordinal);
-        Assert.EndsWith(" no coincide con los datos entregados. Responde de nuevo usando solo los datos y las secciones entregados.", instruccion, StringComparison.Ordinal);
+        Assert.Equal(ReintentoDeLlm.Instruccion("la definitiva 4.0 de Estadística no coincide con los datos entregados"), guion.Capturas[^1][^1].Contenido);
     }
 
     [Fact]
@@ -214,6 +210,81 @@ public sealed class ReintentoAcotadoTests
         Assert.DoesNotContain("EST-", instruccion.Contenido, StringComparison.Ordinal);
         ReintentoDeLlm.AfirmarSegundoTurno(guion, PerdidaDeMateo, instruccion.Contenido);
         SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
+    }
+
+    [Fact]
+    [Trait("CA", "CA-21")]
+    [Trait("ESC", "ESC-199")]
+    [Trait("D", "D-62")]
+    [Trait("RF", "SEG-10g")]
+    public async Task ESC_199g1_El_motivo_de_una_definitiva_para_el_estudiante_no_nombra_a_ninguna_persona()
+    {
+        var guion = new GuionDeDosTurnos("Tu definitiva en Estadística es 4.0.", "Tu definitiva en Estadística es 4.0.");
+        var escenario = Con(guion.Responder, Indice(Articulo5, Articulo6));
+
+        var resultado = await escenario.PreguntarAsync(Est006, PreguntaDefinitiva);
+
+        ReintentoDeLlm.AfirmarSegundoTurno(guion, "Tu definitiva en Estadística es 4.0.", ReintentoDeLlm.Instruccion("la definitiva 4.0 de Estadística no coincide con los datos entregados"));
+        SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
+    }
+
+    [Fact]
+    [Trait("CA", "CA-21")]
+    [Trait("ESC", "ESC-199")]
+    [Trait("D", "D-62")]
+    [Trait("RF", "SEG-10f")]
+    public async Task ESC_199g2_El_motivo_de_una_perdida_para_el_estudiante_no_nombra_a_ninguna_persona()
+    {
+        var guion = new GuionDeDosTurnos("Perdiste Contabilidad.", "Perdiste Contabilidad.");
+        var escenario = Con(guion.Responder, Indice(Articulo5, Articulo6));
+
+        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Estudiante, "EST-005"), "¿Perdí Contabilidad?");
+
+        ReintentoDeLlm.AfirmarSegundoTurno(guion, "Perdiste Contabilidad.", ReintentoDeLlm.Instruccion("la afirmación de pérdida en Contabilidad no coincide con los datos entregados"));
+        SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
+    }
+
+    [Fact]
+    [Trait("CA", "CA-21")]
+    [Trait("ESC", "ESC-199")]
+    [Trait("D", "D-62")]
+    [Trait("RF", "SEG-10c")]
+    public async Task ESC_199g3_El_motivo_monetario_copia_solo_los_digitos_y_separadores_y_el_bloqueo_termina_en_COMP_03_con_reintento()
+    {
+        var guion = new GuionDeDosTurnos("La matrícula cuesta $1.500.000.", "La matrícula cuesta $1.500.000.");
+        var escenario = Con(guion.Responder);
+
+        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuánto cuesta la matrícula?");
+
+        ReintentoDeLlm.AfirmarSegundoTurno(guion, "La matrícula cuesta $1.500.000.", ReintentoDeLlm.Instruccion("el valor 1.500.000 no está en las fuentes"));
+        Assert.Equal(Textos.SinInformacion, resultado.Respuesta!.Respuesta);
+        Assert.Empty(resultado.Respuesta.Citas);
+        Assert.Equal(ResultadoAuditoria.SinInformacion, resultado.Auditoria);
+        ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
+    }
+
+    [Fact]
+    [Trait("CA", "CA-21")]
+    [Trait("ESC", "ESC-199")]
+    [Trait("D", "D-62")]
+    [Trait("RF", "SEG-10c")]
+    public async Task ESC_199g4_Sin_datos_leidos_el_bloqueo_de_una_cifra_tambien_tiene_reintento_y_el_motivo_no_dice_de_tu()
+    {
+        const string texto = "Se aprueba con 3.5 (reglamento_academico_2025.md · Artículo 5).";
+        var guion = new GuionDeDosTurnos(texto, texto);
+        var escenario = Con(guion.Responder, Indice(Articulo5));
+
+        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es la nota mínima para aprobar una asignatura?");
+
+        var instruccion = ReintentoDeLlm.Instruccion("la cifra 3.5 no está en los datos ni en las secciones entregados");
+        ReintentoDeLlm.AfirmarSegundoTurno(guion, texto, instruccion);
+        Assert.DoesNotContain("de tu", instruccion, StringComparison.Ordinal);
+        Assert.Equal(Textos.NoVerificable, resultado.Respuesta!.Respuesta);
+        Assert.False(resultado.Respuesta.UsoDatosEstudiante);
+        Assert.Equal(ResultadoAuditoria.NumeroNoVerificado, resultado.Auditoria);
         ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
     }
 

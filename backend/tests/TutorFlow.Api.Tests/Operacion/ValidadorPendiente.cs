@@ -16,7 +16,7 @@ internal static class ValidadorPendiente
             BindingFlags.Public | BindingFlags.Static,
             [typeof(IConfiguration)])
             ?? throw new XunitException(
-                $"falta la clase estática pública {NombreDelTipo} con 'public static IReadOnlyList<string> {NombreDelMetodo}(IConfiguration configuracion)' (spec 001 §11.4, ESC-181 af)");
+                $"falta la clase estática pública {NombreDelTipo} con 'public static IReadOnlyList<string> {NombreDelMetodo}(IConfiguration configuracion)' (plan §13.3, ESC-181 af)");
         return (IReadOnlyList<string>)metodo.Invoke(null, [configuracion])!;
     }
 }

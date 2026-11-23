@@ -162,7 +162,7 @@ public sealed class PrelecturaYConsecuenciaApiTests
     [Fact]
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
-    public async Task ESC_189_La_primera_llamada_trae_la_frase_fija_de_consecuencia_y_las_faltas_de_la_asignatura()
+    public async Task ESC_189f_La_primera_llamada_trae_la_frase_fija_de_consecuencia_y_las_faltas_de_la_asignatura()
     {
         using var fabrica = ConModeloSinHerramientas();
 
@@ -175,7 +175,7 @@ public sealed class PrelecturaYConsecuenciaApiTests
     [Fact]
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
-    public async Task ESC_189_La_primera_llamada_trae_la_linea_de_definitivas_al_preguntar_por_el_promedio()
+    public async Task ESC_189a_La_primera_llamada_trae_la_linea_de_definitivas_al_preguntar_por_el_promedio()
     {
         using var fabrica = ConModeloSinHerramientas();
 

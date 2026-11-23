@@ -45,6 +45,15 @@ public sealed class Reporte
         salida.WriteLine($"Tokens medios: {TokensMedios():F1}  Costo medio USD: {CostoMedio():F6}");
         salida.WriteLine($"p95 de las denegaciones del filtro previo: {P95FiltroPrevioMs:F1} ms (umbral {_opciones.UmbralP95Ms} ms)");
         salida.WriteLine(Exitoso ? "RESULTADO: OK" : "RESULTADO: FALLO");
+        ImprimirTablaDeLaFaseV(salida);
+    }
+
+    private void ImprimirTablaDeLaFaseV(TextWriter salida)
+    {
+        if (_opciones.FaseV)
+        {
+            TablaFaseV.Imprimir(_resultados, EntornoFaseV.Leer(_opciones.Offline, Pruebas.Soporte.DatosReferencia.RutaRepositorio()), salida);
+        }
     }
 
     private void ImprimirFallos(TextWriter salida)

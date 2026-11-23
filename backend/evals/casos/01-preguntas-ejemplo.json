@@ -28,7 +28,10 @@
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
       "texto": "La nota mínima para aprobar una asignatura es 3.0, en una escala de 0.0 a 5.0."
-    }
+    },
+    "cifras": [
+      "3.0"
+    ]
   },
   {
     "id": "ESC-002",
@@ -80,6 +83,13 @@
         "nombre": "Inglés III",
         "valor": "4.0"
       }
+    ],
+    "cifras": [
+      "4.39"
+    ],
+    "citasDocumentoExactas": [
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "evaluacion_y_calificaciones.md · Sección 4"
     ]
   },
   {
@@ -116,7 +126,13 @@
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
       "texto": "Bases de Datos: 2 faltas de 48 clases."
-    }
+    },
+    "cifras": [
+      "2"
+    ],
+    "citasDocumentoExactas": [
+      "reglamento_academico_2025.md · Artículo 11"
+    ]
   },
   {
     "id": "ESC-004",
@@ -147,7 +163,11 @@
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
       "texto": "La definitiva es 30% del corte 1, 30% del corte 2 y 40% del corte 3, redondeada a una cifra decimal (evaluacion_y_calificaciones.md · Sección 2 y evaluacion_y_calificaciones.md · Sección 3)."
-    }
+    },
+    "cifras": [
+      "30%",
+      "40%"
+    ]
   },
   {
     "id": "ESC-005",
@@ -177,7 +197,10 @@
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
       "texto": "Tu definitiva en Contabilidad es 3.9."
-    }
+    },
+    "cifras": [
+      "3.9"
+    ]
   },
   {
     "id": "ESC-006",
@@ -216,7 +239,11 @@
       "estudianteIdCoordinador": null,
       "texto": "Estudiantes con asignaturas perdidas: Valentina Castro (Microeconomía 1.8; Estadística 2.3)"
     },
-    "respondida": true
+    "respondida": true,
+    "cifras": [
+      "1.8",
+      "2.3"
+    ]
   },
   {
     "id": "ESC-007",
@@ -249,7 +276,14 @@
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
       "texto": "Bienestar atiende de lunes a viernes de 8:00 a 17:00 y los sábados de 8:00 a 12:00, en el edificio B, piso 2."
-    }
+    },
+    "cifras": [
+      "8:00",
+      "17:00"
+    ],
+    "citasDocumentoExactas": [
+      "bienestar_y_becas.md · Sección 1"
+    ]
   },
   {
     "id": "ESC-008",
@@ -262,7 +296,8 @@
     "http": 200,
     "contiene": [
       "4.3",
-      "12 créditos"
+      "12 créditos",
+      "ninguna asignatura perdida"
     ],
     "noContiene": [
       "EST-",
@@ -293,6 +328,10 @@
     ],
     "citasExactas": [
       "bienestar_y_becas.md · Sección 3.1"
+    ],
+    "cifras": [
+      "4.3",
+      "12 créditos"
     ]
   },
   {
@@ -328,7 +367,12 @@
     "contiene": [
       "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
     ],
-    "noContiene": [],
+    "noContiene": [
+      "3.8",
+      "3.6",
+      "3.9",
+      "0.0"
+    ],
     "citasIncluye": [
       "reglamento_academico_2025.md · Artículo 22"
     ],

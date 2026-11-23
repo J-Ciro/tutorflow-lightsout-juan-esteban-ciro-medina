@@ -145,7 +145,7 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
     [Trait("RN", "RN-05")]
-    public async Task ESC_189_El_resumen_propio_trae_la_linea_exacta_de_notas(string estudianteId, string linea)
+    public async Task ESC_189abc_El_resumen_propio_trae_la_linea_exacta_de_notas(string estudianteId, string linea)
     {
         var lineas = await LineasDelResumenAsync(estudianteId);
 
@@ -157,7 +157,7 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
     [Trait("RN", "RN-05")]
-    public void ESC_189_La_herramienta_de_notas_trae_la_linea_exacta(string estudianteId, string linea)
+    public void ESC_189abc_La_herramienta_de_notas_trae_la_linea_exacta(string estudianteId, string linea)
     {
         var lineas = Lineas(FormateadorDatos.Notas(ResumenDe(estudianteId)));
 
@@ -169,7 +169,7 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
     [Trait("RN", "RN-13")]
-    public async Task ESC_189_El_resumen_propio_trae_la_linea_exacta_de_asistencia(string estudianteId, string linea)
+    public async Task ESC_189abc_El_resumen_propio_trae_la_linea_exacta_de_asistencia(string estudianteId, string linea)
     {
         var lineas = await LineasDelResumenAsync(estudianteId);
 
@@ -181,7 +181,7 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
     [Trait("RN", "RN-13")]
-    public void ESC_189_La_herramienta_de_asistencia_trae_la_linea_exacta(string estudianteId, string linea)
+    public void ESC_189abc_La_herramienta_de_asistencia_trae_la_linea_exacta(string estudianteId, string linea)
     {
         var lineas = Lineas(FormateadorDatos.Asistencia(ResumenDe(estudianteId)));
 
@@ -207,7 +207,7 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [Fact]
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
-    public async Task ESC_189_El_resultado_de_ADM_es_exactamente_el_bloque_de_la_spec_y_termina_con_las_reglas_aplicadas()
+    public async Task ESC_189d_El_resultado_de_ADM_es_exactamente_el_bloque_de_la_spec_y_termina_con_las_reglas_aplicadas()
     {
         var resultado = await ResultadoDeProgramaAsync(Coord02);
 
@@ -219,18 +219,43 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [Fact]
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
-    public async Task ESC_189_El_resultado_de_ING_SIS_termina_con_las_reglas_aplicadas_de_perdidas_inasistencia_y_prueba()
+    public async Task ESC_189e_El_resultado_de_ING_SIS_termina_con_las_reglas_aplicadas_de_perdidas_inasistencia_y_prueba()
     {
         var resultado = await ResultadoDeProgramaAsync(Coord01, "¿Qué estudiantes de mi programa perdieron materias?");
 
         Assert.Equal(ReglasIngSis, ReglasDe(resultado));
     }
 
+    [Fact]
+    [Trait("CA", "CA-18")]
+    [Trait("ESC", "ESC-198")]
+    [Trait("D", "D-63")]
+    public async Task ESC_198m_La_ultima_linea_del_resultado_de_ADM_es_exactamente_la_de_la_spec_y_termina_en_punto()
+    {
+        var resultado = await ResultadoDeProgramaAsync(Coord02);
+
+        Assert.Equal("Reglas aplicadas a estos datos: reglamento_academico_2025.md · Artículo 5; reglamento_academico_2025.md · Artículo 6; reglamento_academico_2025.md · Artículo 20; evaluacion_y_calificaciones.md · Sección 3.", Lineas(resultado).Last());
+    }
+
+    [Theory]
+    [MemberData(nameof(TodosLosEstudiantes))]
+    [Trait("CA", "CA-18")]
+    [Trait("ESC", "ESC-198")]
+    [Trait("D", "D-63")]
+    public async Task ESC_198m_La_linea_de_reglas_aplicadas_del_resumen_propio_termina_en_punto(string estudianteId)
+    {
+        var lineas = await LineasDelResumenAsync(estudianteId);
+
+        var reglas = Assert.Single(lineas, l => l.StartsWith(EncabezadoDeReglas, StringComparison.Ordinal));
+        Assert.EndsWith(".", reglas, StringComparison.Ordinal);
+        Assert.DoesNotContain(". ", reglas[..^1], StringComparison.Ordinal);
+    }
+
     [Theory]
     [MemberData(nameof(LineasDeIngSis))]
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
-    public async Task ESC_189_El_resultado_de_ING_SIS_trae_la_linea_exacta(string caso, string linea)
+    public async Task ESC_189e_El_resultado_de_ING_SIS_trae_la_linea_exacta(string caso, string linea)
     {
         Assert.NotEmpty(caso);
 
@@ -242,7 +267,7 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [Fact]
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
-    public async Task ESC_189_El_bloque_de_Mateo_Vargas_no_contiene_perdida_ni_ninguna()
+    public async Task ESC_189d_El_bloque_de_Mateo_Vargas_no_contiene_perdida_ni_ninguna()
     {
         var resultado = await ResultadoDeProgramaAsync(Coord02);
 
@@ -260,7 +285,7 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [InlineData("COORD-02")]
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
-    public async Task ESC_189_Ninguna_linea_del_programa_afirma_perdida_y_falta_de_definitiva_a_la_vez(string coordinador)
+    public async Task ESC_189de_Ninguna_linea_del_programa_afirma_perdida_y_falta_de_definitiva_a_la_vez(string coordinador)
     {
         var resultado = await ResultadoDeProgramaAsync(new Usuario(Rol.Coordinador, coordinador));
 
@@ -274,7 +299,7 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [InlineData("COORD-02")]
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
-    public async Task ESC_189_Cada_linea_Perdida_por_nombra_exactamente_una_asignatura_con_su_definitiva(string coordinador)
+    public async Task ESC_189de_Cada_linea_Perdida_por_nombra_exactamente_una_asignatura_con_su_definitiva(string coordinador)
     {
         var resultado = await ResultadoDeProgramaAsync(new Usuario(Rol.Coordinador, coordinador));
 
@@ -288,7 +313,7 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [InlineData("COORD-02")]
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
-    public async Task ESC_189_Ninguna_linea_del_programa_tiene_un_valor_vacio_ni_ninguna_como_valor_de_un_campo(string coordinador)
+    public async Task ESC_189de_Ninguna_linea_del_programa_tiene_un_valor_vacio_ni_ninguna_como_valor_de_un_campo(string coordinador)
     {
         var resultado = await ResultadoDeProgramaAsync(new Usuario(Rol.Coordinador, coordinador));
 
@@ -301,7 +326,7 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [MemberData(nameof(EstudiantesSinPerdidas))]
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
-    public async Task ESC_189_El_resumen_de_quien_no_perdio_nada_no_contiene_palabras_de_perdida(string estudianteId)
+    public async Task ESC_189abc_El_resumen_de_quien_no_perdio_nada_no_contiene_palabras_de_perdida(string estudianteId)
     {
         var lineas = await LineasDelResumenAsync(estudianteId);
 
@@ -314,7 +339,7 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [MemberData(nameof(TodosLosEstudiantes))]
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
-    public async Task ESC_189_Ninguna_linea_del_resumen_afirma_perdida_y_falta_de_definitiva_a_la_vez(string estudianteId)
+    public async Task ESC_189abc_Ninguna_linea_del_resumen_afirma_perdida_y_falta_de_definitiva_a_la_vez(string estudianteId)
     {
         var lineas = await LineasDelResumenAsync(estudianteId);
 
@@ -326,7 +351,7 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [Fact]
     [Trait("CA", "CA-18")]
     [Trait("ESC", "ESC-189")]
-    public async Task ESC_189_Las_definitivas_de_las_asignaturas_aprobadas_no_se_listan_en_el_programa()
+    public async Task ESC_189d_Las_definitivas_de_las_asignaturas_aprobadas_no_se_listan_en_el_programa()
     {
         var resultado = await ResultadoDeProgramaAsync(Coord02);
 

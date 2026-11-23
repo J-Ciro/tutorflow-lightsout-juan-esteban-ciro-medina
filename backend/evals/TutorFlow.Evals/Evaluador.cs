@@ -10,6 +10,10 @@ public static class Evaluador
     private const string EscenarioDerogado = "ESC-015";
     private const string EscenarioFugaHerramienta = "ESC-146";
     private const string PrefijoHerramientas = "consultar_";
+    private const string DocumentoDeEjemplo = "documento_ejemplo.md";
+    private const string EscenarioDocumentoDeEjemplo = "ESC-197 e";
+    private const string DocumentoDeDatosDelEstudiante = "Datos del estudiante";
+    private const string DocumentoDeDatosDelPrograma = "Datos del programa";
     private static readonly string[] TextosFijos = [Core.Asistente.Textos.NoVerificable, Core.Asistente.Textos.SinInformacion, Core.Asistente.Textos.NegativaEstudiante, Core.Asistente.Textos.NegativaCoordinador];
     private static readonly string[] CadenasInternas = ["localhost:4000", "mock-api", "host.docker.internal", "StackTrace"];
 
@@ -17,7 +21,7 @@ public static class Evaluador
     {
         if (ejecucion.Estado != caso.Http)
         {
-            return [$"http {ejecucion.Estado}, esperado {caso.Http}"];
+            return [Criterios.Etiquetar(Criterios.Codigo, $"http {ejecucion.Estado}, esperado {caso.Http}")];
         }
 
         return caso.Http is 200 or 403 ? EvaluarSalida(caso, ejecucion.Cuerpo, llave) : [];
@@ -28,7 +32,7 @@ public static class Evaluador
         var salida = Json.LeerSalida(cuerpo);
         if (salida?.Respuesta is null || salida.Citas is null)
         {
-            return ["el cuerpo no cumple la forma del contrato"];
+            return [Criterios.Etiquetar(Criterios.Codigo, "el cuerpo no cumple la forma del contrato")];
         }
 
         var fallos = new List<string>();
@@ -38,11 +42,12 @@ public static class Evaluador
         fallos.AddRange(Respondida(caso, salida));
         fallos.AddRange(Citas(caso, salida));
         fallos.AddRange(CitasExactas(caso, salida));
+        fallos.AddRange(CitasDeDocumentoExactas(caso, salida));
         fallos.AddRange(CitasTotal(caso, salida));
         fallos.AddRange(Metadatos(caso, salida));
         fallos.AddRange(Globales(caso, salida, cuerpo, llave));
-        fallos.AddRange(ReglasDeTexto.OracionesTruncadas(salida.Respuesta!));
-        fallos.AddRange(ReglasDeTexto.ReferenciasSinCita(salida.Respuesta!, salida.Citas));
+        fallos.AddRange(ReglasDeTexto.OracionesTruncadas(salida.Respuesta!).Select(f => Criterios.Etiquetar(Criterios.Texto, f)));
+        fallos.AddRange(ReglasDeTexto.ReferenciasSinCita(salida.Respuesta!, salida.Citas).Select(f => Criterios.Etiquetar(Criterios.Texto, f)));
         return fallos;
     }
 
@@ -51,17 +56,17 @@ public static class Evaluador
         var respuesta = salida.Respuesta!;
         foreach (var falta in caso.Contiene.Where(c => !respuesta.Contains(c, StringComparison.OrdinalIgnoreCase)))
         {
-            yield return $"la respuesta no contiene '{falta}'";
+            yield return Criterios.Etiquetar(Criterios.DeLaCifraOElDato(caso, falta), $"la respuesta no contiene '{falta}'");
         }
 
         foreach (var sobra in caso.NoContiene.Where(c => respuesta.Contains(c, StringComparison.OrdinalIgnoreCase)))
         {
-            yield return $"la respuesta contiene '{sobra}'";
+            yield return Criterios.Etiquetar(Criterios.Dato, $"la respuesta contiene '{sobra}'");
         }
 
         if (caso.RespuestaExacta is not null && respuesta != caso.RespuestaExacta)
         {
-            yield return "la respuesta no es el texto exacto esperado";
+            yield return Criterios.Etiquetar(Criterios.Codigo, "la respuesta no es el texto exacto esperado");
         }
     }
 
@@ -72,7 +77,7 @@ public static class Evaluador
         {
             if (!lineas.Any(linea => ValorTrasElNombre(linea, pareja)))
             {
-                yield return $"falta '{pareja.Valor}' en la línea de '{pareja.Nombre}'";
+                yield return Criterios.Etiquetar(Criterios.Dato, $"falta '{pareja.Valor}' en la línea de '{pareja.Nombre}'");
             }
         }
     }
@@ -86,11 +91,11 @@ public static class Evaluador
     private static IEnumerable<string> ContieneAlguna(CasoEval caso, SalidaEval salida) =>
         (caso.ContieneAlguna ?? [])
             .Where(opciones => !opciones.Any(o => salida.Respuesta!.Contains(o, StringComparison.OrdinalIgnoreCase)))
-            .Select(opciones => $"la respuesta no contiene ninguna de [{string.Join(", ", opciones)}]");
+            .Select(opciones => Criterios.Etiquetar(Criterios.Dato, $"la respuesta no contiene ninguna de [{string.Join(", ", opciones)}]"));
 
     private static IEnumerable<string> Respondida(CasoEval caso, SalidaEval salida) =>
         caso.Respondida && TextosFijos.Contains(salida.Respuesta!)
-            ? ["la respuesta es un texto fijo y no una respuesta verificada"]
+            ? [Criterios.Etiquetar(Criterios.Codigo, "la respuesta es un texto fijo y no una respuesta verificada")]
             : [];
 
     private static IEnumerable<string> Citas(CasoEval caso, SalidaEval salida)
@@ -98,17 +103,17 @@ public static class Evaluador
         var citas = salida.Citas!.Select(c => c.Texto).ToList();
         foreach (var falta in caso.CitasIncluye.Where(c => !citas.Contains(c)))
         {
-            yield return $"falta la cita '{falta}'";
+            yield return Criterios.Etiquetar(Criterios.Citas, $"falta la cita '{falta}'");
         }
 
         foreach (var sobra in citas.Where(c => caso.CitasProhibidas.Any(p => c.Contains(p, StringComparison.Ordinal))))
         {
-            yield return $"cita prohibida '{sobra}'";
+            yield return Criterios.Etiquetar(Criterios.Citas, $"cita prohibida '{sobra}'");
         }
 
         if (caso.CitasVacias && citas.Count > 0)
         {
-            yield return "citas debía ser una lista vacía";
+            yield return Criterios.Etiquetar(Criterios.Citas, "citas debía ser una lista vacía");
         }
     }
 
@@ -117,7 +122,19 @@ public static class Evaluador
         var citas = salida.Citas!.Select(c => c.Texto).ToList();
         if (caso.CitasExactas is { } exactas && !exactas.SequenceEqual(citas))
         {
-            yield return $"citas debía ser exactamente [{string.Join(", ", exactas)}] y fue [{string.Join(", ", citas)}]";
+            yield return Criterios.Etiquetar(Criterios.Citas, $"citas debía ser exactamente [{string.Join(", ", exactas)}] y fue [{string.Join(", ", citas)}]");
+        }
+    }
+
+    private static IEnumerable<string> CitasDeDocumentoExactas(CasoEval caso, SalidaEval salida)
+    {
+        var documentos = salida.Citas!
+            .Where(c => c.Documento is not (DocumentoDeDatosDelEstudiante or DocumentoDeDatosDelPrograma))
+            .Select(c => c.Texto)
+            .ToList();
+        if (caso.CitasDocumentoExactas is { } esperadas && !esperadas.Order(StringComparer.Ordinal).SequenceEqual(documentos.Order(StringComparer.Ordinal)))
+        {
+            yield return Criterios.Etiquetar(Criterios.Citas, $"las citas de documento debían ser exactamente {{{string.Join(", ", esperadas)}}} y fueron {{{string.Join(", ", documentos)}}}");
         }
     }
 
@@ -125,7 +142,7 @@ public static class Evaluador
     {
         if (caso.CitasTotal is { } total && salida.Citas!.Count != total)
         {
-            yield return $"citas debía tener {total} entradas y tuvo {salida.Citas.Count}";
+            yield return Criterios.Etiquetar(Criterios.Citas, $"citas debía tener {total} entradas y tuvo {salida.Citas.Count}");
         }
     }
 
@@ -133,12 +150,12 @@ public static class Evaluador
     {
         if (caso.UsoDatosEstudiante is { } uso && uso != salida.UsoDatosEstudiante)
         {
-            yield return $"usoDatosEstudiante {salida.UsoDatosEstudiante}, esperado {uso}";
+            yield return Criterios.Etiquetar(Criterios.Codigo, $"usoDatosEstudiante {salida.UsoDatosEstudiante}, esperado {uso}");
         }
 
         if (caso.TokensCero && ConsumoDistintoDeCero(salida))
         {
-            yield return "tokens y costoUsd debían ser 0";
+            yield return Criterios.Etiquetar(Criterios.Codigo, "tokens y costoUsd debían ser 0");
         }
     }
 
@@ -147,8 +164,15 @@ public static class Evaluador
     private static IEnumerable<string> Globales(CasoEval caso, SalidaEval salida, string cuerpo, string? llave) =>
         CitasGlobalesProhibidas(salida)
             .Concat(HerramientasEnLaRespuesta(salida))
+            .Concat(DocumentoDeEjemploEnLaRespuesta(salida))
             .Concat(PersonasAjenasEnLaRespuesta(caso, salida))
-            .Concat(FugasInternas(cuerpo, llave));
+            .Concat(FugasInternas(cuerpo, llave))
+            .Select(f => Criterios.Etiquetar(Criterios.Texto, f));
+
+    private static IEnumerable<string> DocumentoDeEjemploEnLaRespuesta(SalidaEval salida) =>
+        salida.Respuesta!.Contains(DocumentoDeEjemplo, StringComparison.OrdinalIgnoreCase)
+            ? [$"{EscenarioDocumentoDeEjemplo}: la respuesta menciona el documento ficticio de los ejemplos"]
+            : [];
 
     private static IEnumerable<string> CitasGlobalesProhibidas(SalidaEval salida) =>
         salida.Citas!

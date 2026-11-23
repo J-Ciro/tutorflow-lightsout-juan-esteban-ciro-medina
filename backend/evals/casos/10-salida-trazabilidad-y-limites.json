@@ -904,8 +904,6 @@
     "citasVacias": false,
     "citasExactas": [
       "reglamento_academico_2025.md · Artículo 11",
-      "evaluacion_y_calificaciones.md · Sección 3",
-      "evaluacion_y_calificaciones.md · Sección 4",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1368,7 +1366,7 @@
     }
   },
   {
-    "id": "ESC-175f1",
+    "id": "ESC-175f1-1",
     "fuente": "SEG-10f, D-34",
     "usuario": {
       "rol": "coordinador",
@@ -1397,7 +1395,7 @@
     }
   },
   {
-    "id": "ESC-175f2",
+    "id": "ESC-175f1-2",
     "fuente": "SEG-10f, D-34",
     "usuario": {
       "rol": "coordinador",
@@ -1426,7 +1424,7 @@
     }
   },
   {
-    "id": "ESC-175f3",
+    "id": "ESC-175f1-3",
     "fuente": "SEG-10f, D-34",
     "usuario": {
       "rol": "coordinador",
@@ -1455,7 +1453,7 @@
     }
   },
   {
-    "id": "ESC-175f4",
+    "id": "ESC-175f2",
     "fuente": "SEG-10f, D-34",
     "usuario": {
       "rol": "coordinador",
@@ -1484,7 +1482,7 @@
     }
   },
   {
-    "id": "ESC-175f5",
+    "id": "ESC-175f3",
     "fuente": "SEG-10f, D-34",
     "usuario": {
       "rol": "coordinador",
@@ -1698,13 +1696,12 @@
     "citasVacias": false,
     "citasExactas": [
       "evaluacion_y_calificaciones.md · Sección 4",
-      "bienestar_y_becas.md · Sección 3.1",
       "evaluacion_y_calificaciones.md · Sección 3",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
     "usoDatosEstudiante": true,
-    "respuestaExacta": "Tu promedio es 4.39. Cálculo Integral: 4.5. Programación Orientada a Objetos: 4.8. Bases de Datos: 4.1. Inglés III: 4.0.",
+    "respuestaExacta": "Tu promedio es 4.39. Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0.",
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,
@@ -1712,7 +1709,7 @@
     "offline": {
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "Tu promedio es 4.39. Cálculo Integral: 4.5. Programación Orientada a Objetos: 4.8. Bases de Datos: 4.1. Inglés III: 4.0."
+      "texto": "Tu promedio es 4.39. Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0."
     }
   },
   {
@@ -1731,8 +1728,6 @@
     "citasVacias": false,
     "citasExactas": [
       "reglamento_academico_2025.md · Artículo 11",
-      "evaluacion_y_calificaciones.md · Sección 3",
-      "evaluacion_y_calificaciones.md · Sección 4",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1764,8 +1759,6 @@
     "citasVacias": false,
     "citasExactas": [
       "evaluacion_y_calificaciones.md · Sección 3",
-      "evaluacion_y_calificaciones.md · Sección 4",
-      "reglamento_academico_2025.md · Artículo 11",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1830,7 +1823,6 @@
     "citasExactas": [
       "evaluacion_y_calificaciones.md · Sección 4",
       "bienestar_y_becas.md · Sección 3.1",
-      "evaluacion_y_calificaciones.md · Sección 3",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1948,8 +1940,7 @@
     "citasVacias": false,
     "citasExactas": [
       "reglamento_academico_2025.md · Artículo 20",
-      "bienestar_y_becas.md · Sección 3.1",
-      "evaluacion_y_calificaciones.md · Sección 3",
+      "evaluacion_y_calificaciones.md · Sección 4",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1983,8 +1974,6 @@
     ],
     "citasVacias": false,
     "citasExactas": [
-      "bienestar_y_becas.md · Sección 3.1",
-      "evaluacion_y_calificaciones.md · Sección 3",
       "evaluacion_y_calificaciones.md · Sección 4",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
@@ -2191,7 +2180,7 @@
     }
   },
   {
-    "id": "ESC-175p1",
+    "id": "ESC-175p1-1",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2220,7 +2209,7 @@
     }
   },
   {
-    "id": "ESC-175p2",
+    "id": "ESC-175p1-2",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2249,7 +2238,7 @@
     }
   },
   {
-    "id": "ESC-175p3",
+    "id": "ESC-175p1-3",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2278,7 +2267,7 @@
     }
   },
   {
-    "id": "ESC-175p4",
+    "id": "ESC-175p1-4",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2307,7 +2296,7 @@
     }
   },
   {
-    "id": "ESC-175p5",
+    "id": "ESC-175p2-1",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2336,7 +2325,7 @@
     }
   },
   {
-    "id": "ESC-175p6",
+    "id": "ESC-175p2-2",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2365,7 +2354,7 @@
     }
   },
   {
-    "id": "ESC-175p7",
+    "id": "ESC-175p2-3",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2394,7 +2383,7 @@
     }
   },
   {
-    "id": "ESC-175p8",
+    "id": "ESC-175p2-4",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2496,8 +2485,6 @@
     "citasVacias": false,
     "citasExactas": [
       "evaluacion_y_calificaciones.md · Sección 3",
-      "evaluacion_y_calificaciones.md · Sección 4",
-      "reglamento_academico_2025.md · Artículo 11",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -2558,8 +2545,7 @@
     "citasVacias": false,
     "citasExactas": [
       "reglamento_academico_2025.md · Artículo 20",
-      "bienestar_y_becas.md · Sección 3.1",
-      "evaluacion_y_calificaciones.md · Sección 3",
+      "evaluacion_y_calificaciones.md · Sección 4",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],

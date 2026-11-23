@@ -27,17 +27,21 @@ public sealed class ReferenciasEscritasTests
     public static TheoryData<string[], string, string> LimpiezaUnitaria => new()
     {
         { [Texto(Art3)], "El reglamento_academico_2023.md fue derogado (reglamento_academico_2025.md · Artículo 3).", "El reglamento_academico_2023.md fue derogado (reglamento_academico_2025.md · Artículo 3)." },
-        { [Texto(Art3)], "Ya no aplica reglamento_academico_2023.md · Artículo 9.", "Ya no aplica." },
+        { [Texto(Art3)], "Ya no aplica reglamento_academico_2023.md · Artículo 9.", "Ya no aplica." }
+    };
+
+    public static TheoryData<string[], string, string> LimpiezaUnitariaJ2 => new()
+    {
         { [Texto(Sec3)], "La definitiva se calcula según evaluacion_y_calificaciones.md · Secciones 3 y 5.", "La definitiva se calcula." },
-        { [Texto(Sec3), Texto(Sec4)], "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).", "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4)." },
         { [Texto(Beca31)], "Requisitos: promedio 4.3 o más. Estos requisitos se respaldan en bienestar_y_becas.md · Sección 3.1.", "Requisitos: promedio 4.3 o más. Estos requisitos se respaldan en bienestar_y_becas.md · Sección 3.1." },
-        { [], "El documento_academico_2025.md establece la escala.", "Establece la escala." }
+        { [], "El documento_academico_2025.md establece la escala.", "Establece la escala." },
+        { [Texto(Sec3), Texto(Sec4)], "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).", "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4)." }
     };
 
     private static string Limpiar(string respuesta, IReadOnlyList<Cita> citas)
     {
         var tipo = typeof(PreguntarAsistente).Assembly.GetType(TipoDeLaLimpieza)
-            ?? throw new InvalidOperationException($"Core no define {TipoDeLaLimpieza} (spec 001 §11.1 'Referencias escritas en la respuesta', D-37).");
+            ?? throw new InvalidOperationException($"Core no define {TipoDeLaLimpieza} (plan §10, D-37).");
         var metodo = tipo.GetMethod(MetodoDeLaLimpieza, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, [typeof(string), typeof(IReadOnlyList<Cita>)])
             ?? throw new InvalidOperationException($"{TipoDeLaLimpieza} no define static string {MetodoDeLaLimpieza}(string respuesta, IReadOnlyList<Cita> citas).");
         return (string)metodo.Invoke(null, [respuesta, citas])!;
@@ -61,14 +65,42 @@ public sealed class ReferenciasEscritasTests
 
     [Theory]
     [MemberData(nameof(LimpiezaUnitaria))]
+    [MemberData(nameof(LimpiezaUnitariaJ2))]
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-178")]
     [Trait("COMP", "COMP-02")]
-    public void ESC_178j_La_limpieza_conserva_las_referencias_validas_y_elimina_las_demas(string[] citas, string respuesta, string esperada)
+    public void ESC_178j1j2_La_limpieza_conserva_las_referencias_validas_y_elimina_las_demas(string[] citas, string respuesta, string esperada)
     {
         var resultado = Limpiar(respuesta, [.. citas.Select(DesdeTexto)]);
 
         Assert.Equal(esperada, resultado);
+    }
+
+    [Theory]
+    [InlineData("Según el reglamento evaluación y calificaciones.md · Sección 4 tu promedio es 4.39.", "Tu promedio es 4.39.")]
+    [InlineData("Según el documento evaluación y calificaciones.md · Sección 4 tu promedio es 4.39.", "Tu promedio es 4.39.")]
+    [InlineData("Tu promedio es 4.39. Esta información proviene del documento de evaluación.", "Tu promedio es 4.39.")]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-198")]
+    [Trait("D", "D-60")]
+    public void ESC_198l_Un_nombre_de_documento_con_espacios_es_una_sola_referencia_y_la_atribucion_generica_se_evalua_sin_citas(string respuesta, string esperada)
+    {
+        var resultado = Limpiar(respuesta, []);
+
+        Assert.Equal(esperada, resultado);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-194")]
+    [Trait("D", "D-63")]
+    public void ESC_194e_El_texto_que_sigue_a_un_punto_y_coma_no_recibe_mayuscula_tras_eliminar_la_referencia()
+    {
+        const string respuesta = "Requisitos: promedio de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos; da 50% de descuento en la matrícula siguiente (reglamento_academico_2025.md · Artículo 20).";
+
+        var resultado = Limpiar(respuesta, [Beca31]);
+
+        Assert.Equal("Requisitos: promedio de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos; da 50% de descuento en la matrícula siguiente.", resultado);
     }
 
     [Fact]

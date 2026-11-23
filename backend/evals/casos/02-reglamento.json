@@ -162,7 +162,7 @@
   },
   {
     "id": "ESC-017",
-    "fuente": "RN-11",
+    "fuente": "CA-14, RN-11",
     "usuario": {
       "rol": "estudiante",
       "id": "EST-004"
@@ -192,7 +192,7 @@
   },
   {
     "id": "ESC-018",
-    "fuente": "Art. 22",
+    "fuente": "CA-14, Art. 22",
     "usuario": {
       "rol": "coordinador",
       "id": "COORD-01"
@@ -221,7 +221,7 @@
   },
   {
     "id": "ESC-019",
-    "fuente": "Bienestar 2",
+    "fuente": "CA-14, Bienestar 2",
     "usuario": {
       "rol": "estudiante",
       "id": "EST-005"

@@ -103,10 +103,11 @@ public sealed class ReintentoApiTests
     [Fact]
     [Trait("CA", "CA-21")]
     [Trait("ESC", "ESC-193")]
+    [Trait("D", "D-62")]
     [Trait("RF", "SEG-13")]
-    public async Task ESC_193h_Si_el_tiempo_se_agota_durante_el_reintento_se_cancela_y_se_responde_el_primer_bloqueo_sin_503()
+    public async Task ESC_193h_Con_un_timeout_de_1_s_el_reintento_de_500_ms_se_cancela_al_llegar_a_1_s_y_se_responde_el_primer_bloqueo_en_menos_de_2_s_sin_503()
     {
-        var llm = new ClienteLlmConDemoraPorTurno(TimeSpan.FromMilliseconds(600), TimeSpan.FromSeconds(30), "Tu promedio es 4.40.", "Tu promedio es 4.39.");
+        var llm = new ClienteLlmConDemoraPorTurno(TimeSpan.FromMilliseconds(750), TimeSpan.FromMilliseconds(500), "Tu promedio es 4.40.", "Tu promedio es 4.39.");
         var configuracion = new Dictionary<string, string?> { ["Limites:TimeoutLlmSegundos"] = "1" };
         using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: configuracion, conocimientoReal: true);
         var reloj = Stopwatch.StartNew();
@@ -118,7 +119,7 @@ public sealed class ReintentoApiTests
         Assert.Equal(Textos.NoVerificable, respuesta.Respuesta);
         Assert.Empty(respuesta.Citas);
         Assert.Equal(2, llm.Llamadas);
-        Assert.True(reloj.Elapsed < TimeSpan.FromSeconds(5), $"tardó {reloj.Elapsed}");
+        Assert.True(reloj.Elapsed < TimeSpan.FromSeconds(2), $"tardó {reloj.Elapsed}");
         var evento = Assert.Single(fabrica.Auditoria.Eventos);
         Assert.Equal(ResultadoAuditoria.NumeroNoVerificado, evento.Resultado);
         AfirmacionesDeReintento.AfirmarReintentoRegistrado(evento);

@@ -21,7 +21,7 @@ public sealed class CitasDeReglasAplicadasApiTests
     {
         { "ESC-177a", "EST-001", "¿Cuál es mi promedio ponderado del periodo?", "Tu promedio es 4.39. Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0.", [Seccion4, Seccion3, Notas, Asistencia] },
         { "ESC-177b", "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", [Articulo11, Notas, Asistencia] },
-        { "ESC-177c", "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9.", [Seccion3, Seccion4, Articulo11, Notas, Asistencia] }
+        { "ESC-177c", "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9.", [Seccion3, Notas, Asistencia] }
     };
 
     [Theory]

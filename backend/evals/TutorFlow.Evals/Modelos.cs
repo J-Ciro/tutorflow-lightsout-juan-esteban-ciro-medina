@@ -35,6 +35,10 @@ public sealed record CasoEval(
 
     public bool Respondida { get; init; }
 
+    public IReadOnlyList<string>? Cifras { get; init; }
+
+    public IReadOnlyList<string>? CitasDocumentoExactas { get; init; }
+
     public int? UmbralCorridas { get; init; }
 
     public string Etiqueta => $"{Id} [{Usuario.Rol}:{Usuario.Id}] {Resumen(Pregunta)}";

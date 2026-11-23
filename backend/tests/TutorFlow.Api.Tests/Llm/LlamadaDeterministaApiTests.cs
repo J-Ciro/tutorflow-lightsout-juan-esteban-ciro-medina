@@ -58,7 +58,7 @@ public sealed class LlamadaDeterministaApiTests
     [Trait("CA", "CA-20")]
     [Trait("ESC", "ESC-192")]
     [Trait("RF", "D-47")]
-    public async Task ESC_192_Los_adaptadores_compatibles_con_OpenAI_envian_temperatura_0_y_semilla_1(string? llave, string proveedor)
+    public async Task ESC_192ab_Los_adaptadores_compatibles_con_OpenAI_envian_temperatura_0_y_semilla_1(string? llave, string proveedor)
     {
         Assert.NotEmpty(proveedor);
         var manejador = ConUnaRespuesta();
@@ -77,7 +77,7 @@ public sealed class LlamadaDeterministaApiTests
     [Trait("CA", "CA-20")]
     [Trait("ESC", "ESC-192")]
     [Trait("RF", "D-47")]
-    public async Task ESC_192_Anthropic_envia_temperatura_0_y_ninguna_semilla()
+    public async Task ESC_192c_Anthropic_envia_temperatura_0_y_ninguna_semilla()
     {
         var manejador = ConUnaRespuesta();
         using var fabrica = Fabrica("sk-ant-LLAVE-ABC123", manejador);
@@ -94,7 +94,7 @@ public sealed class LlamadaDeterministaApiTests
     [Trait("CA", "CA-20")]
     [Trait("ESC", "ESC-192")]
     [Trait("RF", "D-47")]
-    public async Task ESC_192_Anthropic_no_envia_semilla_aunque_Llm_Semilla_este_configurada()
+    public async Task ESC_192c_Anthropic_no_envia_semilla_aunque_Llm_Semilla_este_configurada()
     {
         var manejador = ConUnaRespuesta();
         using var fabrica = Fabrica("sk-ant-LLAVE-ABC123", manejador, "42");
@@ -109,7 +109,7 @@ public sealed class LlamadaDeterministaApiTests
     [Trait("CA", "CA-20")]
     [Trait("ESC", "ESC-192")]
     [Trait("RF", "D-47")]
-    public async Task ESC_192_La_semilla_configurada_llega_al_proveedor(string? llave, string proveedor, int semilla)
+    public async Task ESC_192d_La_semilla_configurada_llega_al_proveedor(string? llave, string proveedor, int semilla)
     {
         Assert.NotEmpty(proveedor);
         var manejador = ConUnaRespuesta();
@@ -129,7 +129,7 @@ public sealed class LlamadaDeterministaApiTests
     [Trait("CA", "CA-20")]
     [Trait("ESC", "ESC-192")]
     [Trait("RF", "D-47")]
-    public async Task ESC_192_Toda_peticion_del_ciclo_de_herramientas_lleva_temperatura_0(string? llave)
+    public async Task ESC_192abc_Toda_peticion_del_ciclo_de_herramientas_lleva_temperatura_0(string? llave)
     {
         var manejador = ConHerramienta();
         using var fabrica = Fabrica(llave, manejador);
@@ -147,7 +147,7 @@ public sealed class LlamadaDeterministaApiTests
     [Trait("CA", "CA-20")]
     [Trait("ESC", "ESC-192")]
     [Trait("RF", "D-47")]
-    public async Task ESC_192_Toda_peticion_del_ciclo_de_herramientas_lleva_la_misma_semilla(string? llave)
+    public async Task ESC_192ab_Toda_peticion_del_ciclo_de_herramientas_lleva_la_misma_semilla(string? llave)
     {
         var manejador = ConHerramienta();
         using var fabrica = Fabrica(llave, manejador);
