@@ -4,14 +4,7 @@ namespace TutorFlow.Core.Conocimiento;
 
 public static class RaicesDeContenido
 {
-    private const int LongitudDeRaiz = 4;
-
-    private static readonly HashSet<string> PalabrasVacias = new(StringComparer.Ordinal)
-    {
-        "cual", "cuales", "como", "cuando", "donde", "quien", "cuanto", "cuantos", "cuanta", "cuantas",
-        "puedo", "tengo", "tiene", "tienen", "sobre", "para", "unos", "unas", "pero", "esta", "este", "esto",
-        "dice", "dicen", "hacer", "hace", "debe", "puede", "pueden", "estoy", "estan", "dime", "dame", "muestra"
-    };
+    private const int LongitudDeRaiz = ConsultaDeRecuperacion.LongitudDeRaiz;
 
     private static readonly HashSet<string> PalabrasGenericasDelCorpus = new(StringComparer.Ordinal)
     {
@@ -31,6 +24,6 @@ public static class RaicesDeContenido
 
     private static bool EsPalabraDeContenido(string palabra) =>
         palabra.Length >= LongitudDeRaiz
-        && !PalabrasVacias.Contains(palabra)
+        && !PalabrasVacias.Contiene(palabra)
         && !PalabrasGenericasDelCorpus.Contains(palabra);
 }

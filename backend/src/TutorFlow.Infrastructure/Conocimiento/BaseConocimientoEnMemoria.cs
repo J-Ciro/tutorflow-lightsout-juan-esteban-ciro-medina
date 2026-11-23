@@ -12,14 +12,6 @@ public sealed class BaseConocimientoEnMemoria : IBaseConocimiento
     private const double ParametroB = 0.75;
     private const double PesoDelTitulo = 4.0;
 
-    private static readonly HashSet<string> PalabrasVacias = new(StringComparer.Ordinal)
-    {
-        "que", "cual", "cuales", "como", "cuando", "donde", "quien", "cuanto", "cuantos", "cuanta", "cuantas",
-        "hay", "puedo", "tengo", "tiene", "tienen", "sobre", "para", "por", "con", "del", "los", "las", "una",
-        "unos", "unas", "mis", "tus", "sus", "mas", "pero", "esta", "este", "esto", "ese", "esa", "son", "ser",
-        "dice", "dicen", "hacer", "hace", "debe", "puede", "pueden", "estoy", "estan", "dime", "dame", "muestra"
-    };
-
     private readonly List<SeccionIndexada> _secciones;
     private readonly Dictionary<string, int> _frecuenciaDeDocumento;
     private readonly double _longitudPromedio;
@@ -53,7 +45,7 @@ public sealed class BaseConocimientoEnMemoria : IBaseConocimiento
     {
         var frecuencias = NormalizadorTexto.Normalizar(texto)
             .Split(' ', StringSplitOptions.RemoveEmptyEntries)
-            .Where(palabra => palabra.Length >= LongitudMinimaDeTermino && !PalabrasVacias.Contains(palabra))
+            .Where(palabra => palabra.Length >= LongitudMinimaDeTermino && !PalabrasVacias.Contiene(palabra))
             .Select(palabra => palabra.Length > LongitudMaximaDeRaiz ? palabra[..LongitudMaximaDeRaiz] : palabra)
             .GroupBy(raiz => raiz)
             .ToDictionary(grupo => grupo.Key, grupo => grupo.Count());
