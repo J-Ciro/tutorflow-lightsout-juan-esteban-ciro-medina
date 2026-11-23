@@ -6,11 +6,11 @@ namespace TutorFlow.Core.Asistente;
 
 public sealed record ContextoUsuario(Usuario Usuario, DirectorioAcademico Directorio);
 
-public sealed record ResultadoHerramienta(string Contenido, bool IdAjeno)
+public sealed record ResultadoHerramienta(string Contenido, bool IdAjeno, string? IdSolicitado = null)
 {
     public static ResultadoHerramienta Texto(string contenido) => new(contenido, false);
 
-    public static ResultadoHerramienta Denegado() => new(string.Empty, true);
+    public static ResultadoHerramienta Denegado(string idSolicitado) => new(string.Empty, true, idSolicitado);
 }
 
 public sealed class HerramientasAsistente
@@ -77,12 +77,17 @@ public sealed class HerramientasAsistente
         var estudianteId = ArgumentosHerramienta.LeerTexto(llamada.ArgumentosJson, ParametroEstudianteId);
         if (EsLecturaAjena(contexto, estudianteId))
         {
-            return ResultadoHerramienta.Denegado();
+            return ResultadoHerramienta.Denegado(IdAuditable(estudianteId));
         }
 
         var asignatura = ArgumentosHerramienta.LeerTexto(llamada.ArgumentosJson, ParametroAsignatura);
         return await manejador(new SolicitudHerramienta(contexto, registro, estudianteId, asignatura, cancellationToken));
     }
+
+    private static string IdAuditable(string? idSolicitado) =>
+        idSolicitado is not null && (Identificadores.EsIdEstudiante(idSolicitado) || Identificadores.EsIdCoordinador(idSolicitado))
+            ? idSolicitado
+            : Textos.FormatoInvalido;
 
     private static bool EstaDisponible(string nombre, Rol rol) =>
         Definir(rol).Any(herramienta => herramienta.Nombre == nombre);

@@ -16,6 +16,7 @@ public static class Textos
     public const string SeccionNotas = "Notas";
     public const string SeccionAsistencia = "Asistencia";
     public const string SeccionDatosBasicos = "Datos básicos";
+    public const string FormatoInvalido = "[FORMATO_INVALIDO]";
     public const string FuenteResumenPropio = "Resumen académico propio";
 
     public static string Negativa(Rol rol) => rol == Rol.Coordinador ? NegativaCoordinador : NegativaEstudiante;

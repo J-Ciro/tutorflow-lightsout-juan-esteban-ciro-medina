@@ -47,6 +47,8 @@ public sealed record EventoAuditoria(
     bool PrecioDesconocido)
 {
     public IReadOnlyList<DatoConsultado> DatosConsultados { get; init; } = [];
+
+    public string? IdSolicitado { get; init; }
 }
 
 public sealed record EventoMultiplesIdentidades(

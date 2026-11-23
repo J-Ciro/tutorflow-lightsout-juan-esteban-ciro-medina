@@ -14,9 +14,11 @@ public sealed record SolicitudAuditoria(
 public sealed class AuditorPeticiones
 {
     public const int LongitudMaximaPregunta = 1000;
+    public const string PreguntaNoEvaluada = "[NO_EVALUADA]";
 
     private readonly IAuditoria _auditoria;
     private readonly IReloj _reloj;
+    private DirectorioAcademico? _personasConocidas;
 
     public AuditorPeticiones(IAuditoria auditoria, IReloj reloj)
     {
@@ -33,7 +35,21 @@ public sealed class AuditorPeticiones
             return string.Empty;
         }
 
-        var enmascarada = DetectorTerceros.EnmascararTerceros(usuario, pregunta, directorio);
+        return Limpiar(DetectorTerceros.EnmascararTerceros(usuario, pregunta, directorio));
+    }
+
+    public void RecordarPersonas(DirectorioAcademico directorio) => Volatile.Write(ref _personasConocidas, directorio);
+
+    public string PreguntaSinIdentidad(string? pregunta)
+    {
+        var personas = Volatile.Read(ref _personasConocidas);
+        return pregunta is null || personas is null
+            ? PreguntaNoEvaluada
+            : Limpiar(DetectorTerceros.EnmascararPersonas(pregunta, personas));
+    }
+
+    private static string Limpiar(string enmascarada)
+    {
         var sinControl = new string([.. enmascarada.Select(caracter => char.IsControl(caracter) ? ' ' : caracter)]);
         return sinControl.Length > LongitudMaximaPregunta ? sinControl[..LongitudMaximaPregunta] : sinControl;
     }
@@ -42,14 +58,13 @@ public sealed class AuditorPeticiones
 
     public void RegistrarSinConsultas(SolicitudAuditoria solicitud)
     {
-        var usuario = new Usuario(solicitud.Rol ?? Rol.Estudiante, solicitud.UsuarioId ?? string.Empty);
         _auditoria.Registrar(new EventoAuditoria(
             _reloj.AhoraUtc,
             solicitud.CorrelationId,
             solicitud.IpOrigen,
             solicitud.Rol,
             solicitud.UsuarioId,
-            SanearPregunta(usuario, solicitud.Pregunta, ConstructorDirectorio.Vacio),
+            PreguntaSinIdentidad(solicitud.Pregunta),
             solicitud.Resultado,
             null,
             [],

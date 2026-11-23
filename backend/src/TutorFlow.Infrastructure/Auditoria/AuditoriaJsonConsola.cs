@@ -32,28 +32,33 @@ public sealed class AuditoriaJsonConsola : IAuditoria
         _archivo?.Agregar(linea);
     }
 
-    private static object Proyectar(EventoAuditoria evento) => new
+    private static Dictionary<string, object?> Proyectar(EventoAuditoria evento)
     {
-        timestamp = evento.Timestamp.ToString("O", System.Globalization.CultureInfo.InvariantCulture),
-        correlationId = evento.CorrelationId,
-        ipOrigen = evento.IpOrigen,
-        usuario = new
+        var proyeccion = new Dictionary<string, object?>
         {
-            rol = evento.Rol is { } rol ? NombreSnake(rol) : null,
-            id = evento.UsuarioId
-        },
-        pregunta = evento.Pregunta,
-        resultado = NombreSnake(evento.Resultado),
-        motivoDenegacion = evento.MotivoDenegacion is { } motivo ? NombreSnake(motivo) : null,
-        estudiantesConsultados = evento.EstudiantesConsultados,
-        recursosConsultados = evento.RecursosConsultados.Select(NombreSnake).ToList(),
-        datosConsultados = evento.DatosConsultados.Select(Proyectar).ToList(),
-        citas = evento.Citas.Select(cita => new { documento = cita.Documento, seccion = cita.Seccion }).ToList(),
-        tokens = evento.Tokens,
-        costoUsd = evento.CostoUsd,
-        duracionMs = evento.DuracionMs,
-        precioDesconocido = evento.PrecioDesconocido
-    };
+            ["timestamp"] = evento.Timestamp.ToString("O", System.Globalization.CultureInfo.InvariantCulture),
+            ["correlationId"] = evento.CorrelationId,
+            ["ipOrigen"] = evento.IpOrigen,
+            ["usuario"] = new { rol = evento.Rol is { } rol ? NombreSnake(rol) : null, id = evento.UsuarioId },
+            ["pregunta"] = evento.Pregunta,
+            ["resultado"] = NombreSnake(evento.Resultado),
+            ["motivoDenegacion"] = evento.MotivoDenegacion is { } motivo ? NombreSnake(motivo) : null,
+            ["estudiantesConsultados"] = evento.EstudiantesConsultados,
+            ["recursosConsultados"] = evento.RecursosConsultados.Select(NombreSnake).ToList(),
+            ["datosConsultados"] = evento.DatosConsultados.Select(Proyectar).ToList(),
+            ["citas"] = evento.Citas.Select(cita => new { documento = cita.Documento, seccion = cita.Seccion }).ToList(),
+            ["tokens"] = evento.Tokens,
+            ["costoUsd"] = evento.CostoUsd,
+            ["duracionMs"] = evento.DuracionMs,
+            ["precioDesconocido"] = evento.PrecioDesconocido
+        };
+        if (evento.IdSolicitado is { } idSolicitado)
+        {
+            proyeccion["idSolicitado"] = idSolicitado;
+        }
+
+        return proyeccion;
+    }
 
     private static Dictionary<string, string> Proyectar(DatoConsultado dato)
     {
