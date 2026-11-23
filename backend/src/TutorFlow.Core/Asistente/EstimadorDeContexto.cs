@@ -4,6 +4,7 @@ public static class EstimadorDeContexto
 {
     private const decimal CaracteresPorToken = 3.5m;
     private const decimal ProporcionMinimaDelContexto = 0.75m;
+    private const int MinimoDeTokensVerosimil = 100;
 
     public static int TokensEstimados(SolicitudLlm solicitud)
     {
@@ -13,7 +14,7 @@ public static class EstimadorDeContexto
 
     public static ContextoTruncadoDetectado? Evaluar(SolicitudLlm solicitud, UsoTokens uso)
     {
-        if (uso.Entrada <= 0)
+        if (uso.Entrada < MinimoDeTokensVerosimil)
         {
             return null;
         }
