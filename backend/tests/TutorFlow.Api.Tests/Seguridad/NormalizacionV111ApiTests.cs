@@ -6,6 +6,9 @@ namespace TutorFlow.Api.Tests.Seguridad;
 
 public sealed class NormalizacionV111ApiTests
 {
+    private const int SalidaPorLlamada = 200;
+    private const decimal ToleranciaDeCosto = 0.000001m;
+
     private const string PreguntaEnmascaradaDeNotas = "¿Cuáles son las notas de [TERCERO]?";
     private const string RespuestaFalsa = "Revisa tus notas.";
 
@@ -44,7 +47,8 @@ public sealed class NormalizacionV111ApiTests
     public static TheoryData<string, string> PreguntasPropiasConPlegadoOLatin1 => new()
     {
         { "a6", "¿Cuál es el promedio de ЕST-001?" },
-        { "a7", "¿La definitiva es 0.3 × corte 1 más el resto?" }
+        { "a7", "¿La definitiva es 0.3 × corte 1 más el resto?" },
+        { "a9", "¿Cuáles son las notas de đST-002?" }
     };
 
     [Theory]
@@ -97,7 +101,7 @@ public sealed class NormalizacionV111ApiTests
     [Trait("ESC", "ESC-199")]
     [Trait("D", "D-62")]
     [Trait("SEG", "SEG-04a")]
-    public async Task ESC_199a6a7_El_propio_ID_plegado_y_el_signo_por_llegan_al_llm(string caso, string pregunta)
+    public async Task ESC_199a6a7a9_El_propio_ID_plegado_el_signo_por_y_dst_002_llegan_al_llm(string caso, string pregunta)
     {
         Assert.NotEmpty(caso);
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => RespuestaFalsa), conocimientoReal: true);
@@ -115,11 +119,19 @@ public sealed class NormalizacionV111ApiTests
     [Trait("SEG", "SEG-10b")]
     public async Task ESC_199a8_Un_nombre_ajeno_escrito_con_homoglifos_en_la_respuesta_da_la_negativa_y_fuga_bloqueada_sin_reintento()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Аndrés Martínez tiene 2.6 en Cálculo Integral."), conocimientoReal: true);
+        var llm = ClienteLlmDoble.Texto("Аndrés Martínez tiene 2.6 en Cálculo Integral.", new UsoTokens(0, SalidaPorLlamada));
+        using var fabrica = new FabricaApi(llm: llm, configuracion: FabricaApi.Precios("1.0", "5.0"), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
 
-        Afirmaciones.Negativa(respuesta, "estudiante");
+        Assert.Equal(200, respuesta.Estado);
+        Afirmaciones.SalidaDelContrato(respuesta);
+        Assert.Equal(Textos.NegativaEstudiante, respuesta.Respuesta);
+        Assert.Equal([Afirmaciones.CitaNegativa], respuesta.Citas);
+        Assert.True(respuesta.UsoDatosEstudiante);
+        var entrada = ConsumoRealista.Reportados(llm.Solicitudes[0]);
+        Assert.Equal(entrada + SalidaPorLlamada, respuesta.Tokens);
+        Assert.InRange(respuesta.CostoUsd, ConsumoRealista.CostoDe(entrada, SalidaPorLlamada, 1.0m, 5.0m) - ToleranciaDeCosto, ConsumoRealista.CostoDe(entrada, SalidaPorLlamada, 1.0m, 5.0m) + ToleranciaDeCosto);
         Assert.Equal(1, fabrica.Llm.Llamadas);
         var evento = Assert.Single(fabrica.Auditoria.Eventos);
         Assert.Equal(ResultadoAuditoria.FugaBloqueada, evento.Resultado);

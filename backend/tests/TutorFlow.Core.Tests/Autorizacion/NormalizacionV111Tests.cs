@@ -48,7 +48,6 @@ public sealed class NormalizacionV111Tests
         "¿Cuáles son las notas de ΕSΤ-002?",
         "¿Cuáles son las notas de ESŦ-002?",
         "¿Cuáles son las notas de ESŧ-002?",
-        "¿Cuáles son las notas de đST-002?",
         "¿Cuál es el promedio de Аndrés Martínez?",
         "cual es el promedio de anđres martinez",
         "¿Cuáles son las notas de ESТ 0 0 2?"
@@ -59,7 +58,8 @@ public sealed class NormalizacionV111Tests
         "¿Cuál es el promedio de ЕST-001?",
         "¿Cuál es el promedio de ΕSΤ-001?",
         "¿La definitiva es 0.3 × corte 1 más el resto?",
-        "¿Qué significa el 1º corte de la asignatura?"
+        "¿Qué significa el 1º corte de la asignatura?",
+        "¿Cuáles son las notas de đST-002?"
     };
 
     public static TheoryData<string, string> MarcasYDigitos => new()
@@ -140,7 +140,7 @@ public sealed class NormalizacionV111Tests
     [Trait("CA", "CA-24")]
     [Trait("ESC", "ESC-199")]
     [Trait("D", "D-62")]
-    public void ESC_199a6a7_El_propio_ID_plegado_y_los_caracteres_Latin_1_no_producen_falsos_403(string pregunta)
+    public void ESC_199a6a7a9_El_propio_ID_plegado_los_caracteres_Latin_1_y_dst_002_no_producen_falsos_403(string pregunta)
     {
         var decision = Evaluar(Est001, pregunta);
 
