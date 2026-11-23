@@ -200,3 +200,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** se admite un rango acotado para equilibrar el determinismo con la calidad de la respuesta, sin pasar nunca de 0.3.
 - **Costo:** ~1 min humano.
 - **Prevención:** D-47 se ajusta para permitir una temperatura entre 0 y 0.3, como configuración validada al arrancar (RNF-05). Un valor fuera del rango impide arrancar. El valor por defecto se elige con la medición del punto 4.
+
+### INT-023 · 2026-11-23 · La spec creció demasiado y mezcla producto con implementación
+- **Fase:** spec
+- **Qué pasó:** `specs/001-asistente-academico/spec.md` llegó a 2.585 líneas y unas 52.000 palabras, con 24 CA. Detalla algoritmos de verificación, umbrales, prompt, formatos, adaptadores del LLM y validación de la configuración. `SPEC.md` llegó a unas 15.000 palabras por las filas de decisiones D-01…D-53. Cada ronda de corrección (v1.4…v1.12) añadió texto en lugar de reorganizarlo.
+- **Qué hizo el humano:** *"He notado que la sepc ha crecido demasiado, esto se debe de evitar y de no comter este tipo de errores ya que se vuelve dificil de leer para el humano y dificil incluso de leer para ti como herramienta agentica de codigo"*. Compartió una guía. Una buena spec tiene alcance de una sola feature, flujos de usuario cortos, criterios de aceptación comprobables, límites explícitos de alcance, solo las reglas de dominio y los casos borde que afectan lo visible, y cero ambigüedades. No lleva detalles técnicos de implementación (van en `plan.md`) ni reglas globales del proyecto (van en `constitution.md`). Tampoco junta varias features, ni incluye código o pseudocódigo, ni prosa larga o repetida.
+- **Por qué:** una spec ilegible no sirve como fuente de verdad, ni para el humano ni para los agentes, y desperdicia contexto.
+- **Costo:** ~3 min humanos.
+- **Prevención:** reestructurar en `spec.md` (producto), `plan.md` (técnico) y `constitution.md` (global). Aplicar límites de tamaño y prohibiciones en la plantilla, en `arquitecto-spec` y en `nueva-spec`, con una verificación automática del tamaño. Detalle pendiente de la decisión del humano sobre la estructura.
