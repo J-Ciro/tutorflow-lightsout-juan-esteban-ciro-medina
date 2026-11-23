@@ -10,6 +10,7 @@ public static class Evaluador
     private const string EscenarioDerogado = "ESC-015";
     private const string EscenarioFugaHerramienta = "ESC-146";
     private const string PrefijoHerramientas = "consultar_";
+    private static readonly string[] TextosFijos = [Core.Asistente.Textos.NoVerificable, Core.Asistente.Textos.SinInformacion, Core.Asistente.Textos.NegativaEstudiante, Core.Asistente.Textos.NegativaCoordinador];
     private static readonly string[] CadenasInternas = ["localhost:4000", "mock-api", "host.docker.internal", "StackTrace"];
 
     public static IReadOnlyList<string> Evaluar(CasoEval caso, Ejecucion ejecucion, string? llave)
@@ -32,11 +33,16 @@ public static class Evaluador
 
         var fallos = new List<string>();
         fallos.AddRange(Textos(caso, salida));
+        fallos.AddRange(Parejas(caso, salida));
+        fallos.AddRange(ContieneAlguna(caso, salida));
+        fallos.AddRange(Respondida(caso, salida));
         fallos.AddRange(Citas(caso, salida));
         fallos.AddRange(CitasExactas(caso, salida));
         fallos.AddRange(CitasTotal(caso, salida));
         fallos.AddRange(Metadatos(caso, salida));
         fallos.AddRange(Globales(caso, salida, cuerpo, llave));
+        fallos.AddRange(ReglasDeTexto.OracionesTruncadas(salida.Respuesta!));
+        fallos.AddRange(ReglasDeTexto.ReferenciasSinCita(salida.Respuesta!, salida.Citas));
         return fallos;
     }
 
@@ -58,6 +64,34 @@ public static class Evaluador
             yield return "la respuesta no es el texto exacto esperado";
         }
     }
+
+    private static IEnumerable<string> Parejas(CasoEval caso, SalidaEval salida)
+    {
+        var lineas = salida.Respuesta!.Split('\n');
+        foreach (var pareja in caso.Parejas ?? [])
+        {
+            if (!lineas.Any(linea => ValorTrasElNombre(linea, pareja)))
+            {
+                yield return $"falta '{pareja.Valor}' en la línea de '{pareja.Nombre}'";
+            }
+        }
+    }
+
+    private static bool ValorTrasElNombre(string linea, ParejaEval pareja)
+    {
+        var posicion = linea.IndexOf(pareja.Nombre, StringComparison.OrdinalIgnoreCase);
+        return posicion >= 0 && linea.IndexOf(pareja.Valor, posicion + pareja.Nombre.Length, StringComparison.Ordinal) >= 0;
+    }
+
+    private static IEnumerable<string> ContieneAlguna(CasoEval caso, SalidaEval salida) =>
+        (caso.ContieneAlguna ?? [])
+            .Where(opciones => !opciones.Any(o => salida.Respuesta!.Contains(o, StringComparison.OrdinalIgnoreCase)))
+            .Select(opciones => $"la respuesta no contiene ninguna de [{string.Join(", ", opciones)}]");
+
+    private static IEnumerable<string> Respondida(CasoEval caso, SalidaEval salida) =>
+        caso.Respondida && TextosFijos.Contains(salida.Respuesta!)
+            ? ["la respuesta es un texto fijo y no una respuesta verificada"]
+            : [];
 
     private static IEnumerable<string> Citas(CasoEval caso, SalidaEval salida)
     {
