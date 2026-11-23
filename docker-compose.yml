@@ -11,6 +11,7 @@ services:
       ASPNETCORE_HTTP_PORTS: "8080"
       ApiAcademica__UrlBase: http://mock-api:4000
       Auditoria__Ruta: /app/auditoria
+      Limites__PreguntasPorMinutoPorIp: "${TASA_POR_IP_PRUEBA:-}"
       LLM_API_KEY:
       LLM_PROVEEDOR:
       LLM_URL_BASE:
@@ -21,12 +22,8 @@ services:
       mock-api:
         condition: service_healthy
     networks:
-      interna: {}
-      publica: {}
-      web-api:
-        ipv4_address: 172.30.80.3
-        aliases:
-          - api-web
+      - interna
+      - publica
     read_only: true
     tmpfs:
       - /tmp
@@ -74,10 +71,3 @@ networks:
   interna:
     internal: true
   publica: {}
-  web-api:
-    internal: true
-    ipam:
-      config:
-        - subnet: 172.30.80.0/29
-          gateway: 172.30.80.1
-          ip_range: 172.30.80.4/30
