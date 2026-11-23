@@ -226,6 +226,31 @@ public sealed partial class FormatoDeDatosCalculadosTests
         Assert.Equal(ReglasIngSis, ReglasDe(resultado));
     }
 
+    [Fact]
+    [Trait("CA", "CA-18")]
+    [Trait("ESC", "ESC-198")]
+    [Trait("D", "D-63")]
+    public async Task ESC_198m_La_ultima_linea_del_resultado_de_ADM_es_exactamente_la_de_la_spec_y_termina_en_punto()
+    {
+        var resultado = await ResultadoDeProgramaAsync(Coord02);
+
+        Assert.Equal("Reglas aplicadas a estos datos: reglamento_academico_2025.md · Artículo 5; reglamento_academico_2025.md · Artículo 6; reglamento_academico_2025.md · Artículo 20; evaluacion_y_calificaciones.md · Sección 3.", Lineas(resultado).Last());
+    }
+
+    [Theory]
+    [MemberData(nameof(TodosLosEstudiantes))]
+    [Trait("CA", "CA-18")]
+    [Trait("ESC", "ESC-198")]
+    [Trait("D", "D-63")]
+    public async Task ESC_198m_La_linea_de_reglas_aplicadas_del_resumen_propio_termina_en_punto(string estudianteId)
+    {
+        var lineas = await LineasDelResumenAsync(estudianteId);
+
+        var reglas = Assert.Single(lineas, l => l.StartsWith(EncabezadoDeReglas, StringComparison.Ordinal));
+        Assert.EndsWith(".", reglas, StringComparison.Ordinal);
+        Assert.DoesNotContain(". ", reglas[..^1], StringComparison.Ordinal);
+    }
+
     [Theory]
     [MemberData(nameof(LineasDeIngSis))]
     [Trait("CA", "CA-18")]
