@@ -11,6 +11,7 @@ public sealed class ConfiguracionAsistente
 
     public const int RelevanciaMinimaPorDefecto = 2;
     public const int ApoyoMinimoPorDefecto = 2;
+    public const decimal ReservaSinPrecioPorDefectoUsd = 0.01m;
 
     public ConfiguracionAsistente(
         PrecioModelo? precio,
@@ -19,7 +20,8 @@ public sealed class ConfiguracionAsistente
         decimal? reservaPorPeticionUsd = null,
         int relevanciaMinima = RelevanciaMinimaPorDefecto,
         int apoyoMinimoRespaldo = ApoyoMinimoPorDefecto,
-        IReadOnlyList<AsignaturaCatalogo>? catalogo = null)
+        IReadOnlyList<AsignaturaCatalogo>? catalogo = null,
+        decimal reservaSinPrecioUsd = ReservaSinPrecioPorDefectoUsd)
     {
         Catalogo = catalogo is { Count: > 0 } ? catalogo : CatalogoAsignaturas.PorDefecto;
         Precio = precio;
@@ -27,7 +29,7 @@ public sealed class ConfiguracionAsistente
             ? Convert.ToHexString(RandomNumberGenerator.GetBytes(BytesDelMarcadorAleatorio))
             : marcadorCanarioConfigurado;
         CodigosAsignatura = codigosAsignatura;
-        ReservaPorPeticionUsd = reservaPorPeticionUsd ?? ReservaPorDefecto(precio);
+        ReservaPorPeticionUsd = reservaPorPeticionUsd ?? ReservaPorDefecto(precio, reservaSinPrecioUsd);
         RelevanciaMinima = Math.Max(MinimoPermitido, relevanciaMinima);
         ApoyoMinimoRespaldo = Math.Max(MinimoPermitido, apoyoMinimoRespaldo);
     }
@@ -46,6 +48,11 @@ public sealed class ConfiguracionAsistente
 
     public int ApoyoMinimoRespaldo { get; }
 
-    private static decimal ReservaPorDefecto(PrecioModelo? precio) =>
-        CalculadoraCosto.Calcular(new UsoTokens(TokensDeEntradaReservados, TokensDeSalidaReservados), precio);
+    public decimal GastoDe(UsoTokens uso) =>
+        Precio is null ? ReservaPorPeticionUsd : CalculadoraCosto.Calcular(uso, Precio);
+
+    private static decimal ReservaPorDefecto(PrecioModelo? precio, decimal reservaSinPrecioUsd) =>
+        precio is null
+            ? reservaSinPrecioUsd
+            : CalculadoraCosto.Calcular(new UsoTokens(TokensDeEntradaReservados, TokensDeSalidaReservados), precio);
 }

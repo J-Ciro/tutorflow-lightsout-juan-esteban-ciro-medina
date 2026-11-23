@@ -142,13 +142,14 @@ public sealed class PreguntarAsistente
             return NoDisponible(sesion, ResultadoAuditoria.Error);
         }
 
+        sesion.ReservaHecha = true;
         try
         {
             return await ResponderConTimeoutAsync(sesion, cancellationToken);
         }
         finally
         {
-            _presupuesto.Sustituir(reserva, CalculadoraCosto.Calcular(sesion.Uso.Valor, _configuracion.Precio));
+            _presupuesto.Sustituir(reserva, _configuracion.GastoDe(sesion.Uso.Valor));
         }
     }
 
@@ -302,7 +303,7 @@ public sealed class PreguntarAsistente
         _auditor.Registrar(new EventoAuditoria(
             _auditor.AhoraUtc, sesion.CorrelationId, sesion.IpOrigen, usuario.Rol, usuario.Id, pregunta, resultado, motivo,
             registro.Estudiantes, registro.Recursos, citas, sesion.Uso.Valor.Total, costo,
-            sesion.Cronometro.ElapsedMilliseconds, _configuracion.Precio is null)
+            sesion.Cronometro.ElapsedMilliseconds, sesion.ReservaHecha && _configuracion.Precio is null)
         {
             DatosConsultados = registro.DatosConsultados,
             IdSolicitado = idSolicitado

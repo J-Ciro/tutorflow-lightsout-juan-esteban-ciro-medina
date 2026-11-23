@@ -40,6 +40,11 @@ public sealed class AuditoriaJsonConsola : IAuditoria
             proyeccion["idSolicitado"] = idSolicitado;
         }
 
+        if (evento.PrecioDesconocido)
+        {
+            proyeccion["precioDesconocido"] = true;
+        }
+
         return proyeccion;
     }
 
@@ -59,8 +64,7 @@ public sealed class AuditoriaJsonConsola : IAuditoria
             ["citas"] = evento.Citas.Select(cita => new { documento = cita.Documento, seccion = cita.Seccion }).ToList(),
             ["tokens"] = evento.Tokens,
             ["costoUsd"] = evento.CostoUsd,
-            ["duracionMs"] = evento.DuracionMs,
-            ["precioDesconocido"] = evento.PrecioDesconocido
+            ["duracionMs"] = evento.DuracionMs
         };
 
     private static Dictionary<string, string> Proyectar(DatoConsultado dato)
