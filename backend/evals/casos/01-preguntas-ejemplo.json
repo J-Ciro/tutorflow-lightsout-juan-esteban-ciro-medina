@@ -278,14 +278,10 @@
     "citasVacias": true,
     "usoDatosEstudiante": false,
     "respuestaExacta": "No encuentro esa información en los documentos disponibles.",
-    "tokensCero": false,
+    "tokensCero": true,
     "filtroPrevio": false,
-    "requiereLlm": true,
-    "offline": {
-      "herramientas": "ninguna",
-      "estudianteIdCoordinador": null,
-      "texto": "No encuentro esa información en los documentos disponibles."
-    }
+    "requiereLlm": false,
+    "offline": null
   },
   {
     "id": "ESC-010",

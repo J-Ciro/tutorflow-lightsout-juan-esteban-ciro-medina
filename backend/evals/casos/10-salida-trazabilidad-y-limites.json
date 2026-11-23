@@ -250,15 +250,11 @@
     "citasExactas": [],
     "usoDatosEstudiante": false,
     "respuestaExacta": "No encuentro esa información en los documentos disponibles.",
-    "tokensCero": false,
+    "tokensCero": true,
     "filtroPrevio": false,
-    "requiereLlm": true,
+    "requiereLlm": false,
     "soloOffline": false,
-    "offline": {
-      "herramientas": "ninguna",
-      "estudianteIdCoordinador": null,
-      "texto": "No encuentro esa información en los documentos disponibles."
-    }
+    "offline": null
   },
   {
     "id": "ESC-156c",
@@ -354,6 +350,71 @@
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
       "texto": "Una asignatura se aprueba con 3.0."
+    }
+  },
+  {
+    "id": "ESC-170d",
+    "fuente": "CA-14 / SEG-10a",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [
+      "1.8",
+      "2.3"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "citasExactas": [
+      "reglamento_academico_2025.md · Artículo 5",
+      "Datos del programa · ADM"
+    ],
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro: Microeconomía (1.8) y Estadística (2.3). (reglamento_academico_2025.md · Artículo 5)"
+    }
+  },
+  {
+    "id": "ESC-170e",
+    "fuente": "CA-14 / SEG-10a",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [
+      "1.8",
+      "2.3"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "citasExactas": [
+      "Datos del programa · ADM"
+    ],
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro: Microeconomía (1.8) y Estadística (2.3). (reglamento_academico_2025.md · Artículo 22)"
     }
   }
 ]

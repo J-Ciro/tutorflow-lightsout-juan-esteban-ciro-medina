@@ -45,13 +45,27 @@ public sealed class CitasApiTests
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-156")]
     [Trait("RF", "COMP-02")]
-    public async Task ESC_156_El_texto_de_comp_03_lleva_citas_vacias_aunque_el_modelo_proponga_otras()
+    public async Task ESC_156_El_texto_de_comp_03_por_umbral_lleva_citas_vacias_y_no_invoca_al_modelo()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => Textos.SinInformacion));
+        var llm = ClienteLlmDoble.Falla(new InvalidOperationException("llm"));
+        using var fabrica = new FabricaApi(llm: llm, conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Qué dice el reglamento sobre el uso de parqueaderos?");
 
-        Assert.Equal(200, respuesta.Estado);
+        Afirmaciones.SinInformacionSinLlm(respuesta, fabrica);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-156")]
+    [Trait("RF", "COMP-02")]
+    public async Task ESC_156_El_texto_de_comp_03_tras_el_modelo_lleva_citas_vacias_aunque_el_modelo_proponga_otras()
+    {
+        var llm = GuionesLlm.SinHerramientas(_ => $"Respuesta sin sustento. {ListadoDeCitas}");
+        using var fabrica = new FabricaApi(llm: llm, conocimiento: new IndiceBiblioteca());
+
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuándo atiende la biblioteca?");
+
         Assert.Equal(Textos.SinInformacion, respuesta.Respuesta);
         Assert.Empty(respuesta.Citas);
     }

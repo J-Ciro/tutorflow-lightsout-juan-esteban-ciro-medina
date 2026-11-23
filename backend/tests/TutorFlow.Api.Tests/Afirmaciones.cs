@@ -29,6 +29,33 @@ public static class Afirmaciones
         }
     }
 
+    public static void SinInformacion(RespuestaApi respuesta)
+    {
+        Assert.Equal(200, respuesta.Estado);
+        SalidaDelContrato(respuesta);
+        Assert.Equal(Textos.SinInformacion, respuesta.Respuesta);
+        Assert.Empty(respuesta.Citas);
+        Assert.False(respuesta.UsoDatosEstudiante);
+    }
+
+    public static void SinInformacionSinLlm(RespuestaApi respuesta, FabricaApi fabrica)
+    {
+        SinInformacion(respuesta);
+        Assert.Equal(0, respuesta.Tokens);
+        Assert.Equal(0m, respuesta.CostoUsd);
+        Assert.Equal(0, fabrica.Llm.Llamadas);
+        Assert.DoesNotContain(fabrica.Api.Llamadas, l => l.StartsWith("ObtenerNotas", StringComparison.Ordinal) || l.StartsWith("ObtenerAsistencia", StringComparison.Ordinal));
+        Assert.Equal(ResultadoAuditoria.SinInformacion, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
+    }
+
+    public static void SinInformacionTrasLlm(RespuestaApi respuesta, FabricaApi fabrica)
+    {
+        SinInformacion(respuesta);
+        Assert.Equal(1, fabrica.Llm.Llamadas);
+        Assert.True(respuesta.Tokens > 0);
+        Assert.Equal(ResultadoAuditoria.SinInformacion, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
+    }
+
     public static void Negativa(RespuestaApi respuesta, string rol)
     {
         Assert.Equal(403, respuesta.Estado);
