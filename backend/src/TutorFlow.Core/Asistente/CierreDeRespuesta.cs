@@ -50,11 +50,6 @@ internal sealed class CierreDeRespuesta
             return CierreEvaluado.Entregable(Textos.SinInformacion, delPrograma, ResultadoAuditoria.SinInformacion);
         }
 
-        foreach (var seccion in entrada.Secciones)
-        {
-            sesion.Registro.AgregarFuente(ConstructorPrompts.ContenidoEntregado(seccion));
-        }
-
         var escritas = EscritasValidas(sesion, texto, entrada);
         var limpio = Textos.CitasDeTextoFijo(texto) is null ? ReferenciasEscritas.Limpiar(texto, escritas) : texto;
         return ReferenciasEscritas.TieneContenido(limpio)

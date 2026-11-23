@@ -102,6 +102,11 @@ internal sealed class FaseDelModelo
     {
         var resumen = await _lectorResumen.LeerAsync(contexto, sesion.Activacion, sesion.Api, sesion.Registro, cancellationToken);
         var prelectura = await PrelecturaAsync(sesion, contexto, herramientas, cancellationToken);
+        foreach (var seccion in sesion.Secciones)
+        {
+            sesion.Registro.AgregarFuente(ConstructorPrompts.ContenidoEntregado(seccion));
+        }
+
         return new EntradaConversacion(sesion.Entrada.Pregunta, sesion.Secciones, resumen, prelectura, ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
     }
 
