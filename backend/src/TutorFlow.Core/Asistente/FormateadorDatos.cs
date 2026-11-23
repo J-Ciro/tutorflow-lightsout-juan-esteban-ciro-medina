@@ -62,7 +62,7 @@ public static class FormateadorDatos
     internal static string DescribirEstado(ResultadoAsignatura resultado) => resultado.Estado switch
     {
         EstadoAsignatura.Aprobada => $"definitiva {Nota(resultado.Definitiva)}, aprobada",
-        EstadoAsignatura.Perdida => $"definitiva {Nota(resultado.Definitiva)}, perdida, {DescribirHabilitacion(resultado)}",
+        EstadoAsignatura.Perdida => $"definitiva {Nota(resultado.Definitiva)}, perdida porque se aprueba con {Nota(CalculosAcademicos.NotaMinimaAprobacion)} o más, {DescribirHabilitacion(resultado)}",
         EstadoAsignatura.PerdidaPorInasistencia => "perdida por inasistencia con definitiva 0.0, no habilitable",
         _ => DescribirSinDefinitiva(resultado)
     };
