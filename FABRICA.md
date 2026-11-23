@@ -46,6 +46,12 @@ Principios de separación:
  [cerrar-corrida] REPORTE.md + logs
 ```
 
+**Toda solución se decide entre disciplinas (INT-030).** Ante cualquier solución propuesta, sea de diseño, de seguridad, de operación o la corrección de un defecto:
+1. Un subagente distinto del que la propuso la evalúa.
+2. Las alternativas, empezando por la más simple que cumple el requisito y con su costo y su riesgo, se presentan a `arquitecto-spec`, `backend-dotnet` y `frontend-react` (este último cuando afecta a la interfaz).
+3. La decisión se toma entre los tres y queda registrada en la D correspondiente, con el porqué de descartar las demás.
+4. Una solución que añade infraestructura (redes, IP fijas, overrides o servicios) requiere además la aprobación humana.
+
 ## 3. Cuándo se detiene
 
 | Condición | Acción |
