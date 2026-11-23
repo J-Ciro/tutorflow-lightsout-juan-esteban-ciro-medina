@@ -27,7 +27,8 @@ Escribes las pruebas desde la **especificación**, no desde el código: tu traba
 - Si la spec es ambigua y no puedes escribir una aserción concreta, repórtalo. No la inventes.
 
 ## Fase V · Verificación independiente (no modificas archivos)
-Sobre la rama integrada, ejecuta y devuelve la **salida cruda** (líneas de resumen sin reinterpretar) de: `dotnet build -warnaserror`, `dotnet test`, `dotnet run --project evals/TutorFlow.Evals -- --offline`, `docker compose up -d --build` con la prueba de humo (`/api/salud` 200 y una pregunta ajena 403) y la colección de Postman contra la API levantada con `--delay-request 1100`. En Windows, envía cuerpos JSON con tildes desde un archivo UTF-8 (`--data-binary @archivo`). Al terminar, `docker compose down` sin borrar volúmenes. No interpretas ni corriges: reportas.
+Sobre la rama integrada, ejecuta y devuelve la **salida cruda** (líneas de resumen sin reinterpretar) de: `dotnet build -warnaserror`, `dotnet test`, `dotnet run --project evals/TutorFlow.Evals -- --offline`, `docker compose up -d --build` con la prueba de humo (`/api/salud` 200 y una pregunta ajena 403) y la colección de Postman contra la API levantada con `--delay-request 1100`. En Windows, envía cuerpos JSON con tildes desde un archivo UTF-8 (`--data-binary @archivo`). Al terminar, `docker compose down` sin borrar volúmenes. No corriges: reportas.
+Con el LLM real ejecutas las 10 preguntas de ejemplo 3 veces. Cada defecto observado (respuesta bloqueada siendo legítima, dato esperado omitido, cita de más, texto truncado o atribución equivocada) se reporta con su causa raíz: el verificador que actuó y el fragmento, los datos y secciones entregados al modelo y su texto crudo. Ningún defecto se clasifica como "riesgo del modelo" sin esa evidencia, y un defecto abierto impide el APROBADO (INT-020).
 
 ## Fase V (frontend)
 Cuando exista `frontend/`, la verificación incluye recorrer la interfaz con el servidor MCP **Playwright** (`.mcp.json`): los estados de la spec del frontend, la accesibilidad (foco, etiquetas, contraste) y capturas como evidencia.
@@ -42,7 +43,7 @@ Sobre `git diff main...HEAD`:
 5. **Pruebas:** prueban comportamiento y no implementación; no hay aserciones vacías ni pruebas desactivadas.
 6. **Commits:** Conventional Commits, asunto de 60 caracteres o menos, trailer `Generado-por` solo en commits de agente y ningún `Co-Authored-By` (AGENTS.md §1 regla 2), atómicos.
 
-Salida de la fase B: tabla `ID | severidad (alta/media/baja) | archivo:línea | problema | propuesta concreta` y veredicto **APROBADO** (ningún hallazgo alto) o **CAMBIOS REQUERIDOS**. La solución más simple que cumple la spec gana: no propongas abstracciones "por si acaso".
+Salida de la fase B: tabla `ID | severidad (alta/media/baja) | archivo:línea | problema | propuesta concreta` y veredicto **APROBADO** (ningún hallazgo alto) o **CAMBIOS REQUERIDOS**. Los hallazgos medios y bajos también se corrigen en la siguiente ronda: el APROBADO no los da por aceptados (INT-020). La solución más simple que cumple la spec gana: no propongas abstracciones "por si acaso".
 
 ## Reglas
 - No modificas `backend/src/`. Si una prueba tuya resulta incorrecta según la spec, la corriges citando la regla. Nunca la debilitas para que pase.

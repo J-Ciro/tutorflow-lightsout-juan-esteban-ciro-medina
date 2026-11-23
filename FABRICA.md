@@ -50,7 +50,8 @@ Principios de separación:
 
 | Condición | Acción |
 | --- | --- |
-| Todo verde, y seguridad y qa-calidad con APROBADO | Merge y `cerrar-corrida` |
+| Todo verde, y seguridad y qa-calidad con APROBADO sin defectos abiertos | Merge y `cerrar-corrida` |
+| Queda un defecto observado (incluso con el LLM real) o un hallazgo de calidad sin corregir | No se cierra la feature: se diagnostica su causa raíz y entra en la siguiente ronda. Solo el humano puede aceptarlo como riesgo, de forma explícita (INT-020) |
 | 3 iteraciones del bucle sin converger | Detenerse y escalar al humano con el resumen de hallazgos |
 | Desacuerdo entre agentes sobre la spec | Detenerse; la ambigüedad se resuelve en la spec (D-xx), no en el código |
 | Hace falta cambiar el contrato, la política de acceso o una prueba existente | Detenerse; requiere aprobación humana |
