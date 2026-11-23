@@ -15,7 +15,6 @@ public sealed class IndiceBiblioteca : IBaseConocimiento
 
     public IReadOnlyList<SeccionDocumento> BuscarSecciones(string consulta, int maximo) => [Seccion];
 
-    public bool ExisteCita(Cita cita) => ObtenerSeccion(cita) is not null;
 
     public SeccionDocumento? ObtenerSeccion(Cita cita) =>
         cita.Documento == Seccion.Documento && cita.Seccion == Seccion.Seccion ? Seccion : null;

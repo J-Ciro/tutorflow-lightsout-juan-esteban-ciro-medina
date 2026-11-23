@@ -183,6 +183,7 @@ public sealed class ConfiguracionEnLimitesApiTests
         var llm = new ClienteLlmRetenido(new UsoTokens(100, 20));
         var configuracion = new Dictionary<string, string?> { ["Limites:PresupuestoDiarioUsd"] = "0.02", ["Llm:ReservaSinPrecioUsd"] = "" };
         using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: configuracion, variablesEntorno: EntornoSinPrecio());
+        await fabrica.EnviarAsync(HttpMethod.Get, "/api/salud", null);
 
         var respuestas = await PreguntarSimultaneasAsync(fabrica, llm);
 

@@ -44,7 +44,6 @@ public sealed class CatalogoDeAsignaturasInvalidoApiTests
     public static TheoryData<string, string, string> CodigosDeLaListaSeparada => new()
     {
         { "XYZ-999", "no está en Autorizacion:Asignaturas", "Autorizacion:CodigosAsignatura:8" },
-        { "CAL-201", "código duplicado de Autorizacion:CodigosAsignatura:0", "Autorizacion:CodigosAsignatura:8" },
         { "xyz999", ReglaFormato, "Autorizacion:CodigosAsignatura:8" }
     };
 
@@ -74,19 +73,19 @@ public sealed class CatalogoDeAsignaturasInvalidoApiTests
     }
 
     [Theory]
-    [InlineData("1", "BD-203", "2")]
-    [InlineData("7", "BD-203", "2")]
-    [InlineData("3", "CAL-201", "0")]
+    [InlineData("1", "BD-203", "2", "1")]
+    [InlineData("7", "BD-203", "7", "2")]
+    [InlineData("3", "CAL-201", "3", "0")]
     [Trait("CA", "CA-15")]
     [Trait("ESC", "ESC-181")]
     [Trait("RF", "RNF-05")]
-    public void ESC_181l_Un_codigo_duplicado_del_catalogo_impide_arrancar_y_nombra_la_primera_aparicion(string indice, string codigo, string primera)
+    public void ESC_181l_Un_codigo_duplicado_del_catalogo_impide_arrancar_y_nombra_la_primera_aparicion(string indice, string codigo, string repeticion, string primera)
     {
-        var clave = $"Autorizacion:Asignaturas:{indice}:Codigo";
+        var resultado = Iniciar(new Dictionary<string, string?> { [$"Autorizacion:Asignaturas:{indice}:Codigo"] = codigo });
 
-        var resultado = Iniciar(new Dictionary<string, string?> { [clave] = codigo });
-
-        AfirmarArranqueFallido(resultado, Invalida(clave, codigo, $"código duplicado de Autorizacion:Asignaturas:{primera}:Codigo"));
+        AfirmarArranqueFallido(
+            resultado,
+            Invalida($"Autorizacion:Asignaturas:{repeticion}:Codigo", codigo, $"código duplicado de Autorizacion:Asignaturas:{primera}:Codigo"));
     }
 
     [Theory]
@@ -125,6 +124,23 @@ public sealed class CatalogoDeAsignaturasInvalidoApiTests
         var resultado = Iniciar(new Dictionary<string, string?> { [clave] = codigo });
 
         AfirmarArranqueFallido(resultado, Invalida(clave, codigo, regla));
+    }
+
+    [Fact]
+    [Trait("CA", "CA-15")]
+    [Trait("ESC", "ESC-181")]
+    [Trait("RF", "RNF-05")]
+    public void ESC_181_Un_codigo_repetido_en_la_lista_separada_nombra_la_primera_aparicion()
+    {
+        var resultado = Iniciar(new Dictionary<string, string?>
+        {
+            ["Autorizacion:CodigosAsignatura:0"] = "CAL-201",
+            ["Autorizacion:CodigosAsignatura:8"] = "CAL-201"
+        });
+
+        AfirmarArranqueFallido(
+            resultado,
+            Invalida("Autorizacion:CodigosAsignatura:8", "CAL-201", "código duplicado de Autorizacion:CodigosAsignatura:0"));
     }
 
     [Fact]

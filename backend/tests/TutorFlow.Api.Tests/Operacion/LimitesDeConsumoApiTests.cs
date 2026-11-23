@@ -23,6 +23,7 @@ public sealed class TimeoutTotalApiTests
     {
         var llm = new ClienteLlmLento(DemoraPorLlamada, LlamadasConHerramienta);
         using var fabricaLenta = new FabricaApi(clienteLlm: llm, configuracion: ConTimeout());
+        _ = fabricaLenta.Services;
         var reloj = Stopwatch.StartNew();
 
         var respuesta = await fabricaLenta.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");

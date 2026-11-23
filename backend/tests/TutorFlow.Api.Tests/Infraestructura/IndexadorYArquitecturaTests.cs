@@ -48,7 +48,11 @@ public sealed class IndexadorTests : IDisposable
     [Trait("CA", "CA-03")]
     public void Las_citas_de_los_documentos_vigentes_existen_en_el_indice(string documento, string seccion)
     {
-        Assert.True(Base.ExisteCita(new Cita(documento, seccion)));
+        var encontrada = Base.ObtenerSeccion(new Cita(documento, seccion));
+
+        Assert.NotNull(encontrada);
+        Assert.Equal(documento, encontrada.Documento);
+        Assert.Equal(seccion, encontrada.Seccion);
     }
 
     [Theory]
@@ -57,7 +61,7 @@ public sealed class IndexadorTests : IDisposable
     [Trait("SEG", "SEG-10")]
     public void El_reglamento_derogado_el_anexo_y_lo_inventado_no_existen_en_el_indice(string documento, string seccion)
     {
-        Assert.False(Base.ExisteCita(new Cita(documento, seccion)));
+        Assert.Null(Base.ObtenerSeccion(new Cita(documento, seccion)));
     }
 
     [Theory]
