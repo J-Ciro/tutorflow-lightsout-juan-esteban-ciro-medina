@@ -42,7 +42,7 @@ internal static class ReintentoDeLlm
     public static void AfirmarReintentoRegistrado(EventoAuditoria evento)
     {
         var propiedad = typeof(EventoAuditoria).GetProperty(PropiedadDeAuditoria);
-        Assert.True(propiedad is not null, "EventoAuditoria no define Reintento (spec 001 §7.3 'Auditoría', D-48): se espera bool Reintento { get; init; }.");
+        Assert.True(propiedad is not null, "EventoAuditoria no define Reintento (plan §11.5 y §12, D-48): se espera bool Reintento { get; init; }.");
         Assert.True(propiedad.GetValue(evento) is true, "el evento debía llevar reintento: true");
     }
 

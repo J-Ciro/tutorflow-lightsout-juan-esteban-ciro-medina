@@ -41,7 +41,7 @@ public sealed class ReferenciasEscritasTests
     private static string Limpiar(string respuesta, IReadOnlyList<Cita> citas)
     {
         var tipo = typeof(PreguntarAsistente).Assembly.GetType(TipoDeLaLimpieza)
-            ?? throw new InvalidOperationException($"Core no define {TipoDeLaLimpieza} (spec 001 §11.1 'Referencias escritas en la respuesta', D-37).");
+            ?? throw new InvalidOperationException($"Core no define {TipoDeLaLimpieza} (plan §10, D-37).");
         var metodo = tipo.GetMethod(MetodoDeLaLimpieza, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, [typeof(string), typeof(IReadOnlyList<Cita>)])
             ?? throw new InvalidOperationException($"{TipoDeLaLimpieza} no define static string {MetodoDeLaLimpieza}(string respuesta, IReadOnlyList<Cita> citas).");
         return (string)metodo.Invoke(null, [respuesta, citas])!;
