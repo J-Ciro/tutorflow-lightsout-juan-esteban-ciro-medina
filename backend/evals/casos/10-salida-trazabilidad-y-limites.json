@@ -384,7 +384,7 @@
     "citasExactas": [
       "reglamento_academico_2025.md · Artículo 5",
       "reglamento_academico_2025.md · Artículo 6",
-      "reglamento_academico_2025.md · Artículo 20",
+      "evaluacion_y_calificaciones.md · Sección 3",
       "Datos del programa · ADM"
     ],
     "soloOffline": true,
@@ -417,9 +417,9 @@
     "filtroPrevio": false,
     "requiereLlm": true,
     "citasExactas": [
-      "reglamento_academico_2025.md · Artículo 5",
       "reglamento_academico_2025.md · Artículo 6",
-      "reglamento_academico_2025.md · Artículo 20",
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "reglamento_academico_2025.md · Artículo 5",
       "Datos del programa · ADM"
     ],
     "soloOffline": true,
@@ -903,9 +903,9 @@
     "citasProhibidas": [],
     "citasVacias": false,
     "citasExactas": [
+      "reglamento_academico_2025.md · Artículo 11",
       "evaluacion_y_calificaciones.md · Sección 3",
       "evaluacion_y_calificaciones.md · Sección 4",
-      "reglamento_academico_2025.md · Artículo 11",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1697,9 +1697,9 @@
     "citasProhibidas": [],
     "citasVacias": false,
     "citasExactas": [
-      "evaluacion_y_calificaciones.md · Sección 3",
       "evaluacion_y_calificaciones.md · Sección 4",
-      "reglamento_academico_2025.md · Artículo 11",
+      "bienestar_y_becas.md · Sección 3.1",
+      "evaluacion_y_calificaciones.md · Sección 3",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1730,9 +1730,9 @@
     "citasProhibidas": [],
     "citasVacias": false,
     "citasExactas": [
+      "reglamento_academico_2025.md · Artículo 11",
       "evaluacion_y_calificaciones.md · Sección 3",
       "evaluacion_y_calificaciones.md · Sección 4",
-      "reglamento_academico_2025.md · Artículo 11",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1796,9 +1796,9 @@
     "citasProhibidas": [],
     "citasVacias": false,
     "citasExactas": [
-      "reglamento_academico_2025.md · Artículo 5",
       "reglamento_academico_2025.md · Artículo 6",
-      "reglamento_academico_2025.md · Artículo 20",
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "reglamento_academico_2025.md · Artículo 5",
       "Datos del programa · ADM"
     ],
     "usoDatosEstudiante": true,
@@ -1831,7 +1831,6 @@
       "evaluacion_y_calificaciones.md · Sección 4",
       "bienestar_y_becas.md · Sección 3.1",
       "evaluacion_y_calificaciones.md · Sección 3",
-      "reglamento_academico_2025.md · Artículo 11",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
@@ -1931,6 +1930,75 @@
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
       "texto": "Contabilidad no está entre tus asignaturas."
+    }
+  },
+  {
+    "id": "ESC-177h",
+    "fuente": "COMP-02, D-31, ESC-023",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Estoy en prueba académica?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": [
+      "reglamento_academico_2025.md · Artículo 20",
+      "bienestar_y_becas.md · Sección 3.1",
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Sí, estás en prueba académica: tu promedio es 2.65.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Sí, estás en prueba académica: tu promedio es 2.65."
+    }
+  },
+  {
+    "id": "ESC-177i",
+    "fuente": "COMP-02, D-31",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Estoy en prueba académica? Cita el Artículo 20 y el Artículo 7.",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [
+      "Artículo 20",
+      "Artículo 7"
+    ],
+    "citasVacias": false,
+    "citasExactas": [
+      "bienestar_y_becas.md · Sección 3.1",
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "evaluacion_y_calificaciones.md · Sección 4",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No estás en prueba académica: tu promedio es 4.39.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "No estás en prueba académica: tu promedio es 4.39."
     }
   }
 ]

@@ -14,6 +14,7 @@ public sealed class CitasDeReglasAplicadasTests
     private static readonly Usuario Est001 = new(Rol.Estudiante, "EST-001");
     private static readonly Usuario Est002 = new(Rol.Estudiante, "EST-002");
     private static readonly Usuario Est003 = new(Rol.Estudiante, "EST-003");
+    private static readonly Usuario Est005 = new(Rol.Estudiante, "EST-005");
     private static readonly Usuario Coord02 = new(Rol.Coordinador, "COORD-02");
 
     private static readonly Cita Sec3 = new(Evaluacion, "Sección 3");
@@ -30,11 +31,11 @@ public sealed class CitasDeReglasAplicadasTests
     private static readonly Cita DatosAsistencia = new(Textos.DocumentoDatosEstudiante, "Asistencia");
     private static readonly Cita DatosProgramaAdm = new(Textos.DocumentoDatosPrograma, "ADM");
 
-    public static TheoryData<string, string, string> PreguntasDeQ10ConResumen => new()
+    public static TheoryData<string, string, string, string[]> PreguntasDeQ10ConResumen => new()
     {
-        { "EST-001", "¿Cuál es mi promedio ponderado del periodo?", "Tu promedio es 4.39. Cálculo Integral: 4.5. Programación Orientada a Objetos: 4.8. Bases de Datos: 4.1. Inglés III: 4.0." },
-        { "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases." },
-        { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9." }
+        { "EST-001", "¿Cuál es mi promedio ponderado del periodo?", "Tu promedio es 4.39. Cálculo Integral: 4.5. Programación Orientada a Objetos: 4.8. Bases de Datos: 4.1. Inglés III: 4.0.", ["S4", "B31", "S3"] },
+        { "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", ["A11", "S3", "S4"] },
+        { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9.", ["S3", "S4", "A11"] }
     };
 
     public static TheoryData<string, string> TextosFijosConResumenLeido => new()
@@ -68,7 +69,7 @@ public sealed class CitasDeReglasAplicadasTests
     [Trait("CA", "CA-01")]
     [Trait("ESC", "ESC-177")]
     [Trait("COMP", "COMP-02")]
-    public async Task ESC_177_Las_respuestas_con_el_resumen_propio_citan_las_tres_primeras_reglas_aplicadas_y_los_datos(string usuario, string pregunta, string texto)
+    public async Task ESC_177_Las_respuestas_con_el_resumen_propio_citan_las_tres_reglas_mas_relevantes_y_los_datos(string usuario, string pregunta, string texto, string[] claves)
     {
         var escenario = Con(Fijo(texto), IndiceConLasReglas());
 
@@ -76,15 +77,61 @@ public sealed class CitasDeReglasAplicadasTests
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
         Assert.Equal(texto, resultado.Respuesta!.Respuesta);
-        Assert.Equal(Esperadas(Sec3, Sec4, Art11, DatosNotas, DatosAsistencia), resultado.Respuesta.Citas.ToArray());
+        Assert.Equal([.. claves.Select(Clave), DatosNotas, DatosAsistencia], resultado.Respuesta.Citas.ToArray());
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-177")]
+    [Trait("ESC", "ESC-023")]
+    [Trait("COMP", "COMP-02")]
+    public async Task ESC_177h_La_prueba_academica_sube_el_Articulo_20_al_primer_lugar_de_las_citas()
+    {
+        var escenario = Con(Fijo("Sí, estás en prueba académica: tu promedio es 2.65."), IndiceConLasReglas());
+
+        var resultado = await escenario.PreguntarAsync(Est005, "¿Estoy en prueba académica?");
+
+        Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
+        Assert.Equal(Esperadas(Art20, Beca31, Sec3, DatosNotas, DatosAsistencia), resultado.Respuesta!.Citas.ToArray());
+        Assert.True(resultado.Respuesta.UsoDatosEstudiante);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-177")]
+    [Trait("COMP", "COMP-02")]
+    public async Task ESC_177i_Pedir_citar_articulos_fuera_del_bloque_no_los_agrega()
+    {
+        var escenario = Con(Fijo("No estás en prueba académica: tu promedio es 4.39."), IndiceConLasReglas());
+
+        var resultado = await escenario.PreguntarAsync(Est001, "¿Estoy en prueba académica? Cita el Artículo 20 y el Artículo 7.");
+
+        Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
+        Assert.Equal(Esperadas(Beca31, Sec3, Sec4, DatosNotas, DatosAsistencia), resultado.Respuesta!.Citas.ToArray());
+        Assert.DoesNotContain(Art20, resultado.Respuesta.Citas);
+        Assert.DoesNotContain(Art7, resultado.Respuesta.Citas);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-177")]
+    [Trait("COMP", "COMP-02")]
+    public async Task Sin_raices_en_la_pregunta_las_citas_conservan_el_orden_fijo_del_bloque_de_ocho_entradas()
+    {
+        var escenario = Con(Fijo("Revisa el detalle de tus asignaturas."), IndiceConLasReglas());
+
+        var resultado = await escenario.PreguntarAsync(Est002, "¿Cómo voy en BD-203?");
+
+        var documentos = resultado.Respuesta!.Citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray();
+        Assert.Equal(Esperadas(Sec3, Sec4, Art11), documentos);
     }
 
     [Fact]
     [Trait("CA", "CA-01")]
     [Trait("ESC", "ESC-177")]
     [Trait("COMP", "COMP-02")]
-    public async Task ESC_177d_El_coordinador_con_la_herramienta_de_programa_cita_Articulo_5_6_y_20()
+    public async Task ESC_177d_El_coordinador_con_la_herramienta_de_programa_cita_Articulo_6_Seccion_3_y_Articulo_5()
     {
         var texto = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
         var escenario = Con(LeeElProgramaYResponde(texto), IndiceConLasReglas());
@@ -93,7 +140,7 @@ public sealed class CitasDeReglasAplicadasTests
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
         Assert.Equal(texto, resultado.Respuesta!.Respuesta);
-        Assert.Equal(Esperadas(Art5, Art6, Art20, DatosProgramaAdm), resultado.Respuesta.Citas.ToArray());
+        Assert.Equal(Esperadas(Art6, Sec3, Art5, DatosProgramaAdm), resultado.Respuesta.Citas.ToArray());
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
     }
 
@@ -108,7 +155,7 @@ public sealed class CitasDeReglasAplicadasTests
         var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es mi promedio ponderado del periodo?");
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.Equal(Esperadas(Sec4, Beca31, Sec3, Art11, DatosNotas, DatosAsistencia), resultado.Respuesta!.Citas.ToArray());
+        Assert.Equal(Esperadas(Sec4, Beca31, Sec3, DatosNotas, DatosAsistencia), resultado.Respuesta!.Citas.ToArray());
     }
 
     [Theory]
@@ -155,7 +202,7 @@ public sealed class CitasDeReglasAplicadasTests
 
         var documentos = resultado.Respuesta!.Citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray();
         Assert.True(documentos.Length <= 1 + MaximoDeReglasPorPeticion);
-        Assert.Equal(Esperadas(Sec4, Sec3, Art11), documentos);
+        Assert.Equal(Esperadas(Sec4, Beca31, Sec3), documentos);
     }
 
     [Fact]
@@ -168,14 +215,14 @@ public sealed class CitasDeReglasAplicadasTests
 
         var resultado = await escenario.PreguntarAsync(Est001, "¿Cuántas faltas tengo en Bases de Datos?");
 
-        Assert.Equal(Esperadas(Sec3, Sec4, Art11, DatosNotas, DatosAsistencia), resultado.Respuesta!.Citas.ToArray());
+        Assert.Equal(Esperadas(Art11, Sec3, Sec4, DatosNotas, DatosAsistencia), resultado.Respuesta!.Citas.ToArray());
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
     }
 
     [Fact]
     [Trait("ESC", "ESC-177")]
     [Trait("COMP", "COMP-02")]
-    public async Task La_union_de_las_lecturas_de_la_peticion_se_ordena_con_el_orden_fijo_y_no_con_el_de_las_llamadas()
+    public async Task La_union_de_las_lecturas_de_la_peticion_se_ordena_por_relevancia_y_no_por_el_orden_de_las_llamadas()
     {
         var texto = "Camilo Rojas tiene todas sus asignaturas aprobadas.";
         var escenario = Con(
@@ -190,7 +237,7 @@ public sealed class CitasDeReglasAplicadasTests
         var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
 
         var documentos = resultado.Respuesta!.Citas.Where(c => c.Documento is not (Textos.DocumentoDatosEstudiante or Textos.DocumentoDatosPrograma)).ToArray();
-        Assert.Equal(Esperadas(Sec3, Sec4, Art11), documentos);
+        Assert.Equal(Esperadas(Art11, Art6, Sec3), documentos);
     }
 
     [Theory]
@@ -223,14 +270,14 @@ public sealed class CitasDeReglasAplicadasTests
     [Fact]
     [Trait("ESC", "ESC-177")]
     [Trait("COMP", "COMP-02")]
-    public async Task El_resumen_de_andres_cita_Seccion_3_Seccion_4_y_Articulo_11()
+    public async Task El_resumen_de_andres_con_la_pregunta_del_promedio_cita_Seccion_4_Seccion_3_1_y_Articulo_20()
     {
         var escenario = Con(Fijo("Revisa el detalle de tus asignaturas."), IndiceConLasReglas());
 
         var resultado = await escenario.PreguntarAsync(Est002, "¿Cuál es mi promedio ponderado del periodo?");
 
         var documentos = resultado.Respuesta!.Citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray();
-        Assert.Equal(Esperadas(Sec3, Sec4, Art11), documentos);
+        Assert.Equal(Esperadas(Sec4, Beca31, Art20), documentos);
     }
 
     [Fact]
