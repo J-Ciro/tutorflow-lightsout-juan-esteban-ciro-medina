@@ -110,7 +110,8 @@ public static class RespuestasProveedor
 
 public sealed class ProveedoresHttpTests
 {
-    private const string Normativa = "¿Cuál es la nota mínima para aprobar?";
+    private const string Normativa = "¿Cuál es la nota mínima para aprobar una asignatura?";
+    private const string RespuestaNormativa = "Una asignatura se aprueba con 3.0.";
 
     public static TheoryData<string?, string, string> Proveedores => new()
     {
@@ -141,13 +142,13 @@ public sealed class ProveedoresHttpTests
     [Trait("ESC", "ESC-119")]
     public async Task Respuesta_simple_reporta_tokens_costo_modelo_y_llave_solo_hacia_el_proveedor(string? llave, string host, string modelo)
     {
-        var manejador = new ManejadorLlmFalso((p, _) => RespuestasProveedor.Texto(p, "Hola desde el proveedor.", 1000, 200));
+        var manejador = new ManejadorLlmFalso((p, _) => RespuestasProveedor.Texto(p, RespuestaNormativa, 1000, 200));
         using var fabrica = Fabrica(llave, manejador);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", Normativa);
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.Equal("Hola desde el proveedor.", respuesta.Respuesta);
+        Assert.Equal(RespuestaNormativa, respuesta.Respuesta);
         Assert.Equal(1200, respuesta.Tokens);
         Assert.Equal(0.002m, respuesta.CostoUsd);
         Assert.NotEmpty(manejador.Peticiones);
