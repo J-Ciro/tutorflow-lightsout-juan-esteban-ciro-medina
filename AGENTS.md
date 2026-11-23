@@ -32,9 +32,9 @@ backend/                     Todo lo de .NET; los comandos dotnet y postman se e
       Conocimiento/            Modelo de documento/sección y búsqueda de secciones
     TutorFlow.Infrastructure/  Adaptadores de los puertos
       ApiAcademica/            HttpClient tipado hacia la API simulada (mock-api)
-      Llm/                     Puerto IClienteLlm: adaptador Anthropic (SDK oficial) y adaptador compatible con OpenAI (OpenAI, Groq, OpenRouter, Gemini, Ollama…); resolución del proveedor por la llave (spec 001 §9.4)
+      Llm/                     Puerto IClienteLlm: adaptador Anthropic (SDK oficial) y adaptador compatible con OpenAI con `Microsoft.Extensions.AI` (OpenAI, Groq, OpenRouter, Gemini, Ollama…), sin invocación automática de funciones; resolución del proveedor por la llave (spec 001 §9.4)
       Conocimiento/            Carga e indexado de /reglamento por secciones
-      Auditoria/               Registro de auditoría estructurado
+      Auditoria/               Auditoría: consola + archivo JSONL diario (D-25)
     TutorFlow.Api/             Host: endpoints, DI, validación, middleware, ProblemDetails, Dockerfile
   tests/
     TutorFlow.Core.Tests/      Unitarias de reglas y política de acceso (xUnit)

@@ -17,7 +17,7 @@ Objetivo, contexto y prioridades del producto en [`SPEC.md` §1](../../SPEC.md).
 
 **Incluye:** `POST /api/asistente/preguntar`, `GET /api/salud`, base de conocimiento desde `reglamento/`, consulta a la API simulada, cálculos académicos, control de acceso por rol, auditoría, Docker Compose, pruebas, evals y CI.
 
-**No incluye:** autenticación real (D-01), escritura de datos, historial de conversación (cada pregunta es independiente), idiomas distintos al español e interfaz web (§10).
+**No incluye:** autenticación real (D-01), escritura de datos, historial de conversación (cada pregunta es independiente), idiomas distintos al español, interfaz web (§10), y base de datos o endpoint para consultar la auditoría (D-25; candidato a una spec posterior).
 
 ## 3. Actores y roles
 
@@ -34,7 +34,7 @@ Definidos en [`SPEC.md` §2](../../SPEC.md). Esta feature no agrega roles.
 | RF-05 | Responder que no encuentra la información cuando no está en las fuentes, sin inventar | Ambos | CA-06 |
 | RF-06 | Ignorar las instrucciones maliciosas en la pregunta, en los documentos y en los datos | Sistema | CA-05 |
 | RF-07 | Informar en cada respuesta si usó datos de un estudiante, los tokens consumidos y el costo en USD | Sistema | CA-11 |
-| RF-08 | Registrar en la auditoría cada pregunta con los datos consultados y detectar la suplantación | Sistema | CA-08, CA-13 |
+| RF-08 | Registrar en la auditoría cada pregunta con el detalle de los datos consultados (sin valores), persistirla en consola y en un archivo JSONL diario, y detectar la suplantación | Sistema | CA-08, CA-13 |
 | RF-09 | Exponer el estado de salud del servicio | Sistema | CA-07 |
 | RF-10 | Levantar todo el sistema con `docker compose up` en el puerto 8080 | Operación | CA-09 |
 | RF-11 | Bloquear en el CI los cambios que rompen pruebas, evals, seguridad o convenciones | Equipo | CA-10 |
@@ -152,7 +152,7 @@ La API no valida permisos y no calcula definitivas: ambas cosas son responsabili
 
 ### 9.4 Proveedor del LLM (D-16)
 
-El backend habla con el LLM a través del puerto `IClienteLlm`, con dos adaptadores: **Anthropic** (SDK oficial de Anthropic para .NET) y **compatible con la API de OpenAI** (Chat Completions con herramientas), que cubre OpenAI, Groq, OpenRouter, Google Gemini, DeepSeek, Mistral y Ollama.
+El backend habla con el LLM a través del puerto `IClienteLlm`, con dos adaptadores: **Anthropic** (SDK oficial de Anthropic para .NET) y **compatible con la API de OpenAI**, construido con `Microsoft.Extensions.AI` (`IChatClient` + integración OpenAI, D-24), que cubre OpenAI, Groq, OpenRouter, Google Gemini, DeepSeek, Mistral y Ollama. Ningún adaptador ejecuta herramientas por su cuenta: solo traducen la solicitud y la respuesta, y el ciclo de herramientas lo controla el caso de uso (SEG-06).
 
 **Resolución del proveedor**, en este orden (determinista y registrada en el log de arranque, nunca la llave):
 
