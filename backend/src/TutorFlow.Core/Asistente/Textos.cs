@@ -37,5 +37,12 @@ public static class Textos
 
     public static string Negativa(Rol rol) => rol == Rol.Coordinador ? NegativaCoordinador : NegativaEstudiante;
 
+    public static IReadOnlyList<Cita>? CitasDeTextoFijo(string texto) => texto.Trim() switch
+    {
+        NegativaEstudiante or NegativaCoordinador => [CitaNegativa()],
+        NoVerificable => [],
+        _ => null
+    };
+
     public static Cita CitaNegativa() => new(DocumentoReglamentoVigente, SeccionPrivacidad);
 }
