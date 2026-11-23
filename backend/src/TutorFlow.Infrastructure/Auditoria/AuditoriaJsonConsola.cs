@@ -98,7 +98,8 @@ public sealed class AuditoriaJsonConsola : IAuditoria
         evento = NombreEventoMultiplesIdentidades,
         timestamp = evento.Timestamp.ToString("O", System.Globalization.CultureInfo.InvariantCulture),
         ipOrigen = evento.IpOrigen,
-        usuarioIds = evento.UsuarioIds
+        usuarioIds = evento.UsuarioIds,
+        bloqueada = evento.Bloqueada
     };
 
     private static string NombreSnake<T>(T valor)

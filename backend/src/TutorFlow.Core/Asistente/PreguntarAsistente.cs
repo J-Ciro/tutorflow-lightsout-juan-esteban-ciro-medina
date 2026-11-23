@@ -16,14 +16,18 @@ public enum TipoResultadoPregunta
 {
     Respondida,
     Denegada,
-    NoDisponible
+    NoDisponible,
+    LimiteIdentidades
 }
 
 public sealed record ResultadoPregunta(
     TipoResultadoPregunta Tipo,
     RespuestaAsistente? Respuesta,
     ResultadoAuditoria Auditoria,
-    MotivoDenegacion? Motivo);
+    MotivoDenegacion? Motivo)
+{
+    public int SegundosParaReintentar { get; init; }
+}
 
 public sealed class PreguntarAsistente
 {
@@ -39,6 +43,7 @@ public sealed class PreguntarAsistente
     private readonly RelevanciaPrevia _relevancia;
     private readonly EmisorDeResultados _emisor;
     private readonly FaseDelModelo _fase;
+    private readonly LimitadorIdentidades? _limitadorIdentidades;
 
     public PreguntarAsistente(
         IApiAcademica apiAcademica,
@@ -49,8 +54,10 @@ public sealed class PreguntarAsistente
         VerificadorSalida verificadorSalida,
         LimitesAsistente limites,
         ConfiguracionAsistente configuracion,
-        PresupuestoDiario presupuesto)
+        PresupuestoDiario presupuesto,
+        LimitadorIdentidades? limitadorIdentidades = null)
     {
+        _limitadorIdentidades = limitadorIdentidades;
         _apiAcademica = apiAcademica;
         _clienteLlm = clienteLlm;
         _baseConocimiento = baseConocimiento;
@@ -94,10 +101,55 @@ public sealed class PreguntarAsistente
             sesion.Directorio = ExcluirCodigosDePersonas(directorio);
         }
 
-        var decision = Autorizar(sesion);
+        var identidad = _politicaAcceso.EvaluarIdentidad(sesion.Entrada.Usuario, sesion.Directorio);
+        if (!identidad.Permitido)
+        {
+            return _emisor.Denegar(sesion, identidad.Motivo, 0);
+        }
+
+        return ControlarIdentidades(sesion) ?? await ResponderSiEstaAutorizadoAsync(sesion, cancellationToken);
+    }
+
+    private async Task<ResultadoPregunta> ResponderSiEstaAutorizadoAsync(SesionPregunta sesion, CancellationToken cancellationToken)
+    {
+        var decision = _politicaAcceso.EvaluarPregunta(sesion.Entrada.Usuario, sesion.Entrada.Pregunta, sesion.Directorio);
         return decision.Permitido
             ? await ResponderSiEsRelevanteAsync(sesion, cancellationToken)
             : _emisor.Denegar(sesion, decision.Motivo, 0);
+    }
+
+    private ResultadoPregunta? ControlarIdentidades(SesionPregunta sesion)
+    {
+        if (_limitadorIdentidades is null)
+        {
+            return null;
+        }
+
+        var identidades = _limitadorIdentidades.Registrar(sesion.IpOrigen, sesion.Entrada.Usuario.Id);
+        var bloqueada = identidades.Superado && _limites.BloquearMultiplesIdentidades;
+        if (identidades.SuperacionNueva)
+        {
+            _auditor.RegistrarMultiplesIdentidades(sesion.IpOrigen, identidades.Ids, bloqueada);
+        }
+
+        return bloqueada ? RechazarPorIdentidades(sesion, identidades.SegundosParaReintentar) : null;
+    }
+
+    private ResultadoPregunta RechazarPorIdentidades(SesionPregunta sesion, int segundosParaReintentar)
+    {
+        var usuario = sesion.Entrada.Usuario;
+        _auditor.RegistrarSinConsultas(new SolicitudAuditoria(
+            sesion.IpOrigen,
+            sesion.CorrelationId,
+            usuario.Rol,
+            usuario.Id,
+            sesion.Entrada.Pregunta,
+            ResultadoAuditoria.Denegada,
+            sesion.Cronometro.ElapsedMilliseconds));
+        return new ResultadoPregunta(TipoResultadoPregunta.LimiteIdentidades, null, ResultadoAuditoria.Denegada, null)
+        {
+            SegundosParaReintentar = segundosParaReintentar
+        };
     }
 
     private DirectorioAcademico ExcluirCodigosDePersonas(DirectorioAcademico directorio)
@@ -129,14 +181,6 @@ public sealed class PreguntarAsistente
         return _relevancia.DebeResponderSinInformacion(contexto, pregunta, sesion.Secciones, sesion.Activacion)
             ? _emisor.SinInformacion(sesion)
             : await ResponderConReservaAsync(sesion, cancellationToken);
-    }
-
-    private DecisionAcceso Autorizar(SesionPregunta sesion)
-    {
-        var identidad = _politicaAcceso.EvaluarIdentidad(sesion.Entrada.Usuario, sesion.Directorio);
-        return identidad.Permitido
-            ? _politicaAcceso.EvaluarPregunta(sesion.Entrada.Usuario, sesion.Entrada.Pregunta, sesion.Directorio)
-            : identidad;
     }
 
     private async Task<ResultadoPregunta> ResponderConReservaAsync(SesionPregunta sesion, CancellationToken cancellationToken)
