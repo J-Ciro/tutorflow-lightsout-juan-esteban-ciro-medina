@@ -60,7 +60,7 @@ public sealed class AuditoriaEnmascaradoApiTests
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaConTerceros, IpDelLimite);
         var superada = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaConTerceros, IpDelLimite);
 
-        Assert.Equal(200, respuesta.Estado);
+        Assert.Equal(403, respuesta.Estado);
         Assert.Equal(429, superada.Estado);
         Assert.Equal(PreguntaEnmascarada, Ultimo(fabrica).Pregunta);
     }
