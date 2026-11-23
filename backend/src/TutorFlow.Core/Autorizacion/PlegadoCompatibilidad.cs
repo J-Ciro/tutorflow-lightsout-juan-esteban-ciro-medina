@@ -12,6 +12,8 @@ internal static class PlegadoCompatibilidad
 
     private static readonly Dictionary<int, string> Equivalencias = Cargar(TablaNfkc);
 
+    public static string Aplicar(string texto) => string.Concat(texto.EnumerateRunes().Select(De));
+
     public static string De(Rune rune) =>
         Equivalencias.GetValueOrDefault(rune.Value) ?? rune.ToString();
 

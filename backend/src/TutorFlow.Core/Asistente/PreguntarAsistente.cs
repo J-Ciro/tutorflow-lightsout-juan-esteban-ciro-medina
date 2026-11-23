@@ -235,7 +235,10 @@ public sealed class PreguntarAsistente
         }
 
         IReadOnlyList<Cita> citas = [.. citasDeDocumento.Concat(sesion.Registro.Citas).Distinct()];
-        return Responder(sesion, verificada.Respuesta, citas, verificada.Resultado);
+        var limpia = ReferenciasEscritas.Limpiar(verificada.Respuesta, citas);
+        return ReferenciasEscritas.TienePalabras(limpia)
+            ? Responder(sesion, limpia, citas, verificada.Resultado)
+            : Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion);
     }
 
     private IReadOnlyList<Cita> CitasDeDocumento(SesionPregunta sesion, SalidaVerificada verificada, EntradaConversacion entrada)
