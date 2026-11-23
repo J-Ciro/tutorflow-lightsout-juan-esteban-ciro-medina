@@ -24,7 +24,8 @@ public sealed class UmbralDeRelevanciaApiTests
         { "estudiante", "EST-001", "¿Cuál es el horario de atención de Bienestar?", "ESC-169b" },
         { "estudiante", "EST-001", "¿Cuál es el promedio de Laura Gómez?", "ESC-169c" },
         { "coordinador", "COORD-01", "¿Cómo va Andrés Martínez?", "ESC-169d" },
-        { "estudiante", "EST-001", "¿Qué decía el reglamento de 2023 sobre la habilitación?", "ESC-169e" }
+        { "estudiante", "EST-001", "¿Qué decía el reglamento de 2023 sobre la habilitación?", "ESC-169e" },
+        { "estudiante", "EST-002", "¿Puedo habilitar Bases de Datos?", "ESC-169g" }
     };
 
     public static TheoryData<string, string> PeriodosNoDisponibles => new()
