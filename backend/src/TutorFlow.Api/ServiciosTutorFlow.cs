@@ -31,7 +31,7 @@ public static class ServiciosTutorFlow
     private const string ClaveTemperatura = "Llm:Temperatura";
     private const string ClaveSemilla = "Llm:Semilla";
     private const int SemillaPorDefecto = 1;
-    private const string ClaveSeccionLimites = "Limites";
+    internal const string ClaveSeccionLimites = "Limites";
     private const string ClaveTraceId = "traceId";
     private const string VariableLlaveLlm = "LLM_API_KEY";
 
@@ -60,8 +60,8 @@ public static class ServiciosTutorFlow
             .BindConfiguration(OpcionesLlm.Seccion)
             .Validate(o => o.Proveedores.Count > 0, "Llm:Proveedores no puede estar vacio");
         servicios.AddOptions<LimitesAsistente>()
-            .BindConfiguration(ClaveSeccionLimites)
-            .Validate(l => l.MaximoCaracteresPregunta > 0 && l.PreguntasPorMinutoPorIp > 0, "Limites invalidos");
+            .Configure<IConfiguration>(EnlazadorDeLimites.Enlazar)
+            .Validate(l => l.MaximoCaracteresPregunta > 0 && l.PreguntasPorMinutoPorIp is null or > 0, "Limites invalidos");
         servicios.AddOptions<OpcionesConocimiento>()
             .BindConfiguration(OpcionesConocimiento.Seccion)
             .Validate(o => o.DocumentosVigentes.Count > 0, "Conocimiento:DocumentosVigentes no puede estar vacio")

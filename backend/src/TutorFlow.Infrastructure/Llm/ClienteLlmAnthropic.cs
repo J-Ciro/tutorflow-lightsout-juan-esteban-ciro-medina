@@ -1,5 +1,7 @@
+using System.Net;
 using System.Text.Json;
 using Anthropic;
+using Anthropic.Core;
 using Anthropic.Exceptions;
 using Anthropic.Models.Messages;
 using TutorFlow.Core.Asistente;
@@ -11,9 +13,12 @@ public sealed class ClienteLlmAnthropic : IClienteLlm, IDisposable
     private const string MotivoRechazo = "refusal";
     private const int ReintentosMaximos = 0;
     private const string CampoTemperatura = "temperature";
+    private const string EncabezadoRetryAfter = "Retry-After";
+    private const string MensajeDelProveedor = "El proveedor del LLM respondió con un error.";
 
     private readonly AnthropicClient _cliente;
     private readonly string _modelo;
+    private string? _retryAfterDelProveedor;
 
     public ClienteLlmAnthropic(HttpClient httpClient, ProveedorResuelto proveedor, string llave)
     {
@@ -24,6 +29,7 @@ public sealed class ClienteLlmAnthropic : IClienteLlm, IDisposable
             ApiKey = llave,
             BaseUrl = proveedor.UrlBase,
             MaxRetries = ReintentosMaximos,
+            Handlers = [Handler.Create(RegistrarRetryAfterAsync)],
             Timeout = httpClient.Timeout
         };
     }
@@ -47,9 +53,21 @@ public sealed class ClienteLlmAnthropic : IClienteLlm, IDisposable
         }
         catch (AnthropicException)
         {
-            throw new DependenciaNoDisponibleException("El proveedor del LLM respondió con un error.");
+            throw new DependenciaNoDisponibleException(MensajeDelProveedor, _retryAfterDelProveedor);
         }
     }
+
+    private async Task<HttpResponseMessage> RegistrarRetryAfterAsync(HttpRequestMessage peticion, NextHandler siguiente, CancellationToken cancellationToken)
+    {
+        var respuesta = await siguiente(peticion, cancellationToken);
+        _retryAfterDelProveedor = RetryAfterDe(respuesta);
+        return respuesta;
+    }
+
+    private static string? RetryAfterDe(HttpResponseMessage respuesta) =>
+        respuesta.StatusCode == HttpStatusCode.TooManyRequests && respuesta.Headers.TryGetValues(EncabezadoRetryAfter, out var valores)
+            ? valores.FirstOrDefault()
+            : null;
 
     private static MessageCreateParams ConTemperatura(MessageCreateParams parametros, decimal temperatura)
     {

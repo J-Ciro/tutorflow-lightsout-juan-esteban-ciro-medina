@@ -9,11 +9,11 @@ public sealed class LimitadorTasaPorIp
     private const int UmbralDeLimpieza = 10_000;
 
     private readonly ConcurrentDictionary<string, Queue<DateTimeOffset>> _porIp = new();
-    private readonly int _limite;
+    private readonly int? _limite;
     private readonly TimeSpan _ventana;
     private readonly TimeProvider _tiempo;
 
-    public LimitadorTasaPorIp(int limite, TimeSpan ventana, TimeProvider tiempo)
+    public LimitadorTasaPorIp(int? limite, TimeSpan ventana, TimeProvider tiempo)
     {
         _limite = limite;
         _ventana = ventana;
@@ -22,13 +22,18 @@ public sealed class LimitadorTasaPorIp
 
     public ResultadoTasa Intentar(string ip)
     {
+        if (_limite is not { } limite)
+        {
+            return new ResultadoTasa(true, 0);
+        }
+
         var ahora = _tiempo.GetUtcNow();
         LimpiarSiHaceFalta(ahora);
         var cola = _porIp.GetOrAdd(ip, _ => new Queue<DateTimeOffset>());
         lock (cola)
         {
             Purgar(cola, ahora);
-            if (cola.Count < _limite)
+            if (cola.Count < limite)
             {
                 cola.Enqueue(ahora);
                 return new ResultadoTasa(true, 0);
