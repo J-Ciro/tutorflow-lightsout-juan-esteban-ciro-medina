@@ -215,4 +215,5 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué hizo el humano:** *"no se si tuviste encuenta evitar que un estuidante pueda consultar que cosas PUEDE consultar su coordinador"*. Decidió la opción "Solo lo del reglamento": se responde lo que dice el reglamento con su cita (Art. 22) y se niega todo lo demás. Eso incluye los datos y las herramientas del coordinador, los estudiantes que ve, lo que vería si preguntara por alguien, simular ser el coordinador y sus permisos en el sistema.
 - **Por qué:** describir las capacidades de otro rol expone el modelo de permisos y la configuración, y abre caminos a datos de terceros.
 - **Costo:** ~2 min humanos.
+- **Decisión adicional del humano:** *"Sí, que aplique también entre coordinadores"*: la misma regla rige cuando un coordinador pregunta por las capacidades de otro coordinador (o del estudiante en el sistema).
 - **Prevención:** en `nueva-spec`, la revisión adversarial de `seguridad` debe enumerar, por cada par de roles, las preguntas de un rol sobre las capacidades, datos o permisos del otro, y exigir un escenario para cada una.

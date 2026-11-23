@@ -2,7 +2,7 @@
 
 > Regla: cada decisión ocupa como máximo 3 líneas (decisión · por qué · estado). Una corrección actualiza la regla en `spec.md` o `plan.md` y deja aquí su D; la historia está en git.
 
-Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022; D-65, ambigüedades de QA; D-66, arbitraje de la ronda 4. Ninguna cambia el contrato ni la matriz de acceso de [`constitution.md`](../../constitution.md). D-11, D-12, D-18 y D-19 no existen (números no usados).
+Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022; D-65, ambigüedades de QA; D-66, arbitraje de la ronda 4; D-67, INT-024 (humano). Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitution.md). D-11, D-12, D-18 y D-19 no existen.
 
 ## Decisiones
 
@@ -80,6 +80,8 @@ Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del 
   G5 CA-14 exige el Art. 22 en ESC-018 solo con cita escrita; G6 los límites de 55% y 40% se prueban por sensibilidad ⌊P⌋ / ⌊P⌋ + 1 con el índice real. · Por qué: la opción más simple y verificable; no cambia contrato, permisos ni reglas de producto. · Vigente; G5 → sustituida por D-66 B2.
 - **D-66** · Arbitraje R4: A1 `đST-002` → `dst 002`, no es ID (ESC-199 a9); A2–A4, A7 pruebas obsoletas (§8.3, §6.5, D-54, §11.1 (b)); A5 (humano) sin mínimo de `prompt_tokens` y todo doble a ⌈1.04 × E⌉; A6 el registro en caché no es lectura (ESC-190 g); B1 oración genérica sin marcador personal no exige pérdida (ESC-035); B2 sin prelectura en normativas genéricas (ESC-190 j–m);
   B3 evals ESC-023, 155e, 176a obsoletos; C1 nota mínima y equivalente; C2 prompt de 11 pasos conforme; C3 (d) solo con `.`/`!`/`?` y sin cifra; C4 COMP-03 siempre `citas: []`; C5 sin precio, 0.01 por reserva; C6 `conf` sin `Nd` ni trazo; C7 `D` solo ASCII; D `consultar_cortes` con reglas aplicadas. · Por qué: sin bloqueos indebidos ni evasiones (INT-020). · Vigente; A5 aprobada por el humano.
+- **D-67** · (Humano, INT-024) Las capacidades de otro rol solo se responden con el Art. 22: SEG-04c da 403 `capacidad_ajena` a rol ajeno + capacidad con contenido (qué, cuáles, cuántos) o con permisos, herramientas, lo que vería o simulación; pasan quién y sí o no. Entre coordinadores, igual; del coordinador a un estudiante, solo lo segundo. SEG-10d (d)(2): toda herramienta.
+  Por qué: describir capacidades ajenas expone el modelo de permisos; la frontera léxica cerrada no bloquea normativas (INT-020). · Vigente; decisión del humano; no amplía la matriz ni cambia el contrato (403 de D-07).
 
 ## Riesgos y su decisión
 
@@ -107,4 +109,8 @@ Ningún riesgo queda aceptado salvo D-01 (aprobado por el humano). Evidencia de 
 | Truncado no detectado por un mínimo de 100 `prompt_tokens` agregado sin D | Eliminado: se evalúa todo `usage` | `prompt_tokens` 10 → truncado; todos los dobles a ⌈1.04 × E⌉; 0 `contextoTruncado` con los dobles (CA-11) | D-66 A5 (humano) | CA-23, ESC-199 e |
 | Falso truncado si Ollama reporta menos `prompt_tokens` por la caché de prompt | Mitigado: medido 1.04–1.10 × E en corridas repetidas | 0 `contextoTruncado` en la fase V con Ollama | D-57, D-66 A5 | CA-23 |
 | Línea de datos de 2 palabras con cifra o ítem sin punto eliminados por la limpieza | Eliminado: (d) exige `.`, `!` o `?` y ninguna cifra | ESC-178 k, l | D-66 C3 | CA-14, ESC-178 |
+| Un usuario descubre lo que ve o hace otro rol u otro coordinador (INT-024) | Eliminado en el filtro previo: SEG-04c con listas cerradas | ESC-037 a–h, 038 a–g, 039 a–d con 403, 0 llamadas y 0 lecturas | D-67 | CA-04 |
+| Falso 403 en normativas o en preguntas del coordinador sobre sus estudiantes | Mitigado: sin contenido ni (D) pasa; con un estudiante solo deniega (D) | ESC-036, 037 i–k, 039 e, f, 018, 123, 126, 165 d sin 403 | D-67 | CA-12 |
+| Escape léxico (`c00rdinador`, sinónimo fuera de lista) | Mitigado: el estudiante nunca recibe herramientas del coordinador y SEG-10d bloquea identificadores de cualquier rol | ESC-038 i (COMP-03 sin LLM), 038 j (`fuga_bloqueada`); espía con 0 herramientas del coordinador | D-67 | CA-04 |
+| Simulación en dos turnos | Eliminado: sin historial; cada petición se filtra sola | ESC-038 h | D-67 | CA-04 |
 | Confusable de un dígito `Nd` plegado a otro dígito | Eliminado: `conf` sin orígenes `Nd` | Esquema fila por fila: 0 orígenes `conf` `Nd` | D-66 C6 | CA-24, ESC-199 b |

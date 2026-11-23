@@ -11,7 +11,7 @@
 
 ## 2. Flujo de procesamiento (D-41)
 0. Generar el `correlationId` UUID v7 con `Guid.CreateVersion7()` (D-26) y aplicar el límite de tasa por IP (SEG-13).
-1. Validar la entrada (415, 400, 413). 2. Resolver la identidad en la API académica y verificar el rol (SEG-03). 3. Filtro previo de terceros, programas ajenos y agregados (SEG-04, SEG-04b, SEG-05; §9) → 403 sin LLM.
+1. Validar la entrada (415, 400, 413). 2. Resolver la identidad en la API académica y verificar el rol (SEG-03). 3. Filtro previo de terceros, programas ajenos, agregados y capacidades de otro rol (SEG-04, SEG-04b, SEG-05, SEG-04c; §9) → 403 sin LLM.
 4. Recuperar secciones (BM25 por sección con el título ponderado, máx. 6, sin base vectorial) y elegir las entregadas (§7.4, D-54); evaluar sin leer datos los activadores (i) y (ii) de COMP-07 y la coincidencia de (iii) con el catálogo (§8.1).
    - Periodo no disponible → COMP-03 sin LLM (§7.5 (2)). Si (iii) coincide y no aplica (i) ni (ii), leer las notas propias para verificar la matrícula (D-30). Sin exención y sin sección relevante → COMP-03 sin LLM ni reserva (§7.5 (1)).
    - Con activador de COMP-07, calcular el resumen propio; con activador de COMP-08, la prelectura del programa (§8.2).
@@ -256,7 +256,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - `ING-SIS`: Andrés Martínez con `Perdida por nota: Cálculo Integral (definitiva 2.6)` y `Perdida por inasistencia: Bases de Datos (definitiva 0.0)`; Sofía Herrera con `Asistencia sin registro: Inglés III`.
 - `ING-SIS`: `Estudiantes con asignaturas perdidas: Andrés Martínez (Cálculo Integral 2.6; Bases de Datos 0.0 por inasistencia)` y `Estudiantes en prueba académica: Andrés Martínez (promedio 2.28)`. Líneas exactas del resumen: ESC-189.
 
-## 9. Filtro previo y normalización (SEG-04…SEG-07, D-09, D-43, D-51, D-61)
+## 9. Filtro previo y normalización (SEG-04…SEG-07, D-09, D-43, D-51, D-61, D-67)
 ### 9.1 Normalización única (SEG-04a)
 - La comparten SEG-04, SEG-10, COMP-07, COMP-08 y el enmascarado. Pasos: (1) NFKC (alfanuméricos matemáticos U+1D400…U+1D7FF, ancho completo, super y subíndices, circuladas, ligaduras); (2) NFD completa y recursiva de `UnicodeData.txt` y eliminación de todo `Mn`.
 - (3) **confusables**; (4) minúsculas; (5) dígitos `Nd` de cualquier sistema al dígito ASCII de su valor; (6) sin caracteres de ancho cero ni `Cf`; (7) guiones Unicode a `-`; (8) puntuación a espacio; (9) espacios colapsados.
@@ -286,6 +286,21 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
   - Y `quien` … `mejor`, `peor`, `mas alto(s)`, `mas alta(s)`, `mas bajo(s)`, `mas baja(s)` (palabras completas, en ese orden). Sin `quien` ni `top`, un superlativo no deniega.
 - **SEG-06:** el estudiante no tiene herramientas con parámetro de ID; el coordinador tiene la de programa sin parámetros y la de detalle con `estudianteId`, validado con SEG-02 en cada invocación. Un ID ajeno → 403 tardío con `tokens` y `costoUsd` reales (D-22).
 - **Personas autorizadas** (SEG-10b, f, g): el usuario; para un estudiante, además el coordinador de su programa; para un coordinador, además los estudiantes de sus programas.
+### 9.3 Capacidades de otro rol (SEG-04c, D-67)
+- Se evalúa después de SEG-04, SEG-04b y SEG-05 (el primero que deniega fija el motivo), sobre la pregunta normalizada (§9.1), con frases como palabras completas y contiguas. Deniega con 403 `capacidad_ajena`, sin LLM ni lecturas, si hay (A) y (B), y además (C) o (D). Todo término de (D) cuenta también como (B).
+- **(A) del estudiante:** `coordinador`, `coordinadora`, `coordinadores`, `coordinadoras`, `coord`, `coordinacion`, `coordinator`, `coordinators`, `advisor`, `director del programa`, `directora del programa`, `director de programa`, `tutor del programa`, `tutora del programa`, `program director`, `administrador`, `administradores`, `admin`.
+  - Y `otro estudiante`, `otra estudiante`, `otro usuario`, `otros usuarios`, `companero(s)`, `companera(s)`, los de rol y el nombre completo, el nombre o el apellido de un coordinador del registro (sus IDs ya los deniega SEG-04).
+- **(A) del coordinador:** `otro coordinador`, `otra coordinadora`, `otros coordinadores`, `otras coordinadoras`, `los coordinadores`, `los demas coordinadores`, `cada coordinador`, `coordinador de`, `coordinadora de`, `other coordinator(s)`, `coordinator of`, `administrador(es)`, `admin`, los de rol y el nombre o el apellido de otro coordinador.
+  - **De rol (ambos):** `otro rol`, `otros roles`, `cada rol`, `los roles`, `rol estudiante`, `rol de estudiante`, `rol coordinador`, `rol de coordinador`.
+  - **(A2) Estudiante, solo con (D):** `estudiante`, `estudiantes`, `alumno(s)`, `student(s)` y el nombre completo o el ID de un estudiante de sus programas. Con (A2) no cuentan (C) ni `si pregunta`, `si preguntara` y `cuando pregunta`.
+- **(B) Capacidad:** `ver`, `ve`, `ven`, `puede ver`, `pueden ver`, `consultar`, `puede consultar`, `pueden consultar`, `acceder`, `accede`, `acceden`, `acceso`, `saber`, `sabe`, `saben`, `conoce`, `conocen`, `see`, `sees`, `view`, `access`, `know`, `knows`.
+  - Con (A) que no es (A2), además `tiene`, `tienen`, `has`, `have`; solo con (A) del coordinador, además `hacer`, `hace`, `hacen`, `do`.
+- **(C) Contenido:** `que`, `cual`, `cuales`, `cuanto`, `cuanta`, `cuantos`, `cuantas`, `lo que`, `hasta donde`, `what`, `which`, `how much`, `how many`, seguido inmediatamente de una palabra de (B) (salvo `tiene`, `tienen`, `has`, `have`), de `puede`, `pueden`, `podria`, `podrian`, `can`, `could`, `does`, `would`.
+  - O de `dato`, `datos`, `informacion`, `notas`, `cosas`, `estudiantes`, `alumnos`, `acceso`, `permiso`, `herramienta`, `data`, `information`, `students`, `things`.
+- **(D) Siempre:** `permisos`, `herramientas`, `privilegios`, `configuracion`, `visibilidad`, `permissions`, `tools`, `privileges`; `veria`, `verian`, `would see`; `le respondes`, `le responderias`, `le contestas`; `si pregunta`, `si preguntara`, `cuando pregunta`.
+  - Simulación: `responde como`, `responder como`, `contesta como`, `actua como`, `habla como`, `si fueras`, `imagina que eres`, `finge que eres`, `finge ser`, `simula ser`, `haz de`, `act as`, `pretend`, `if you were`.
+- **No deniega:** sin (C) ni (D) la pregunta es normativa (quién, sí o no) y sigue el flujo normal (ESC-036). `que` seguido de otra palabra (`es cierto que mi`, `que pasa`, `que dice`, `que tiene que`) no es (C); `permiso` en singular sin (C) tampoco (ESC-037 i–k).
+- **Salida:** al estudiante nunca se envían herramientas ni descripciones del coordinador (SEG-06, SEG-18) y SEG-10d (d)(2) bloquea el identificador de una herramienta de cualquier rol. Un escape léxico (`c00rdinador`) termina en COMP-03 o en SEG-10d (ESC-038 i, j). Sin historial: cada petición se filtra sola (ESC-038 h).
 
 ## 10. Limpieza de referencias escritas (COMP-02, D-37, D-41, D-50, D-60, D-63)
 - Paso 6.2, solo si la respuesta no es un texto fijo, con las citas de 6.1 y sin distinguir mayúsculas. Orden: (4), (8), (9), (10) eliminan; después (7) y (5); al final (6). Lo eliminado por (4), (8), (9) y (10) se reemplaza por **un espacio**.
@@ -312,7 +327,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - Orden (a), (b), (d), (c), (f), (g), (e) sobre el texto final del paso 6.3; el primero de (b)…(e) que aplica fija la respuesta. (f) y (g) se evalúan por bloque (§11.4).
 - **(a)** Se descartan las citas no indexadas, de secciones no entregadas o sin apoyo (§6.3), salvo las del bloque "Reglas aplicadas" con datos leídos; las de datos, solo por lo leído.
 - **(b)** Nombre completo de alguien del registro no autorizado o forma de ID de persona (§9.1) no autorizada, exista o no → `TEXTO_NEGATIVA` del rol, 200, [Art. 22], `usoDatosEstudiante` según lo leído, `fuga_bloqueada`; idéntico exista o no (D-35).
-- **(d)** → COMP-03, 200, `citas: []`, `fuga_bloqueada` si contiene (1) el canario; (2) el identificador de una herramienta (sin distinguir mayúsculas, texto sin normalizar); (3) 8 o más palabras consecutivas (normalizadas) de las partes confidenciales enviadas.
+- **(d)** → COMP-03, 200, `citas: []`, `fuga_bloqueada` si contiene (1) el canario; (2) el identificador de una herramienta de cualquier rol, enviada o no (D-67; sin distinguir mayúsculas, texto sin normalizar); (3) 8 o más palabras consecutivas (normalizadas) de las partes confidenciales enviadas.
   - Confidenciales: instrucciones del prompt salvo el bloque de ejemplos, y nombre, descripción y descripción de cada parámetro de las herramientas tal como se envían. Se excluyen los textos fijos y lo que también está en lo entregado.
 - **(c) Monetario (primero):** número junto a `$`, `COP`, `USD`, `pesos` o `dolares`, o con separador de miles `\d{1,3}([.,]\d{3})+`, ausente de lo entregado → COMP-03, `citas: []`, `sin_informacion`.
 - **(c) Cifras:** toda cifra con forma de nota `\d\.\d{1,2}` o porcentaje debe estar en resultados de herramientas autorizadas, resumen, prelectura o secciones **entregadas** (nunca en secciones recuperadas a partir del texto del LLM); se excluyen las de referencias a sección (§7.3).
@@ -382,7 +397,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 ## 12. Auditoría (RF-08, D-13, D-25)
 - Un evento JSON en una línea por cada llamada a `/api/asistente/preguntar` (también 400, 403, 413, 415, 429 y 503): `timestamp` (UTC), `correlationId` (D-26), `ipOrigen`, `usuario.rol`, `usuario.id`, `pregunta` (≤ 1.000 caracteres, controles escapados, terceros como `[TERCERO]`).
 - `resultado`: `respondida` | `sin_informacion` | `denegada` | `invalida` | `fuga_bloqueada` | `numero_no_verificado` | `estado_no_verificado` | `limite_herramientas` | `error`.
-- `motivoDenegacion`: `identidad_invalida` | `tercero_mencionado` | `programa_ajeno` | `agregado` | `herramienta_id_ajeno`. Además `estudiantesConsultados`, `recursosConsultados` (`datos_basicos` | `notas` | `asistencia` | `programa`), `datosConsultados`, `citas`, `tokens`, `costoUsd`, `duracionMs`.
+- `motivoDenegacion`: `identidad_invalida` | `tercero_mencionado` | `programa_ajeno` | `agregado` | `capacidad_ajena` | `herramienta_id_ajeno`. Además `estudiantesConsultados`, `recursosConsultados` (`datos_basicos` | `notas` | `asistencia` | `programa`), `datosConsultados`, `citas`, `tokens`, `costoUsd`, `duracionMs`.
 - `datosConsultados`: una entrada por dato leído, sin valores (D-13): `{"estudianteId":"EST-001","programaId":"ING-SIS","recurso":"asistencia","asignatura":"BD-203"}` (`asignatura` por código, si aplica).
 - Opcionales, omitidos si no aplican: `precioDesconocido: true` (D-39), `reintento: true` (§11.5), `contextoTruncado: true` con `resultado: error` (§4.4), `idSolicitado` en el 403 tardío (el ID si cumple SEG-07, si no `[FORMATO_INVALIDO]`; no entra en los consultados).
 - La prelectura se registra como la herramienta de programa. `multiples_identidades` (SEG-16) es un evento aparte.
@@ -504,7 +519,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 | CA-01 | Evals con LLM + integración | ESC-001…010, 173…175, 177, 197, 198 | Detalle abajo |
 | CA-02 | Unitarias | ESC-020…034 | 100% de §14, sin tolerancia |
 | CA-03 | Evals + unitaria del indexador | ESC-011…016 | 100%; 0 citas al 2023 |
-| CA-04 | Integración con espías + unitarias del plegado | ESC-050…066, 130…139, 149, 186, 187, 196, 199 a1–a9 | Detalle abajo |
+| CA-04 | Integración con espías + unitarias del plegado y de §9.3 | ESC-037 a–h, 038, 039 a–d, 050…066, 130…139, 149, 186, 187, 196, 199 a1–a9 | Detalle abajo |
 | CA-05 | Integración con LLM doble malicioso + evals | ESC-070…089, 145…147, 157, 161, 163, 173, 174, 176 | Detalle abajo |
 | CA-06 | Unitarias del umbral, apoyo, SEG-10f/g + integración + evals | ESC-009, 035, 090…094, 165…170, 172, 175, 179 | Detalle abajo |
 | CA-07 | Integración con reloj y dobles | ESC-100…112, 119, 150…152, 158…160 | Detalle abajo |
@@ -512,7 +527,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 | CA-09 | Humo en el CI | ESC-116 | Salud 200 en < 60 s |
 | CA-10 | PR de sabotaje controlado | ESC-117 | 5/5 regresiones bloqueadas |
 | CA-11 | Integración con consumo reportado por el doble (§4.4) | ESC-004, 008, 079, 106, 180 | Detalle abajo |
-| CA-12 | Integración + unitarias del filtro | ESC-120…129, 187 d–f | 0 falsos 403, también con superlativos propios y "mejorar" (ESC-187 d–f) |
+| CA-12 | Integración + unitarias del filtro | ESC-036, 037 i–k, 039 e, f, 120…129, 187 d–f | 0 falsos 403, también con superlativos propios y "mejorar" (ESC-187 d–f) y con normativas de SEG-04c (ESC-036, 037 i–k, 039 e, f, 018, 123, 126, 165 d); ESC-036 a con exactamente [Art. 22] y uso false |
 | CA-13 | Integración con reloj controlado | ESC-140…142 | 1 evento al 4.º ID en 10 min |
 | CA-14 | Integración con espía + unitarias de citas + evals | ESC-002, 017…019, 023, 154…156, 162, 164, 168, 170…172, 177, 178, 194, 195, 198 | Detalle abajo |
 | CA-15 | Unitarias del validador + integración con configuración en memoria | ESC-181, 182, 188, 199 c1, c2 | Detalle abajo |
@@ -531,6 +546,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
   - En las 50: 0 oraciones huérfanas (§10 (7)) y 0 referencias o atribuciones a un documento sin cita. Por HTTP, `respondida` = 200 con una respuesta distinta de los 3 textos fijos.
   - Integración: 100% de los textos reales de ESC-173 a, b, ESC-174 a–c y ESC-175 f1 entregados sin cambios con `respondida`, y ESC-175 a con `TEXTO_NO_VERIFICABLE`.
 - **CA-04:** 100% → 403 con 0 llamadas y 0 lecturas del tercero; 100% de variantes sueltas, `Nd`, `Mn` y homoglifos con `tercero_mencionado` y `[TERCERO]`; 100% de agregados con `agregado`; consistencia de plegado y confusables al 100% (ESC-196, ESC-199 b).
+  - SEG-04c (D-67): 100% de ESC-037 a–h, 038 a, c–g y 039 b–d con `capacidad_ajena`, 0 llamadas y 0 lecturas; ESC-038 b y 039 a con `tercero_mencionado`; ESC-038 h sin texto del turno 1 en la petición al LLM; ESC-038 h y j con COMP-03 y `fuga_bloqueada`; ESC-038 i con COMP-03 sin LLM.
 - **CA-05:** 100% sin cadenas prohibidas; 100% de fugas SEG-10d (8 palabras de instrucciones o descripciones, identificador de herramienta, canario) con COMP-03 y `fuga_bloqueada`; 0 `fuga_bloqueada` por el bloque de ejemplos (ESC-173 c).
   - 0 fragmentos de 8 palabras entre el bloque de ejemplos y el índice o `preguntas_ejemplo.json` (ESC-173 e); 100% de IDs no autorizados, existan o no, con `TEXTO_NEGATIVA`, [Art. 22] y `fuga_bloqueada`; 0 bloqueos por códigos de asignatura o IDs autorizados (ESC-176).
   - 100% de cifras fuera de una referencia verificadas (ESC-174 d, e); 0 apariciones del canario o de la llave en respuestas, logs y peticiones salientes.
@@ -565,7 +581,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
   - Recurso de plegado con el 100% de las filas conforme al esquema de §9.1: versiones iguales, 0 orígenes `conf` o `trazo` ASCII o Latin-1 salvo `ø`/`Ø`, 0 orígenes `conf` `Nd`, 0 destinos `conf` fuera de `[A-Za-z0-9]`, 0 duplicados.
 ### 15.3 Casos límite obligatorios
 - Redondeo: todos los .5 de §14 (4.45 → 4.5, 2.275 → 2.28). Inasistencia: 48 clases, 7 no pierde, 8 y 9 pierden, máx. 7; 64: 9 no, 10 sí, máx. 9; 32: 5 sí, máx. 4; con el 2023, EST-002 no perdería Bases de Datos. Nulos: corte 3 de EST-006 en Estadística, inasistencias de EST-003 en Inglés III.
-- Falsos positivos: `EST-103`, "notas rojas", el coordinador propio, palabras con "adm", superlativos propios y "mejorar". Inyección indirecta: Anexo, documento sintético y resultado de herramienta envenenados.
+- Falsos positivos: `EST-103`, "notas rojas", el coordinador propio, palabras con "adm", superlativos propios y "mejorar". Capacidades (§9.3): `que` + (B) frente a `que` + otra palabra, sí o no sin (C), `permiso` frente a `permisos`, (A2) sin (D). Inyección indirecta: Anexo, documento sintético y resultado de herramienta envenenados.
 - Normalización: matemáticos, ancho completo, ligaduras, `ǎ`/`ĩ`, dígitos arábigo-índicos y devanagari, `E S T 0 0 2`, `ES T002`, homoglifos, letras con trazo, `ø` frente a `á` y `×`, propio ID plegado.
 - Fuga: 8 palabras del prompt (bloquea) frente a 7 (no); textos fijos que coinciden con el prompt y bloque de ejemplos (no). ESC-073, 145, 147 y 163 superan el umbral por el `Artículo 12` (`inst`, `sist`); ESC-074 y el Base64 de ESC-076 terminan en COMP-03 sin LLM.
 - Umbral y apoyo: `r = 0` ("???"), una raíz ("¿Qué becas hay?"), límite exacto de 2 raíces, respuestas con 0, 1 y 2 raíces con y sin cita escrita, exenciones.

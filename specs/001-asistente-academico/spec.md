@@ -85,6 +85,9 @@ Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la
 - **SEG-04** · Filtro previo, sin LLM: el estudiante que nombra completo a otra persona (salvo el coordinador de su programa) o escribe cualquier ID con forma de persona distinto del suyo, exista o no, recibe 403; el coordinador, si nombra a un estudiante de otro programa, a otro coordinador, un ID ajeno o un programa ajeno.
 - **SEG-04a** · Nombres e IDs se reconocen aunque se escriban con mayúsculas, sin tildes, con letras o dígitos de otros alfabetos o sistemas, separados por espacios o con guiones Unicode. Un nombre o apellido suelto no deniega. Los códigos de asignatura del catálogo (`EST-103`) no son personas.
 - **SEG-04b** · Mencionar el ID o el nombre de un programa ajeno, como palabra completa, o comparar programas → 403 `programa_ajeno`.
+- **SEG-04c** · Filtro previo, sin LLM: preguntar qué puede ver, consultar o saber otro rol (el coordinador, otro coordinador, un administrador, otro estudiante), qué datos, herramientas o permisos tiene, qué vería o qué responde el asistente sobre alguien (también sobre quien pregunta) o pedir que el asistente actúe como él → 403 `capacidad_ajena`.
+  - Pasa la pregunta normativa de quién puede consultar la información o de si un rol puede hacerlo, sin preguntar qué ni cuánto ("¿Quién puede consultar mi información académica?", "¿Mi coordinador puede ver mis notas?"); se responde con el Art. 22.
+  - Al coordinador le aplica igual con otros coordinadores (qué pueden ver, consultar o hacer, o qué estudiantes tienen); con un estudiante, solo si pide sus permisos o herramientas, lo que vería o que el asistente actúe como él. Lo que llegue a la salida lo bloquea SEG-10d.
 - **SEG-05** · Ninguna herramienta del estudiante devuelve datos, conteos ni estadísticas de otras personas; rankings, comparaciones con compañeros y listados de estudiantes → 403 `agregado`. Un superlativo propio ("¿Cuál es mi nota más alta?") no deniega.
 - **SEG-06** · Las herramientas del modelo están acotadas al rol con la identidad del servidor; si el modelo pide un ID ajeno, 403 tardío con el consumo real y motivo `herramienta_id_ajeno`.
 - **SEG-07** · `usuario.id` con formato distinto de `EST-NNN` o `COORD-NN` → 400 sin llamar a la API; ningún cliente HTTP sigue redirecciones (una redirección del proveedor del LLM → 503).
@@ -152,7 +155,7 @@ Característica: Asistente académico
       | ¿Con qué nota puedo habilitar una materia?       | 2.0      | 1.5       |
       | ¿Con cuántas faltas se pierde una materia?       | 15%      | 20%       |
       | ¿Hasta qué semana puedo cancelar una asignatura? | semana 8 | semana 10 |
-  Esquema del escenario: CA-04 · Nadie accede a datos ajenos (Detalle: ESC-050…066, ESC-130…139, ESC-149, ESC-186, ESC-187, ESC-196)
+  Esquema del escenario: CA-04 · Nadie accede a datos ajenos ni a las capacidades de otro rol (Detalle: ESC-037 a–h, ESC-038, ESC-039 a–d, ESC-050…066, ESC-130…139, ESC-149, ESC-186, ESC-187, ESC-196)
     Dado el usuario "<rol>" con id "<usuario>" y el LLM y la API académica como dobles espía
     Cuando pregunta "<pregunta>"
     Entonces el código HTTP es 403 con la negativa del rol y "citas" exactamente ["reglamento_academico_2025.md · Artículo 22"]
@@ -160,7 +163,7 @@ Característica: Asistente académico
     Ejemplos:
       | rol         | usuario  | pregunta                                    | motivo             |
       | estudiante  | EST-001  | ¿Cuáles son las notas de EST-002?           | tercero_mencionado |
-      | estudiante  | EST-001  | cual es el promedio de andres martinez      | tercero_mencionado |
+      | estudiante  | EST-001  | ¿Qué puede ver mi coordinador de mí?        | capacidad_ajena    |
       | estudiante  | EST-001  | ¿Quién tiene la nota más alta?              | agregado           |
       | coordinador | COORD-01 | ¿Qué estudiantes de ADM perdieron materias? | programa_ajeno     |
       | estudiante  | EST-999  | ¿Cuál es mi promedio?                       | identidad_invalida |
@@ -228,7 +231,7 @@ Característica: Asistente académico
       | EST-001 | ¿Cómo se calcula la nota definitiva de una asignatura?   | false |
       | EST-004 | ¿Qué requisitos tiene la beca por rendimiento académico? | false |
       | EST-004 | ¿Qué nota definitiva tengo en Contabilidad?              | true  |
-  Esquema del escenario: CA-12 · Sin falsos 403 (Detalle: ESC-120…129, ESC-187 d–f)
+  Esquema del escenario: CA-12 · Sin falsos 403 (Detalle: ESC-036, ESC-037 i–k, ESC-039 e, f, ESC-120…129, ESC-187 d–f)
     Dado el usuario "<rol>" con id "<usuario>"
     Cuando pregunta "<pregunta>"
     Entonces el código HTTP es 200
@@ -238,7 +241,7 @@ Característica: Asistente académico
       | estudiante  | EST-004  | ¿Cuántas notas rojas tengo?                                                   |
       | estudiante  | EST-003  | ¿Cómo le pido a Marcela Ríos la revisión de mis faltas de Inglés III?         |
       | coordinador | COORD-02 | ¿Cuántos estudiantes de Administración de Empresas están en prueba académica? |
-      | estudiante  | EST-001  | ¿Cuál es mi nota más alta?                                                    |
+      | estudiante  | EST-001  | ¿Quién puede consultar mi información académica?                              |
   Escenario: CA-13 · Suplantación detectada (Detalle: ESC-140…142)
     Dado que el bloqueo de múltiples identidades está desactivado
     Cuando la IP "10.0.0.5" pregunta en menos de 10 minutos con "EST-001", "EST-002", "EST-003" y "EST-004"

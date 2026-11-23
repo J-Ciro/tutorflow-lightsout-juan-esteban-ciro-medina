@@ -39,7 +39,7 @@ Los escenarios se agrupan por feature en `escenarios/<feature-id>/`, con el mism
 
 Los IDs son globales e inmutables: una feature nueva toma el siguiente bloque de 100 libre.
 
-**Continuación del bloque 001.** El bloque tiene 15 números que nunca se usaron (ESC-035 se usó en D-66): ESC-036…039, ESC-047…049, ESC-067…069 y ESC-095…099. Un caso nuevo de la 001 usa, en este orden:
+**Continuación del bloque 001.** El bloque tiene 11 números que nunca se usaron (ESC-035 se usó en D-66 y ESC-036…039 en D-67): ESC-047…049, ESC-067…069 y ESC-095…099. Un caso nuevo de la 001 usa, en este orden:
 
 1. uno de esos números libres, en el archivo de su tema;
 2. una letra de un escenario existente del mismo tema;
@@ -53,7 +53,7 @@ Los IDs son globales e inmutables: una feature nueva toma el siguiente bloque de
 | [02-reglamento.md](001-asistente-academico/02-reglamento.md) | Reglamento vigente y derogado | ESC-011…019 | CA-03 (ESC-011…016), CA-14 (ESC-017…019) |
 | [03-datos-estudiante.md](001-asistente-academico/03-datos-estudiante.md) | Cálculos, resumen propio y formato normativo | ESC-020…034, ESC-154, ESC-155, ESC-172, ESC-189 | CA-02, CA-14, CA-18 |
 | [04-coordinador.md](001-asistente-academico/04-coordinador.md) | Programa del coordinador y prelectura | ESC-040…046, ESC-135, ESC-136, ESC-190 | CA-02, CA-04, CA-19 |
-| [05-permisos.md](001-asistente-academico/05-permisos.md) | Permisos, normalización y homoglifos | ESC-050…066, ESC-130…134, ESC-137…139, ESC-149, ESC-186, ESC-187, ESC-196, ESC-199 a1–a9, b | CA-04, CA-12, CA-24 |
+| [05-permisos.md](001-asistente-academico/05-permisos.md) | Permisos, normalización, homoglifos y capacidades de otro rol | ESC-036…039, ESC-050…066, ESC-130…134, ESC-137…139, ESC-149, ESC-186, ESC-187, ESC-196, ESC-199 a1–a9, b | CA-04, CA-12, CA-24 |
 | [06-inyeccion-y-abuso.md](001-asistente-academico/06-inyeccion-y-abuso.md) | Inyección, fugas e IDs en la salida | ESC-070…089, ESC-145…147, ESC-157, ESC-161, ESC-163, ESC-173, ESC-174, ESC-176 | CA-05 |
 | [07-sin-informacion.md](001-asistente-academico/07-sin-informacion.md) | No invención: umbral, exenciones, respaldo y apoyo | ESC-090…094, ESC-165…171 | CA-06, CA-14 |
 | [08-contrato-y-operacion.md](001-asistente-academico/08-contrato-y-operacion.md) | Contrato, límites, auditoría, despliegue y CI | ESC-100…119, ESC-143, ESC-144, ESC-148, ESC-150…153, ESC-158…160, ESC-180 | CA-07…CA-11 |
