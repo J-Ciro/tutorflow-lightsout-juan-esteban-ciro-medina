@@ -1,0 +1,58 @@
+[
+  {
+    "id": "ESC-179k",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué definitiva tiene Valentina Castro en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "La definitiva de Valentina Castro en Estadística es 3.2."
+    }
+  },
+  {
+    "id": "ESC-179l",
+    "fuente": "SEG-10g, D-38",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué definitiva tiene Valentina Castro en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del programa · ADM"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "La definitiva de Valentina Castro en Estadística es 2.3.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "La definitiva de Valentina Castro en Estadística es 2.3."
+    }
+  }
+]
