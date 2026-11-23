@@ -22,7 +22,10 @@ public sealed class CitasApiTests
 
         public IReadOnlyList<SeccionDocumento> BuscarSecciones(string consulta, int maximo) => [Entregada1, Entregada2];
 
-        public bool ExisteCita(Cita cita) => Todas.Any(s => s.Documento == cita.Documento && s.Seccion == cita.Seccion);
+        public bool ExisteCita(Cita cita) => ObtenerSeccion(cita) is not null;
+
+        public SeccionDocumento? ObtenerSeccion(Cita cita) =>
+            Todas.FirstOrDefault(s => s.Documento == cita.Documento && s.Seccion == cita.Seccion);
     }
 
     private static string Cita(SeccionDocumento seccion) => $"{seccion.Documento} · {seccion.Seccion}";

@@ -181,5 +181,7 @@ public sealed class CorrelacionApiTests
             throw new InvalidOperationException("secreto-interno C:\\ruta\\interna");
 
         public bool ExisteCita(TutorFlow.Core.Conocimiento.Cita cita) => false;
+
+        public TutorFlow.Core.Conocimiento.SeccionDocumento? ObtenerSeccion(TutorFlow.Core.Conocimiento.Cita cita) => null;
     }
 }
