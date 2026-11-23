@@ -126,29 +126,13 @@ public sealed partial class ProcesadorPregunta
         catch (Exception excepcion) when (EsFalloDeDependencia(excepcion, cancellationToken))
         {
             RegistrarDependenciaCaida(_logger, excepcion.GetType().Name);
-            RegistrarError(peticion, entrada);
             return Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable, title: TituloServicioNoDisponible);
-        }
-        catch (Exception)
-        {
-            RegistrarError(peticion, entrada);
-            throw;
         }
     }
 
     private static bool EsFalloDeDependencia(Exception excepcion, CancellationToken cancellationToken) =>
         excepcion is DependenciaNoDisponibleException or HttpRequestException or TimeoutException
         || (excepcion is OperationCanceledException && !cancellationToken.IsCancellationRequested);
-
-    private void RegistrarError(DatosPeticion peticion, PreguntaEntrada entrada) =>
-        _auditor.RegistrarSinConsultas(new SolicitudAuditoria(
-            peticion.Ip,
-            peticion.CorrelationId,
-            entrada.Usuario.Rol,
-            entrada.Usuario.Id,
-            entrada.Pregunta,
-            ResultadoAuditoria.Error,
-            peticion.Cronometro.ElapsedMilliseconds));
 
     private static IResult Mapear(ResultadoPregunta resultado)
     {

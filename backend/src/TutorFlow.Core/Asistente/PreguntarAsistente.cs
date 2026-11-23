@@ -79,13 +79,27 @@ public sealed class PreguntarAsistente
     {
         var presupuestoApi = TimeSpan.FromSeconds(_limites.PresupuestoApiAcademicaSegundos);
         var api = new ApiAcademicaConPresupuesto(_apiAcademica, presupuestoApi);
-        var directorio = await ConstructorDirectorio.ConstruirAsync(entrada.Usuario, api, _configuracion.CodigosAsignatura, cancellationToken);
+        var sesion = new SesionPregunta(entrada, ipOrigen, correlationId, api);
+        try
+        {
+            return await ResponderSesionAsync(sesion, cancellationToken);
+        }
+        catch (Exception)
+        {
+            Auditar(sesion, ResultadoAuditoria.Error, null, []);
+            throw;
+        }
+    }
+
+    private async Task<ResultadoPregunta> ResponderSesionAsync(SesionPregunta sesion, CancellationToken cancellationToken)
+    {
+        var directorio = await ConstructorDirectorio.ConstruirAsync(sesion.Entrada.Usuario, sesion.Api, _configuracion.CodigosAsignatura, cancellationToken);
         if (directorio is not null)
         {
             _auditor.RecordarPersonas(directorio);
+            sesion.Directorio = directorio;
         }
 
-        var sesion = new SesionPregunta(entrada, ipOrigen, correlationId, api, directorio ?? ConstructorDirectorio.Vacio);
         var decision = Autorizar(sesion);
         return decision.Permitido
             ? await ResponderSiEsRelevanteAsync(sesion, cancellationToken)

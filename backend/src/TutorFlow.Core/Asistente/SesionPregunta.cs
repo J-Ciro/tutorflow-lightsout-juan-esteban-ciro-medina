@@ -8,8 +8,7 @@ internal sealed class SesionPregunta(
     PreguntaEntrada entrada,
     string ipOrigen,
     string correlationId,
-    ApiAcademicaConPresupuesto api,
-    DirectorioAcademico directorio)
+    ApiAcademicaConPresupuesto api)
 {
     public PreguntaEntrada Entrada { get; } = entrada;
 
@@ -23,7 +22,7 @@ internal sealed class SesionPregunta(
 
     public RegistroConsultas Registro { get; } = new();
 
-    public DirectorioAcademico Directorio { get; } = directorio;
+    public DirectorioAcademico Directorio { get; set; } = ConstructorDirectorio.Vacio;
 
     public UsoAcumulado Uso { get; } = new();
 

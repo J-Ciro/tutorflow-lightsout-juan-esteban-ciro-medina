@@ -69,7 +69,7 @@ internal sealed class LectorResumenPropio
     private static void RegistrarVerificacion(ContextoUsuario contexto, IReadOnlyList<NotasAsignatura> notas, RegistroConsultas registro)
     {
         var datos = DatosLeidos.PorCodigos(contexto.Usuario.Id, ProgramaDe(contexto), notas.Select(n => n.Codigo), RecursoConsultado.Notas);
-        registro.RegistrarVerificacion([RecursoConsultado.Notas], datos);
+        registro.RegistrarVerificacion(contexto.Usuario.Id, [RecursoConsultado.Notas], datos);
     }
 
     private static void Registrar(ContextoUsuario contexto, ResumenEstudiante resumen, RegistroConsultas registro)
