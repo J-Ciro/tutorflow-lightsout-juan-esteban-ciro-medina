@@ -41,6 +41,7 @@ public sealed class PreguntarAsistente
     private readonly LectorResumenPropio _lectorResumen;
     private readonly RelevanciaPrevia _relevancia;
     private readonly CitasDeRespuesta _citasDeRespuesta;
+    private readonly OrdenDeReglasPorRelevancia _ordenDeReglas;
     private readonly AfirmacionesDePerdida _afirmacionesDePerdida;
 
     public PreguntarAsistente(
@@ -66,6 +67,7 @@ public sealed class PreguntarAsistente
         _lectorResumen = new LectorResumenPropio(politicaAcceso);
         _relevancia = new RelevanciaPrevia(politicaAcceso, configuracion.RelevanciaMinima);
         _citasDeRespuesta = new CitasDeRespuesta(configuracion.ApoyoMinimoRespaldo);
+        _ordenDeReglas = new OrdenDeReglasPorRelevancia(baseConocimiento);
         _afirmacionesDePerdida = new AfirmacionesDePerdida(configuracion.Catalogo);
     }
 
@@ -223,7 +225,7 @@ public sealed class PreguntarAsistente
 
     private IReadOnlyList<Cita> CitasDeDocumento(SesionPregunta sesion, SalidaVerificada verificada, EntradaConversacion entrada)
     {
-        var reglasAplicadas = sesion.Registro.Reglas.Take(MaximoCitasDeReglasAplicadas);
+        var reglasAplicadas = _ordenDeReglas.Ordenar(sesion.Registro.Reglas, sesion.Entrada.Pregunta).Take(MaximoCitasDeReglasAplicadas);
         IReadOnlyList<Cita> escritasYReglas = [.. verificada.Citas.Concat(reglasAplicadas).Distinct()];
         return escritasYReglas.Count > 0
             ? escritasYReglas
