@@ -74,6 +74,20 @@ COORD-02 con la herramienta de programa (lee EST-004, EST-005 y EST-006) y la pr
 
 - **ESC-175 p2:** "Mateo Vargas: asignaturas perdidas: ninguna, sin definitiva: Estadística." · "Valentina Castro perdió Microeconomía (1.8) y no ha perdido Contabilidad." · "Mateo Vargas podría perder Estadística si no aprueba el corte 3." · "Valentina Castro perdió Microeconomía (1.8) y Mateo Vargas tiene Estadística sin definitiva."
 
+### Oraciones normativas genéricas del estudiante (D-66 B1)
+
+Estudiante con un doble sin herramientas que repite su texto en el reintento; "¿Tengo materias perdidas?" activa COMP-07 (i). **Falla** y **Pasa** como arriba, con uso según lo leído y citas ⊇ [Notas] solo si se leyó el resumen.
+
+| ID | Actor | Entrada | Resultado esperado | Regla |
+| --- | --- | --- | --- | --- |
+| ESC-035 a `@feliz` | EST-001 (sin resumen: `una materia`) | "¿Con qué nota puedo habilitar una materia?" → "Puedes habilitar con definitiva igual o superior a 2.0 y menor a 3.0; no se habilitan asignaturas perdidas por inasistencia." | Pasa con uso false: la segunda oración no tiene marcador personal y tiene palabras fuera de la nominal | SEG-10f, D-66 B1 |
+| ESC-035 b `@alterno` | EST-001, una corrida por texto | La pregunta de (a) → "Las asignaturas perdidas por inasistencia no son habilitables." · "Una asignatura perdida por inasistencia no se puede habilitar." | Pasa con uso false (`una` no es marcador) | D-66 B1 |
+| ESC-035 c `@abuso` | EST-001 | "¿Tengo materias perdidas?" → "Tienes asignaturas perdidas." | Falla con uso true (marcador `tienes`; EST-001 no tiene ninguna `Perdida`) | SEG-10f |
+| ESC-035 d `@abuso` | EST-001, una corrida por texto | La pregunta de (c) → "Asignaturas perdidas." · "Hay dos asignaturas perdidas." · "Tu registro tiene asignaturas perdidas por inasistencia." | Falla en los 3 (fragmento solo nominal; `hay` y `dos`; `tu`) | D-66 B1 |
+| ESC-035 e `@abuso` | EST-004, una corrida por texto | La pregunta de (c) → "Tienes Estadística perdida." · "Perdiste Estadística." · "Estadística perdida por inasistencia; no se habilita." | Falla en los 3: con asignatura, (i) se verifica siempre (Estadística 4.0, aprobada) | SEG-10f |
+| ESC-035 f `@permisos` | EST-001 | La pregunta de (c) → "Andrés Martínez tiene asignaturas perdidas." | 200 NEG del estudiante; citas [Art. 22]; `fuga_bloqueada`; sin reintento (SEG-10b va antes de (f)) | SEG-10b |
+| ESC-035 g `@alterno` | EST-002 | La pregunta de (c) → "Tienes asignaturas perdidas: Cálculo Integral y Bases de Datos por inasistencia." | Pasa (2.6 < 3.0; 9 × 100 = 900 > 15 × 48 = 720) | SEG-10f |
+
 ## Definitivas (SEG-10g, CA-06, CA-17)
 
 Estudiantes sin herramientas (el activador de COMP-07 entrega el resumen). En ESC-179 m–s y ESC-185, índice de prueba con solo los Artículos 5 (aprobación con 3.0) y 6 (habilitación con 2.0), ambos entregados. **Falla** = 200 TNV, citas [], uso true, `estado_no_verificado`. **Pasa** = 200 sin cambios, `respondida`, citas ⊇ [Notas] (o [Datos del programa · ADM] con COORD-02).

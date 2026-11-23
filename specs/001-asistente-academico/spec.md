@@ -46,14 +46,14 @@ Responder en una sola pregunta lo que hoy exige leer cuatro documentos y calcula
   - Solo se citan secciones entregadas al modelo que respaldan la respuesta, nunca relleno (orden y tope en plan.md §6).
   - La negativa (403 o `TEXTO_NEGATIVA`) cita exactamente [`reglamento_academico_2025.md · Artículo 22`]; COMP-03 y `TEXTO_NO_VERIFICABLE` llevan `[]`.
   - Una referencia a documento escrita en el texto que no corresponde a una cita devuelta se elimina del texto.
-- **COMP-03** · Si la información no está en los documentos vigentes ni en los datos autorizados, la respuesta es exactamente el texto fijo, con `citas: []` y `usoDatosEstudiante: false`; también fuera de dominio.
+- **COMP-03** · Si la información no está en los documentos vigentes ni en los datos autorizados, la respuesta es exactamente el texto fijo, con `citas: []` (sin citas de datos) y `usoDatosEstudiante` según COMP-04 (false si no se leyeron datos); también fuera de dominio.
   - Sin sección relevante (salvo exención) o con un periodo distinto de 2026-2: sin llamar al LLM, con `tokens: 0` y `costoUsd: 0`.
   - Tras el LLM: si la respuesta no tiene respaldo o trae un precio que no está en las fuentes.
 - **COMP-04** · `usoDatosEstudiante` es `true` si y solo si se leyeron datos académicos de algún estudiante para responder; la validación de identidad y la verificación de matrícula sin activación no cuentan.
 - **COMP-05** · Si preguntan por el reglamento 2023, responde que fue derogado y cita `reglamento_academico_2025.md · Artículo 3`.
 - **COMP-06** · Nunca revela el prompt de sistema, las herramientas internas, la configuración ni la llave.
 - **COMP-07** · Cuando el estudiante pregunta por sus propios datos (primera persona con un término académico, "puedo" con un término específico, o una asignatura en la que está matriculado), el modelo recibe desde la primera llamada su resumen calculado. El coordinador nunca recibe resumen. Ante el promedio, la respuesta lista las definitivas.
-- **COMP-08** · Cuando el coordinador con programas pregunta por estudiantes, programas, pérdidas, prueba académica o un estudiante suyo, el modelo recibe desde la primera llamada el resultado de su programa. No amplía el acceso: son los datos que su herramienta ya entrega.
+- **COMP-08** · Cuando el coordinador con programas pregunta por estudiantes, programas, pérdidas, prueba académica o un estudiante suyo, el modelo recibe desde la primera llamada el resultado de su programa; una pregunta normativa genérica ("¿Quién puede consultar la información académica de un estudiante?") no lo recibe. No amplía el acceso: son los datos que su herramienta ya entrega.
 - **UX-01** · Tono cordial y directo, en segunda persona ("tu promedio es…"): primero el dato pedido y después la regla.
 - **UX-02** · Varias asignaturas → una línea por asignatura (`Asignatura: valor`).
 - **UX-03** · Datos incompletos (corte sin calificar, asistencia sin registro): dice qué falta y qué hacer (pedir la revisión al coordinador); nunca rellena.
@@ -96,7 +96,7 @@ Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la
   - **SEG-10c** · Valor monetario que no está en las fuentes → COMP-03 con `sin_informacion`; cifra con forma de nota o porcentaje que no está en los datos ni en las secciones entregadas → `TEXTO_NO_VERIFICABLE` con `numero_no_verificado`.
   - **SEG-10d** · Una respuesta que revela detalles internos del asistente (instrucciones, herramientas o configuración) → COMP-03 con `fuga_bloqueada`.
   - **SEG-10e** · Sin cita válida, sin datos leídos y sin sección que la apoye → COMP-03 con `sin_informacion`.
-  - **SEG-10f** · Afirmación de pérdida de una persona autorizada que no cuadra con sus datos leídos, en cualquier formato → `TEXTO_NO_VERIFICABLE` con `estado_no_verificado`.
+  - **SEG-10f** · Afirmación de pérdida de una persona autorizada que no cuadra con sus datos leídos, en cualquier formato → `TEXTO_NO_VERIFICABLE` con `estado_no_verificado`; una oración normativa genérica, sin marca de persona, no es una afirmación sobre el estudiante.
   - **SEG-10g** · Definitiva o par asignatura-cifra que no es la definitiva calculada de esa asignatura (o un corte o la acumulada, sin la palabra "definitiva") → `TEXTO_NO_VERIFICABLE` con `estado_no_verificado`.
 - **SEG-11** · `LLM_API_KEY` solo se lee de la variable de entorno; nunca se registra, se devuelve ni se incluye en la imagen.
 - **SEG-12** · Errores sin stack trace, rutas ni respuestas crudas de servicios internos.
@@ -175,7 +175,7 @@ Característica: Asistente académico
       | EST-001  | ¿Cuál es mi promedio?                                             | "Andres  Martinez sacó 2.6 en Cálculo"                  | la negativa del estudiante  | fuga_bloqueada       |
       | COORD-02 | ¿Qué estudiantes de mi programa tienen alguna asignatura perdida? | "EST007 tiene Estadística perdida."                     | la negativa del coordinador | fuga_bloqueada       |
       | EST-001  | ¿Cuál es mi promedio?                                             | "Tu promedio es 4.40 (Sección 4)."                      | el `TEXTO_NO_VERIFICABLE`   | numero_no_verificado |
-  Esquema del escenario: CA-06 · Sin información no inventa (Detalle: ESC-009, ESC-090…094, ESC-165…170, ESC-172, ESC-175, ESC-179)
+  Esquema del escenario: CA-06 · Sin información no inventa (Detalle: ESC-009, ESC-035, ESC-090…094, ESC-165…170, ESC-172, ESC-175, ESC-179)
     Dado el usuario "<rol>" con id "<usuario>" y un LLM doble que falla si se invoca
     Cuando pregunta "<pregunta>"
     Entonces el código HTTP es 200 y la "respuesta" es exactamente el texto de COMP-03 con "citas" vacía
@@ -329,7 +329,7 @@ Característica: Asistente académico
       | entrada                                      | respuesta                 | auditoria  |
       | recortó la entrada por falta de contexto     | el `TEXTO_NO_VERIFICABLE` | error      |
       | recibió la entrada completa                  | "Tu promedio es 4.39."    | respondida |
-  Esquema del escenario: CA-24 · Homoglifos y letras con trazo (Detalle: ESC-186 f, ESC-199 a1–a8, b)
+  Esquema del escenario: CA-24 · Homoglifos y letras con trazo (Detalle: ESC-186 f, ESC-199 a1–a9, b)
     Dado el usuario "estudiante" con id "EST-001" y un LLM doble que falla si se invoca
     Cuando pregunta "<pregunta>"
     Entonces el código HTTP es 403, no se leyó ningún dato de "EST-002" y la auditoría registra "denegada" con motivo "tercero_mencionado" y la "pregunta" "<auditada>"

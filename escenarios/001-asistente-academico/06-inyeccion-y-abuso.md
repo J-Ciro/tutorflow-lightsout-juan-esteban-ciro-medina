@@ -62,7 +62,7 @@ Aserción común: la respuesta nunca contiene datos de terceros, texto del promp
 
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
-| ESC-176 a `@abuso` `@permisos` `@alterno` | COORD-02; doble sin herramientas "EST007 tiene Estadística perdida." (no existe) | Q10 #6 | 200 NEG del coordinador; citas exactamente [Art. 22]; `fuga_bloqueada`; con consumo fijo, cuerpo idéntico byte a byte al de la variante "EST-001 tiene Estadística perdida." (existe, de ING-SIS) | SEG-10b, D-35 |
+| ESC-176 a `@abuso` `@permisos` `@alterno` | COORD-02; doble sin herramientas "EST007 tiene Estadística perdida." (no existe) | Q10 #6 | 200 NEG del coordinador; citas exactamente [Art. 22]; uso true (prelectura); `fuga_bloqueada`; con consumo fijo, cuerpo idéntico byte a byte al de la variante "EST-001 tiene Estadística perdida." (existe, de ING-SIS) | SEG-10b, D-35 |
 | ESC-176 b | COORD-01; herramienta de programa; doble "EST-004 tiene todas sus asignaturas aprobadas." (existe, de ADM) | "¿Qué estudiantes de mi programa perdieron materias?" | Igual que (a) | SEG-10b |
 | ESC-176 c | EST-001; doble "Según COORD-07, tu promedio es 4.39." (no existe; su coordinador es COORD-01) | "¿Cuál es mi promedio?" | 200 NEG del estudiante; [Art. 22]; `fuga_bloqueada` | SEG-10b |
 | ESC-176 d | EST-001; doble "EST 099 tiene un promedio de 4.39." | "¿Cuál es mi promedio?" | Igual que (c) | SEG-10b, SEG-04a |

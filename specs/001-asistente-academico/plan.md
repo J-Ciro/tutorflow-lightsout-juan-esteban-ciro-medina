@@ -67,7 +67,7 @@
   - No cuentan `tools`, `tool_calls`, roles ni nombres: se envían siempre y el factor medido ya los absorbe (reales = 1.04 a 1.10 × la estimación).
 - **Tope:** ninguna llamada de referencia supera 3.000 estimados (ESC-199 d1, d2: Q10 #1 a #8 con su usuario, Q10 #6 con prelectura, su reintento y las 2 llamadas de un turno de `consultar_notas` sin resumen). Mayor medido: Q10 #5, 7.767 caracteres → 2.220 → 2.436 reales. No se sube sin una D.
 - **Truncado, solo con `ollama`:** si `usage.prompt_tokens` < 0.75 × `tokensEstimados`, la respuesta es `TEXTO_NO_VERIFICABLE` con 200 y `citas: []`, sin reintento, con el consumo reportado, auditoría `error` con `contextoTruncado: true` y advertencia en el log (estimación y `prompt_tokens`, sin contenido).
-- Sin `usage`, no se evalúa. Límite: ⌈0.75 × E⌉ no es truncado; ⌈0.75 × E⌉ − 1 sí. `/v1/chat/completions` ignora `num_ctx`; el contexto lo fija `OLLAMA_CONTEXT_LENGTH` (README: `OLLAMA_CONTEXT_LENGTH=8192 ollama serve`; la fase V lo registra en `REPORTE.md`).
+- Sin `usage`, no se evalúa; con `usage`, se evalúa cualquier `prompt_tokens`, también 0, sin mínimo de verosimilitud (D-66 A5). Límite: ⌈0.75 × E⌉ no es truncado; ⌈0.75 × E⌉ − 1 sí. `/v1/chat/completions` ignora `num_ctx`; el contexto lo fija `OLLAMA_CONTEXT_LENGTH` (README: `OLLAMA_CONTEXT_LENGTH=8192 ollama serve`; la fase V lo registra en `REPORTE.md`).
 - Ejemplo: 13.000 caracteres → ⌈3714.29⌉ = 3.715; un servidor de 4.096 reporta ≈ 2.050 < 0.75 × 3.715 = 2.786.25 → `TEXTO_NO_VERIFICABLE`; sin truncado, 1.04 × 3.715 ≈ 3.864 → respuesta normal.
 
 ## 5. Prompt de sistema (D-32, D-46, D-58)
@@ -104,14 +104,14 @@
 - Datos propios: `{ "documento": "Datos del estudiante", "seccion": "Notas" | "Asistencia" | "Datos básicos" }`; de un coordinador: `{ "documento": "Datos del programa", "seccion": "<id del programa>" }`.
 ### 6.2 Orden, tope y negativas
 - Orden: (1) escritas válidas, (2) reglas aplicadas, (2b) tema de sección entregada, (3) respaldo, (4) datos; sin duplicados. Tope: escritas + 3 (reglas aplicadas o, sin ninguna, 1 de respaldo) + máx. 2 de tema + datos. Prohibida otra cita de relleno.
-- El 403 (previo o tardío) y `TEXTO_NEGATIVA` de SEG-10b llevan exactamente [`reglamento_academico_2025.md` · `Artículo 22`]. COMP-03 (umbral, periodo, monetario, SEG-10d, SEG-10e, texto vacío) y `TEXTO_NO_VERIFICABLE` (SEG-10c, f, g, truncado) llevan `[]`.
+- El 403 (previo o tardío) y `TEXTO_NEGATIVA` de SEG-10b llevan exactamente [`reglamento_academico_2025.md` · `Artículo 22`]. COMP-03 (umbral, periodo, monetario, SEG-10d, SEG-10e, texto vacío o frase de COMP-03 sola) y `TEXTO_NO_VERIFICABLE` (SEG-10c, f, g, truncado) llevan `[]`, también con datos leídos: sin citas de datos (D-66 C4).
 - Ninguna negativa ni texto fijo recibe reglas aplicadas, tema ni respaldo, aunque se hayan leído datos.
 ### 6.3 (1) Citas escritas válidas (SEG-10a, D-29)
 - Una cita escrita por el modelo se devuelve solo si existe en el índice, corresponde a una sección entregada en esa petición y cumple la **condición de apoyo**.
 - Apoyo: la sección comparte con el texto de la respuesta (sin sus citas escritas) al menos `Conocimiento:ApoyoMinimoRespaldo` (por defecto 2) raíces distintas, de palabras y numéricas (§7.1, §7.2).
 - Excepción: con datos leídos (COMP-04 `true`), una sección del bloque "Reglas aplicadas" cuenta como entregada y con apoyo aunque no comparta raíces. Sin datos no hay excepción; la verificación de matrícula sin activación no cuenta como lectura.
 ### 6.4 Bloque "Reglas aplicadas" (D-29, D-31)
-- El resumen de COMP-07, la prelectura y cada resultado de herramienta de datos terminan con `Reglas aplicadas a estos datos: <documento> · <sección>; …`, entradas separadas por `; ` y punto final (D-63 F3), calculada por Core.
+- El resumen de COMP-07, la prelectura y cada resultado de herramienta de datos, también `consultar_cortes` (D-66 D), terminan con `Reglas aplicadas a estos datos: <documento> · <sección>; …`, entradas separadas por `; ` y punto final (D-63 F3), calculada por Core.
 - **Orden fijo** (se incluye cada entrada cuya condición se cumple; las repetidas se omiten): 1) notas → `evaluacion_y_calificaciones.md · Sección 3`; 2) notas → `· Sección 4`; 3) asistencia leída → `reglamento_academico_2025.md · Artículo 11`; 4) notas → `bienestar_y_becas.md · Sección 3.1`.
 - Según el estado: 5) alguna perdida → `Artículo 5`; 6) alguna perdida → `Artículo 6`; 7) alguna perdida por inasistencia → `Artículo 7`; 8) igual → `Artículo 11`; 9) prueba académica → `Artículo 20`; 10) asistencia sin registro → `Artículo 12`; 11) alguna sin definitiva → `Sección 3`.
 - La herramienta de programa no aporta las entradas 1 a 4. El bloque de la petición aplica el orden a la unión de lo leído. El LLM recibe el orden fijo; solo la elección de citas lo reordena.
@@ -202,6 +202,7 @@
 ### 8.2 Prelectura del coordinador (COMP-08, D-45)
 - Rol `coordinador` con ≥ 1 programa (SEG-02), tras el filtro previo, con un activador como palabra completa: (1) `estudiante`, `estudiantes`, `programa`, `programas`; (2) `perdida`, `perdidas`, `perdido`, `perdidos`, `perdio`, `perdieron`, `reprobo`, `reprobaron`, `reprobada`, `reprobadas`.
   - (3) `prueba academica`; (4) el nombre completo o el ID de un estudiante de sus programas. No activan por sí solos `promedio`, `nota`, `notas`, `cuantos`, `lista` ni `quienes`.
+  - **Normativa genérica (D-66 B2):** (1)–(3) no activan si la pregunta contiene `que dice`, `segun el reglamento`, `que significa`, `que pasa si`, `un estudiante`, `el estudiante`, `cada estudiante`, `una asignatura` o `una materia`, y no contiene `mi`, `mis`, `nuestro(s)`, `nuestra(s)` ni (4). Las herramientas siguen disponibles.
 - Se ejecuta la herramienta de programa (todos sus programas y solo ellos) antes de la primera llamada; su resultado (§8.3 con "Reglas aplicadas") va delimitado y no confiable.
 - Cuenta como lectura (COMP-04 `true`), genera `Datos del programa · <id>` y reglas aplicadas, se audita como la herramienta y usa los 6 s; **no** cuenta entre las 4 invocaciones. El modelo puede seguir invocando programa y detalle; no se duplican IDs en la auditoría.
 ### 8.3 Formato normativo de los datos calculados (D-44)
@@ -213,6 +214,8 @@
 | Definitivas | `Definitivas: <Asignatura> <definitiva>, …` en el orden de los datos; perdida por inasistencia: `<Asignatura> 0.0 (por inasistencia)` | Con al menos una definitiva; las que no tienen no aparecen |
 | Sin definitiva | `Sin definitiva (falta calificar un corte): <Asignatura> (acumulada <acumulada> sobre el <porcentaje>% evaluado)`, una por asignatura | Asignatura sin definitiva (RN-05, D-05) |
 | Promedio | `Promedio ponderado del periodo: <promedio>` | Con al menos una definitiva |
+| Equivalente (D-66 C1) | `Equivalente de la acumulada de <Asignatura> sobre la nota completa: <e>`, con `e` = acumulada sin redondear / porcentaje evaluado, a 1 decimal (RN-04) | Solo resumen, por asignatura sin definitiva (D-05) |
+| Nota mínima (D-66 C1) | `Nota mínima para aprobar: 3.0` (RN-02) | Siempre, solo en el resumen (el orden de las líneas lo elige la implementación) |
 
 | Asistencia (`K` = máximo de RN-13, `R` = máx(K − X, 0)) | Formato exacto |
 | --- | --- |
@@ -257,13 +260,14 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - (3) **confusables**; (4) minúsculas; (5) dígitos `Nd` de cualquier sistema al dígito ASCII de su valor; (6) sin caracteres de ancho cero ni `Cf`; (7) guiones Unicode a `-`; (8) puntuación a espacio; (9) espacios colapsados.
 - **Confusables (D-61):** entradas de `confusables.txt` (UTS #39, versión fija) con origen de un solo punto de código fuera de U+0000–U+00FF y destino de una sola letra o dígito `[A-Za-z0-9]` (`Е` U+0415, `Ε` U+0395 → `E`; `Ѕ` U+0405 → `S`; `Т` U+0422, `Τ` U+03A4 → `T`; `О` → `O`; `С` → `C`; `А` → `A`).
 - Más 8 letras con trazo: `ŧ`→`t`, `Ŧ`→`T`, `đ`→`d`, `Đ`→`D`, `ł`→`l`, `Ł`→`L`, `ø`→`o`, `Ø`→`O`. Confusables y trazo no reasignan ningún carácter ASCII ni Latin-1 salvo `ø`/`Ø` (`0`, `1`, `l`, `á`, `ñ`, `¿`, `º`, `×` no son origen).
+  - Solo `Ŧ`/`ŧ` imitan una letra de `EST`: `đST-002` se pliega a `dst 002`, que no es forma de ID (D-66 A1). `conf` excluye los orígenes `Nd`, que `nd` lleva al dígito de su valor, y los 8 de trazo (D-66 C6).
 - **Implementación (D-51, D-62 E6):** con `InvariantGlobalization=true`, `string.Normalize` no hace nada; las tablas se generan de `UnicodeData.txt` y `confusables.txt` 16.0.0 y viven en el recurso incrustado `TutorFlow.Core.Autorizacion.PlegadoUnicode.tsv`, nunca como literal.
 - **Esquema del recurso (D-65 G2):** UTF-8 sin BOM, fin de línea LF, sin líneas vacías ni comentarios. Línea 1 exactamente `#UnicodeData` TAB `16.0.0`; línea 2, `#confusables` TAB `16.0.0` (TAB = U+0009; versión `MAYOR.MENOR.PARCHE`).
   - Desde la línea 3, una fila por regla: `tipo` TAB `origen` TAB `destino`, exactamente 3 columnas. Puntos de código en hexadecimal en mayúsculas, de 4 a 6 dígitos, sin `U+` (`0415`, `1D400`); una secuencia, separada por un espacio (`0066 0069`); destino vacío = eliminar.
   - Tipos, en el orden de aplicación: `desc` (descomposición completa y recursiva, canónica o de compatibilidad, del campo 5 de `UnicodeData.txt`, sin la etiqueta `<…>` ni los `Mn` resultantes), `mn`, `conf`, `trazo`, `nd` y `cf`.
   - `mn` y `cf`: categoría `Mn` o `Cf`, destino vacío; `conf`: confusables de D-61; `trazo`: las 8 letras de arriba; `nd`: dígito `Nd` no ASCII → el dígito ASCII de su valor. Filas ordenadas por tipo (en ese orden) y por origen ascendente.
 - **Prueba de consistencia, fila por fila (ESC-196, ESC-199 b):** las líneas 1 y 2 cumplen `^#(UnicodeData|confusables)\t\d+\.\d+\.\d+$` en ese orden y son iguales a `VersionUnicode` y `VersionConfusables`; cada fila tiene 3 columnas, un tipo de la lista y un origen de 1 punto de código válido (no sustituto).
-  - Sin duplicados: el par (tipo, origen) no se repite y ningún origen está en `conf` y `trazo` a la vez. `conf`: origen fuera de U+0000–U+00FF y destino 1 punto de `[A-Za-z0-9]`; `trazo`: exactamente las 8; `nd`: destino 1 dígito `0030`–`0039`; `mn` y `cf`: destino vacío.
+  - Sin duplicados: el par (tipo, origen) no se repite y ningún origen está en `conf` y `trazo` a la vez. `conf`: origen fuera de U+0000–U+00FF, no `Nd` y destino 1 punto de `[A-Za-z0-9]`; `trazo`: exactamente las 8; `nd`: destino 1 dígito `0030`–`0039`; `mn` y `cf`: destino vacío.
   - `desc`: destino no vacío, sin `Mn` ni `Cf` y ya descompuesto (ningún punto del destino es origen de otra fila `desc`); admite orígenes Latin-1 (`á` → `a`, `º` → `o`) y destinos no alfabéticos de NFKC (`½` → `1⁄2`).
 - La clase `PlegadoCompatibilidad` expone a las pruebas (pública o `internal` con `InternalsVisibleTo`) `VersionUnicode` y `VersionConfusables` (`MAYOR.MENOR.PARCHE`, iguales a las del recurso).
 - **Nombre completo:** nombre y apellido como tokens completos y contiguos, en cualquier orden; un nombre o apellido suelto no deniega (D-09).
@@ -286,10 +290,10 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - **(1) Nombre `D`:** palabra `[\p{L}\p{N}_-]+\.md` delimitada por inicio, final, espacio o puntuación. Si antes de `.md` solo hay dígitos, `D` se extiende a la izquierda hasta 3 palabras que no sean conector de (4), artículo ni número ("del reglamento académico 2025.md" → "reglamento académico 2025.md").
   - **Con espacios (D-60):** si las palabras anteriores más la parte antes de `.md` (SEG-04a, `_` como espacio) forman el final de `reglamento academico 2025`, `evaluacion y calificaciones` o `bienestar y becas`, `D` las cubre, y también `reglamento`, `documento` o `documento de` justo antes.
 - **(2) Referencia escrita:** la coincidencia más larga de (a) `D`; (b) `D` + separador (`·`, `-`, `,` o `:`, espacios opcionales) + referencia a sección `S` (§7.3); (c) `S` + (`de`, `del`, `de la`, `en`, `en el`) + `D`. Una `S` sin `D` no se toca.
-- **(3) Válida:** `D` (NFKC, sin distinguir mayúsculas, **con** tildes) es idéntico al `documento` de una cita y cada número de `S` forma con él una cita (`Art.` y `§` se comparan por número); un número sin cita la invalida. `reglamento_academico_2023.md` sin `S` se conserva (COMP-05).
+- **(3) Válida:** `D` es solo ASCII e idéntico, sin distinguir mayúsculas ASCII, al `documento` de una cita (una tilde o un carácter de ancho completo la invalidan; D-66 C7) y cada número de `S` forma con él una cita (`Art.` y `§` se comparan por número); un número sin cita la invalida. `reglamento_academico_2023.md` sin `S` se conserva (COMP-05).
 - **(4) Eliminación:** cada referencia inválida sale con el conector anterior de la lista cerrada `según`, `segun`, `de acuerdo con`, `conforme a`, `conforme al`, `ver`, `consulta`, `se respalda en`, `se respaldan en`, `en`, `de` o `del` (cada uno con `el`, `la`, `los` o `las` opcional), o solo con uno de esos artículos.
 - **(5) Limpieza:** (a) paréntesis y corchetes vacíos o solo con espacios, `·`, `,`, `;` o `:`; (b) espacios repetidos a uno y sin espacio antes de `.`, `,`, `;`, `:`, `!`, `?`, `)`, salvo entre dígito y `.`/`,` seguido de dígito; nunca se unen dos alfanuméricos.
-  - (c) `..` → `.`; `,.`, `;.`, `:.` → `.`; `,,` → `,`; (d) una oración de la que se eliminó una referencia y queda con ≤ 2 palabras se elimina; (f) se recortan los extremos; (g) se quita `:`, `,`, `;` o `·` al inicio del texto o de una oración.
+  - (c) `..` → `.`; `,.`, `;.`, `:.` → `.`; `,,` → `,`; (d) una oración de la que se eliminó una referencia, que termina en `.`, `!` o `?`, queda con ≤ 2 palabras y no tiene cifra con forma de nota o porcentaje se elimina (D-66 C3); (f) se recortan los extremos; (g) se quita `:`, `,`, `;` o `·` al inicio del texto o de una oración.
   - (e) mayúscula inicial solo si un texto eliminado por (4), (8), (9) o (10) la precedía inmediatamente (salvo espacios); cortes en `.`, `!`, `?` y salto de línea, no en `;` (D-63 F1).
 - **(6) Vacía:** sin ninguna palabra de 2 o más letras **ni** cifra con forma de nota o porcentaje → COMP-03, `citas: []`, `usoDatosEstudiante` según lo leído, `sin_informacion` ("3.9." se entrega; "11." o "(·)" no; D-63 F4). Si no, `citas` y `resultado` no cambian.
 - **(7) Atribución huérfana:** una oración de la que (4), (8) o (9) eliminaron algo y que, sin su puntuación final, termina en una preposición (`a`, `al`, `con`, `de`, `del`, `en`, `por`, `según`, `segun`, `sobre`) o en una cláusula de la lista cerrada se elimina entera.
@@ -320,6 +324,8 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
   - **Inicio:** la palabra en (1); la primera presente de `V`, `D` o `N` en (2). **Asociación:** cada asignatura del catálogo se asocia con la forma más cercana, antes o después (en empate, la anterior).
 - **Verificación (i):** cada asignatura asociada a una forma no negada debe ser de esa persona en lo leído y estar `Perdida` o `Perdida por inasistencia`; con `inasistencia(s)` antes de la primera asignatura, todas por inasistencia; entre una y la siguiente (o el final), esa.
 - **(ii):** una nominal no negada sin asignatura exige ≥ 1 `Perdida` o `Perdida por inasistencia` de esa persona (por inasistencia si siguen `por inasistencia(s)`); una forma (1) sin asignatura no exige nada.
+  - **Genérica (D-66 B1):** para el estudiante, (ii) no aplica si el bloque no tiene marcador personal y la oración tiene alguna palabra fuera de la nominal y de `por inasistencia(s)` ("no se habilitan asignaturas perdidas por inasistencia"). (i) se verifica siempre.
+  - Marcadores personales: `tu`, `tus`, `te`, `ti`, `tienes`, `tengo`, `mi`, `mis`, `me`, `llevas`, `usted`, `perdiste`, `perdi`, `reprobaste`, `hay` (no precedido de `si` ni `que`), `dos`, `tres`, `cuatro` y el nombre o el ID del usuario.
 - Falla si una verificación falla, si la persona no cursa la asignatura o si sus datos no se leyeron → `TEXTO_NO_VERIFICABLE`, 200, `citas: []`, `estado_no_verificado`.
 ### 11.3 (g) Definitiva por asignatura (D-38, D-42, D-64)
 - Por oración, normalizada salvo las cifras (extraídas como en §7.2, una palabra cada una) y los símbolos `<`, `>`, `≤`, `≥`, `<=`, `>=`. **Cifra asociada** a cada `definitiva` no negada: la primera con forma de nota en las 8 palabras siguientes; si no, la más cercana en las 8 anteriores.
@@ -389,7 +395,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - Máx. 4 invocaciones de herramientas (la 5.ª da 503 con `limite_herramientas`; resumen y prelectura no cuentan). Timeout total de 20 s para la fase del LLM, sin reiniciarse por llamada; al agotarse se cancela lo pendiente y se responde 503 con `error`. API académica: 6 s totales, sin reintentos.
 - **Presupuesto diario:** antes de la primera llamada se reserva de forma atómica el costo máximo estimado (`Llm:ReservaPorPeticionUsd`; por defecto 8.000 tokens de entrada y 2.000 de salida a los precios del modelo). Si gastado + reservado + nueva reserva supera el presupuesto → 503 sin LLM.
 - Al terminar, la reserva se sustituye por el costo real; las concurrentes no pueden superarlo. El reintento exige una segunda reserva del mismo importe. Una reserva efectiva ≤ 0 que llegue al núcleo usa su defecto (D-43).
-- **Sin precio (D-39):** sin precio en `appsettings.json` ni en `LLM_PRECIO_*`, reserva y gasto son `Llm:ReservaSinPrecioUsd` (0.01 USD), la respuesta reporta `costoUsd: 0` y la auditoría `precioDesconocido: true`. Ollama tiene precio 0 conocido: reserva y gasto 0.
+- **Sin precio (D-39):** sin precio en `appsettings.json` ni en `LLM_PRECIO_*`, reserva y gasto son `Llm:ReservaSinPrecioUsd` (0.01 USD) por reserva hecha (1, o 2 con reintento; las invocaciones de herramientas no suman; D-66 C5), la respuesta reporta `costoUsd: 0` y la auditoría `precioDesconocido: true`. Ollama tiene precio 0 conocido: reserva y gasto 0.
 - **SEG-16:** más de `Limites:MaximoIdentidadesPorIp` (3) IDs distintos desde una IP en `Limites:VentanaIdentidadesMinutos` (10) emiten `multiples_identidades`; con `Limites:BloquearMultiplesIdentidades` en `true`, 429.
 - **SEG-17:** `packages.lock.json` versionado, imagen base fijada por digest y `dotnet list package --vulnerable --include-transitive` sin resultados en el CI.
 ### 13.2 Validación al arrancar (RNF-05, D-40, D-43, D-59, D-63 F6)
@@ -496,9 +502,9 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 | CA-01 | Evals con LLM + integración | ESC-001…010, 173…175, 177, 197, 198 | Detalle abajo |
 | CA-02 | Unitarias | ESC-020…034 | 100% de §14, sin tolerancia |
 | CA-03 | Evals + unitaria del indexador | ESC-011…016 | 100%; 0 citas al 2023 |
-| CA-04 | Integración con espías + unitarias del plegado | ESC-050…066, 130…139, 149, 186, 187, 196, 199 a1–a8 | Detalle abajo |
+| CA-04 | Integración con espías + unitarias del plegado | ESC-050…066, 130…139, 149, 186, 187, 196, 199 a1–a9 | Detalle abajo |
 | CA-05 | Integración con LLM doble malicioso + evals | ESC-070…089, 145…147, 157, 161, 163, 173, 174, 176 | Detalle abajo |
-| CA-06 | Unitarias del umbral, apoyo, SEG-10f/g + integración + evals | ESC-009, 090…094, 165…170, 172, 175, 179 | Detalle abajo |
+| CA-06 | Unitarias del umbral, apoyo, SEG-10f/g + integración + evals | ESC-009, 035, 090…094, 165…170, 172, 175, 179 | Detalle abajo |
 | CA-07 | Integración con reloj y dobles | ESC-100…112, 119, 150…152, 158…160 | Detalle abajo |
 | CA-08 | Integración con sink en memoria y carpeta temporal | ESC-113…118, 143, 144, 148, 151, 153 | Exactamente 1 evento por petición en consola y archivo; `datosConsultados` por asignatura; 0 valores de notas; 0 terceros sin enmascarar en 400, 403, 413, 415 y 429; `idSolicitado` en el 100% de los 403 tardíos |
 | CA-09 | Humo en el CI | ESC-116 | Salud 200 en < 60 s |
@@ -510,13 +516,13 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 | CA-15 | Unitarias del validador + integración con configuración en memoria | ESC-181, 182, 188, 199 c1, c2 | Detalle abajo |
 | CA-16 | Integración + unitarias del cierre | ESC-183 | 100% de las explotaciones N-01 bloqueadas con texto, citas y `resultado` exactos; 100% de referencias válidas conservadas; 100% de respuestas idénticas al texto verificado; 0 fusiones de tokens |
 | CA-17 | Unitarias de §11.4 + integración | ESC-175, 179, 184, 185, 198 g1–g5, 199 h1, h2 | Detalle abajo |
-| CA-18 | Unitarias del formateador + integración | ESC-189 a–f | 100% de las 14 líneas exactas; 0 `perdida` en el bloque de `EST-006`; 0 líneas con pérdida y "Sin definitiva"; 0 campos vacíos; frase de consecuencia en la primera llamada |
+| CA-18 | Unitarias del formateador + integración | ESC-189 a–g | 100% de las 14 líneas exactas y de las 2 de ESC-189 g; 0 `perdida` en el bloque de `EST-006`; 0 líneas con pérdida y "Sin definitiva"; 0 campos vacíos; frase de consecuencia en la primera llamada |
 | CA-19 | Integración con espía | ESC-190 | Detalle abajo |
 | CA-20 | Unitarias del prompt + servidor doble del proveedor | ESC-191, 192 | Detalle abajo |
 | CA-21 | Integración con doble por turno y reloj | ESC-193, 199 g1–g4 | Detalle abajo |
 | CA-22 | Unitarias con el índice real + integración | ESC-198 | Detalle abajo |
 | CA-23 | Servidor doble del proveedor + unitarias del prompt y del validador | ESC-192, 198 h–k, 199 c1, c2, d, e, f | Detalle abajo |
-| CA-24 | Integración con espías + unitarias de SEG-04a | ESC-186 f, 199 a1–a8, b | Detalle abajo |
+| CA-24 | Integración con espías + unitarias de SEG-04a | ESC-186 f, 199 a1–a9, b | Detalle abajo |
 
 - **CA-01 (D-52, D-55, D-56, D-58, D-59, D-63 F8):** fase V con LLM real, `Llm:Temperatura` 0, semilla 1, 5 corridas por pregunta: las 10 con cifra y cita en 5 de 5; P6 `respondida` con "Valentina Castro", "1.8" y "2.3"; umbrales que no se bajan (un fallo se reporta con el texto real).
   - Dato completo 5 de 5: P2 las 4 definitivas en la línea de su asignatura, P3 "48 clases", P7 "edificio B, piso 2", P8 "50%" o "50 %". Citas de documento 5 de 5: exactamente {Sec. 3, Sec. 4} en P2, {bienestar · Sec. 1} en P7, {Sec. 3.1} en P8; P4 con Sec. 2 y Sec. 3.
@@ -529,19 +535,21 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - **CA-06:** 100% de las preguntas bajo el umbral o de periodo no disponible (ESC-009, 091, 093, 094, 165, 172 g) con el texto exacto, 0 llamadas, `tokens` y `costoUsd` 0 y 0 lecturas; 100% de exentas o sobre el umbral (ESC-169 a–e, g; 172 c) con ≥ 1 llamada; 0 llamadas en ESC-169 f.
   - 0 respuestas sin cita, datos ni apoyo (ESC-167, 168, 170); 0 valores monetarios (ESC-166); ESC-090, ESC-092 y ESC-166 d (LLM real) al 100% en 3 corridas.
   - 100% de pérdidas y definitivas que no cuadran (ESC-175, 179) con `TEXTO_NO_VERIFICABLE` y `estado_no_verificado`; cifras ausentes con `numero_no_verificado` (SEG-10c antes de (g)); 100% de correctas, negadas o con umbral fiel entregadas.
+  - Genéricas (D-66 B1): ESC-035 a, b y g entregadas sin cambios; ESC-035 c–e con `estado_no_verificado`; ESC-035 f con `TEXTO_NEGATIVA`; ESC-011 offline `respondida`.
 - **CA-07:** 100% contra el esquema; cada código de `constitution.md` §2.1 con un caso; 415 con 0 llamadas; `X-Correlation-Id` UUID v7 = `traceId` = auditoría en el 100%; 503 por timeout en < 21 s; 0 USD sobre el presupuesto con 5 concurrentes; 0 peticiones a una redirección.
 - **CA-11:** costo exacto (tolerancia 1e-6). Sin precio: `costoUsd` 0, `precioDesconocido: true` en el 100% de los eventos con LLM y 503 sin LLM en la 4.ª petición (0.03 USD, reserva 0.01, también configurada en 0). Ollama a precio 0: 0 marcas y 0 rechazos (ESC-180).
 - **CA-14 (D-49, D-50, D-53…D-56, D-60):** con campo usado, citas de reglas aplicadas exactamente las de ese campo (P2 → Sec. 4 y Sec. 3, 0 a Sec. 3.1) y 0 fuera del bloque; sin campo, relevancia > 0; respaldo de exactamente 1 sección, la de mayor apoyo.
   - 0 citas escritas devueltas con < 2 raíces salvo las del bloque con datos (conservadas al 100%, nunca sin datos); 100% de ESC-171, ESC-178, ESC-195 y ESC-198 l exactos; 0 cambios en atribuciones a documentos citados o sin conector.
   - Activadores de ESC-172 a–d con resumen en la primera llamada; 0 resúmenes en ESC-155 a–f y ESC-172 e–g; 1 lectura de notas y 0 de asistencia en ESC-172 e; negativas con su cita propia; 0 citas de secciones no entregadas.
-  - 0 respuestas con más de escritas + 3 + tema + datos; ESC-017, ESC-019 y ESC-018 a con su cita normativa vigente; ESC-018 b exacto, sin Art. 22 (D-65 G5); ESC-002 con las 4 definitivas en 3 corridas con LLM real.
+  - 0 respuestas con más de escritas + 3 + tema + datos; ESC-017, ESC-019 y ESC-018 a con su cita normativa vigente; ESC-018 b con exactamente [Art. 22] por respaldo y uso false (D-66 B2); ESC-002 con las 4 definitivas en 3 corridas con LLM real.
 - **CA-15 (D-40, D-43, D-59, D-63 F6):** 100% de los inválidos "No arranca" (ESC-181 a–n, x–af; ESC-188 b, c; ESC-199 c1) sin arrancar con la línea exacta de cada uno, todos y no solo el primero; 0 correcciones silenciosas.
   - 100% de los códigos con salto de línea final o dígitos de ancho completo rechazados con la línea de `formato ^[A-Z]{2,4}-[0-9]{3}\z` (ESC-181 y, z).
   - Reservas inválidas (ESC-181 o–q) con la advertencia exacta y 503 en la 3.ª concurrente; límites y vacíos (ESC-181 r–w) sin advertencia; 0 mensajes en varias líneas; `Zl`, `Zp`, `Cf` escapados y 0 caracteres crudos.
   - 1 advertencia por código en 3 peticiones (ESC-188 a); 0 reservas ≤ 0 en el núcleo (ESC-188 d); código igual a un ID excluido con 403 y 0 llamadas, 0 falsos 403 por `EST-103` (ESC-182); `0`, `0.3`, `0.30` arrancan (ESC-199 c2); 0 apariciones de la llave.
 - **CA-17:** 100% de N-02 (6 formatos), N-03 (6 textos), el caso ambiguo y los pares sin `definitiva` que no cuadran con `TEXTO_NO_VERIFICABLE`, `citas: []` y `estado_no_verificado`; 100% de los que cuadran, negados, con umbral fiel o lista correcta entregados.
   - Regresión: ESC-175 y ESC-179 con el mismo resultado que antes de la verificación por bloque; el encabezado de columnas verificado como bloque (ESC-199 h1).
-- **CA-19:** 100% con activador con el programa en la primera llamada, `usoDatosEstudiante` true, `Datos del programa · ADM` y 0 lecturas de ING-SIS; 0 prelecturas sin activador o sin programas; 403 previos con 0 lecturas; P6 `respondida` con un modelo que no invoca herramientas.
+- **CA-19:** 100% con activador con el programa en la primera llamada, `usoDatosEstudiante` true, `Datos del programa · ADM` y 0 lecturas de ING-SIS; P6 `respondida` con un modelo que no invoca herramientas.
+  - 0 prelecturas sin activador, sin programas o en normativas genéricas (ESC-190 g, j, k); prelectura con `mis` o un estudiante suyo (ESC-190 l); 403 previos con 0 lecturas (ESC-190 h, i, m).
 - **CA-20 (D-46, D-47, D-59, D-63 F7):** 100% de P-01…P-07 en ambos roles, en 7 pasos distintos; ≤ 12 pasos de ≤ 40 palabras; 0 `documento.md`; `temperature` = `Llm:Temperatura` (0 por defecto) en el 100% de los 3 adaptadores; `seed` = `Llm:Semilla` en Ollama y OpenAI, ausente en Anthropic.
 - **CA-21 (D-48, D-62):** 100% de bloqueos (c), (d), (f), (g) con exactamente 1 reintento y `reintento: true`; 0 tras SEG-10b, SEG-10e, 403 tardío o respuesta verificada; instrucción y motivos exactos (sin persona para el estudiante; monetario sin símbolo); reintento también sin datos leídos.
   - Resultado del primer bloqueo si el reintento falla o se agota el tiempo, en < 2 s con `Limites:TimeoutLlmSegundos` 1; 0 reintentos sin segunda reserva.
@@ -550,8 +558,9 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - **CA-23 (D-57, D-58, D-59):** `temperature` = `Llm:Temperatura` en el 100%; 100% fuera de [0, 0.3] o con otro formato sin arrancar; truncado (`prompt_tokens` < 0.75 × la estimación de §4.4; ESC-199 e1) con `TEXTO_NO_VERIFICABLE`, `error`, `contextoTruncado: true` y 1 llamada.
   - 0 detecciones en el límite ⌈0.75 × E⌉, sin truncado (⌊1.04 × E⌋), sin `usage` o con otro proveedor (ESC-199 e2–e5); 0 llamadas de referencia > 3.000 estimados; EJ-1…EJ-4 y 0 cifras de ejemplo en las fuentes.
   - Presentación de la Sec. 3.1 en la primera llamada y 0 cifras o raíces de la presentación ausentes del texto original.
-- **CA-24 (D-61, D-62 E7):** 100% de las variantes con 403 `tercero_mencionado`, 0 llamadas, 0 lecturas de `EST-002` y `[TERCERO]` exacto; 0 falsos 403 con el propio ID plegado, `Nd` propios o `×`; nombre ajeno en homoglifos en la respuesta con `TEXTO_NEGATIVA` y `fuga_bloqueada`.
-  - Recurso de plegado con el 100% de las filas conforme al esquema de §9.1: versiones iguales, 0 orígenes `conf` o `trazo` ASCII o Latin-1 salvo `ø`/`Ø`, 0 destinos `conf` fuera de `[A-Za-z0-9]`, 0 duplicados.
+  - Sin mínimo de verosimilitud: `prompt_tokens` 10 con `usage` es truncado (D-66 A5); 0 `contextoTruncado` en las corridas de la fase V con Ollama (falso truncado por caché de prompt).
+- **CA-24 (D-61, D-62 E7):** 100% de las variantes con 403 `tercero_mencionado`, 0 llamadas, 0 lecturas de `EST-002` y `[TERCERO]` exacto; 0 falsos 403 con el propio ID plegado, `Nd` propios, `×` o `đST-002` (ESC-199 a9); nombre ajeno en homoglifos en la respuesta con 200, `TEXTO_NEGATIVA`, consumo real y `fuga_bloqueada` (ESC-199 a8).
+  - Recurso de plegado con el 100% de las filas conforme al esquema de §9.1: versiones iguales, 0 orígenes `conf` o `trazo` ASCII o Latin-1 salvo `ø`/`Ø`, 0 orígenes `conf` `Nd`, 0 destinos `conf` fuera de `[A-Za-z0-9]`, 0 duplicados.
 ### 15.3 Casos límite obligatorios
 - Redondeo: todos los .5 de §14 (4.45 → 4.5, 2.275 → 2.28). Inasistencia: 48 clases, 7 no pierde, 8 y 9 pierden, máx. 7; 64: 9 no, 10 sí, máx. 9; 32: 5 sí, máx. 4; con el 2023, EST-002 no perdería Bases de Datos. Nulos: corte 3 de EST-006 en Estadística, inasistencias de EST-003 en Inglés III.
 - Falsos positivos: `EST-103`, "notas rojas", el coordinador propio, palabras con "adm", superlativos propios y "mejorar". Inyección indirecta: Anexo, documento sintético y resultado de herramienta envenenados.
@@ -560,7 +569,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - Umbral y apoyo: `r = 0` ("???"), una raíz ("¿Qué becas hay?"), límite exacto de 2 raíces, respuestas con 0, 1 y 2 raíces con y sin cita escrita, exenciones.
 - Cifras: `cort` + `30%` en el límite, entero sin `%`, porcentaje inventado antes del apoyo, `3.0` compartido por los Artículos 5 y 6, `3.1` de "Sección 3.1" frente a `4.40` junto a "(Sección 4)", cifra partida `1 .2` (sí) frente a `1. 2` (no).
 - Activadores: asignatura por nombre y por código con `r = 0`, nombre parcial, no matriculada (1 lectura de notas), genérico indefinido con `puedo`, periodo con asignatura, tercero antes de verificar; prelectura con y sin activador, sin programas y tras un 403.
-- Pérdidas: formas de palabra y nominales, asignatura después de la forma, negación gobernante frente a "sin duda" y "aun así", sujeto coordinado, verbo hipotético; tabla, lista, línea vacía, `>`, negrita, contexto con dos personas.
+- Pérdidas: formas de palabra y nominales, oración genérica frente a marcador personal o fragmento nominal (ESC-035), asignatura después de la forma, negación gobernante frente a "sin duda" y "aun así", sujeto coordinado, verbo hipotético; tabla, lista, línea vacía, `>`, negrita, contexto con dos personas.
 - Definitivas: umbral seguido de la cifra afirmada, `necesitas una definitiva de` frente a `necesita revisión`, lista correcta y cruzada, pares sin `definitiva` (definitiva, corte, acumulada frente a otra asignatura), programa solo frente a programa y detalle.
 - Citas: bloque de 4 y de 8 entradas (`EST-002` con `r = 0` conserva el orden fijo), `r > 0` sin raíces compartidas, respaldo con empate, tema con 2 raíces frente a 1; relevante solo en 6.º lugar (entra).
 - Puntaje relativo (D-65 G6): el puerto de recuperación no expone puntajes; el límite se prueba por sensibilidad con el índice real, umbral = ⌊P⌋ entra y ⌊P⌋ + 1 no: regla (3) con el Art. 5 de Q10 #4 (51.1%: 51/52) y el Art. 16 de Q10 #1 (49.6%: 49/50); regla (4) con la Sec. 3 de Q10 #1 (46.5%, 2 raíces: 46/47).
@@ -571,7 +580,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 ### 15.4 Dobles y datos de prueba
 - **LLM doble** programable por escenario y por turno (respuesta fija, herramienta, citas propuestas, consumo fijo, demora, retención, 302) y espía; uno falla si se invoca; otros nunca invocan herramientas y copian el resumen o una línea, copian el bloque de ejemplos o descripciones, o responden textos reales (Q10 #1, #5, #6, #8).
 - Salvo que el escenario diga otra cosa, repite en el reintento el texto del primer turno: los bloqueos de (c), (d), (f) o (g) conservan su resultado, la auditoría lleva `reintento: true` y las llamadas se cuentan con el reintento.
-- **Servidor doble del proveedor** que registra el cuerpo (temperatura y semilla) y, para `ollama`, reporta `usage.prompt_tokens` programable. **API académica doble** que cuenta lecturas por recurso y estudiante y sirve `mock-api/datos.json`.
+- **Servidor doble del proveedor** que registra el cuerpo (temperatura y semilla) y, para `ollama`, reporta `usage.prompt_tokens` = ⌈1.04 × E⌉ de cada llamada (§4.4), programable solo en ESC-199 e; una prueba de `tokens` exactos con `ollama` suma lo reportado (D-66 A5). **API académica doble** que cuenta lecturas por recurso y estudiante y sirve `mock-api/datos.json`.
 - Variantes de la API: `COORD-03` con `programas: []`, `COORD-09` con `["ING-SIS", "ADM"]`, `programaId` malicioso y asignatura con texto de inyección. Integración con dobles .NET; punta a punta con la simulación de Postman.
 - **Índices de prueba:** el de ESC-157 (Artículo 1 sin números y Artículo 2 con "4.40"; solo se entrega el 1); `documento_prueba.md · Artículo 1` ("Biblioteca": "La biblioteca atiende de lunes a viernes en el edificio C.") para ESC-168 y ESC-170.
 - Y uno con solo `reglamento_academico_2025.md · Artículo 5` y `Artículo 6`, ambos entregados, para ESC-179 m–s, ESC-184 y ESC-185 (la prueba fija las entregadas, sin el filtro de §7.4).
