@@ -10,7 +10,8 @@ internal static class FormateadorResumen
     public static ResumenEntregado Resumir(ResumenEstudiante resumen)
     {
         var entradas = ReglasAplicadas.DeNotasYAsistencia([resumen]);
-        var lineas = new List<string>(FormateadorDatos.LineasDeNotas(resumen)) { FormateadorDatos.Asistencia(resumen) };
+        var lineas = new List<string>(FormateadorDatos.LineasDePerdidaPorNota(resumen)) { FormateadorDatos.Asistencia(resumen) };
+        lineas.AddRange(FormateadorDatos.RestoDeLasNotas(resumen));
         lineas.Add(LineaDeReglas(ReglasAplicadas.Citas(entradas)));
         return new ResumenEntregado(string.Join("\n", lineas), entradas);
     }

@@ -51,13 +51,20 @@ public static class FormateadorDatos
             || NormalizadorTexto.Normalizar(nota.Codigo) == buscada)];
     }
 
-    internal static IEnumerable<string> LineasDeNotas(ResumenEstudiante resumen)
+    internal static IEnumerable<string> LineasDeNotas(ResumenEstudiante resumen) =>
+        LineasDePerdidaPorNota(resumen).Concat(RestoDeLasNotas(resumen));
+
+    internal static IEnumerable<string> LineasDePerdidaPorNota(ResumenEstudiante resumen) =>
+        resumen.Asignaturas.Where(resultado => resultado.Estado == EstadoAsignatura.Perdida).SelectMany(LineasDeEstadoDeLaAsignatura);
+
+    internal static IEnumerable<string> RestoDeLasNotas(ResumenEstudiante resumen)
     {
         var conDefinitiva = resumen.Asignaturas.Where(resultado => resultado.Estado != EstadoAsignatura.SinDefinitiva).ToList();
         var lineas = new List<string>();
+        lineas.AddRange(resumen.Asignaturas.Where(resultado => resultado.Estado != EstadoAsignatura.Perdida).SelectMany(LineasDeEstadoDeLaAsignatura));
         lineas.AddRange(conDefinitiva.Count == 0 ? [] : [$"Definitivas: {string.Join(", ", conDefinitiva.Select(DefinitivaEnLinea))}"]);
-        lineas.AddRange(resumen.Asignaturas.SelectMany(LineasDeEstadoDeLaAsignatura));
         lineas.AddRange(conDefinitiva.Count == 0 ? [] : [$"Promedio ponderado del periodo: {Promedio(resumen.Promedio)}"]);
+        lineas.Add($"Nota mínima para aprobar: {Nota(CalculosAcademicos.NotaMinimaAprobacion)}");
         lineas.Add($"Créditos matriculados: {resumen.CreditosMatriculados}");
         lineas.Add($"Prueba académica: {(resumen.PruebaAcademica ? "sí" : "no")}");
         lineas.Add($"Beca por rendimiento: {TextoBeca(resumen.Beca)}");
