@@ -12,6 +12,7 @@ builder.Services.AgregarTutorFlow(builder.Configuration);
 
 var app = builder.Build();
 
+app.UsarProxyConfiable(app.Configuration);
 app.UsarCorrelacion();
 app.UsarEncabezadosDeSeguridad();
 app.UseExceptionHandler();

@@ -12,7 +12,8 @@ public static class ValidadorDeConfiguracion
         [.. ReglasDeError(configuracion)
             .Where(regla => EsInvalido(configuracion, regla))
             .Select(regla => LineaInvalida(regla.Clave, configuracion[regla.Clave], regla.Texto))
-            .Concat(ValidadorDeCatalogo.Validar(configuracion))];
+            .Concat(ValidadorDeCatalogo.Validar(configuracion))
+            .Concat(ProxyConfiable.Invalidas(configuracion))];
 
     internal static string LineaInvalida(string clave, string? valor, string regla) =>
         $"{PrefijoInvalida}: {clave} = \"{ValorDeMensaje.De(valor)}\" ({regla})";

@@ -32,7 +32,18 @@ internal sealed partial class ValidacionDeArranque : IStartupFilter
             RegistrarAdvertencia(_logger, advertencia);
         }
 
+        RegistrarProxies(efectiva);
         return siguiente;
+    }
+
+    private void RegistrarProxies(IConfiguration efectiva)
+    {
+        var ips = ProxyConfiable.Efectivas(efectiva);
+        if (ips.Count > 0)
+        {
+            var texto = string.Join(", ", ips);
+            RegistrarProxyConfiable(_logger, texto);
+        }
     }
 
     private IConfiguration ConEntorno()
@@ -42,6 +53,9 @@ internal sealed partial class ValidacionDeArranque : IStartupFilter
             .Where(par => par.Value is not null);
         return new ConfigurationBuilder().AddConfiguration(_configuracion).AddInMemoryCollection(delEntorno).Build();
     }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "IPs de proxy de confianza: {Ips}.")]
+    private static partial void RegistrarProxyConfiable(ILogger logger, string ips);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "{Mensaje}")]
     internal static partial void RegistrarAdvertencia(ILogger logger, string mensaje);
