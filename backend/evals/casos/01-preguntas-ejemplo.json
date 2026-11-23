@@ -49,7 +49,8 @@
     "noContiene": [],
     "citasIncluye": [
       "evaluacion_y_calificaciones.md · Sección 3",
-      "evaluacion_y_calificaciones.md · Sección 4"
+      "evaluacion_y_calificaciones.md · Sección 4",
+      "bienestar_y_becas.md · Sección 3.1"
     ],
     "citasProhibidas": [],
     "citasVacias": false,
@@ -82,7 +83,9 @@
     ],
     "citasIncluye": [
       "Datos del estudiante · Asistencia",
-      "reglamento_academico_2025.md · Artículo 11"
+      "reglamento_academico_2025.md · Artículo 11",
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "evaluacion_y_calificaciones.md · Sección 4"
     ],
     "citasProhibidas": [],
     "citasVacias": false,
@@ -185,7 +188,7 @@
       "Datos del programa · ADM",
       "reglamento_academico_2025.md · Artículo 5",
       "reglamento_academico_2025.md · Artículo 6",
-      "reglamento_academico_2025.md · Artículo 20"
+      "evaluacion_y_calificaciones.md · Sección 3"
     ],
     "citasProhibidas": [],
     "citasVacias": false,
