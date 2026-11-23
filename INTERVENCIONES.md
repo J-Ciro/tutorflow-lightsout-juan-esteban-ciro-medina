@@ -184,3 +184,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** un APROBADO con defectos conocidos no cierra la feature. Atribuir la inconsistencia al modelo sin diagnosticarla esconde posibles fallos de diseño, de los verificadores o de los datos que se entregan al modelo.
 - **Costo:** ~2 min humanos.
 - **Prevención:** aprobada por el humano y aplicada: en la fase V de `qa-calidad`, todo defecto observado con el LLM real se reporta con su causa raíz en el código (verificador que actuó, datos entregados, texto del modelo). En `FABRICA.md`, una condición de parada: la feature no se cierra con defectos abiertos ni con "riesgo aceptado" sin aprobación explícita del humano.
+
+### INT-021 · 2026-11-23 · Los riesgos registrados se resuelven, no solo se anotan
+- **Fase:** spec
+- **Qué pasó:** la spec v1.11 (`eb95afc`) dejó varios riesgos solo anotados, sin decisión para resolverlos. Son estos: el umbral relativo del 50 % estimado a mano (D-49), la posible pérdida de la `Sección 2` en P4 por el respaldo de una sola sección, el contexto de 4.096 tokens de Ollama frente a los ~3.900 que ya usa P6 (D-52), la completitud de P7 y P8 sujeta a que el modelo copie el dato, las citas de P2, P5 y P6 sujetas a que el modelo escriba el término del campo (D-53), la atribución genérica que se elimina de más y los homoglifos y letras con trazo aceptados como riesgo (D-43). El orquestador los presentó como "riesgos registrados" y siguió con las pruebas.
+- **Qué hizo el humano:** *"De esos riesgos que quedan registrados debes de analizalros con el agente arquitecto para tomar una desicion y evitar, corregir, solucionar, entender y mitrigar estos riesgos o eliminarlos."*
+- **Por qué:** un riesgo anotado sin decisión es un defecto aplazado, igual que en INT-020.
+- **Costo:** ~1 min humano.
+- **Prevención:** en la skill `nueva-spec` y en `arquitecto-spec`, todo riesgo identificado lleva una decisión explícita: eliminarlo, mitigarlo con un control verificable o aceptarlo con la aprobación del humano. Queda pendiente del visto bueno del humano.
