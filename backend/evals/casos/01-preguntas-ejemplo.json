@@ -41,10 +41,10 @@
     "http": 200,
     "contiene": [
       "4.39",
-      "4.5",
-      "4.8",
-      "4.1",
-      "4.0"
+      "Cálculo Integral: 4.5",
+      "Programación Orientada a Objetos: 4.8",
+      "Bases de Datos: 4.1",
+      "Inglés III: 4.0"
     ],
     "noContiene": [],
     "citasIncluye": [
@@ -61,7 +61,7 @@
     "offline": {
       "herramientas": "todas",
       "estudianteIdCoordinador": null,
-      "texto": "{herramientas}"
+      "texto": "Tu promedio ponderado del periodo es 4.39.\nCálculo Integral: 4.5\nProgramación Orientada a Objetos: 4.8\nBases de Datos: 4.1\nInglés III: 4.0"
     }
   },
   {

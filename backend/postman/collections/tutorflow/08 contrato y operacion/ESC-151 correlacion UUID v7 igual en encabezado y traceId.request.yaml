@@ -1,0 +1,27 @@
+$kind: http-request
+order: 11200
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {"pregunta":
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+      pm.test("ESC-151 responde 400", () => pm.response.to.have.status(400));
+      pm.test("ESC-151 X-Correlation-Id es UUID v7 y es el traceId del ProblemDetails", () => {
+        const correlacion = pm.response.headers.get("X-Correlation-Id");
+        pm.expect(correlacion).to.match(UUID_V7);
+        pm.expect(pm.response.json().traceId).to.eql(correlacion);
+      });
+      pm.test("ESC-151 la marca de tiempo del UUID v7 es reciente", () => {
+        const correlacion = pm.response.headers.get("X-Correlation-Id");
+        const milisegundos = parseInt(correlacion.replace(/-/g, "").slice(0, 12), 16);
+        pm.expect(Math.abs(Date.now() - milisegundos)).to.be.below(60000);
+      });
