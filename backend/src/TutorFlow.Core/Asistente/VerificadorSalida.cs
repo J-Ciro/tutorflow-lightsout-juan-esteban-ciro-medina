@@ -76,7 +76,7 @@ public sealed partial class VerificadorSalida
     }
 
     private IEnumerable<string> NumerosAVerificar(string respuesta) =>
-        _notaOPorcentaje.Matches(respuesta)
+        _notaOPorcentaje.Matches(ReferenciasASeccion.Quitar(TokenizadorTexto.Plegado(respuesta)))
             .Select(coincidencia => coincidencia.Groups["numero"].Value);
 
     [GeneratedRegex(@"(?<![0-9.])[0-9]+(\.[0-9]+)?")]
