@@ -112,7 +112,7 @@ public sealed class PreguntarAsistente
     private async Task<ResultadoPregunta> ResponderAsync(SesionPregunta sesion, CancellationToken cancellationToken)
     {
         var directorio = sesion.Directorio!;
-        var secciones = _baseConocimiento.BuscarSecciones(sesion.Entrada.Pregunta, _limites.MaximoSeccionesRecuperadas);
+        var secciones = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(sesion.Entrada.Pregunta), _limites.MaximoSeccionesRecuperadas);
         var conversacion = new ConversacionLlm(_clienteLlm, new HerramientasAsistente(sesion.Api, _politicaAcceso), _limites, _configuracion);
         var contexto = new ContextoUsuario(sesion.Entrada.Usuario, directorio);
         var resultado = await conversacion.EjecutarAsync(contexto, sesion.Entrada.Pregunta, secciones, sesion.Registro, cancellationToken);
@@ -134,29 +134,36 @@ public sealed class PreguntarAsistente
             return Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, usoDatos: false);
         }
 
-        var directorio = sesion.Directorio!;
-        foreach (var seccion in secciones)
+        var fundamentos = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(texto), _limites.MaximoSeccionesRecuperadas);
+        foreach (var seccion in secciones.Concat(fundamentos))
         {
             sesion.Registro.AgregarFuente($"{seccion.Titulo}. {seccion.Texto}");
         }
 
+        var directorio = sesion.Directorio!;
         var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, directorio);
-        var verificada = _verificadorSalida.Verificar(
-            sesion.Entrada.Usuario,
-            texto,
-            ElegirCitasNormativas(texto, secciones),
-            autorizados,
-            sesion.Registro.Fuentes,
-            _baseConocimiento,
-            directorio);
-        var citas = verificada.Resultado == ResultadoAuditoria.Respondida ? [.. verificada.Citas, .. sesion.Registro.Citas] : verificada.Citas;
-        return Responder(sesion, verificada.Respuesta, citas, verificada.Resultado);
+        var candidatas = ElegirCitasNormativas(texto, fundamentos, secciones);
+        var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio);
+        return Responder(sesion, verificada.Respuesta, CitasFinales(sesion, verificada), verificada.Resultado);
     }
 
-    private IReadOnlyList<Cita> ElegirCitasNormativas(string texto, IReadOnlyList<SeccionDocumento> secciones)
+    private IReadOnlyList<Cita> CitasFinales(SesionPregunta sesion, SalidaVerificada verificada)
+    {
+        if (verificada.Resultado != ResultadoAuditoria.Respondida)
+        {
+            return verificada.Citas;
+        }
+
+        var reglas = _verificadorSalida.DescartarCitasInexistentes(sesion.Registro.Reglas, _baseConocimiento);
+        return [.. verificada.Citas.Concat(reglas).Concat(sesion.Registro.Citas).Distinct()];
+    }
+
+    private IReadOnlyList<Cita> ElegirCitasNormativas(string texto, IReadOnlyList<SeccionDocumento> fundamentos, IReadOnlyList<SeccionDocumento> secciones)
     {
         var explicitas = _verificadorSalida.DescartarCitasInexistentes(ExtractorCitas.De(texto), _baseConocimiento);
-        return explicitas.Count > 0 ? explicitas : [.. secciones.Select(s => new Cita(s.Documento, s.Seccion))];
+        return explicitas.Count > 0
+            ? explicitas
+            : [.. fundamentos.Concat(secciones).Select(s => new Cita(s.Documento, s.Seccion)).Distinct()];
     }
 
     private ResultadoPregunta Responder(

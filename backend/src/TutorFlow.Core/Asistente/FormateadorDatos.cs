@@ -56,10 +56,7 @@ public static class FormateadorDatos
     private static string LineaDeNotas(ResultadoAsignatura resultado)
     {
         var asignatura = resultado.Asignatura;
-        var cortes = asignatura.Cortes;
-        return $"{asignatura.Nombre} ({asignatura.Codigo}, {asignatura.Creditos} créditos): "
-            + $"corte 1 {Nota(cortes.Corte1)}, corte 2 {Nota(cortes.Corte2)}, corte 3 {Nota(cortes.Corte3)}; "
-            + $"{DescribirEstado(resultado)}.";
+        return $"{asignatura.Nombre} ({asignatura.Codigo}, {asignatura.Creditos} créditos): {DescribirEstado(resultado)}.";
     }
 
     private static string DescribirEstado(ResultadoAsignatura resultado) => resultado.Estado switch
@@ -77,8 +74,30 @@ public static class FormateadorDatos
 
     private static string DescribirSinDefinitiva(ResultadoAsignatura resultado) =>
         resultado.Acumulada is { } acumulada
-            ? $"sin definitiva porque falta calificar un corte; nota acumulada {Nota(acumulada.Valor)} sobre el {acumulada.PorcentajeEvaluado.ToString("0", CultureInfo.InvariantCulture)}% evaluado (equivale a {Nota(acumulada.EquivalenteSobreEvaluado)})"
+            ? $"sin definitiva porque falta calificar un corte (calificados: {CortesCalificados(resultado.Asignatura.Cortes)}); nota acumulada {Nota(acumulada.Valor)} sobre el {acumulada.PorcentajeEvaluado.ToString("0", CultureInfo.InvariantCulture)}% evaluado (equivale a {Nota(acumulada.EquivalenteSobreEvaluado)})"
             : "sin definitiva porque no hay cortes calificados";
+
+    public static string Cortes(IReadOnlyList<NotasAsignatura> notas, string consulta)
+    {
+        var buscada = NormalizadorTexto.Normalizar(consulta);
+        var coincidencias = notas
+            .Where(nota => NormalizadorTexto.Normalizar(nota.Nombre).Contains(buscada, StringComparison.Ordinal)
+                || NormalizadorTexto.Normalizar(nota.Codigo) == buscada)
+            .Select(LineaDeCortes)
+            .ToList();
+        return coincidencias.Count == 0 ? "No hay una asignatura con ese nombre o código." : string.Join(Environment.NewLine, coincidencias);
+    }
+
+    private static string LineaDeCortes(NotasAsignatura nota) =>
+        $"{nota.Nombre} ({nota.Codigo}): corte 1 {Nota(nota.Cortes.Corte1)} (30%), corte 2 {Nota(nota.Cortes.Corte2)} (30%), corte 3 {Nota(nota.Cortes.Corte3)} (40%).";
+
+    private static string CortesCalificados(NotasCorte cortes)
+    {
+        var calificados = new[] { ("corte 1", cortes.Corte1), ("corte 2", cortes.Corte2), ("corte 3", cortes.Corte3) }
+            .Where(corte => corte.Item2.HasValue)
+            .Select(corte => $"{corte.Item1} {Nota(corte.Item2)}");
+        return Lista(calificados);
+    }
 
     private static string LineaDeAsistencia(ResultadoAsignatura resultado)
     {

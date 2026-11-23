@@ -1,4 +1,3 @@
-using System.Text.Json;
 using TutorFlow.Core.Academico;
 using TutorFlow.Core.Autorizacion;
 using TutorFlow.Core.Conocimiento;
@@ -18,16 +17,19 @@ public sealed class HerramientasAsistente
 {
     public const string DatosBasicos = "consultar_datos_basicos";
     public const string Notas = "consultar_notas";
+    public const string Cortes = "consultar_cortes";
     public const string Asistencia = "consultar_asistencia";
     public const string Programa = "consultar_programa";
     public const string Estudiante = "consultar_estudiante";
     public const string ParametroEstudianteId = "estudianteId";
+    public const string ParametroAsignatura = "asignatura";
 
     private static readonly IReadOnlyList<HerramientaLlm> HerramientasDeEstudiante =
     [
-        new(Notas, "Devuelve las notas por corte, las definitivas, el promedio del periodo, la prueba académica, la habilitación y la elegibilidad de beca de la persona que pregunta, ya calculados.", []),
+        new(Notas, "Devuelve las definitivas, el promedio del periodo, la prueba académica, la habilitación y la elegibilidad de beca de la persona que pregunta, ya calculados.", []),
         new(Asistencia, "Devuelve las inasistencias, las faltas permitidas y las faltas restantes de cada asignatura de la persona que pregunta.", []),
-        new(DatosBasicos, "Devuelve el nombre, el programa y el coordinador del programa de la persona que pregunta.", [])
+        new(DatosBasicos, "Devuelve el nombre, el programa y el coordinador del programa de la persona que pregunta.", []),
+        new(Cortes, "Devuelve las notas de los tres cortes de una asignatura de la persona que pregunta.", [new ParametroHerramienta(ParametroAsignatura, "Nombre o código de la asignatura.", true)])
     ];
 
     private static readonly IReadOnlyList<HerramientaLlm> HerramientasDeCoordinador =
@@ -48,6 +50,7 @@ public sealed class HerramientasAsistente
         {
             [DatosBasicos] = ConsultarDatosBasicos,
             [Notas] = ConsultarNotas,
+            [Cortes] = ConsultarCortes,
             [Asistencia] = ConsultarAsistencia,
             [Programa] = ConsultarPrograma,
             [Estudiante] = ConsultarEstudiante
@@ -68,13 +71,14 @@ public sealed class HerramientasAsistente
             return ResultadoHerramienta.Texto("Herramienta no disponible.");
         }
 
-        var estudianteId = LeerEstudianteId(llamada.ArgumentosJson);
+        var estudianteId = ArgumentosHerramienta.LeerTexto(llamada.ArgumentosJson, ParametroEstudianteId);
         if (EsLecturaAjena(contexto, estudianteId))
         {
             return ResultadoHerramienta.Denegado();
         }
 
-        return await manejador(new SolicitudHerramienta(contexto, registro, estudianteId, cancellationToken));
+        var asignatura = ArgumentosHerramienta.LeerTexto(llamada.ArgumentosJson, ParametroAsignatura);
+        return await manejador(new SolicitudHerramienta(contexto, registro, estudianteId, asignatura, cancellationToken));
     }
 
     private static bool EstaDisponible(string nombre, Rol rol) =>
@@ -83,29 +87,6 @@ public sealed class HerramientasAsistente
     private bool EsLecturaAjena(ContextoUsuario contexto, string? estudianteId) =>
         estudianteId is not null
         && !_politicaAcceso.EvaluarLecturaEstudiante(contexto.Usuario, estudianteId, contexto.Directorio).Permitido;
-
-    private static string? LeerEstudianteId(string argumentosJson)
-    {
-        try
-        {
-            using var documento = JsonDocument.Parse(argumentosJson);
-            return ExtraerEstudianteId(documento.RootElement);
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
-    }
-
-    private static string? ExtraerEstudianteId(JsonElement raiz)
-    {
-        if (raiz.ValueKind != JsonValueKind.Object || !raiz.TryGetProperty(ParametroEstudianteId, out var valor))
-        {
-            return null;
-        }
-
-        return valor.ValueKind == JsonValueKind.String ? valor.GetString() ?? string.Empty : valor.ToString();
-    }
 
     private Task<ResultadoHerramienta> ConsultarDatosBasicos(SolicitudHerramienta solicitud)
     {
@@ -118,13 +99,28 @@ public sealed class HerramientasAsistente
     {
         var id = solicitud.Contexto.Usuario.Id;
         var resumen = await ResumirAsync(id, solicitud.CancellationToken);
+        solicitud.Registro.RegistrarReglas(ReglasAplicadas.DeNotas([resumen]));
         return Responder(solicitud, FormateadorDatos.Notas(resumen), id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], Textos.SeccionNotas);
+    }
+
+    private async Task<ResultadoHerramienta> ConsultarCortes(SolicitudHerramienta solicitud)
+    {
+        if (string.IsNullOrWhiteSpace(solicitud.Asignatura))
+        {
+            return ResultadoHerramienta.Texto("Indica el nombre o el código de la asignatura.");
+        }
+
+        var id = solicitud.Contexto.Usuario.Id;
+        var notas = await _apiAcademica.ObtenerNotasAsync(id, solicitud.CancellationToken);
+        var contenido = FormateadorDatos.Cortes(notas, solicitud.Asignatura);
+        return Responder(solicitud, contenido, id, [RecursoConsultado.Notas], Textos.SeccionNotas);
     }
 
     private async Task<ResultadoHerramienta> ConsultarAsistencia(SolicitudHerramienta solicitud)
     {
         var id = solicitud.Contexto.Usuario.Id;
         var resumen = await ResumirAsync(id, solicitud.CancellationToken);
+        solicitud.Registro.RegistrarReglas(ReglasAplicadas.DeAsistencia([resumen]));
         return Responder(solicitud, FormateadorDatos.Asistencia(resumen), id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], Textos.SeccionAsistencia);
     }
 
@@ -140,6 +136,7 @@ public sealed class HerramientasAsistente
         var resumen = await ResumirAsync(estudiante.Id, solicitud.CancellationToken);
         var contenido = string.Join("\n", FormateadorDatos.DatosBasicos(estudiante, directorio), FormateadorDatos.Notas(resumen), FormateadorDatos.Asistencia(resumen));
         var recursos = new[] { RecursoConsultado.DatosBasicos, RecursoConsultado.Notas, RecursoConsultado.Asistencia };
+        solicitud.Registro.RegistrarReglas([.. ReglasAplicadas.DeNotas([resumen]), .. ReglasAplicadas.DeAsistencia([resumen])]);
         solicitud.Registro.Registrar(estudiante.Id, recursos, new Cita(Textos.DocumentoDatosEstudiante, Textos.SeccionAsistencia));
         return Responder(solicitud, contenido, estudiante.Id, recursos, Textos.SeccionNotas);
     }
@@ -153,21 +150,24 @@ public sealed class HerramientasAsistente
         }
 
         var bloques = new List<string>();
+        var resumenes = new List<ResumenEstudiante>();
         foreach (var programa in solicitud.Contexto.Directorio.Programas.Where(p => programas.Contains(p.Id)))
         {
-            bloques.Add(await DescribirProgramaAsync(solicitud, programa));
+            bloques.Add(await DescribirProgramaAsync(solicitud, programa, resumenes));
         }
 
+        solicitud.Registro.RegistrarReglas(ReglasAplicadas.DePrograma(resumenes));
         return ResultadoHerramienta.Texto(string.Join("\n\n", bloques));
     }
 
-    private async Task<string> DescribirProgramaAsync(SolicitudHerramienta solicitud, Programa programa)
+    private async Task<string> DescribirProgramaAsync(SolicitudHerramienta solicitud, Programa programa, List<ResumenEstudiante> resumenes)
     {
         var estudiantes = solicitud.Contexto.Directorio.Estudiantes.Where(e => e.ProgramaId == programa.Id).ToList();
         var lineas = new List<string> { FormateadorDatos.EncabezadoPrograma(programa, estudiantes.Count) };
         foreach (var estudiante in estudiantes)
         {
             var resumen = await ResumirAsync(estudiante.Id, solicitud.CancellationToken);
+            resumenes.Add(resumen);
             lineas.Add(FormateadorDatos.LineaDePrograma(estudiante, resumen));
             solicitud.Registro.Registrar(estudiante.Id, [RecursoConsultado.Programa, RecursoConsultado.Notas, RecursoConsultado.Asistencia], null);
         }
@@ -205,5 +205,6 @@ public sealed class HerramientasAsistente
         ContextoUsuario Contexto,
         RegistroConsultas Registro,
         string? EstudianteId,
+        string? Asignatura,
         CancellationToken CancellationToken);
 }

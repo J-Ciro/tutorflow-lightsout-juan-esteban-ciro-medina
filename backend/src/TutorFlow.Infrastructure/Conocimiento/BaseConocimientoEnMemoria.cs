@@ -6,7 +6,7 @@ namespace TutorFlow.Infrastructure.Conocimiento;
 
 public sealed class BaseConocimientoEnMemoria : IBaseConocimiento
 {
-    private const int LongitudMaximaDeRaiz = 5;
+    private const int LongitudMaximaDeRaiz = ConsultaDeRecuperacion.LongitudDeRaiz;
     private const int LongitudMinimaDeTermino = 3;
     private const double ParametroK1 = 1.5;
     private const double ParametroB = 0.75;
