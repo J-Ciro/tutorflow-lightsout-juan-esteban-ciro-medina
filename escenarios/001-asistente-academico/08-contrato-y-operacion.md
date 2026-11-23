@@ -47,8 +47,11 @@ Notación en [`README.md`](../README.md#notación).
 | ESC-118 `@operacion` | — | ESC-010 | `pregunta` contiene `[TERCERO]` y no "Andrés Martínez"; `ipOrigen` presente | RF-08 |
 | ESC-143 `@operacion` | — | ESC-003 | `datosConsultados` con `{estudianteId: EST-001, programaId: ING-SIS, recurso: asistencia, asignatura: BD-203}`; sin "48" ni el número de faltas | D-13 |
 | ESC-144 `@operacion` | `Auditoria:Ruta` configurada | 3 preguntas (200, 403 y 400) | `auditoria-<fecha UTC>.jsonl` con exactamente 3 líneas nuevas idénticas a la consola; con Compose, el archivo sobrevive a `down` y `up` | D-25 |
-| ESC-148 `@abuso` | Registro de personas en caché | "Notas de Andrés Martínez y EST-002" con (a) `rol: "admin"` → 400; (b) la 61.ª petición del minuto → 429; (c) `EST-999` → 403 `identidad_invalida`; (d) cuerpo de 17 KB → 413 | (a)–(c): `pregunta` exactamente "Notas de [TERCERO] y [TERCERO]"; (d): exactamente `[NO_EVALUADA]`; ningún evento contiene "Andrés Martínez" ni "EST-002" en `pregunta` | RF-08 |
-| ESC-153 `@abuso` | COORD-01; doble con la herramienta de detalle y `"EST-004"` | "¿Qué estudiantes de mi programa perdieron materias?" | 403 `herramienta_id_ajeno` con `idSolicitado: "EST-004"`; EST-004 fuera de `estudiantesConsultados` y `datosConsultados`; con `"../EST-004\nx"`, `idSolicitado` = `[FORMATO_INVALIDO]` y una sola línea JSON; con EST-001 y `"EST-002"` ("¿Cuál es mi promedio?"), `idSolicitado: "EST-002"` | SEG-06, D-22 |
+| ESC-148 `@abuso` | Registro de personas en caché | "Notas de Andrés Martínez y EST-002" con las variantes (a)–(d) de la nota ESC-148 | (a)–(c): `pregunta` exactamente "Notas de [TERCERO] y [TERCERO]"; (d): exactamente `[NO_EVALUADA]`; ningún evento contiene "Andrés Martínez" ni "EST-002" en `pregunta` | RF-08 |
+| ESC-153 `@abuso` | COORD-01; doble con la herramienta de detalle y `"EST-004"` | "¿Qué estudiantes de mi programa perdieron materias?" | 403 `herramienta_id_ajeno` con `idSolicitado: "EST-004"`; EST-004 fuera de `estudiantesConsultados` y `datosConsultados`; variantes en la nota ESC-153 | SEG-06, D-22 |
+
+- **ESC-148:** variantes (a) `rol: "admin"` → 400; (b) la 61.ª petición del minuto → 429; (c) `EST-999` → 403 `identidad_invalida`; (d) cuerpo de 17 KB → 413.
+- **ESC-153:** con `"../EST-004\nx"`, `idSolicitado` = `[FORMATO_INVALIDO]` y una sola línea JSON; con EST-001 y `"EST-002"` ("¿Cuál es mi promedio?"), `idSolicitado: "EST-002"`.
 
 ## Despliegue y CI
 

@@ -2,7 +2,13 @@
 
 > Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §6, §7, §10 · CA-01, CA-14, CA-22
 
-Salvo que se indique otra cosa: base de conocimiento real con `PuntajeRelativoMinimo` 55, `PuntajeRelativoRelevante` 40, `RelevanciaMinima` 2 y `ApoyoMinimoRespaldo` 2; API académica doble con `mock-api/datos.json`; LLM doble sin herramientas; "documento" = citas de documento de `citas`. Bloques "Reglas aplicadas": EST-001 y EST-004 [Sec. 3, Sec. 4, Art. 11, Sec. 3.1]; EST-005 [Sec. 3, Sec. 4, Art. 11, Sec. 3.1, Art. 5, Art. 6, Art. 20]; ADM [Art. 5, Art. 6, Art. 20, Sec. 3]. Notación en [`README.md`](../README.md#notación).
+Salvo que se indique otra cosa:
+
+- base de conocimiento real con `PuntajeRelativoMinimo` 55, `PuntajeRelativoRelevante` 40, `RelevanciaMinima` 2 y `ApoyoMinimoRespaldo` 2;
+- API académica doble con `mock-api/datos.json`; LLM doble sin herramientas; "documento" = citas de documento de `citas`;
+- bloques "Reglas aplicadas": EST-001 y EST-004 [Sec. 3, Sec. 4, Art. 11, Sec. 3.1]; EST-005 [Sec. 3, Sec. 4, Art. 11, Sec. 3.1, Art. 5, Art. 6, Art. 20]; ADM [Art. 5, Art. 6, Art. 20, Sec. 3].
+
+Notación en [`README.md`](../README.md#notación).
 
 ## Negativas, secciones entregadas y respaldo
 
@@ -34,10 +40,12 @@ Salvo que se indique otra cosa: base de conocimiento real con `PuntajeRelativoMi
 | ESC-194 b | EST-005 | ESC-023 sin citas | Documento exactamente [Art. 20, Sec. 4]; sin campo usado serían [Art. 20, Sec. 3.1] | D-49, D-53 |
 | ESC-194 c | EST-001 | Nota mínima → "Una asignatura se aprueba con 3.0." | `citas` exactamente [Art. 5] | D-49 |
 | ESC-194 d | Prueba unitaria con el índice real | Q10 #8, #4, #7, #1 y #5 | Los conjuntos de ESC-198 a; si no coinciden, la prueba falla y se reporta sin ajustar el umbral | D-54 |
-| ESC-194 e `@abuso` | EST-004 | Q10 #8 → "Requisitos: promedio de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos; da 50% de descuento en la matrícula siguiente (reglamento_academico_2025.md · Artículo 20)." | "Requisitos: promedio de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos; da 50% de descuento en la matrícula siguiente." (`da` en minúscula); `citas` exactamente [Sec. 3.1] por respaldo; uso false; `respondida` | D-54, D-63 F1 |
+| ESC-194 e `@abuso` | EST-004 | Q10 #8 → el texto de la nota ESC-194 e | "Requisitos: promedio de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos; da 50% de descuento en la matrícula siguiente." (`da` en minúscula); `citas` exactamente [Sec. 3.1] por respaldo; uso false; `respondida` | D-54, D-63 F1 |
 | ESC-194 f | EST-001; dos corridas sin citas | Q10 #2 → "4.39. Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0." y "Tu promedio ponderado del periodo es 4.39. Definitivas: …" (mismas definitivas) | Documento exactamente [Sec. 4, Sec. 3] en ambas (4.39 = 52.7 / 12 → 4.39); nunca Sec. 3.1; SEG-10g verifica los 4 pares | D-53, D-63 F5 |
 | ESC-194 g `@abuso` | COORD-02 | Q10 #6 → "Valentina Castro: Microeconomía (1.8) y Estadística (2.3); para la beca revisa con Bienestar." | Sin cambios; documento exactamente [Art. 6, Sec. 3, Art. 5] (`beca` no tiene sección en el bloque); nunca Sec. 3.1 ni Sec. 3.2 | D-53 |
 | ESC-194 h | EST-004 | Q10 #5 → "Contabilidad: 3.9." y "Tu definitiva en Contabilidad es 3.9." | Documento exactamente [Sec. 3] en ambas | D-56 |
+
+- **ESC-194 e:** texto del doble: "Requisitos: promedio de 4.3 o más, ninguna asignatura perdida y al menos 12 créditos; da 50% de descuento en la matrícula siguiente (reglamento_academico_2025.md · Artículo 20)."
 
 ## Limpieza de referencias escritas (plan §10)
 
@@ -53,8 +61,8 @@ Salvo que se indique otra cosa: base de conocimiento real con `PuntajeRelativoMi
 | ESC-178 h | EST-001 | "¿Cuál es mi promedio?" → "Documento.md · Sección 11." | 200 COMP-03; citas []; uso true; `sin_informacion` | COMP-03 |
 | ESC-178 i | EST-001 | Nota mínima → "Una asignatura se aprueba con 3.0 (Artículo 5)." | Sin cambios (sin `.md` no se toca); citas ⊇ [Art. 5]. En (a)–(g) e (i): `respondida` y la limpieza no cambia `citas` | D-37 |
 | ESC-178 j1 | Prueba unitaria | Con [Art. 3]: "El reglamento_academico_2023.md fue derogado (reglamento_academico_2025.md · Artículo 3)." y "Ya no aplica reglamento_academico_2023.md · Artículo 9." | Sin cambios; "Ya no aplica." | COMP-05, D-37 |
-| ESC-178 j2 | Prueba unitaria | Con [Sec. 3]: "La definitiva se calcula según evaluacion_y_calificaciones.md · Secciones 3 y 5."; con [Sec. 3.1]: "Requisitos: promedio 4.3 o más. Estos requisitos se respaldan en bienestar_y_becas.md · Sección 3.1."; con []: "El documento_academico_2025.md establece la escala." | "La definitiva se calcula." (la Sec. 5 invalida toda la referencia); sin cambios; "Establece la escala." | D-37 |
-| ESC-195 a `@feliz` `@alterno` `@abuso` | Prueba unitaria; [Sec. 3.1] | Texto real P8: "Para obtener la beca por rendimiento académico, debes cumplir los siguientes requisitos:\n\n- Promedio ponderado del periodo ≥ 4.3\n- Ninguna asignatura perdida, incluidas las por inasistencia\n- Matrícula de al menos 12 créditos\n\nEstos requisitos están respaldados por el Artículo 20 de reglamento_academico_2025.md · Artículo 20." | El mismo texto sin la última oración (referencias solapadas unidas e inválidas; la oración termina en `por` y se elimina) | D-50 |
+| ESC-178 j2 | Prueba unitaria | Los 3 textos de la nota ESC-178 j2, en ese orden | "La definitiva se calcula." (la Sec. 5 invalida toda la referencia); sin cambios; "Establece la escala." | D-37 |
+| ESC-195 a `@feliz` `@alterno` `@abuso` | Prueba unitaria; [Sec. 3.1] | Texto real P8 de la nota ESC-195 a | El mismo texto sin la última oración (referencias solapadas unidas e inválidas; la oración termina en `por` y se elimina) | D-50 |
 | ESC-195 b | Igual; [] | "El horario es de 8:00 a 17:00. Estos horarios se encuentran en Documento.md · Sección 1." | "El horario es de 8:00 a 17:00." | D-50 |
 | ESC-195 c | Igual; [Sec. 3.1] | "Requisitos: promedio 4.3 o más. Están respaldados por reglamento_academico_2025.md · Artículo 20 · Sección 3.1." | "Requisitos: promedio 4.3 o más." (el resto `· Sección 3.1` sale con la referencia) | D-50 |
 | ESC-195 d | Igual; [Art. 20] | "Según reglamento_academico_2023.md · Artículo 20: Queda en prueba académica quien tenga promedio inferior a 3.0." | "Queda en prueba académica quien tenga promedio inferior a 3.0." | D-50 |
@@ -62,6 +70,9 @@ Salvo que se indique otra cosa: base de conocimiento real con `PuntajeRelativoMi
 | ESC-195 f | Igual; [] | "Tu promedio es 4.39. No encuentro esa información en los documentos disponibles." | "Tu promedio es 4.39." | COMP-03 (4) |
 | ESC-195 g | Igual | Con [Art. 5] "Se aprueba con 3.0 según el reglamento."; con [bienestar · Sec. 1] "La oficina de Bienestar atiende de lunes a viernes."; con [Art. 11] "La regla se encuentra en reglamento_academico_2025.md · Artículo 11." | Los tres sin cambios | D-50 |
 | ESC-195 h | Igual; [] | "No encuentro esa información en los documentos disponibles." | COMP-03 con citas [] y `sin_informacion` | COMP-03 (4) |
+
+- **ESC-178 j2:** (1) con [Sec. 3]: "La definitiva se calcula según evaluacion_y_calificaciones.md · Secciones 3 y 5."; (2) con [Sec. 3.1]: "Requisitos: promedio 4.3 o más. Estos requisitos se respaldan en bienestar_y_becas.md · Sección 3.1."; (3) con []: "El documento_academico_2025.md establece la escala."
+- **ESC-195 a:** texto real P8: "Para obtener la beca por rendimiento académico, debes cumplir los siguientes requisitos:\n\n- Promedio ponderado del periodo ≥ 4.3\n- Ninguna asignatura perdida, incluidas las por inasistencia\n- Matrícula de al menos 12 créditos\n\nEstos requisitos están respaldados por el Artículo 20 de reglamento_academico_2025.md · Artículo 20."
 
 ## Recuperación, tema, valor, ejemplos y presentación (ESC-198)
 
@@ -101,7 +112,7 @@ Salvo que se indique otra cosa: base de conocimiento real con `PuntajeRelativoMi
 | ESC-198 g5 `@permisos` | COORD-02; prelectura sin detalle | "¿Cuál es el promedio de Camilo Rojas?" → "Camilo Rojas: Contabilidad 3.9." | TNV; `numero_no_verificado` (las aprobadas no se listan; SEG-10c va antes de D-64) | SEG-10c |
 | ESC-198 h1 | EST-004; doble registra | Q10 #8 | La primera llamada trae en el bloque de la Sec. 3.1 exactamente "Requisitos de la beca por rendimiento académico (50% de descuento en la matrícula del periodo siguiente):" y los 3 requisitos; no "Descuento del 50% en la matrícula del periodo siguiente. Requisitos:" | D-58 |
 | ESC-198 h2 | EST-001; doble registra | Q10 #7 | El bloque de la Sec. 1 trae el título y el texto originales ("La oficina de Bienestar atiende en el edificio B, piso 2:"), sin presentación | D-58 |
-| ESC-198 i | Prueba unitaria; y EST-001 con el doble que copia EJ-2 | Bloque de ejemplos de ambos roles; "¿Cuál es mi promedio del periodo?" → "Tu promedio es 2.77. Definitivas: Física 2.7, Química 2.9." | 4 ejemplos con EJ-1…EJ-4; 0 cifras del bloque presentes en el índice, en plan §14 o en `preguntas_ejemplo.json`; `documento_ejemplo.md` fuera del índice. Abuso: TNV con `numero_no_verificado` | D-58 |
+| ESC-198 i | Prueba unitaria; y EST-001 con el doble que copia EJ-2 | Bloque de ejemplos de ambos roles; abuso de la nota ESC-198 i | 4 ejemplos con EJ-1…EJ-4; 0 cifras del bloque presentes en el índice, en plan §14 o en `preguntas_ejemplo.json`; `documento_ejemplo.md` fuera del índice. Abuso: TNV con `numero_no_verificado` | D-58 |
 | ESC-198 j | Prueba unitaria | Presentación de la Sec. 3.1 frente a `reglamento/bienestar_y_becas.md` | Cada cifra (`50%`, `4.3`, `12`, `1`, `2`, `3`) y raíz (requ, beca, rend, acad, desc, matr, peri, sigu, prom, pond, igua, supe, ning, asig, perd, incl, inas, habe, meno, cred) está en el original; falla si se agrega una que no esté | D-58 |
 | ESC-198 k1 | EST-004 | Q10 #5 → "Tu nota definitiva en Contabilidad es 3.9 (documento_ejemplo.md · Sección 2)." | "Tu nota definitiva en Contabilidad es 3.9."; `citas` exactamente [Sec. 3, Notas, Asistencia] | D-58 |
 | ESC-198 k2 | EST-001 | Q10 #7 → "(documento_ejemplo.md · Sección 1)" | Texto vacío tras la limpieza → COMP-03; citas []; `sin_informacion` | D-58 |
@@ -109,4 +120,7 @@ Salvo que se indique otra cosa: base de conocimiento real con `PuntajeRelativoMi
 | ESC-198 l2 | Igual | Q10 #2 → "Tu promedio es 4.39. Esta información proviene del documento de evaluación." | "Tu promedio es 4.39." (atribución evaluada con las citas de 6.1); documento exactamente [Sec. 4]: la fuente sigue en `citas`. En (l1) y (l2), 0 atribuciones sin cita | D-60 |
 | ESC-198 m | Núcleo | Programa ADM | Última línea exactamente "Reglas aplicadas a estos datos: reglamento_academico_2025.md · Artículo 5; reglamento_academico_2025.md · Artículo 6; reglamento_academico_2025.md · Artículo 20; evaluacion_y_calificaciones.md · Sección 3." | D-63 F3 |
 
-- Texto real de ESC-198 b: "La nota definitiva de una asignatura se calcula como el promedio ponderado de los tres cortes, con los siguientes pesos: definitiva = 0.3 × corte 1 + 0.3 × corte 2 + 0.4 × corte 3 Esta nota se redondea a una cifra decimal: si la segunda cifra decimal es 5 o más, se redondea hacia arriba. Mientras un corte no esté calificado, la asignatura no tendrá una nota definitiva (evaluacion_y_calificaciones.md · Sección 3)." Raíces compartidas con la Sec. 2: cort, asig, tres, peso.
+- **ESC-198 i:** abuso: "¿Cuál es mi promedio del periodo?" → "Tu promedio es 2.77. Definitivas: Física 2.7, Química 2.9."
+- **ESC-198 b:** texto real = la concatenación exacta, sin separador, de los 2 tramos siguientes. Raíces compartidas con la Sec. 2: cort, asig, tres, peso.
+  - Tramo 1: "La nota definitiva de una asignatura se calcula como el promedio ponderado de los tres cortes, con los siguientes pesos: definitiva = 0.3 × corte 1 + 0.3 × corte 2 + 0.4 × corte 3 "
+  - Tramo 2: "Esta nota se redondea a una cifra decimal: si la segunda cifra decimal es 5 o más, se redondea hacia arriba. Mientras un corte no esté calificado, la asignatura no tendrá una nota definitiva (evaluacion_y_calificaciones.md · Sección 3)."

@@ -11,7 +11,7 @@ Salvo que se indique otra cosa: uso true y sin datos de terceros. Notación en [
 | ESC-020 `@alterno` | EST-001 | "¿Cuál es mi definitiva en Cálculo Integral?" | Contiene "4.5" y no "4.4" como definitiva (4.45 hacia arriba; el redondeo bancario daría 4.4) | RN-04 |
 | ESC-021 `@alterno` | EST-002 | "¿Cuál es mi nota definitiva en Bases de Datos?" | Perdida por inasistencia (9 de 48, más del 15%) con definitiva "0.0", aunque los cortes darían 3.8; citas ⊇ [Art. 11, Datos del estudiante] | RN-07 |
 | ESC-022 `@alterno` | EST-002 | "¿Cuál es mi promedio del periodo?" | Contiene "2.28" (27.3 / 12 = 2.275 → 2.28; Bases de Datos cuenta 0.0) | RN-06, RN-08 |
-| ESC-023 `@feliz` | EST-005 | "¿Estoy en prueba académica?" | Sí, con "2.65" < 3.0 ((3.2·3 + 1.8·3 + 2.3·4 + 3.8·2) / 12 = 31.8 / 12); activa COMP-07 (i) (`estoy` + `prueba academica`); con "Sí, estás en prueba académica: tu promedio es 2.65." sin citas escritas, documento exactamente [Art. 20, Sec. 4] (campos prueba académica y promedio) y datos [Notas, Asistencia] (ESC-177 h, ESC-194 b) | RN-11, COMP-02, D-31, D-53 |
+| ESC-023 `@feliz` | EST-005 | "¿Estoy en prueba académica?" | Sí, con "2.65" < 3.0 ((3.2·3 + 1.8·3 + 2.3·4 + 3.8·2) / 12 = 31.8 / 12); activa COMP-07 (i) (`estoy` + `prueba academica`); con "Sí, estás en prueba académica: tu promedio es 2.65." sin citas escritas, documento exactamente [Art. 20, Sec. 4] y datos [Notas, Asistencia] (nota ESC-023) | RN-11, COMP-02, D-31, D-53 |
 | ESC-024 `@alterno` | EST-006 | "¿Cuál es mi definitiva en Estadística?" | Aún no tiene definitiva porque falta el corte 3; acumulada "2.4" sobre el 60% evaluado (equivale a "4.0"); no inventa el corte 3; citas ⊇ [Sec. 3] | RN-05, D-05 |
 | ESC-025 `@alterno` | EST-006 | "¿Cuál es mi promedio ponderado?" | Contiene "4.05" y aclara que Estadística no entra porque no tiene definitiva | RN-06 |
 | ESC-026 `@alterno` | EST-003 | "¿Cuántas faltas tengo en Inglés III?" | Sin registro de inasistencias; debe pedir la revisión a su coordinador; no responde "0" ni inventa; citas ⊇ [Art. 12] | RN-09, D-04 |
@@ -23,6 +23,8 @@ Salvo que se indique otra cosa: uso true y sin datos de terceros. Notación en [
 | ESC-032 `@alterno` | EST-002 | "¿Puedo habilitar Bases de Datos?" | No, la perdió por inasistencia (9/48, definitiva 0.0); sí puede habilitar Cálculo Integral (2.6); citas ⊇ [Art. 6, Art. 7, Notas, Asistencia]; exenta del umbral por COMP-07 (ii) y (iii) (raíces {habi, base, dato}, mínimo 2, ninguna sección tiene 2) | RN-07, RN-10, COMP-03 (1), COMP-07, D-30 |
 | ESC-033 `@alterno` | EST-001 | "¿Qué nota tengo en Química?" | Indica que no tiene esa asignatura en el periodo; no inventa una nota | COMP-03 |
 | ESC-034 `@alterno` | EST-001 (Laura Gómez) | "¿Cuál es el promedio de Laura Gómez?" | 200 con "4.39": su nombre completo es marcador de primera persona; recibe el resumen y está exenta del umbral | SEG-04, COMP-07, D-29 |
+
+- **ESC-023:** las citas de documento salen de los campos prueba académica y promedio (ESC-177 h, ESC-194 b).
 
 ## Resumen propio (CA-14)
 

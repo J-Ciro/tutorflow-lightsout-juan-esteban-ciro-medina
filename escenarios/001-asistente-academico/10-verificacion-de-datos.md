@@ -2,7 +2,13 @@
 
 > Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §2 paso 6, §11 · CA-06, CA-16, CA-17, CA-21
 
-Salvo que se indique otra cosa: base de conocimiento real; API académica doble con `mock-api/datos.json`; el LLM doble responde en el reintento el mismo texto que en el primer turno, así que todo bloqueo de (c), (d), (f) o (g) lleva `reintento: true`; `\n` es un salto de línea y `\|` una barra vertical; "real" = texto copiado de una corrida o de la auditoría N-01…N-07. Estados de plan.md §14. Notación en [`README.md`](../README.md#notación).
+Salvo que se indique otra cosa:
+
+- base de conocimiento real; API académica doble con `mock-api/datos.json`;
+- el LLM doble responde en el reintento el mismo texto que en el primer turno, así que todo bloqueo de (c), (d), (f) o (g) lleva `reintento: true`;
+- `\n` es un salto de línea y `\|` una barra vertical; "real" = texto copiado de una corrida o de la auditoría N-01…N-07.
+
+Estados de plan.md §14. Notación en [`README.md`](../README.md#notación).
 
 ## Lo entregado es lo verificado (D-41, CA-16)
 
@@ -20,7 +26,14 @@ Salvo que se indique otra cosa: base de conocimiento real; API académica doble 
 
 COORD-02 con la herramienta de programa (lee EST-004, EST-005 y EST-006) y la pregunta Q10 #6, salvo que se indique otra cosa. EST-005: Microeconomía y Estadística `Perdida` (5/48 y 6/64, no por inasistencia); EST-006: Estadística sin definitiva. **Falla** = 200 TNV, citas [], uso true, `estado_no_verificado`. **Pasa** = 200 sin cambios, `respondida`, citas ⊇ [Datos del programa · ADM].
 
-- **ESC-175 a** `@abuso` (texto real de Q10 #6): "Valentina Castro (ID EST-005) y Mateo Vargas (ID EST-006) tienen asignaturas perdidas. Valentina Castro perdió Microeconomía (1.8) y Estadística (2.3) por inasistencia, mientras que Mateo Vargas perdió Estadística (sin definitiva) por inasistencia.\n\nValentina Castro: Asignaturas perdidas: Microeconomía (1.8), Estadística (2.3).\nMateo Vargas: Asignatura perdida: Estadística.\n\nEstas perdidas se respaldan en el Artículo 11 del reglamento académico." → **falla** en la primera oración (Mateo comparte por sujeto coordinado "tienen asignaturas perdidas" y no tiene ninguna `Perdida`) y en la segunda (Estadística de Valentina no es por inasistencia: 6 × 100 = 600 ≤ 15 × 64 = 960). La segunda oración sola, "Valentina Castro perdió Microeconomía (1.8) y Estadística (2.3) por inasistencia.", también **falla**. SEG-10f, D-34, D-36.
+- **ESC-175 a** `@abuso` (texto real de Q10 #6). SEG-10f, D-34, D-36.
+  - Texto: la concatenación exacta, sin separador, de los 3 tramos siguientes.
+  - Tramo 1: "Valentina Castro (ID EST-005) y Mateo Vargas (ID EST-006) tienen asignaturas perdidas. Valentina Castro perdió Microeconomía (1.8) y Estadística (2.3) por inasistencia, mientras que Mateo Vargas perdió Estadística (sin definitiva) por inasistencia.\n\n"
+  - Tramo 2: "Valentina Castro: Asignaturas perdidas: Microeconomía (1.8), Estadística (2.3).\nMateo Vargas: Asignatura perdida: Estadística.\n\n"
+  - Tramo 3: "Estas perdidas se respaldan en el Artículo 11 del reglamento académico."
+  - **Falla** en la primera oración (Mateo comparte por sujeto coordinado "tienen asignaturas perdidas" y no tiene ninguna `Perdida`).
+  - **Falla** en la segunda (Estadística de Valentina no es por inasistencia: 6 × 100 = 600 ≤ 15 × 64 = 960).
+  - La segunda oración sola, "Valentina Castro perdió Microeconomía (1.8) y Estadística (2.3) por inasistencia.", también **falla**.
 
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
@@ -41,7 +54,7 @@ COORD-02 con la herramienta de programa (lee EST-004, EST-005 y EST-006) y la pr
 | ESC-175 n | COORD-02 | "Mateo Vargas está con Estadística perdida." | Falla | D-36 |
 | ESC-175 o | COORD-02 | "Mateo Vargas (ID EST-006) y Valentina Castro (ID EST-005) tienen asignaturas perdidas." | Falla (sujeto coordinado) | D-36 |
 | ESC-175 p1 `@alterno` | COORD-02, una corrida por texto | "Valentina Castro tiene una asignatura perdida por nota: Microeconomía (1.8)." · "Valentina Castro está con Estadística perdida (2.3)." · "Valentina Castro tiene asignaturas perdidas." · "Mateo Vargas no tiene asignaturas perdidas, solo Estadística sin definitiva." | Pasa | D-36, D-42 |
-| ESC-175 p2 | COORD-02, una corrida por texto | "Mateo Vargas: asignaturas perdidas: ninguna, sin definitiva: Estadística." · "Valentina Castro perdió Microeconomía (1.8) y no ha perdido Contabilidad." · "Mateo Vargas podría perder Estadística si no aprueba el corte 3." · "Valentina Castro perdió Microeconomía (1.8) y Mateo Vargas tiene Estadística sin definitiva." | Pasa (negación posterior, forma negada más cercana, `perder` no es forma, tramo por persona) | D-36, D-42 |
+| ESC-175 p2 | COORD-02, una corrida por texto | Los 4 textos de la nota ESC-175 p2 | Pasa (negación posterior, forma negada más cercana, `perder` no es forma, tramo por persona) | D-36, D-42 |
 | ESC-175 q | COORD-02 | "Mateo Vargas:\n- Asignatura perdida: Estadística" | Falla (el ítem toma a Mateo del encabezado) | D-42 |
 | ESC-175 r | COORD-02 | "Valentina Castro:\n- Asignaturas perdidas: Microeconomía (1.8) y Estadística (2.3)\nMateo Vargas:\n- Sin definitiva: Estadística" | Pasa | D-42 |
 | ESC-184 a `@abuso` `@alterno` `@feliz` `@permisos` | COORD-02 (real) | "\| Estudiante \| Asignaturas perdidas \|\n\| --- \| --- \|\n\| Mateo Vargas \| Estadística \|" | Falla (contexto: encabezado de columnas) | D-42 |
@@ -58,6 +71,8 @@ COORD-02 con la herramienta de programa (lee EST-004, EST-005 y EST-006) y la pr
 | ESC-184 l | COORD-02 | "Estudiantes con asignaturas perdidas:\n- Valentina Castro: Microeconomía (1.8)\n\nMateo Vargas tiene Estadística sin definitiva." | Pasa (el texto tras la línea vacía no hereda) | D-42 |
 | ESC-199 h1 `@abuso` `@permisos` `@alterno` `@operacion` | COORD-02; prelectura | "\| Mateo Vargas perdió Estadística \|\n\| --- \|" | Falla (el encabezado de columnas es un bloque) | D-62 E4 |
 | ESC-199 h2 | COORD-02; prelectura | "\| Valentina Castro perdió Microeconomía \|\n\| --- \|" | Pasa (1.81 → 1.8 < 3.0) | D-62 E4 |
+
+- **ESC-175 p2:** "Mateo Vargas: asignaturas perdidas: ninguna, sin definitiva: Estadística." · "Valentina Castro perdió Microeconomía (1.8) y no ha perdido Contabilidad." · "Mateo Vargas podría perder Estadística si no aprueba el corte 3." · "Valentina Castro perdió Microeconomía (1.8) y Mateo Vargas tiene Estadística sin definitiva."
 
 ## Definitivas (SEG-10g, CA-06, CA-17)
 
@@ -106,11 +121,14 @@ LLM doble programable por turno.
 | ESC-193 c | COORD-02 | Q10 #6 → 1.º "Usa consultar_programa para verlo." (identificador de la herramienta, SEG-10d); 2.º el texto correcto de (a) | Igual que (a) | SEG-10d, D-48 |
 | ESC-193 d | EST-006 | "¿Cuál es mi nota definitiva en Estadística?" → "Tu definitiva en Estadística es 4.0." en los dos | 2 llamadas; TNV; `estado_no_verificado` con `reintento: true` | D-48 |
 | ESC-193 e `@abuso` | EST-001 | "¿Cuál es mi promedio?" → 1.º "Tu promedio es 4.40."; 2.º "Andres Martinez tiene 4.39." | 2 llamadas; resultado del **primer** bloqueo: TNV, citas [], `numero_no_verificado` con `reintento: true` (nunca el texto del reintento ni NEG) | D-48 |
-| ESC-193 f `@alterno` | EST-001, EST-001, EST-001, COORD-01, EST-001 | "Andres Martinez sacó 2.6 en Cálculo" (SEG-10b); "EST 099 tiene un promedio de 4.39." (SEG-10b); tutorías con "Las tutorías se agendan escribiendo al buzón virtual de la decanatura." (SEG-10e); detalle con EST-004 (403 tardío); "Tu promedio es 4.39." (verificada) | Exactamente 1 llamada y sin `reintento`; resultados `fuga_bloqueada`, `fuga_bloqueada`, `sin_informacion`, 403 `herramienta_id_ajeno` y `respondida` | D-48 |
-| ESC-193 g | COORD-02; registra los mensajes | Q10 #6 → "Mateo Vargas perdió Estadística." en los dos | El 2.º turno = mensajes del 1.º + respuesta anterior + 1 mensaje nuevo: "Tu respuesta anterior no se pudo verificar: la afirmación de pérdida de Mateo Vargas en Estadística no coincide con los datos entregados. Responde de nuevo usando solo los datos y las secciones entregados."; sin otros nombres, IDs ni cifras; TNV | D-48 |
+| ESC-193 f `@alterno` | EST-001, EST-001, EST-001, COORD-01, EST-001 | Las 5 entradas de la nota ESC-193 f, en ese orden | Exactamente 1 llamada y sin `reintento`; resultados `fuga_bloqueada`, `fuga_bloqueada`, `sin_informacion`, 403 `herramienta_id_ajeno` y `respondida` | D-48 |
+| ESC-193 g | COORD-02; registra los mensajes | Q10 #6 → "Mateo Vargas perdió Estadística." en los dos | El 2.º turno = mensajes del 1.º + respuesta anterior + 1 mensaje nuevo, exactamente el de la nota ESC-193 g; sin otros nombres, IDs ni cifras; TNV | D-48 |
 | ESC-193 h `@operacion` | `Limites:TimeoutLlmSegundos` 1; EST-001 | "¿Cuál es mi promedio?" → 1.º de 750 ms "Tu promedio es 4.40."; reintento de 500 ms | 200 en < 2 s; el reintento se cancela al llegar a 1 s; TNV; `numero_no_verificado` con `reintento: true` (no 503) | D-48, D-62 E5 |
 | ESC-193 i | Presupuesto 0.004; `Llm:ReservaPorPeticionUsd` 0.003; EST-001 | "¿Cuál es mi promedio?" → "Tu promedio es 4.40." | 1 llamada (0.003 + 0.003 > 0.004: sin segunda reserva); `numero_no_verificado` sin `reintento` | SEG-13, D-48 |
 | ESC-199 g1 `@abuso` `@alterno` | EST-006; repite y registra | "¿Cuál es mi nota definitiva en Estadística?" → "Tu definitiva en Estadística es 4.0." | Mensaje nuevo: "Tu respuesta anterior no se pudo verificar: la definitiva 4.0 de Estadística no coincide con los datos entregados. Responde de nuevo usando solo los datos y las secciones entregados."; TNV con `reintento: true` | D-62 E2 |
 | ESC-199 g2 | EST-005 | "¿Perdí Contabilidad?" → "Perdiste Contabilidad." | Motivo "la afirmación de pérdida en Contabilidad no coincide con los datos entregados" (3.18 → 3.2, aprobada); TNV con `reintento: true` | D-62 E2 |
 | ESC-199 g3 | EST-001 | "¿Cuánto cuesta la matrícula?" → "La matrícula cuesta $1.500.000." | Motivo "el valor 1.500.000 no está en las fuentes"; COMP-03 con `reintento: true` | D-62 E3 |
 | ESC-199 g4 | EST-001 (sin datos leídos) | "¿Cuál es la nota mínima para aprobar una asignatura?" → "Se aprueba con 3.5 (reglamento_academico_2025.md · Artículo 5)." | Motivo "la cifra 3.5 no está en los datos ni en las secciones entregados"; hay reintento aunque no se leyeron datos; TNV con `reintento: true`. Ningún motivo contiene "de tu" | D-62 E1 |
+
+- **ESC-193 f:** (1) "Andres Martinez sacó 2.6 en Cálculo" (SEG-10b); (2) "EST 099 tiene un promedio de 4.39." (SEG-10b); (3) tutorías con "Las tutorías se agendan escribiendo al buzón virtual de la decanatura." (SEG-10e); (4) detalle con EST-004 (403 tardío); (5) "Tu promedio es 4.39." (verificada).
+- **ESC-193 g:** mensaje nuevo: "Tu respuesta anterior no se pudo verificar: la afirmación de pérdida de Mateo Vargas en Estadística no coincide con los datos entregados. Responde de nuevo usando solo los datos y las secciones entregados."

@@ -48,7 +48,9 @@ Arranque: docker compose up   (puerto 8080, variable LLM_API_KEY)
 ### 2.2 Reglas del JSON y correlación
 
 - Propiedades en camelCase exactamente como el contrato; `citas` es `[]` cuando no hay citas, nunca `null`; `tokens` entero ≥ 0; `costoUsd` decimal ≥ 0 con hasta 6 decimales; `Content-Type: application/json; charset=utf-8`.
-- **Correlación (D-26):** el servidor genera un `correlationId` UUID v7 en cada petición, en todos los endpoints y con cualquier código. El mismo valor, en formato canónico de 36 caracteres en minúsculas, va en el encabezado `X-Correlation-Id`, en el `traceId` de todo `ProblemDetails` y en el `correlationId` de la auditoría. Un identificador enviado por el cliente (`X-Correlation-Id`, `X-Request-Id`, `traceparent` u otro) se ignora y no se registra.
+- **Correlación (D-26):** el servidor genera un `correlationId` UUID v7 en cada petición, en todos los endpoints y con cualquier código.
+  - El mismo valor, en formato canónico de 36 caracteres en minúsculas, va en el encabezado `X-Correlation-Id`, en el `traceId` de todo `ProblemDetails` y en el `correlationId` de la auditoría.
+  - Un identificador enviado por el cliente (`X-Correlation-Id`, `X-Request-Id`, `traceparent` u otro) se ignora y no se registra.
 
 ## 3. Actores y matriz de acceso global
 

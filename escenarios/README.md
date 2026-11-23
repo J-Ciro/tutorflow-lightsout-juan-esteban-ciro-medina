@@ -39,7 +39,11 @@ Los escenarios se agrupan por feature en `escenarios/<feature-id>/`, con el mism
 
 Los IDs son globales e inmutables: una feature nueva toma el siguiente bloque de 100 libre.
 
-**Continuación del bloque 001.** El bloque tiene 18 números que nunca se usaron: ESC-035…039, ESC-047…049, ESC-067…069 y ESC-095…099. Un caso nuevo de la 001 usa, en este orden: (1) uno de esos números libres, en el archivo de su tema; (2) una letra de un escenario existente del mismo tema; (3) agotados ambos, la propuesta es pasar a IDs con prefijo de feature (`ESC-001-200` en adelante, sin chocar con el bloque de la 002), lo que **requiere aprobación humana**.
+**Continuación del bloque 001.** El bloque tiene 18 números que nunca se usaron: ESC-035…039, ESC-047…049, ESC-067…069 y ESC-095…099. Un caso nuevo de la 001 usa, en este orden:
+
+1. uno de esos números libres, en el archivo de su tema;
+2. una letra de un escenario existente del mismo tema;
+3. agotados ambos, la propuesta es pasar a IDs con prefijo de feature (`ESC-001-200` en adelante, sin chocar con el bloque de la 002), lo que **requiere aprobación humana**.
 
 ## Índice de la feature 001
 
