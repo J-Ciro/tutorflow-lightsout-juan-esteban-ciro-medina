@@ -176,3 +176,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué se cambió:** servidor MCP `playwright` en `.mcp.json` a nivel de proyecto, con `@playwright/mcp@0.0.86` (paquete oficial de Microsoft, versión fija) en modo headless. El hook `commit-msg` y `AGENTS.md` tratan `.mcp.json` como configuración de agentes (commit humano). Se documentó su uso en `frontend-react`, en la fase V de `qa-calidad` y en `CLAUDE.md`. Claude Code lo deja pendiente de aprobación del humano al abrir la sesión.
 - **Costo:** ~1 min humano.
 - **Prevención:** las herramientas externas se fijan por versión y se documentan en el agente que las usa.
+
+### INT-020 · 2026-11-23 12:18 · Los defectos de la fase V no se aceptan como riesgo
+- **Fase:** auditoría
+- **Qué pasó:** en la fase V de la ronda 3 (`1fdf8eb`) qa-calidad dio APROBADO con hallazgos abiertos. P6 salió bien 1 de cada 3 veces. P2, P3, P7 y P8 omitieron datos esperados. V-3 entregó la frase truncada "Estos requisitos están respaldados por.". V-4 atribuyó un horario al documento equivocado. Quedaron 12 hallazgos de calidad B-01…B-12 de severidad media y baja. El orquestador proponía corregir solo V-3 y los B medios, y registrar las omisiones como riesgo aceptado del modelo de 7B.
+- **Qué hizo el humano:** *"Esos defectos que se encontraron se deben corregir, se deben comprender su razon de fallo, analizar en el codigo por que pasar y hacer la correccion que permita que el problema/error o mala definicion se corregia y no vuelva asuceder. Los temas de caldiad de codgio tambien se deben de corregir y lo ma simportante rebvisar el tema de las pregutnas por que algunas salen bien y otras mal y demas."*
+- **Por qué:** un APROBADO con defectos conocidos no cierra la feature. Atribuir la inconsistencia al modelo sin diagnosticarla esconde posibles fallos de diseño, de los verificadores o de los datos que se entregan al modelo.
+- **Costo:** ~2 min humanos.
+- **Prevención:** propuesta pendiente de visto bueno: en la fase V de `qa-calidad`, todo defecto observado con el LLM real se reporta con su causa raíz en el código (verificador que actuó, datos entregados, texto del modelo). En `FABRICA.md`, una condición de parada: la feature no se cierra con defectos abiertos ni con "riesgo aceptado" sin aprobación explícita del humano.
