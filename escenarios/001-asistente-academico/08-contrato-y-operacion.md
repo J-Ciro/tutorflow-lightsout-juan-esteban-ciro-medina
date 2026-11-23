@@ -1,77 +1,58 @@
-# 08 · Contrato HTTP y operación (CA-07 a CA-11)
+# 08 · Contrato HTTP, auditoría, límites y operación
 
-> Spec: [`specs/001-asistente-academico/spec.md`](../../specs/001-asistente-academico/spec.md) · Sistema: [`SPEC.md`](../../SPEC.md)
+> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §12, §13.1 · Contrato: [`constitution.md`](../../constitution.md) §2 · CA-07…CA-11
 
-### Contrato
+Notación en [`README.md`](../README.md#notación).
 
-### ESC-100 · Salud `@contrato`
-- **Cuando** `GET /api/salud` · **Entonces** 200 con el cuerpo exacto `{"estado":"ok"}`, aunque el LLM no esté configurado.
+## Contrato
 
-### ESC-101 · Forma de la salida `@contrato`
-- **Dado** cualquier respuesta 200 o 403 de `/api/asistente/preguntar` · **Entonces** el JSON tiene exactamente `respuesta` (string), `citas` (array de `{documento, seccion}`, nunca `null`), `usoDatosEstudiante` (boolean), `tokens` (entero ≥ 0) y `costoUsd` (número ≥ 0), en camelCase.
+| ID | Actor | Entrada | Resultado esperado | Regla |
+| --- | --- | --- | --- | --- |
+| ESC-100 `@contrato` | — | `GET /api/salud` | 200 con exactamente `{"estado":"ok"}`, aunque el LLM no esté configurado | RF-09 |
+| ESC-101 `@contrato` | — | Cualquier respuesta 200 o 403 del asistente | Exactamente `respuesta` (string), `citas` (array de `{documento, seccion}`, nunca `null`), `usoDatosEstudiante` (boolean), `tokens` (entero ≥ 0) y `costoUsd` (número ≥ 0), en camelCase | Contrato |
+| ESC-102 `@contrato` | — | Cuerpo `{"pregunta": ` | 400 `ProblemDetails` sin stack trace | Contrato |
+| ESC-103 `@contrato` | — | Falta `pregunta` o `usuario`, `usuario.id` es `null`, o `pregunta` es `""` o solo espacios | 400 | Contrato |
+| ESC-104 `@contrato` | — | `pregunta` es un número o `usuario` un string | 400 | Contrato |
+| ESC-105 `@contrato` | — | `GET /api/asistente/preguntar` | 405 | Contrato |
+| ESC-106 `@contrato` | — | Respuesta 200 que llamó al LLM; respuestas 403 y 400 | 200: tokens > 0, costo > 0 y `costoUsd` = entrada × precio de entrada + salida × precio de salida (tolerancia 1e-6). 403 y 400: tokens 0 y costo 0 | RF-07 |
+| ESC-107 `@contrato` | — | `"usuario": {"rol":"estudiante","id":"EST-001","programas":["ADM"],"esAdmin":true}` | Los campos extra se ignoran y no otorgan permisos | SEG-08 |
+| ESC-111 `@contrato` | — | Cualquier respuesta | `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`; nunca `Access-Control-Allow-Origin: *` | SEG-14 |
+| ESC-112 `@contrato` | — | Excepción no controlada | 500 `ProblemDetails` con `traceId` (UUID v7 = `X-Correlation-Id`, ESC-151), sin stack trace, tipos .NET ni rutas | SEG-12 |
+| ESC-150 `@contrato` | EST-001 | Cuerpo válido con `Content-Type: text/plain`, con `application/x-www-form-urlencoded` o sin encabezado | 415 sin stack trace; 0 llamadas al LLM y a la API; auditoría `invalida` con `pregunta: [NO_EVALUADA]`. Con `application/json` o `application/json; charset=utf-8`, 200 | Contrato |
+| ESC-151 `@contrato` | — | Una petición 200 (ESC-002), 400 (ESC-102), 403 (ESC-050), 415 (ESC-150) y 500 (ESC-112) | `X-Correlation-Id` UUID en minúsculas con versión `7` y variante `8`, `9`, `a` o `b`; igual al `correlationId` del evento y al `traceId` de los `ProblemDetails`; su marca de tiempo difiere < 1 s del `timestamp`; los 5 valores son distintos | D-26 |
+| ESC-152 `@abuso` | EST-001 | "¿Cuál es mi promedio?" con `X-Correlation-Id: 00000000-0000-7000-8000-000000000001` | La respuesta trae otro UUID v7; ningún log ni evento contiene el valor del cliente | D-26 |
 
-### ESC-102 · JSON malformado `@contrato`
-- **Cuando** el cuerpo es `{"pregunta": ` · **Entonces** 400 `ProblemDetails` sin stack trace.
+## Resiliencia, límites y proveedor
 
-### ESC-103 · Campos faltantes o nulos `@contrato`
-- **Cuando** falta `pregunta`, falta `usuario`, `usuario.id` es `null` o `pregunta` es `""` o solo espacios · **Entonces** 400.
+| ID | Actor | Entrada | Resultado esperado | Regla |
+| --- | --- | --- | --- | --- |
+| ESC-108 `@operacion` | EST-001; API académica caída | Su promedio | 503 `ProblemDetails` genérico en < 7 s; no inventa; `error` | RNF-02 |
+| ESC-109 `@operacion` | LLM sin respuesta en 20 s | Cualquiera | 503; sin URL, modelo ni llave en el cuerpo (varias llamadas lentas: ESC-158) | SEG-13 |
+| ESC-110 `@operacion` | Sin `LLM_API_KEY` y Ollama caído, o llave de prefijo desconocido sin `LLM_URL_BASE` | — | Arranca; salud 200; una pregunta que necesita el LLM da 503; una denegada sigue dando 403 | plan §4.1 |
+| ESC-119 `@operacion` | `LLM_API_KEY` con `sk-ant-`, `sk-or-`, `gsk_`, `AIza`, `sk-proj-` y sin llave | — | Proveedor, en orden: Anthropic, OpenRouter, Groq, Gemini, OpenAI y Ollama; con `LLM_PROVEEDOR`, gana la variable; el log muestra proveedor y modelo, nunca la llave | D-16 |
+| ESC-158 `@operacion` | EST-001; doble con 5 llamadas de 6 s y las 4 primeras invocan herramienta | "¿Cuál es mi promedio?" | 503 genérico en < 21 s (la 4.ª empieza en 18 s y se cancela en 20 s); como máximo 4 llamadas; `error` | SEG-13, RNF-02 |
+| ESC-159 `@abuso` | Presupuesto 0.010 USD, `Llm:ReservaPorPeticionUsd` 0.004; doble que retiene y cuesta 0.003 | 5 peticiones simultáneas de EST-001; se libera tras los 503 | 2 responden 200 y 3 responden 503 sin LLM (2 × 0.004 = 0.008 ≤ 0.010; 3 × 0.004 = 0.012 > 0.010); 2 llamadas; gasto 0.006 USD | SEG-13 |
+| ESC-160 `@abuso` | Proveedor doble que responde 302 hacia otro servidor doble | EST-001: "¿Cuál es mi promedio?" | 503 genérico; el servidor de `Location` recibe 0 peticiones; la llave no sale a otro host | SEG-07 |
+| ESC-180 a `@alterno` `@abuso` `@operacion` | Presupuesto 0.03; doble de 1.000 + 200 tokens; modelo sin precio; `Llm:ReservaSinPrecioUsd` 0.01 | EST-001, 4 veces "¿Cuál es mi promedio?" | Peticiones 1–3: 200 con tokens 1200 y costo 0, eventos con `precioDesconocido: true`, 0.01 de gasto cada una (3 × 0.01 = 0.03); la 4.ª: 503 sin LLM (0.03 + 0.01 > 0.03); 3 llamadas | SEG-13, D-39 |
+| ESC-180 b | Igual con `Llm:ReservaSinPrecioUsd` 0 (se usa 0.01 con advertencia al arrancar) | Igual | Igual que (a) | SEG-13, D-39, D-40 |
+| ESC-180 c `@operacion` | Igual con `ollama` a precio 0 / 0 | Igual | Las 4 responden 200 con costo 0; ningún `precioDesconocido`; 4 llamadas | D-39 |
 
-### ESC-104 · Tipos incorrectos `@contrato`
-- **Cuando** `pregunta` es un número o `usuario` es un string · **Entonces** 400.
+## Auditoría
 
-### ESC-105 · Método incorrecto `@contrato`
-- **Cuando** `GET /api/asistente/preguntar` · **Entonces** 405.
+| ID | Actor | Entrada | Resultado esperado | Regla |
+| --- | --- | --- | --- | --- |
+| ESC-113 `@operacion` | — | Las peticiones de ESC-002, ESC-009, ESC-010 y ESC-103 | Exactamente un evento cada una con los campos de plan §12 y `resultado` `respondida`, `sin_informacion`, `denegada` e `invalida` | RF-08 |
+| ESC-114 `@operacion` | — | ESC-002 | `estudiantesConsultados: ["EST-001"]`, `recursosConsultados` con `notas`; sin valores ("4.39", "4.5"…) | D-13 |
+| ESC-115 `@operacion` | — | ESC-006 | `estudiantesConsultados` solo con EST-004, EST-005 y EST-006; `recursosConsultados` con `programa` | RF-08 |
+| ESC-118 `@operacion` | — | ESC-010 | `pregunta` contiene `[TERCERO]` y no "Andrés Martínez"; `ipOrigen` presente | RF-08 |
+| ESC-143 `@operacion` | — | ESC-003 | `datosConsultados` con `{estudianteId: EST-001, programaId: ING-SIS, recurso: asistencia, asignatura: BD-203}`; sin "48" ni el número de faltas | D-13 |
+| ESC-144 `@operacion` | `Auditoria:Ruta` configurada | 3 preguntas (200, 403 y 400) | `auditoria-<fecha UTC>.jsonl` con exactamente 3 líneas nuevas idénticas a la consola; con Compose, el archivo sobrevive a `down` y `up` | D-25 |
+| ESC-148 `@abuso` | Registro de personas en caché | "Notas de Andrés Martínez y EST-002" con (a) `rol: "admin"` → 400; (b) la 61.ª petición del minuto → 429; (c) `EST-999` → 403 `identidad_invalida`; (d) cuerpo de 17 KB → 413 | (a)–(c): `pregunta` exactamente "Notas de [TERCERO] y [TERCERO]"; (d): exactamente `[NO_EVALUADA]`; ningún evento contiene "Andrés Martínez" ni "EST-002" en `pregunta` | RF-08 |
+| ESC-153 `@abuso` | COORD-01; doble con la herramienta de detalle y `"EST-004"` | "¿Qué estudiantes de mi programa perdieron materias?" | 403 `herramienta_id_ajeno` con `idSolicitado: "EST-004"`; EST-004 fuera de `estudiantesConsultados` y `datosConsultados`; con `"../EST-004\nx"`, `idSolicitado` = `[FORMATO_INVALIDO]` y una sola línea JSON; con EST-001 y `"EST-002"` ("¿Cuál es mi promedio?"), `idSolicitado: "EST-002"` | SEG-06, D-22 |
 
-### ESC-106 · Tokens y costo coherentes `@contrato`
-- **Dado** una respuesta 200 que llamó al LLM · **Entonces** `tokens` > 0 y `costoUsd` > 0 y `costoUsd` = tokens de entrada × precio de entrada + tokens de salida × precio de salida (según la configuración, con tolerancia de 1e-6). En 403 y 400: `tokens` 0 y `costoUsd` 0. (CA-11)
+## Despliegue y CI
 
-### ESC-107 · Campos extra en la entrada `@contrato`
-- **Cuando** la entrada incluye `"usuario": {"rol":"estudiante","id":"EST-001","programas":["ADM"],"esAdmin":true}` · **Entonces** los campos extra se ignoran y no otorgan permisos.
-
-### Resiliencia
-
-### ESC-108 · API académica caída `@operacion`
-- **Dado** que la API simulada no responde · **Cuando** `EST-001` pregunta por su promedio · **Entonces** 503 `ProblemDetails` genérico en menos de 7 s; no inventa datos; la auditoría registra `resultado: error`.
-
-### ESC-109 · LLM caído o con timeout `@operacion`
-- **Dado** que el LLM no responde dentro del timeout total de 20 s de la petición · **Entonces** 503; sin URL, modelo ni llave en el cuerpo. El caso con varias llamadas lentas está en ESC-158. (SEG-13)
-
-### ESC-110 · Sin LLM disponible `@operacion`
-- **Dado** que `LLM_API_KEY` no está definida y Ollama no responde, o que la llave tiene un prefijo desconocido sin `LLM_URL_BASE` · **Entonces** la aplicación arranca, `/api/salud` responde 200, una pregunta que requiere el LLM devuelve 503 y una pregunta denegada sigue devolviendo 403 (la autorización no depende del LLM).
-
-### ESC-119 · Selección del proveedor por la llave `@operacion`
-- **Dado** `LLM_API_KEY` con los prefijos `sk-ant-`, `sk-or-`, `gsk_`, `AIza`, `sk-proj-` y ninguna llave · **Entonces** el proveedor resuelto es, en orden, Anthropic, OpenRouter, Groq, Gemini, OpenAI y Ollama; con `LLM_PROVEEDOR` definido, gana la variable; el log de arranque muestra el proveedor y el modelo, nunca la llave. (spec §9.4)
-
-### ESC-111 · Encabezados de seguridad `@contrato`
-- **Dado** cualquier respuesta · **Entonces** incluye `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` y `Referrer-Policy: no-referrer`; ninguna respuesta incluye `Access-Control-Allow-Origin: *`. (SEG-14)
-
-### ESC-112 · Errores internos `@contrato`
-- **Dado** una excepción no controlada · **Entonces** 500 `ProblemDetails` con un `traceId` (UUID v7 igual a `X-Correlation-Id`, ESC-151) y sin stack trace, tipos .NET ni rutas.
-
-### Auditoría
-
-### ESC-113 · Un evento por pregunta `@operacion`
-- **Dado** las preguntas de ESC-002 (respondida), ESC-009 (sin información), ESC-010 (denegada) y ESC-103 (inválida) · **Entonces** cada una produce exactamente un evento con los campos de la spec §11.3 y el `resultado` correspondiente.
-
-### ESC-114 · Datos consultados `@operacion`
-- **Dado** ESC-002 · **Entonces** el evento tiene `estudiantesConsultados: ["EST-001"]` y `recursosConsultados` con `notas`; **no** contiene valores de notas ("4.39", "4.5"…).
-
-### ESC-118 · Terceros enmascarados en la auditoría `@operacion`
-- **Dado** ESC-010 · **Entonces** el campo `pregunta` del evento contiene `[TERCERO]` y no contiene "Andrés Martínez"; `ipOrigen` está presente. (spec §11.3)
-
-### ESC-143 · Detalle de los datos consultados `@operacion`
-- **Dado** ESC-003 (EST-001 pregunta por sus faltas en Bases de Datos) · **Entonces** el evento tiene `datosConsultados` con `{estudianteId: EST-001, programaId: ING-SIS, recurso: asistencia, asignatura: BD-203}` y no contiene "48" ni el número de faltas. (spec §11.3, D-13)
-
-### ESC-144 · Auditoría persistida en archivo `@operacion`
-- **Dado** `Auditoria:Ruta` configurada · **Cuando** se responden 3 preguntas (una 200, una 403 y una 400) · **Entonces** `auditoria-<fecha UTC>.jsonl` tiene exactamente 3 líneas nuevas, idénticas a los eventos de la consola; con `docker compose`, el archivo sigue existiendo tras `docker compose down` y `up`. (D-25)
-
-### ESC-115 · Coordinador consulta su programa `@operacion`
-- **Dado** ESC-006 · **Entonces** `estudiantesConsultados` contiene solo IDs de ADM (EST-004, EST-005, EST-006) y `recursosConsultados` incluye `programa`.
-
-### Despliegue y CI
-
-### ESC-116 · Docker Compose `@operacion`
-- **Dado** un `.env` con `LLM_API_KEY` · **Cuando** `docker compose up` · **Entonces** `GET http://localhost:8080/api/salud` responde 200; el puerto 4000 de la API simulada no está publicado en el host; el contenedor de la API no corre como root; `docker history` de la imagen no contiene la llave.
-
-### ESC-117 · El CI bloquea `@operacion`
-- **Dado** un PR que (a) rompe una prueba, (b) cambia el umbral de 15% a 20%, (c) elimina la verificación de SEG-01 o (d) tiene un commit con asunto de 61 caracteres o (e) agrega un paquete NuGet con una vulnerabilidad conocida · **Entonces** el CI falla en el trabajo correspondiente y el PR no se puede integrar.
+| ID | Actor | Entrada | Resultado esperado | Regla |
+| --- | --- | --- | --- | --- |
+| ESC-116 `@operacion` | `.env` con `LLM_API_KEY` | `docker compose up` | Salud 200 en `localhost:8080`; puerto 4000 no publicado; el contenedor no corre como root; `docker history` sin la llave | RF-10, SEG-15 |
+| ESC-117 `@operacion` | PR que (a) rompe una prueba, (b) cambia 15% por 20%, (c) elimina la verificación de SEG-01, (d) tiene un asunto de 61 caracteres o (e) agrega un paquete NuGet vulnerable | CI | Falla el trabajo correspondiente y el PR no se puede integrar | RF-11, SEG-17 |

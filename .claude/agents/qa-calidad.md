@@ -21,7 +21,7 @@ Escribes las pruebas desde la **especificación**, no desde el código: tu traba
 - `backend/evals/casos/*.json` y el runner `backend/evals/TutorFlow.Evals`: las 10 preguntas de ejemplo y todos los escenarios. Aserciones deterministas (D-23): números, citas, código HTTP, `usoDatosEstudiante` y cadenas prohibidas (terceros, canario del prompt, llave canaria).
 - Resolución del proveedor del LLM (ESC-119): tabla de prefijos, prioridad de `LLM_PROVEEDOR`, ausencia de la llave en los logs y la misma batería de contrato contra los dos adaptadores con dobles HTTP.
 - Pruebas de arquitectura: `Core` no depende de `Infrastructure` ni de `Api`.
-- Los CA de la spec están en Gherkin: cada `Escenario` es una prueba y cada fila de `Ejemplos` es un caso de `[Theory]`/`[InlineData]` o una entrada de `backend/evals/casos`. Los umbrales de la matriz de verificación del plan de QA (100%, 3 corridas, tiempos) son las aserciones del runner.
+- Los CA de la spec están en Gherkin: cada `Escenario` es una prueba y cada fila de `Ejemplos` es un caso de `[Theory]`/`[InlineData]` o una entrada de `backend/evals/casos`. Los umbrales de la matriz de verificación del plan de QA (`specs/<feature-id>/plan.md`: 100%, corridas, tiempos) son las aserciones del runner.
 - Cada prueba referencia su CA o ESC (`[Trait("CA", "CA-07")]` o un nombre como `ESC_050_...`). Cada camino feliz lleva al menos un caso alterno y uno de abuso.
 - Demuestra que las pruebas nuevas fallan (rojo) antes de la implementación y entrega la matriz de trazabilidad CA/ESC → prueba, con los CA sin cubrir marcados.
 - Si la spec es ambigua y no puedes escribir una aserción concreta, repórtalo. No la inventes.

@@ -1,98 +1,57 @@
-# SPEC-NNN · <Nombre del requisito>
+# SPEC-NNN · <Nombre de la feature>
+
+> Regla: ≤ 350 líneas; una sola feature; solo producto (comportamiento observable). Prohibido aquí: algoritmos, umbrales internos, nombres de clases, prompt, formatos internos, adaptadores, claves de configuración, pseudocódigo, prosa larga, repeticiones e historia de versiones. Lo técnico va en `plan.md`; las decisiones, en `decisiones.md`; lo global, en `constitution.md`. Una corrección actualiza la regla en su sitio, no agrega texto.
 
 | Campo | Valor |
 | --- | --- |
-| Versión | 1.0 · AAAA-MM-DD |
-| Estado | borrador / aprobada / implementada |
+| Versión | 1.0 · AAAA-MM-DD · borrador / aprobada / implementada |
 | Requisito original | (texto literal del cliente) |
-| Componentes en esta spec | backend / frontend / datos / QA |
-| Fuera de esta spec | (componentes que irán en otra spec) |
-| Spec del sistema | [`SPEC.md`](../../SPEC.md) |
-| Afecta | Features o reglas existentes (`specs/<feature-id>/spec.md`, IDs) o "nuevo" |
-| Escenarios | [`escenarios/NNN-<slug>/`](../../escenarios/) (bloque de IDs ESC-N00…ESC-N99) |
-| Rama | `feat/NNN-<slug>` |
+| Reglas globales | [`constitution.md`](../../constitution.md) |
+| Técnico | [`plan.md`](plan.md) · Decisiones: [`decisiones.md`](decisiones.md) · Escenarios: [`escenarios/NNN-<slug>/`](../../escenarios/) (ESC-N00…ESC-N99) |
+| Afecta | Features o reglas existentes (IDs) o "nuevo" |
 
-## 1. Contexto y objetivo
-**Qué:** · **Por qué:** · **Cómo:**
+## 1. Objetivo
+Una o dos oraciones: qué problema del usuario resuelve.
 
 ## 2. Alcance
-- **Incluye:**
-- **No incluye:**
+**Dentro del alcance:** …
 
-## 3. Actores y roles
-Roles nuevos o cambios respecto a `SPEC.md` §2 (o "sin cambios").
+**Fuera del alcance:** …
 
-| Rol | Puede |
+## 3. Flujos de usuario
+| Flujo | Pasos |
 | --- | --- |
+| F1 · <actor> <intención> | 1) … → 2) … → 3) resultado visible |
 
 ## 4. Requerimientos funcionales
+- **RF-NNN-01** · <requerimiento> (actor). CA-NNN-01.
 
-| ID | Requerimiento | Actor | CA |
-| --- | --- | --- | --- |
-| RF-NNN-01 | | | CA-NNN-01 |
-
-## 5. Comportamiento esperado y experiencia de usuario
-
-| ID | Comportamiento |
-| --- | --- |
-| COMP-NNN-01 | |
-| UX-NNN-01 | |
+## 5. Comportamiento y experiencia
+- **COMP-NNN-01** · <comportamiento observable, 1 o 2 líneas>.
+- **UX-NNN-01** · <regla de experiencia>.
 
 ## 6. Reglas de negocio
-
-| ID | Regla | Fuente (documento · sección o dato) |
-| --- | --- | --- |
-| RN-NNN-01 | | |
+- **RN-NNN-01** · <regla> (fuente: documento · sección o dato).
 
 ## 7. Seguridad y permisos
-
-| ID | Regla | Rol afectado | Respuesta ante violación |
-| --- | --- | --- | --- |
-| SEG-NNN-01 | | | 403 |
-
-Matriz de acceso de la feature: solo los recursos nuevos o cambiados respecto a `SPEC.md` §4. Ampliar la matriz global requiere aprobación humana.
+Solo lo nuevo o cambiado respecto de la matriz de `constitution.md` §3 (ampliarla requiere aprobación humana).
+- **SEG-NNN-01** · <regla observable> → <respuesta ante la violación>.
 
 ## 8. Requerimientos no funcionales
+- **RNF-NNN-01** · <requerimiento con medida>.
 
-| ID | Requerimiento | Medida |
-| --- | --- | --- |
-
-## 9. Backend
-Endpoints nuevos, cambios al contrato de `SPEC.md` §3 (**ninguno** o descripción marcada "requiere aprobación humana") y flujo.
-
-## 10. Frontend y UX/UI
-Pantallas, estados (carga, éxito, vacío, error, 403) y textos; o "fuera de esta spec".
-
-## 11. Datos
-Fuentes, campos nuevos, campos nulos y su tratamiento, auditoría y datos de referencia con su cálculo.
-
-## 12. Criterios de aceptación
-Gherkin en español según la skill `criterios-gherkin-smart`.
-
-### CA-NNN-01 · <comportamiento>
-
+## 9. Criterios de aceptación
+Gherkin en español según la skill `criterios-gherkin-smart`: un `Escenario` o `Esquema` por CA, ≤ 5 filas, con "Detalle: ESC-…" en el título. El umbral de cada CA está en `plan.md` (plan de QA).
 ```gherkin
 # language: es
-Característica:
-
-  Escenario:
-    Dado
-    Cuando
-    Entonces
+Característica: <feature>
+  Esquema del escenario: CA-NNN-01 · <comportamiento> (Detalle: ESC-N00…)
+    Dado …
+    Cuando …
+    Entonces …
+    Ejemplos:
+      | … |
 ```
 
-## 13. Plan de QA
-
-| CA | Qué se verifica | Nivel | Escenarios | Umbral de aceptación |
-| --- | --- | --- | --- | --- |
-| CA-NNN-01 | | | ESC-xxx | |
-
-Casos límite obligatorios, dobles y datos de prueba, criterios de salida.
-
-## 14. Decisiones
-
-| ID | Ambigüedad | Decisión | Por qué | ¿Aprobación humana? |
-| --- | --- | --- | --- | --- |
-
-## 15. Preguntas abiertas
--
+## 10. Preguntas abiertas
+- Ninguna.
