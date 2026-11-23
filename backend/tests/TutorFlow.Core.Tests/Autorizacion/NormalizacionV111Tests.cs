@@ -48,7 +48,18 @@ public sealed class NormalizacionV111Tests
         "¿Cuáles son las notas de ΕSΤ-002?",
         "¿Cuáles son las notas de ESŦ-002?",
         "¿Cuáles son las notas de ESŧ-002?",
-        "¿Cuáles son las notas de đST-002?"
+        "¿Cuáles son las notas de đST-002?",
+        "¿Cuál es el promedio de Аndrés Martínez?",
+        "cual es el promedio de anđres martinez",
+        "¿Cuáles son las notas de ESТ 0 0 2?"
+    };
+
+    public static TheoryData<string> PreguntasPropiasConPlegadoOCaracterLatin1 => new()
+    {
+        "¿Cuál es el promedio de ЕST-001?",
+        "¿Cuál es el promedio de ΕSΤ-001?",
+        "¿La definitiva es 0.3 × corte 1 más el resto?",
+        "¿Qué significa el 1º corte de la asignatura?"
     };
 
     public static TheoryData<string, string> MarcasYDigitos => new()
@@ -111,23 +122,39 @@ public sealed class NormalizacionV111Tests
     [Theory]
     [MemberData(nameof(HomoglifosYLetrasConTrazo))]
     [Trait("CA", "CA-04")]
+    [Trait("CA", "CA-24")]
     [Trait("ESC", "ESC-186")]
+    [Trait("ESC", "ESC-199")]
+    [Trait("D", "D-61")]
     [Trait("SEG", "SEG-04a")]
-    public void ESC_186f_Riesgo_aceptado_los_homoglifos_y_las_letras_con_trazo_no_se_pliegan_y_no_deniegan_en_el_filtro_previo(string pregunta)
+    public void ESC_199a_Los_homoglifos_y_las_letras_con_trazo_se_pliegan_y_deniegan_como_tercero(string pregunta)
     {
         var decision = Evaluar(Est001, pregunta);
 
-        Assert.True(decision.Permitido);
+        Assert.False(decision.Permitido);
+        Assert.Equal(MotivoDenegacion.TerceroMencionado, decision.Motivo);
+    }
+
+    [Theory]
+    [MemberData(nameof(PreguntasPropiasConPlegadoOCaracterLatin1))]
+    [Trait("CA", "CA-24")]
+    [Trait("ESC", "ESC-199")]
+    [Trait("D", "D-62")]
+    public void ESC_199a6a7_El_propio_ID_plegado_y_los_caracteres_Latin_1_no_producen_falsos_403(string pregunta)
+    {
+        var decision = Evaluar(Est001, pregunta);
+
+        Assert.True(decision.Permitido, $"motivo: {decision.Motivo}");
     }
 
     [Fact]
     [Trait("CA", "CA-04")]
     [Trait("ESC", "ESC-186")]
     [Trait("SEG", "SEG-04a")]
-    public void ESC_186f_Riesgo_aceptado_la_normalizacion_no_convierte_el_E_cirilica_ni_la_t_con_trazo_en_letras_latinas()
+    public void ESC_186f_La_normalizacion_convierte_la_E_cirilica_y_la_T_con_trazo_en_letras_latinas()
     {
-        Assert.NotEqual(NormalizadorTexto.Normalizar("EST-002"), NormalizadorTexto.Normalizar("ЕST-002"));
-        Assert.NotEqual(NormalizadorTexto.Normalizar("EST-002"), NormalizadorTexto.Normalizar("ESŦ-002"));
+        Assert.Equal(NormalizadorTexto.Normalizar("EST-002"), NormalizadorTexto.Normalizar("ЕST-002"));
+        Assert.Equal(NormalizadorTexto.Normalizar("EST-002"), NormalizadorTexto.Normalizar("ESŦ-002"));
     }
 
     [Theory]
