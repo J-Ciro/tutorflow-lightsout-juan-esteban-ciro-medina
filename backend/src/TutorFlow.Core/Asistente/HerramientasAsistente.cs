@@ -109,7 +109,7 @@ public sealed class HerramientasAsistente
         var id = solicitud.Contexto.Usuario.Id;
         var resumen = await ResumirAsync(id, solicitud.CancellationToken);
         solicitud.Registro.RegistrarDatos(DatosLeidos.PorAsignatura(resumen, ProgramaDe(solicitud, id), RecursoConsultado.Notas, RecursoConsultado.Asistencia));
-        return Responder(solicitud, FormateadorDatos.Notas(resumen), id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], Textos.SeccionNotas);
+        return Responder(solicitud, ConReglas(solicitud, FormateadorDatos.Notas(resumen), ReglasAplicadas.DeNotas([resumen])), id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], Textos.SeccionNotas);
     }
 
     private async Task<ResultadoHerramienta> ConsultarCortes(SolicitudHerramienta solicitud)
@@ -132,7 +132,7 @@ public sealed class HerramientasAsistente
         var id = solicitud.Contexto.Usuario.Id;
         var resumen = await ResumirAsync(id, solicitud.CancellationToken);
         solicitud.Registro.RegistrarDatos(DatosLeidos.PorAsignatura(resumen, ProgramaDe(solicitud, id), RecursoConsultado.Notas, RecursoConsultado.Asistencia));
-        return Responder(solicitud, FormateadorDatos.Asistencia(resumen), id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], Textos.SeccionAsistencia);
+        return Responder(solicitud, ConReglas(solicitud, FormateadorDatos.Asistencia(resumen), ReglasAplicadas.DeAsistencia([resumen])), id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], Textos.SeccionAsistencia);
     }
 
     private async Task<ResultadoHerramienta> ConsultarEstudiante(SolicitudHerramienta solicitud)
@@ -145,7 +145,8 @@ public sealed class HerramientasAsistente
         var directorio = solicitud.Contexto.Directorio;
         var estudiante = directorio.Estudiantes.First(e => e.Id == solicitud.EstudianteId);
         var resumen = await ResumirAsync(estudiante.Id, solicitud.CancellationToken);
-        var contenido = string.Join("\n", FormateadorDatos.DatosBasicos(estudiante, directorio), FormateadorDatos.Notas(resumen), FormateadorDatos.Asistencia(resumen));
+        var detalle = string.Join("\n", FormateadorDatos.DatosBasicos(estudiante, directorio), FormateadorDatos.Notas(resumen), FormateadorDatos.Asistencia(resumen));
+        var contenido = ConReglas(solicitud, detalle, [.. ReglasAplicadas.DeNotas([resumen]), .. ReglasAplicadas.DeAsistencia([resumen])]);
         var recursos = new[] { RecursoConsultado.DatosBasicos, RecursoConsultado.Notas, RecursoConsultado.Asistencia };
         solicitud.Registro.Registrar(estudiante.Id, recursos, new Cita(Textos.DocumentoDatosEstudiante, Textos.SeccionAsistencia));
         solicitud.Registro.RegistrarDatos(DatosDeEstudiante(estudiante, resumen, RecursoConsultado.DatosBasicos));
@@ -173,16 +174,19 @@ public sealed class HerramientasAsistente
     {
         var estudiantes = solicitud.Contexto.Directorio.Estudiantes.Where(e => e.ProgramaId == programa.Id).ToList();
         var lineas = new List<string> { FormateadorDatos.EncabezadoPrograma(programa, estudiantes.Count) };
+        var resumenes = new List<ResumenEstudiante>();
         foreach (var estudiante in estudiantes)
         {
             var resumen = await ResumirAsync(estudiante.Id, solicitud.CancellationToken);
+            resumenes.Add(resumen);
             lineas.Add(FormateadorDatos.LineaDePrograma(estudiante, resumen));
             solicitud.Registro.Registrar(estudiante.Id, [RecursoConsultado.Programa, RecursoConsultado.Notas, RecursoConsultado.Asistencia], null);
             solicitud.Registro.RegistrarDatos(DatosDeEstudiante(estudiante, resumen, RecursoConsultado.Programa));
         }
 
         solicitud.Registro.RegistrarCita(new Cita(Textos.DocumentoDatosPrograma, programa.Id));
-        return FormateadorDatos.Delimitar($"{Textos.DocumentoDatosPrograma} · {programa.Id}", string.Join("\n", lineas));
+        var contenido = ConReglas(solicitud, string.Join("\n", lineas), ReglasAplicadas.DePrograma(resumenes));
+        return FormateadorDatos.Delimitar($"{Textos.DocumentoDatosPrograma} · {programa.Id}", contenido);
     }
 
     private static string ProgramaDe(SolicitudHerramienta solicitud, string estudianteId) =>
@@ -191,6 +195,12 @@ public sealed class HerramientasAsistente
     private static IEnumerable<DatoConsultado> DatosDeEstudiante(Estudiante estudiante, ResumenEstudiante resumen, RecursoConsultado recursoSinAsignatura) =>
         DatosLeidos.PorAsignatura(resumen, estudiante.ProgramaId, RecursoConsultado.Notas, RecursoConsultado.Asistencia)
             .Prepend(DatosLeidos.SinAsignatura(estudiante.Id, estudiante.ProgramaId, recursoSinAsignatura));
+
+    private static string ConReglas(SolicitudHerramienta solicitud, string contenido, IReadOnlyList<Cita> reglas)
+    {
+        solicitud.Registro.RegistrarReglas(reglas);
+        return reglas.Count == 0 ? contenido : $"{contenido}\n{FormateadorResumen.LineaDeReglas(reglas)}";
+    }
 
     private static ResultadoHerramienta Responder(
         SolicitudHerramienta solicitud,

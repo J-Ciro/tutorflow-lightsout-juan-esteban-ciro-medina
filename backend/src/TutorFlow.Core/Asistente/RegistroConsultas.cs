@@ -8,6 +8,7 @@ public sealed class RegistroConsultas
     private readonly List<RecursoConsultado> _recursos = [];
     private readonly List<DatoConsultado> _datos = [];
     private readonly List<Cita> _citas = [];
+    private readonly List<Cita> _reglas = [];
     private readonly List<string> _fuentes = [];
 
     public IReadOnlyList<string> Estudiantes => _estudiantes;
@@ -18,6 +19,8 @@ public sealed class RegistroConsultas
 
     public IReadOnlyList<Cita> Citas => _citas;
 
+
+    public IReadOnlyList<Cita> Reglas => _reglas;
 
     public IReadOnlyList<string> Fuentes => _fuentes;
 
@@ -42,6 +45,14 @@ public sealed class RegistroConsultas
         foreach (var dato in datos)
         {
             AgregarSiFalta(_datos, dato);
+        }
+    }
+
+    public void RegistrarReglas(IEnumerable<Cita> reglas)
+    {
+        foreach (var regla in reglas)
+        {
+            AgregarSiFalta(_reglas, regla);
         }
     }
 

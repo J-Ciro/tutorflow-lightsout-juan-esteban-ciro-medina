@@ -160,7 +160,7 @@ public sealed class PreguntarAsistente
 
         var directorio = sesion.Directorio;
         var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, directorio);
-        var candidatas = CitasEntregadasYCitadas(texto, entrada);
+        var candidatas = CitasEntregadasYCitadas(texto, entrada, sesion.Registro.Reglas);
         var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio, Confidencial(entrada));
         return Responder(sesion, verificada.Respuesta, CitasFinales(sesion, verificada), verificada.Resultado);
     }
@@ -173,10 +173,11 @@ public sealed class PreguntarAsistente
             ? [.. verificada.Citas.Concat(sesion.Registro.Citas).Distinct()]
             : verificada.Citas;
 
-    private static IReadOnlyList<Cita> CitasEntregadasYCitadas(string texto, EntradaConversacion entrada)
+    private static IReadOnlyList<Cita> CitasEntregadasYCitadas(string texto, EntradaConversacion entrada, IReadOnlyList<Cita> reglasDeHerramientas)
     {
         var entregadas = entrada.Secciones.Select(s => new Cita(s.Documento, s.Seccion))
             .Concat(entrada.Resumen?.Reglas ?? [])
+            .Concat(reglasDeHerramientas)
             .ToHashSet();
         return [.. ExtractorCitas.De(texto).Where(entregadas.Contains)];
     }

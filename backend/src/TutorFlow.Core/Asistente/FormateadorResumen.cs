@@ -15,9 +15,12 @@ internal static class FormateadorResumen
         lineas.Add($"Créditos matriculados: {resumen.CreditosMatriculados}.");
         lineas.Add($"Prueba académica: {(resumen.PruebaAcademica ? "sí" : "no")}.");
         lineas.Add($"Beca por rendimiento: {FormateadorDatos.TextoBeca(resumen.Beca)}.");
-        lineas.Add($"Reglas aplicadas a estos datos: {string.Join("; ", reglas.Select(Describir))}.");
+        lineas.Add(LineaDeReglas(reglas));
         return new ResumenEntregado(string.Join("\n", lineas), reglas);
     }
+
+    public static string LineaDeReglas(IReadOnlyList<Cita> reglas) =>
+        $"Reglas aplicadas a estos datos: {string.Join("; ", reglas.Select(Describir))}.";
 
     private static string LineaDeAsignatura(ResultadoAsignatura resultado)
     {
