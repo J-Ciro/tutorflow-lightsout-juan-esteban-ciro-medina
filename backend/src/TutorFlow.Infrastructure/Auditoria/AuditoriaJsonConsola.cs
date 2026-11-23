@@ -14,11 +14,23 @@ public sealed class AuditoriaJsonConsola : IAuditoria
         WriteIndented = false
     };
 
-    public void Registrar(EventoAuditoria evento) =>
-        Console.Out.WriteLine(JsonSerializer.Serialize(Proyectar(evento), Opciones));
+    private readonly ArchivoAuditoriaDiario? _archivo;
 
-    public void RegistrarMultiplesIdentidades(EventoMultiplesIdentidades evento) =>
-        Console.Out.WriteLine(JsonSerializer.Serialize(Proyectar(evento), Opciones));
+    public AuditoriaJsonConsola(ArchivoAuditoriaDiario? archivo = null)
+    {
+        _archivo = archivo;
+    }
+
+    public void Registrar(EventoAuditoria evento) => Emitir(Proyectar(evento));
+
+    public void RegistrarMultiplesIdentidades(EventoMultiplesIdentidades evento) => Emitir(Proyectar(evento));
+
+    private void Emitir(object proyeccion)
+    {
+        var linea = JsonSerializer.Serialize(proyeccion, Opciones);
+        Console.Out.WriteLine(linea);
+        _archivo?.Agregar(linea);
+    }
 
     private static object Proyectar(EventoAuditoria evento) => new
     {

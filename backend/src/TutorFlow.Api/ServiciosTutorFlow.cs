@@ -23,7 +23,7 @@ public static class ServiciosTutorFlow
     {
         AgregarOpciones(servicios);
         AgregarNucleo(servicios, configuracion);
-        AgregarInfraestructura(servicios);
+        AgregarInfraestructura(servicios, configuracion);
         AgregarLlm(servicios, configuracion);
         servicios.AddProblemDetails();
         servicios.AddExceptionHandler<ManejadorExcepciones>();
@@ -69,9 +69,12 @@ public static class ServiciosTutorFlow
         servicios.AddScoped<ProcesadorPregunta>();
     }
 
-    private static void AgregarInfraestructura(IServiceCollection servicios)
+    private static void AgregarInfraestructura(IServiceCollection servicios, IConfiguration configuracion)
     {
         servicios.AddSingleton<IReloj, RelojSistema>();
+        servicios.AddSingleton(proveedor => new ArchivoAuditoriaDiario(
+            configuracion[ArchivoAuditoriaDiario.ClaveRuta],
+            proveedor.GetRequiredService<IReloj>()));
         servicios.AddSingleton<IAuditoria, AuditoriaJsonConsola>();
         servicios.AddSingleton<IBaseConocimiento>(proveedor =>
             CargadorConocimiento.Cargar(proveedor.GetRequiredService<IOptions<OpcionesConocimiento>>().Value));
