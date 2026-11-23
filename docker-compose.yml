@@ -21,8 +21,12 @@ services:
       mock-api:
         condition: service_healthy
     networks:
-      - interna
-      - publica
+      interna: {}
+      publica: {}
+      web-api:
+        ipv4_address: 172.30.80.3
+        aliases:
+          - api-web
     read_only: true
     tmpfs:
       - /tmp
@@ -70,3 +74,10 @@ networks:
   interna:
     internal: true
   publica: {}
+  web-api:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.30.80.0/29
+          gateway: 172.30.80.1
+          ip_range: 172.30.80.4/30
