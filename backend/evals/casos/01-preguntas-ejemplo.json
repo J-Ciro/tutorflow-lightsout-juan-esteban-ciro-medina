@@ -81,7 +81,8 @@
       "20%"
     ],
     "citasIncluye": [
-      "Datos del estudiante · Asistencia"
+      "Datos del estudiante · Asistencia",
+      "reglamento_academico_2025.md · Artículo 11"
     ],
     "citasProhibidas": [],
     "citasVacias": false,
@@ -142,7 +143,9 @@
     "noContiene": [],
     "citasIncluye": [
       "Datos del estudiante · Notas",
-      "evaluacion_y_calificaciones.md · Sección 3"
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "evaluacion_y_calificaciones.md · Sección 4",
+      "reglamento_academico_2025.md · Artículo 11"
     ],
     "citasProhibidas": [],
     "citasVacias": false,
@@ -180,7 +183,9 @@
     ],
     "citasIncluye": [
       "Datos del programa · ADM",
-      "reglamento_academico_2025.md · Artículo 5"
+      "reglamento_academico_2025.md · Artículo 5",
+      "reglamento_academico_2025.md · Artículo 6",
+      "reglamento_academico_2025.md · Artículo 20"
     ],
     "citasProhibidas": [],
     "citasVacias": false,

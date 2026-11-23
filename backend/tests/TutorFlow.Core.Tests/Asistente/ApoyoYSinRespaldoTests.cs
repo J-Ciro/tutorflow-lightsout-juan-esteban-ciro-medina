@@ -178,37 +178,19 @@ public sealed class ApoyoYSinRespaldoTests
     [Fact]
     [Trait("ESC", "ESC-164")]
     [Trait("CA", "CA-14")]
-    [Trait("COMP", "COMP-02")]
-    public async Task Con_datos_leidos_las_citas_son_la_seccion_de_apoyo_mas_Notas_y_Asistencia()
-    {
-        var escenario = Con(Fijo("Bases de Datos: 2 faltas de 48 clases."), Indice(Articulo5, Articulo11, Articulo12, Articulo22));
-
-        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuántas faltas tengo en Bases de Datos?");
-
-        var citas = resultado.Respuesta!.Citas.ToArray();
-        Assert.Equal([new Cita(Reglamento, "Artículo 11")], citas.Where(c => c.Documento == Reglamento).ToArray());
-        Assert.Contains(DatosNotas, citas);
-        Assert.Contains(DatosAsistencia, citas);
-        Assert.Equal(3, citas.Length);
-        Assert.True(resultado.Respuesta.UsoDatosEstudiante);
-    }
-
-    [Fact]
-    [Trait("ESC", "ESC-164")]
-    [Trait("CA", "CA-14")]
     [Trait("SEG", "SEG-10e")]
-    public async Task Con_datos_leidos_y_sin_seccion_de_apoyo_la_respuesta_se_entrega_solo_con_citas_de_datos()
+    public async Task Con_datos_leidos_y_sin_seccion_de_apoyo_las_citas_son_las_reglas_aplicadas_y_los_datos_sin_respaldo()
     {
         var texto = "Bases de Datos: 2 faltas de 48 clases.";
-        var escenario = Con(Fijo(texto), Indice(Servicios));
+        var escenario = Con(Fijo(texto), Indice(Indexadas(Servicios, NotaDefinitiva, PromedioPonderado, Articulo11), [Servicios]));
 
         var resultado = await escenario.PreguntarAsync(Est001, "¿Cuántas faltas tengo en Bases de Datos?");
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
         Assert.Equal(texto, resultado.Respuesta!.Respuesta);
-        Assert.Equal(2, resultado.Respuesta.Citas.Count);
-        Assert.Contains(DatosNotas, resultado.Respuesta.Citas);
-        Assert.Contains(DatosAsistencia, resultado.Respuesta.Citas);
+        Assert.Equal(
+            [new Cita(Evaluacion, "Sección 3"), new Cita(Evaluacion, "Sección 4"), new Cita(Reglamento, "Artículo 11"), DatosNotas, DatosAsistencia],
+            resultado.Respuesta.Citas.ToArray());
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
     }
 
@@ -299,12 +281,12 @@ public sealed class ApoyoYSinRespaldoTests
     {
         var evaluacion = new SeccionDocumento(Evaluacion, "Sección 3", "Definitiva", "Texto sin relación alguna.");
         var texto = $"Tu promedio del periodo es 4.39 ({Evaluacion} · Sección 3).";
-        var escenario = Con(Fijo(texto), Indice(Indexadas(evaluacion), []));
+        var escenario = Con(Fijo(texto), Indice(Indexadas(evaluacion, PromedioPonderado, Articulo11), []));
 
         var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es mi promedio?");
 
         var citas = resultado.Respuesta!.Citas.ToArray();
-        Assert.Equal([new Cita(Evaluacion, "Sección 3")], citas.Where(c => c.Documento == Evaluacion).ToArray());
+        Assert.Equal([new Cita(Evaluacion, "Sección 3"), new Cita(Evaluacion, "Sección 4"), new Cita(Reglamento, "Artículo 11")], citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray());
         Assert.Contains(DatosNotas, citas);
         Assert.Contains(DatosAsistencia, citas);
     }
@@ -331,11 +313,11 @@ public sealed class ApoyoYSinRespaldoTests
     public async Task Con_la_herramienta_de_programa_la_cita_del_bloque_de_reglas_aplicadas_se_conserva()
     {
         var texto = $"Valentina Castro: Microeconomía (1.8) y Estadística (2.3). ({Reglamento} · Artículo 5)";
-        var escenario = Con(GuionDePrograma(texto), Indice(Indexadas(Articulo5, Articulo22), [Articulo22]));
+        var escenario = Con(GuionDePrograma(texto), Indice(Indexadas(Articulo5, Articulo6, Articulo20, Articulo22), [Articulo22]));
 
         var resultado = await escenario.PreguntarAsync(Coord02, "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?");
 
-        AfirmarRespondida(resultado, texto, [new Cita(Reglamento, "Artículo 5"), DatosProgramaAdm]);
+        AfirmarRespondida(resultado, texto, [new Cita(Reglamento, "Artículo 5"), new Cita(Reglamento, "Artículo 6"), new Cita(Reglamento, "Artículo 20"), DatosProgramaAdm]);
         Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
     }
 
@@ -346,11 +328,11 @@ public sealed class ApoyoYSinRespaldoTests
     public async Task Con_la_herramienta_de_programa_la_cita_fuera_del_bloque_y_sin_apoyo_se_descarta_sin_reemplazar_la_respuesta()
     {
         var texto = $"Valentina Castro: Microeconomía (1.8) y Estadística (2.3). ({Reglamento} · Artículo 22)";
-        var escenario = Con(GuionDePrograma(texto), Indice(Indexadas(Articulo5, Articulo22), [Articulo22]));
+        var escenario = Con(GuionDePrograma(texto), Indice(Indexadas(Articulo5, Articulo6, Articulo20, Articulo22), [Articulo22]));
 
         var resultado = await escenario.PreguntarAsync(Coord02, "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?");
 
-        AfirmarRespondida(resultado, texto, [DatosProgramaAdm]);
+        AfirmarRespondida(resultado, texto, [new Cita(Reglamento, "Artículo 5"), new Cita(Reglamento, "Artículo 6"), new Cita(Reglamento, "Artículo 20"), DatosProgramaAdm]);
         Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
     }
 

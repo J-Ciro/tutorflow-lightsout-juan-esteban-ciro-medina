@@ -30,6 +30,8 @@ public sealed partial class BaseConocimientoFalsa : IBaseConocimiento
         return new BaseConocimientoFalsa(secciones);
     }
 
+    public IReadOnlyList<SeccionDocumento> Secciones => _secciones;
+
     public BaseConocimientoFalsa ConSeccion(SeccionDocumento seccion) =>
         new([.. _secciones, seccion]);
 

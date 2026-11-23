@@ -12,6 +12,8 @@ public sealed class NoInvencionApiTests
     private const string PreguntaDeCoordinador = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
     private const string CitaSeccion32 = "bienestar_y_becas.md · Sección 3.2";
     private const string CitaArticulo5 = "reglamento_academico_2025.md · Artículo 5";
+    private const string CitaArticulo6 = "reglamento_academico_2025.md · Artículo 6";
+    private const string CitaArticulo20 = "reglamento_academico_2025.md · Artículo 20";
     private const string CitaDatosPrograma = "Datos del programa · ADM";
     private const string RespuestaDeCoordinador = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
 
@@ -130,7 +132,7 @@ public sealed class NoInvencionApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Contains(RespuestaDeCoordinador, respuesta.Respuesta, StringComparison.Ordinal);
-        Assert.Equal([CitaArticulo5, CitaDatosPrograma], respuesta.Citas);
+        Assert.Equal([CitaArticulo5, CitaArticulo6, CitaArticulo20, CitaDatosPrograma], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }
 
@@ -146,7 +148,7 @@ public sealed class NoInvencionApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Contains(RespuestaDeCoordinador, respuesta.Respuesta, StringComparison.Ordinal);
-        Assert.Equal([CitaDatosPrograma], respuesta.Citas);
+        Assert.Equal([CitaArticulo5, CitaArticulo6, CitaArticulo20, CitaDatosPrograma], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }
 

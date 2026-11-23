@@ -3,6 +3,7 @@ using TutorFlow.Core.Asistente;
 using TutorFlow.Core.Autorizacion;
 using TutorFlow.Core.Conocimiento;
 using TutorFlow.Infrastructure.Auditoria;
+using TutorFlow.Pruebas.Soporte;
 
 namespace TutorFlow.Api.Tests.Infraestructura;
 
@@ -105,6 +106,18 @@ public sealed class AuditoriaConsolaTests
         var salida = Capturar(() => new AuditoriaJsonConsola().Registrar(Evento("corr-resultado", resultado: resultado)));
 
         Assert.Equal(esperado, UnicaLinea(salida, "corr-resultado").GetProperty("resultado").GetString());
+    }
+
+    [Fact]
+    [Trait("CA", "CA-06")]
+    [Trait("ESC", "ESC-175")]
+    public void El_resultado_estado_no_verificado_se_serializa_en_snake_case_de_la_spec()
+    {
+        var resultado = ResultadosNuevosDeAuditoria.EstadoNoVerificado;
+
+        var salida = Capturar(() => new AuditoriaJsonConsola().Registrar(Evento("corr-estado", resultado: resultado)));
+
+        Assert.Equal("estado_no_verificado", UnicaLinea(salida, "corr-estado").GetProperty("resultado").GetString());
     }
 
     [Theory]
