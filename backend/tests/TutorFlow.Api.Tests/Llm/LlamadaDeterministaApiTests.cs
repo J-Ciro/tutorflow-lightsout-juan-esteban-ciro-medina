@@ -1,4 +1,5 @@
 using System.Text.Json;
+using TutorFlow.Api.Tests.Dobles;
 
 namespace TutorFlow.Api.Tests.Llm;
 
@@ -46,10 +47,10 @@ public sealed class LlamadaDeterministaApiTests
         new(configuracion: Configuracion(semilla), variablesEntorno: Entorno(llave), reemplazarLlm: false, manejadorHttp: manejador);
 
     private static ManejadorLlmFalso ConUnaRespuesta() =>
-        new((p, _) => RespuestasProveedor.Texto(p, RespuestaNormativa, 10, 5));
+        new((p, _) => RespuestasProveedor.Texto(p, RespuestaNormativa, 5));
 
     private static ManejadorLlmFalso ConHerramienta() =>
-        new((p, n) => n == 0 ? RespuestasProveedor.LlamadaAHerramienta(p, 10, 5) : RespuestasProveedor.Texto(p, "Datos revisados.", 10, 5));
+        new((p, n) => n == 0 ? RespuestasProveedor.LlamadaAHerramienta(p, 5) : RespuestasProveedor.Texto(p, "Datos revisados.", 5));
 
     private static JsonElement Cuerpo(PeticionLlm peticion) => JsonElement.Parse(peticion.Cuerpo);
 

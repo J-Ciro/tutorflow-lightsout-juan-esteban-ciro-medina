@@ -107,7 +107,8 @@ public sealed partial class ClienteLlmDoble : IClienteLlm
             _solicitudes.Add(solicitud);
         }
 
-        return Task.FromResult(_guion(solicitud, numero));
+        var respuesta = _guion(solicitud, numero);
+        return Task.FromResult(respuesta with { Uso = respuesta.Uso with { Entrada = ConsumoRealista.Reportados(solicitud) } });
     }
 
     private static List<LlamadaHerramienta> LlamarTodas(IReadOnlyList<HerramientaLlm> herramientas, string? estudianteId) =>
