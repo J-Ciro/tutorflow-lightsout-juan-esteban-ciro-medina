@@ -38,8 +38,8 @@ public sealed class BaseConocimientoEnMemoria : IBaseConocimiento
             .ToList();
     }
 
-    public bool ExisteCita(Cita cita) =>
-        _secciones.Any(indexada => indexada.Seccion.Documento == cita.Documento && indexada.Seccion.Seccion == cita.Seccion);
+    public SeccionDocumento? ObtenerSeccion(Cita cita) =>
+        _secciones.Select(indexada => indexada.Seccion).FirstOrDefault(seccion => seccion.Documento == cita.Documento && seccion.Seccion == cita.Seccion);
 
     private static Raices ExtraerRaices(string texto)
     {

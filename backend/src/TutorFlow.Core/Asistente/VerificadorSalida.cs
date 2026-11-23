@@ -58,7 +58,7 @@ public sealed partial class VerificadorSalida
             : new SalidaVerificada(Textos.NoVerificable, [], ResultadoAuditoria.NumeroNoVerificado);
 
     public IReadOnlyList<Cita> DescartarCitasInexistentes(IReadOnlyList<Cita> citas, IBaseConocimiento baseConocimiento) =>
-        citas.Where(cita => !_documentosDerogados.Contains(cita.Documento) && baseConocimiento.ExisteCita(cita)).ToList();
+        citas.Where(cita => !_documentosDerogados.Contains(cita.Documento) && baseConocimiento.ObtenerSeccion(cita) is not null).ToList();
 
     public bool ContienePersonaNoAutorizada(string respuesta, IReadOnlyCollection<string> idsPersonasAutorizadas, DirectorioAcademico directorio)
     {

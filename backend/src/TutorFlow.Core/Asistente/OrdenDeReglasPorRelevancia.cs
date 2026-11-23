@@ -4,11 +4,6 @@ namespace TutorFlow.Core.Asistente;
 
 internal sealed class OrdenDeReglasPorRelevancia
 {
-    private const int MaximoSeccionesConsultadas = int.MaxValue;
-
-    private const string ConsultaQueAlcanzaLasReglas =
-        "nota definitiva promedio ponderado asistencia inasistencia faltas perdida perdidas habilitacion prueba academica beca rendimiento sin registro";
-
     private readonly IBaseConocimiento _baseConocimiento;
 
     public OrdenDeReglasPorRelevancia(IBaseConocimiento baseConocimiento)
@@ -24,13 +19,11 @@ internal sealed class OrdenDeReglasPorRelevancia
             return bloque;
         }
 
-        var secciones = _baseConocimiento.BuscarSecciones(ConsultaQueAlcanzaLasReglas, MaximoSeccionesConsultadas);
-        return [.. bloque.OrderByDescending(cita => Relevancia(cita, secciones, raicesDeLaPregunta))];
+        return [.. bloque.OrderByDescending(cita => Relevancia(_baseConocimiento.ObtenerSeccion(cita), raicesDeLaPregunta))];
     }
 
-    private static int Relevancia(Cita cita, IReadOnlyList<SeccionDocumento> secciones, IReadOnlyList<string> raicesDeLaPregunta)
+    private static int Relevancia(SeccionDocumento? seccion, IReadOnlyList<string> raicesDeLaPregunta)
     {
-        var seccion = secciones.FirstOrDefault(s => s.Documento == cita.Documento && s.Seccion == cita.Seccion);
         if (seccion is null)
         {
             return 0;
