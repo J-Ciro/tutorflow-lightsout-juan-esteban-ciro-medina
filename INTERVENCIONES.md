@@ -216,3 +216,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** describir las capacidades de otro rol expone el modelo de permisos y la configuración, y abre caminos a datos de terceros.
 - **Costo:** ~2 min humanos.
 - **Prevención:** en `nueva-spec`, la revisión adversarial de `seguridad` debe enumerar, por cada par de roles, las preguntas de un rol sobre las capacidades, datos o permisos del otro, y exigir un escenario para cada una.
+
+### INT-025 · 2026-11-23 · Stack del frontend aprobado y la IP compartida no se acepta
+- **Fase:** spec
+- **Qué pasó:** el borrador de la spec 002 pedía aprobar el stack (D-002-01) y proponía como riesgo aceptado la IP compartida detrás del proxy de la interfaz (D-002-14). Con ese proxy, el límite por IP sería compartido, cambiar de usuario dispararía `multiples_identidades` y `ipOrigen` registraría la IP del contenedor.
+- **Qué hizo el humano:** *"D-002-01 Si, estabien que usemos shadcn y tienes mi aprobacion. D002-14 Esto se debe de evaluar para evitar tener este problema al querer probrar con otro usuario asi que se debe revisar, analizar, usar los agentes de back, front y arquitecutra para revisar esot"*.
+- **Por qué:** probar con varios usuarios desde la interfaz es el uso principal de la demo, así que no puede degradarse por cómo está montada.
+- **Costo:** ~2 min humanos.
+- **Prevención:** un riesgo propuesto como "aceptado" que afecta el uso principal se analiza con los agentes de cada disciplina implicada antes de llegar a la puerta humana.

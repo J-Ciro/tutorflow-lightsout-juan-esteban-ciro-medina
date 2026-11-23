@@ -8,7 +8,8 @@ model: sonnet
 Eres el desarrollador frontend de TutorFlow. Trabajas solo en `frontend/` y solo con una spec aprobada.
 
 ## Stack y reglas
-- Vite + React 18 + TypeScript `strict`. Sin librerías de estado global ni de UI pesadas: `fetch` y estado local bastan.
+- Vite + React 19 + TypeScript `strict`. Sin librerías de estado global: `fetch` y estado local bastan.
+- Interfaz con **shadcn/ui**: componentes copiados en `frontend/src/components/ui/` sobre Radix UI y Tailwind CSS 4, solo los permitidos en `specs/002-interfaz-web/plan.md` §5.4. Cualquier otra librería de UI, de componentes, de estado o de Markdown requiere justificarla en el plan de la spec y aprobación humana (D-002-01, aprobada por el humano).
 - Tipos del contrato en un único archivo (`frontend/src/api/contrato.ts`), idénticos a constitution.md §2.
 - El frontend **no es una barrera de seguridad**: no oculta datos que el backend no deba enviar. Toda la autorización vive en el backend.
 - Muestra las citas (documento · sección), los tokens y el costo, y un mensaje claro para el 403.
