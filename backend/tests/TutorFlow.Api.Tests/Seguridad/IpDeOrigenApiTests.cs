@@ -1,3 +1,5 @@
+using TutorFlow.Api.Tests.Dobles;
+
 namespace TutorFlow.Api.Tests.Seguridad;
 
 public sealed class IpDeOrigenApiTests
@@ -9,6 +11,13 @@ public sealed class IpDeOrigenApiTests
 
     private static Dictionary<string, string?> ConProxy(params string[] ips) =>
         ips.Select((ip, i) => ($"Proxy:IpsConfiables:{i}", (string?)ip)).ToDictionary();
+
+    private static Dictionary<string, string?> ConProxyYTasa(params string[] ips)
+    {
+        var configuracion = ConProxy(ips);
+        configuracion["Limites:PreguntasPorMinutoPorIp"] = LimitePorMinuto.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return configuracion;
+    }
 
     private static Dictionary<string, string> Xff(string valor) => new() { ["X-Forwarded-For"] = valor };
 
@@ -48,7 +57,7 @@ public sealed class IpDeOrigenApiTests
     [Trait("SEG", "SEG-19")]
     public async Task ESC_047_Sin_proxies_la_peticion_cuenta_para_el_limite_de_la_conexion()
     {
-        using var fabrica = new FabricaApi();
+        using var fabrica = new FabricaApi(configuracion: ConfiguracionDePrueba.TasaPorMinuto(LimitePorMinuto));
         RespuestaApi ultima = null!;
 
         for (var i = 1; i <= LimitePorMinuto + 1; i++)
@@ -79,7 +88,7 @@ public sealed class IpDeOrigenApiTests
     [Trait("SEG", "SEG-19")]
     public async Task ESC_048a_La_peticion_cuenta_para_el_limite_del_cliente_y_no_para_el_del_proxy()
     {
-        using var fabrica = new FabricaApi(configuracion: ConProxy(Proxy));
+        using var fabrica = new FabricaApi(configuracion: ConProxyYTasa(Proxy));
 
         var ultima = await PreguntarHastaElLimite(fabrica, Proxy, Xff(IpDelCliente));
         var sinCabecera = await Preguntar(fabrica, Proxy);
@@ -196,7 +205,7 @@ public sealed class IpDeOrigenApiTests
     [Trait("SEG", "SEG-19")]
     public async Task ESC_049_Una_conexion_fuera_de_la_lista_conserva_su_ip_y_su_propio_limite()
     {
-        using var fabrica = new FabricaApi(configuracion: ConProxy(Proxy));
+        using var fabrica = new FabricaApi(configuracion: ConProxyYTasa(Proxy));
 
         var ultima = await PreguntarHastaElLimite(fabrica, "10.0.0.6", Xff(IpDelCliente));
         var desdeElProxy = await Preguntar(fabrica, Proxy, Xff(IpDelCliente));
@@ -231,7 +240,7 @@ public sealed class IpDeOrigenApiTests
     [Trait("SEG", "SEG-13")]
     public async Task ESC_068_Tras_el_proxy_cada_cliente_tiene_su_propio_limite()
     {
-        using var fabrica = new FabricaApi(configuracion: ConProxy(Proxy));
+        using var fabrica = new FabricaApi(configuracion: ConProxyYTasa(Proxy));
 
         var ultima = await PreguntarHastaElLimite(fabrica, Proxy, Xff(IpDelCliente));
         var otroCliente = await Preguntar(fabrica, Proxy, Xff("203.0.113.8"));

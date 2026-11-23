@@ -21,9 +21,9 @@ public sealed class AuditoriaEnmascaradoApiTests
         """{"pregunta":123,"usuario":{"rol":"estudiante","id":"EST-001"}}"""
     };
 
-    private static async Task<FabricaApi> FabricaConRegistroCargadoAsync()
+    private static async Task<FabricaApi> FabricaConRegistroCargadoAsync(IReadOnlyDictionary<string, string?>? configuracion = null)
     {
-        var fabrica = new FabricaApi();
+        var fabrica = new FabricaApi(configuracion: configuracion);
         await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar?");
         return fabrica;
     }
@@ -51,7 +51,7 @@ public sealed class AuditoriaEnmascaradoApiTests
     [Trait("ESC", "ESC-148")]
     public async Task ESC_148_El_429_enmascara_a_los_terceros_en_la_pregunta_auditada()
     {
-        using var fabrica = await FabricaConRegistroCargadoAsync();
+        using var fabrica = await FabricaConRegistroCargadoAsync(ConfiguracionDePrueba.TasaPorMinuto(PeticionesPorMinuto));
         for (var i = 1; i < PeticionesPorMinuto; i++)
         {
             await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar?", IpDelLimite);

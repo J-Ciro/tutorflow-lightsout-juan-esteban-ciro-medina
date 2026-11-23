@@ -131,9 +131,9 @@ public sealed class LimitesApiTests
     [Trait("CA", "CA-05")]
     [Trait("ESC", "ESC-084")]
     [Trait("SEG", "SEG-13")]
-    public async Task ESC_084_La_pregunta_61_desde_la_misma_ip_recibe_429_con_retry_after_aunque_cambie_x_forwarded_for()
+    public async Task ESC_084c_La_pregunta_61_desde_la_misma_ip_recibe_429_con_retry_after_aunque_cambie_x_forwarded_for()
     {
-        using var fabrica = new FabricaApi();
+        using var fabrica = new FabricaApi(configuracion: ConfiguracionDePrueba.TasaPorMinuto(60));
         var ultima = default(RespuestaApi);
 
         for (var i = 1; i <= 61; i++)
@@ -151,9 +151,9 @@ public sealed class LimitesApiTests
     [Trait("CA", "CA-13")]
     [Trait("ESC", "ESC-142")]
     [Trait("SEG", "SEG-13")]
-    public async Task ESC_142_El_limite_es_por_ip_y_no_bloquea_a_la_victima()
+    public async Task ESC_142_El_limite_configurado_es_por_ip_y_no_bloquea_a_la_victima()
     {
-        using var fabrica = new FabricaApi();
+        using var fabrica = new FabricaApi(configuracion: ConfiguracionDePrueba.TasaPorMinuto(60));
         RespuestaApi ipA = null!;
 
         for (var i = 0; i < 61; i++)
@@ -172,7 +172,7 @@ public sealed class LimitesApiTests
     [Trait("SEG", "SEG-13")]
     public async Task El_limite_se_aplica_antes_de_validar_la_identidad()
     {
-        using var fabrica = new FabricaApi();
+        using var fabrica = new FabricaApi(configuracion: ConfiguracionDePrueba.TasaPorMinuto(60));
         RespuestaApi ultima = null!;
 
         for (var i = 0; i < 61; i++)
@@ -188,7 +188,7 @@ public sealed class LimitesApiTests
     [Trait("SEG", "SEG-13")]
     public async Task Cada_respuesta_429_emite_un_evento_de_auditoria()
     {
-        using var fabrica = new FabricaApi();
+        using var fabrica = new FabricaApi(configuracion: ConfiguracionDePrueba.TasaPorMinuto(60));
 
         for (var i = 0; i < 61; i++)
         {
