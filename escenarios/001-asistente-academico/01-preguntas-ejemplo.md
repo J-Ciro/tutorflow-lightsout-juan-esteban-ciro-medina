@@ -12,12 +12,12 @@ Las 10 preguntas de `preguntas_ejemplo.json`. Son el mínimo innegociable: las p
 ### ESC-002 · Mi promedio ponderado `@feliz`
 - **Dado** el estudiante `EST-001`
 - **Cuando** pregunta "¿Cuál es mi promedio ponderado del periodo?"
-- **Entonces** responde 200; la respuesta contiene "4.39" y lista las definitivas con una línea por asignatura: "Cálculo Integral" con "4.5", "Programación Orientada a Objetos" con "4.8", "Bases de Datos" con "4.1" e "Inglés III" con "4.0" (como `preguntas_ejemplo.json`); `citas` incluye `evaluacion_y_calificaciones.md · Sección 3` y `· Sección 4`; `usoDatosEstudiante` es `true`; no contiene datos de terceros. Los valores salen del resumen propio entregado en la primera llamada al LLM (COMP-07, D-27). (RN-03, RN-04, RN-06, UX-02; CA-01, CA-14)
+- **Entonces** responde 200; la respuesta contiene "4.39" y lista las definitivas con una línea por asignatura: "Cálculo Integral" con "4.5", "Programación Orientada a Objetos" con "4.8", "Bases de Datos" con "4.1" e "Inglés III" con "4.0" (como `preguntas_ejemplo.json`); `citas` incluye `evaluacion_y_calificaciones.md · Sección 3` y `· Sección 4` (garantizadas por las citas de las reglas aplicadas, D-31: desde la v1.9, ordenadas por relevancia, son [`Sección 4`, `bienestar_y_becas.md · Sección 3.1`, `Sección 3`]; raíces de la pregunta {`prom`, `pond`, `peri`}: `Sección 4` 3, `Sección 3.1` 3, `Sección 3` 1, `Artículo 11` 0; ESC-177 a); `usoDatosEstudiante` es `true`; no contiene datos de terceros. Los valores salen del resumen propio entregado en la primera llamada al LLM (COMP-07, D-27). (RN-03, RN-04, RN-06, UX-02; CA-01, CA-14)
 
 ### ESC-003 · Mis faltas en Bases de Datos `@feliz`
 - **Dado** el estudiante `EST-001`
 - **Cuando** pregunta "¿Cuántas faltas tengo en Bases de Datos?"
-- **Entonces** responde 200; la respuesta contiene "2" y "48"; `citas` incluye `Datos del estudiante · Asistencia` y, desde la v1.8, `reglamento_academico_2025.md · Artículo 11` (citas de las reglas aplicadas, D-31, ESC-177); `usoDatosEstudiante` es `true`; si menciona un límite de faltas usa el 15% (máximo 7) y nunca el 20% del reglamento 2023. (RN-07, RN-13, D-02)
+- **Entonces** responde 200; la respuesta contiene "2" y "48"; `citas` incluye `Datos del estudiante · Asistencia` y, desde la v1.8, `reglamento_academico_2025.md · Artículo 11` (citas de las reglas aplicadas, D-31, ESC-177 b: desde la v1.9, [`Artículo 11`, `Sección 3`, `Sección 4`]; raíces de la pregunta {`falt`, `base`, `dato`}: solo el `Artículo 11` comparte una, `falt`, y las demás desempatan por el orden fijo); `usoDatosEstudiante` es `true`; si menciona un límite de faltas usa el 15% (máximo 7) y nunca el 20% del reglamento 2023. (RN-07, RN-13, D-02)
 
 ### ESC-004 · Cómo se calcula la definitiva `@feliz`
 - **Dado** el estudiante `EST-001`
@@ -27,12 +27,12 @@ Las 10 preguntas de `preguntas_ejemplo.json`. Son el mínimo innegociable: las p
 ### ESC-005 · Mi definitiva en Contabilidad `@feliz`
 - **Dado** el estudiante `EST-004`
 - **Cuando** pregunta "¿Qué nota definitiva tengo en Contabilidad?"
-- **Entonces** responde 200; la respuesta contiene "3.9"; `citas` incluye `Datos del estudiante · Notas` y `evaluacion_y_calificaciones.md · Sección 3`; `usoDatosEstudiante` es `true`. (3.6·0.3 + 3.9·0.3 + 4.1·0.4 = 3.89 → 3.9)
+- **Entonces** responde 200; la respuesta contiene "3.9"; `citas` incluye `Datos del estudiante · Notas` y `evaluacion_y_calificaciones.md · Sección 3` (citas de las reglas aplicadas, D-31, ESC-177 c: [`Sección 3`, `Sección 4`, `Artículo 11`]; raíces de la pregunta {`nota`, `defi`, `cont`}: las tres comparten `nota` y `defi` (2) y la `Sección 3.1` 0, así que el orden fijo desempata y el resultado no cambia en la v1.9); `usoDatosEstudiante` es `true`. (3.6·0.3 + 3.9·0.3 + 4.1·0.4 = 3.89 → 3.9)
 
 ### ESC-006 · Coordinador: estudiantes con asignaturas perdidas `@feliz`
 - **Dado** el coordinador `COORD-02` (programa ADM)
 - **Cuando** pregunta "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?"
-- **Entonces** responde 200; la respuesta contiene "Valentina Castro", "Microeconomía", "1.8", "Estadística" y "2.3"; **no** contiene "Camilo Rojas" ni "Mateo Vargas" como estudiantes con pérdidas; no contiene ningún estudiante de ING-SIS; `citas` incluye `Datos del programa · ADM` y `reglamento_academico_2025.md · Artículo 5` (garantizada por las citas de las reglas aplicadas, D-31); `usoDatosEstudiante` es `true`. Una afirmación de pérdida de Mateo Vargas o de pérdida por inasistencia de Valentina Castro se reemplaza por `TEXTO_NO_VERIFICABLE` (SEG-10f, ESC-175). (SEG-02, RN-02)
+- **Entonces** responde 200; la respuesta contiene "Valentina Castro", "Microeconomía", "1.8", "Estadística" y "2.3"; **no** contiene "Camilo Rojas" ni "Mateo Vargas" como estudiantes con pérdidas; no contiene ningún estudiante de ING-SIS; `citas` incluye `Datos del programa · ADM` y `reglamento_academico_2025.md · Artículo 5` (garantizada por las citas de las reglas aplicadas, D-31, ESC-177 d: desde la v1.9, [`Artículo 6`, `evaluacion_y_calificaciones.md · Sección 3`, `Artículo 5`]; raíces de la pregunta {`estu`, `prog`, `algu`, `asig`, `perd`}: `Artículo 6` 3, `Sección 3` 2, `Artículo 5` 1 y `Artículo 20` 1, que queda fuera por el orden fijo); `usoDatosEstudiante` es `true`. Una afirmación de pérdida de Mateo Vargas o de pérdida por inasistencia de Valentina Castro se reemplaza por `TEXTO_NO_VERIFICABLE` (SEG-10f, ESC-175). (SEG-02, RN-02)
 
 ### ESC-007 · Horario de Bienestar `@feliz`
 - **Dado** el estudiante `EST-001`
