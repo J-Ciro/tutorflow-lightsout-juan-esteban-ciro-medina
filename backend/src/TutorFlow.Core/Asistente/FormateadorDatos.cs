@@ -80,7 +80,7 @@ public static class FormateadorDatos
     public static string Cortes(IReadOnlyList<NotasAsignatura> notas, string consulta)
     {
         var coincidencias = BuscarAsignaturas(notas, consulta).Select(LineaDeCortes).ToList();
-        return coincidencias.Count == 0 ? "No hay una asignatura con ese nombre o código." : string.Join(Environment.NewLine, coincidencias);
+        return coincidencias.Count == 0 ? Textos.AsignaturaNoEncontrada : string.Join(Environment.NewLine, coincidencias);
     }
 
     public static IReadOnlyList<NotasAsignatura> BuscarAsignaturas(IReadOnlyList<NotasAsignatura> notas, string consulta)
@@ -106,7 +106,7 @@ public static class FormateadorDatos
         var clases = resultado.Asignatura.Asistencia.ClasesProgramadas;
         return resultado.Asignatura.Asistencia.Inasistencias is { } faltas
             ? $"{faltas} inasistencias de {clases} clases programadas; máximo permitido sin perder: {resultado.FaltasPermitidas}; faltas restantes: {resultado.FaltasRestantes}{(resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia ? "; perdida por inasistencia" : string.Empty)}"
-            : $"sin registro de inasistencias en {clases} clases programadas; no se declara pérdida y se debe solicitar la revisión al coordinador (Artículo 12)";
+            : $"sin registro de inasistencias en {clases} clases programadas; no se declara pérdida y se debe solicitar la revisión al coordinador ({Textos.SeccionAsistenciaSinRegistro})";
     }
 
     private static string LineaDeAsistencia(ResultadoAsignatura resultado) =>

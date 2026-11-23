@@ -16,6 +16,22 @@ public static class Textos
     public const string SeccionNotas = "Notas";
     public const string SeccionAsistencia = "Asistencia";
     public const string SeccionDatosBasicos = "Datos básicos";
+    public const string Periodo = "2026-2";
+    public const string SeccionDefinitiva = "Sección 3";
+    public const string SeccionPromedio = "Sección 4";
+    public const string SeccionBecaPorRendimiento = "Sección 3.1";
+    public const string SeccionNotaMinima = "Artículo 5";
+    public const string SeccionHabilitacion = "Artículo 6";
+    public const string SeccionNoHabilitables = "Artículo 7";
+    public const string SeccionPerdidaPorInasistencia = "Artículo 11";
+    public const string SeccionAsistenciaSinRegistro = "Artículo 12";
+    public const string SeccionPruebaAcademica = "Artículo 20";
+    public const string SeccionDerogacion = "Artículo 3";
+    public const string HerramientaNoDisponible = "Herramienta no disponible.";
+    public const string FaltaAsignatura = "Indica el nombre o el código de la asignatura.";
+    public const string FaltaIdentificadorEstudiante = "Falta el identificador del estudiante.";
+    public const string AsignaturaNoEncontrada = "No hay una asignatura con ese nombre o código.";
+    public const string SinProgramasAsignados = "No tienes programas asignados, por lo que no hay datos de estudiantes para consultar.";
     public const string FormatoInvalido = "[FORMATO_INVALIDO]";
     public const string FuenteResumenPropio = "Resumen académico propio";
 

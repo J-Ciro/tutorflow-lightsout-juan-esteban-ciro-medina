@@ -71,7 +71,7 @@ public sealed class HerramientasAsistente
     {
         if (!EstaDisponible(llamada.Nombre, contexto.Usuario.Rol) || !_manejadores.TryGetValue(llamada.Nombre, out var manejador))
         {
-            return ResultadoHerramienta.Texto("Herramienta no disponible.");
+            return ResultadoHerramienta.Texto(Textos.HerramientaNoDisponible);
         }
 
         var estudianteId = ArgumentosHerramienta.LeerTexto(llamada.ArgumentosJson, ParametroEstudianteId);
@@ -116,7 +116,7 @@ public sealed class HerramientasAsistente
     {
         if (string.IsNullOrWhiteSpace(solicitud.Asignatura))
         {
-            return ResultadoHerramienta.Texto("Indica el nombre o el código de la asignatura.");
+            return ResultadoHerramienta.Texto(Textos.FaltaAsignatura);
         }
 
         var id = solicitud.Contexto.Usuario.Id;
@@ -139,7 +139,7 @@ public sealed class HerramientasAsistente
     {
         if (string.IsNullOrEmpty(solicitud.EstudianteId))
         {
-            return ResultadoHerramienta.Texto("Falta el identificador del estudiante.");
+            return ResultadoHerramienta.Texto(Textos.FaltaIdentificadorEstudiante);
         }
 
         var directorio = solicitud.Contexto.Directorio;
@@ -157,7 +157,7 @@ public sealed class HerramientasAsistente
         var programas = _politicaAcceso.ProgramasAutorizados(solicitud.Contexto.Usuario, solicitud.Contexto.Directorio);
         if (programas.Count == 0)
         {
-            return ResultadoHerramienta.Texto("No tienes programas asignados, por lo que no hay datos de estudiantes para consultar.");
+            return ResultadoHerramienta.Texto(Textos.SinProgramasAsignados);
         }
 
         var bloques = new List<string>();

@@ -9,15 +9,15 @@ public static class ReglasAplicadas
     public const string DocumentoEvaluacion = "evaluacion_y_calificaciones.md";
     public const string DocumentoBienestar = "bienestar_y_becas.md";
 
-    private static readonly Cita DefinitivaEvaluacion = new(DocumentoEvaluacion, "Sección 3");
-    private static readonly Cita PromedioEvaluacion = new(DocumentoEvaluacion, "Sección 4");
-    private static readonly Cita NotaMinima = new(DocumentoReglamento, "Artículo 5");
-    private static readonly Cita Habilitacion = new(DocumentoReglamento, "Artículo 6");
-    private static readonly Cita NoHabilitables = new(DocumentoReglamento, "Artículo 7");
-    private static readonly Cita PerdidaPorInasistencia = new(DocumentoReglamento, "Artículo 11");
-    private static readonly Cita AsistenciaSinRegistro = new(DocumentoReglamento, "Artículo 12");
-    private static readonly Cita PruebaAcademica = new(DocumentoReglamento, "Artículo 20");
-    private static readonly Cita BecaPorRendimiento = new(DocumentoBienestar, "Sección 3.1");
+    private static readonly Cita DefinitivaEvaluacion = new(DocumentoEvaluacion, Textos.SeccionDefinitiva);
+    private static readonly Cita PromedioEvaluacion = new(DocumentoEvaluacion, Textos.SeccionPromedio);
+    private static readonly Cita NotaMinima = new(DocumentoReglamento, Textos.SeccionNotaMinima);
+    private static readonly Cita Habilitacion = new(DocumentoReglamento, Textos.SeccionHabilitacion);
+    private static readonly Cita NoHabilitables = new(DocumentoReglamento, Textos.SeccionNoHabilitables);
+    private static readonly Cita PerdidaPorInasistencia = new(DocumentoReglamento, Textos.SeccionPerdidaPorInasistencia);
+    private static readonly Cita AsistenciaSinRegistro = new(DocumentoReglamento, Textos.SeccionAsistenciaSinRegistro);
+    private static readonly Cita PruebaAcademica = new(DocumentoReglamento, Textos.SeccionPruebaAcademica);
+    private static readonly Cita BecaPorRendimiento = new(DocumentoBienestar, Textos.SeccionBecaPorRendimiento);
 
     public static IReadOnlyList<Cita> DeNotas(IReadOnlyList<ResumenEstudiante> resumenes) =>
         [.. new[] { DefinitivaEvaluacion, PromedioEvaluacion, BecaPorRendimiento }.Concat(Condicionales(resumenes)).Distinct()];
