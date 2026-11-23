@@ -184,7 +184,7 @@ public sealed class PreguntarAsistente
         var directorio = sesion.Directorio;
         var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, directorio);
         var candidatas = _citasDeRespuesta.EscritasConApoyo(texto, entrada.Secciones, ReglasDeDatos(sesion, entrada));
-        var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio, Confidencial(entrada));
+        var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio, Confidencial(sesion, entrada));
         return verificada.Resultado == ResultadoAuditoria.Respondida
             ? ResponderVerificada(sesion, verificada, entrada)
             : Responder(sesion, verificada.Respuesta, verificada.Citas, verificada.Resultado);
@@ -211,8 +211,15 @@ public sealed class PreguntarAsistente
     private static IReadOnlyCollection<Cita> ReglasDeDatos(SesionPregunta sesion, EntradaConversacion entrada) =>
         [.. (entrada.Resumen?.Reglas ?? []).Concat(sesion.Registro.Reglas)];
 
-    private MaterialConfidencial Confidencial(EntradaConversacion entrada) =>
-        new(_configuracion.MarcadorCanario, entrada.PromptSistema, HerramientasAsistente.NombresInternos);
+    private MaterialConfidencial Confidencial(SesionPregunta sesion, EntradaConversacion entrada) =>
+        new(
+            _configuracion.MarcadorCanario,
+            [ConstructorPrompts.Instrucciones(entrada.PromptSistema), .. DescripcionesDeHerramientas(sesion.Entrada.Usuario.Rol)],
+            HerramientasAsistente.NombresInternos);
+
+    private static IEnumerable<string> DescripcionesDeHerramientas(Rol rol) =>
+        HerramientasAsistente.Definir(rol)
+            .SelectMany(herramienta => herramienta.Parametros.Select(parametro => parametro.Descripcion).Prepend(herramienta.Descripcion));
 
     private ResultadoPregunta Responder(
         SesionPregunta sesion,
