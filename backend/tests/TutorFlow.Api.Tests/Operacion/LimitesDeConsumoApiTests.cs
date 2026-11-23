@@ -1,3 +1,4 @@
+using TutorFlow.Pruebas.Soporte;
 using System.Diagnostics;
 using TutorFlow.Api.Tests.Dobles;
 using TutorFlow.Core.Asistente;
@@ -40,20 +41,32 @@ public sealed class PresupuestoConcurrenteApiTests
 {
     private const string PresupuestoDiario = "0.010";
     private const string ReservaPorPeticion = "0.004";
-    private const string PrecioEntradaPorMillon = "30";
-    private const int TokensDeEntrada = 100;
+    private const decimal CostoPorPeticionUsd = 0.003m;
+    private const decimal TokensPorMillon = 1_000_000m;
+    private const int PrecisionDelPrecio = 6;
+    private const int TokensDeSalida = 0;
     private const int PeticionesSimultaneas = 5;
     private const int Aceptadas = 2;
     private const string Pregunta = "¿Cuál es mi promedio?";
     private static readonly TimeSpan EsperaMaxima = TimeSpan.FromSeconds(5);
 
-    private static Dictionary<string, string?> Configuracion() => new()
+    private static Dictionary<string, string?> Configuracion(string precioEntrada) => new()
     {
         ["Limites:PresupuestoDiarioUsd"] = PresupuestoDiario,
         ["Llm:ReservaPorPeticionUsd"] = ReservaPorPeticion,
-        ["LLM_PRECIO_ENTRADA"] = PrecioEntradaPorMillon,
+        ["LLM_PRECIO_ENTRADA"] = precioEntrada,
         ["LLM_PRECIO_SALIDA"] = "0"
     };
+
+    private static async Task<string> PrecioParaUnCostoPorPeticionAsync()
+    {
+        var sonda = ClienteLlmDoble.Texto("Respuesta de prueba.", new UsoTokens(0, TokensDeSalida));
+        using var fabricaSonda = new FabricaApi(llm: sonda);
+        await fabricaSonda.PreguntarEstudianteAsync("EST-001", Pregunta);
+        var tokensDeEntrada = ConsumoRealista.Reportados(sonda.Solicitudes[0]);
+        return Math.Round(CostoPorPeticionUsd * TokensPorMillon / tokensDeEntrada, PrecisionDelPrecio)
+            .ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
 
     [Fact]
     [Trait("CA", "CA-07")]
@@ -61,8 +74,8 @@ public sealed class PresupuestoConcurrenteApiTests
     [Trait("SEG", "SEG-13")]
     public async Task ESC_159_Con_cinco_peticiones_simultaneas_exactamente_dos_responden_200_y_tres_503_sin_llamar_al_llm()
     {
-        var llm = new ClienteLlmRetenido(new UsoTokens(TokensDeEntrada, 0));
-        using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: Configuracion());
+        var llm = new ClienteLlmRetenido(new UsoTokens(0, TokensDeSalida));
+        using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: Configuracion(await PrecioParaUnCostoPorPeticionAsync()));
         _ = fabrica.Services;
         var peticiones =Enumerable.Range(0, PeticionesSimultaneas)
             .Select(_ => Task.Run(() => fabrica.PreguntarEstudianteAsync("EST-001", Pregunta)))
@@ -95,8 +108,8 @@ public sealed class PresupuestoConcurrenteApiTests
     [Trait("SEG", "SEG-13")]
     public async Task ESC_159_El_gasto_del_dia_es_el_costo_real_y_no_la_reserva()
     {
-        var llm = new ClienteLlmRetenido(new UsoTokens(TokensDeEntrada, 0));
-        using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: Configuracion());
+        var llm = new ClienteLlmRetenido(new UsoTokens(0, TokensDeSalida));
+        using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: Configuracion(await PrecioParaUnCostoPorPeticionAsync()));
         llm.Liberar();
 
         var estados = new List<int>();

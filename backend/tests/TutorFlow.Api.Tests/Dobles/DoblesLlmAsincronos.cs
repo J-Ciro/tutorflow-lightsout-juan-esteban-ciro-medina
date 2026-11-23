@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TutorFlow.Core.Asistente;
+using TutorFlow.Pruebas.Soporte;
 
 namespace TutorFlow.Api.Tests.Dobles;
 
@@ -27,8 +28,8 @@ public sealed class ClienteLlmLento : IClienteLlm
         var numero = Interlocked.Increment(ref _llamadas) - 1;
         await Task.Delay(_demora, cancellationToken);
         return numero < _llamadasConHerramienta
-            ? new RespuestaLlm(null, [new LlamadaHerramienta($"lenta-{numero}", solicitud.Herramientas[0].Nombre, "{}")], ClienteLlmDoble.UsoPorDefecto, false)
-            : new RespuestaLlm("Respuesta de prueba.", [], ClienteLlmDoble.UsoPorDefecto, false);
+            ? new RespuestaLlm(null, [new LlamadaHerramienta($"lenta-{numero}", solicitud.Herramientas[0].Nombre, "{}")], ConsumoRealista.UsoDe(solicitud, ClienteLlmDoble.UsoPorDefecto.Salida), false)
+            : new RespuestaLlm("Respuesta de prueba.", [], ConsumoRealista.UsoDe(solicitud, ClienteLlmDoble.UsoPorDefecto.Salida), false);
     }
 }
 
@@ -51,14 +52,14 @@ public sealed class ClienteLlmRetenido : IClienteLlm
     {
         Interlocked.Increment(ref _llamadas);
         await _liberacion.Task.WaitAsync(cancellationToken);
-        return new RespuestaLlm("Respuesta de prueba.", [], _uso, false);
+        return new RespuestaLlm("Respuesta de prueba.", [], ConsumoRealista.UsoDe(solicitud, _uso.Salida), false);
     }
 }
 
 public static partial class GuionesLlm
 {
     public static ClienteLlmDoble SinHerramientas(Func<SolicitudLlm, string> redactar) =>
-        new((solicitud, _) => new RespuestaLlm(redactar(solicitud), [], ClienteLlmDoble.UsoPorDefecto, false));
+        new((solicitud, _) => new RespuestaLlm(redactar(solicitud), [], ConsumoRealista.UsoDe(solicitud, ClienteLlmDoble.UsoPorDefecto.Salida), false));
 
     public static IReadOnlyList<BloqueDelimitado> Bloques(SolicitudLlm solicitud) =>
         BloqueRegex().Matches(string.Join("\n", solicitud.Mensajes.Select(m => m.Contenido)))

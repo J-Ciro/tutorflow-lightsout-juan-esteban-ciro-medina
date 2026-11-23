@@ -1,6 +1,6 @@
 using TutorFlow.Core.Asistente;
 
-namespace TutorFlow.Api.Tests.Dobles;
+namespace TutorFlow.Pruebas.Soporte;
 
 public static class ConsumoRealista
 {
@@ -12,6 +12,8 @@ public static class ConsumoRealista
         EstimadosDeCaracteres(solicitud.PromptSistema.Length + solicitud.Mensajes.Sum(m => m.Contenido.Length));
 
     public static int EstimadosDeCaracteres(int caracteres) => (int)Math.Ceiling(caracteres / CaracteresPorToken);
+
+    public static UsoTokens UsoDe(SolicitudLlm solicitud, int salida) => new(Reportados(solicitud), salida);
 
     public static int Reportados(SolicitudLlm solicitud) => Reportados(Estimados(solicitud));
 

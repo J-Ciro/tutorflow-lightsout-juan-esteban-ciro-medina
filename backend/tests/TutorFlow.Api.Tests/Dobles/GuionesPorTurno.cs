@@ -1,4 +1,5 @@
 using TutorFlow.Core.Asistente;
+using TutorFlow.Pruebas.Soporte;
 
 namespace TutorFlow.Api.Tests.Dobles;
 
@@ -54,6 +55,6 @@ public sealed class ClienteLlmConDemoraPorTurno : IClienteLlm
         Interlocked.Increment(ref _llamadas);
         var esReintento = GuionesPorTurno.EsReintento(solicitud);
         await Task.Delay(esReintento ? _reintento : _primerTurno, cancellationToken);
-        return new RespuestaLlm(esReintento ? _textoReintento : _textoPrimerTurno, [], ClienteLlmDoble.UsoPorDefecto, false);
+        return new RespuestaLlm(esReintento ? _textoReintento : _textoPrimerTurno, [], ConsumoRealista.UsoDe(solicitud, ClienteLlmDoble.UsoPorDefecto.Salida), false);
     }
 }
