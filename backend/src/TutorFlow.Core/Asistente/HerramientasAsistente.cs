@@ -57,6 +57,9 @@ public sealed class HerramientasAsistente
         };
     }
 
+    public static IReadOnlyList<string> NombresInternos { get; } =
+        [.. HerramientasDeEstudiante.Concat(HerramientasDeCoordinador).Select(herramienta => herramienta.Nombre)];
+
     public static IReadOnlyList<HerramientaLlm> Definir(Rol rol) =>
         rol == Rol.Coordinador ? HerramientasDeCoordinador : HerramientasDeEstudiante;
 

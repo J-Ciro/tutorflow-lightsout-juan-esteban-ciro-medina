@@ -133,9 +133,12 @@ public sealed class PreguntarAsistente
         var directorio = sesion.Directorio;
         var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, directorio);
         var candidatas = CitasEntregadasYCitadas(texto, entrada.Secciones);
-        var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio);
+        var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio, Confidencial(entrada));
         return Responder(sesion, verificada.Respuesta, CitasFinales(sesion, verificada), verificada.Resultado);
     }
+
+    private MaterialConfidencial Confidencial(EntradaConversacion entrada) =>
+        new(_configuracion.MarcadorCanario, entrada.PromptSistema, HerramientasAsistente.NombresInternos);
 
     private static IReadOnlyList<Cita> CitasFinales(SesionPregunta sesion, SalidaVerificada verificada) =>
         verificada.Resultado == ResultadoAuditoria.Respondida
