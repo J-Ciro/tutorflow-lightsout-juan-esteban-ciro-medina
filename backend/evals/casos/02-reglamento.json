@@ -122,7 +122,7 @@
     "offline": {
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "El Reglamento Académico 2023 fue derogado por el Artículo 3 del reglamento vigente."
+      "texto": "El Reglamento Académico 2023 fue derogado por el reglamento vigente (reglamento_academico_2025.md · Artículo 3)."
     }
   },
   {
@@ -157,7 +157,7 @@
     "offline": {
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "El reglamento 2023 está derogado. Con la regla vigente del 15%, perdiste Bases de Datos por inasistencia."
+      "texto": "El reglamento 2023 está derogado (reglamento_academico_2025.md · Artículo 3). Con la regla vigente del 15%, perdiste Bases de Datos por inasistencia (reglamento_academico_2025.md · Artículo 11)."
     }
   },
   {
@@ -249,7 +249,7 @@
     "offline": {
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "Las tutorías son martes y jueves de 14:00 a 18:00 en la biblioteca."
+      "texto": "Las tutorías son martes y jueves de 14:00 a 18:00 en la biblioteca (bienestar_y_becas.md · Sección 2)."
     }
   }
 ]
