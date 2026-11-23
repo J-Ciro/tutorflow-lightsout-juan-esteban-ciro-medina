@@ -26,16 +26,16 @@ public sealed class HerramientasAsistente
 
     private static readonly IReadOnlyList<HerramientaLlm> HerramientasDeEstudiante =
     [
-        new(Notas, "Devuelve las definitivas, el promedio del periodo, la prueba académica, la habilitación y la elegibilidad de beca de la persona que pregunta, ya calculados.", []),
-        new(Asistencia, "Devuelve las inasistencias, las faltas permitidas y las faltas restantes de cada asignatura de la persona que pregunta.", []),
-        new(DatosBasicos, "Devuelve el nombre, el programa y el coordinador del programa de la persona que pregunta.", []),
-        new(Cortes, "Devuelve las notas de los tres cortes de una asignatura de la persona que pregunta.", [new ParametroHerramienta(ParametroAsignatura, "Nombre o código de la asignatura.", true)])
+        new(Notas, "Consulta las definitivas de cada asignatura, el promedio ponderado del periodo, la prueba académica, la habilitación y la elegibilidad de beca de la persona que pregunta, ya calculados. Úsala para preguntas sobre notas, promedio, asignaturas perdidas, habilitación o beca.", []),
+        new(Asistencia, "Consulta las inasistencias, las faltas permitidas y las faltas restantes de cada asignatura de la persona que pregunta. Úsala para preguntas sobre asistencia o faltas.", []),
+        new(DatosBasicos, "Consulta el nombre, el programa y el coordinador del programa de la persona que pregunta. Úsala para preguntas sobre quién es su coordinador o a qué programa pertenece.", []),
+        new(Cortes, "Consulta las notas de los tres cortes de una asignatura de la persona que pregunta. Úsala solo cuando pregunten por la nota de un corte concreto.", [new ParametroHerramienta(ParametroAsignatura, "Nombre o código de la asignatura.", true)])
     ];
 
     private static readonly IReadOnlyList<HerramientaLlm> HerramientasDeCoordinador =
     [
-        new(Programa, "Devuelve, para cada estudiante de los programas a tu cargo, el promedio, la prueba académica, las asignaturas perdidas, las asignaturas sin definitiva y la asistencia sin registro.", []),
-        new(Estudiante, "Devuelve el detalle de notas y asistencia de un estudiante de tus programas.", [new ParametroHerramienta(ParametroEstudianteId, "Identificador del estudiante (formato EST seguido de tres dígitos).", true)])
+        new(Programa, "Consulta, para cada estudiante de los programas a cargo del coordinador, el promedio, la prueba académica, las asignaturas perdidas, las asignaturas sin definitiva y la asistencia sin registro. Úsala para listados y conteos del programa.", []),
+        new(Estudiante, "Consulta el detalle de notas y asistencia de un estudiante de los programas del coordinador. Úsala cuando pregunten por un estudiante concreto.", [new ParametroHerramienta(ParametroEstudianteId, "Identificador del estudiante: las letras EST, un guion y tres dígitos.", true)])
     ];
 
     private readonly IApiAcademica _apiAcademica;
