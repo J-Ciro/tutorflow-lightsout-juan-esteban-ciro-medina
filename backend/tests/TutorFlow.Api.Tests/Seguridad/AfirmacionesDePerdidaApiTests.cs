@@ -25,7 +25,11 @@ public sealed class AfirmacionesDePerdidaApiTests
     {
         "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).",
         "Valentina Castro perdió Microeconomía (1.8) y Estadística (2.3).",
-        "Mateo Vargas no ha perdido Estadística: le falta calificar el corte 3.",
+        "Mateo Vargas no ha perdido Estadística: le falta calificar el corte 3."
+    };
+
+    public static TheoryData<string> TextoCorregidoDeCoordinador02 => new()
+    {
         "Valentina Castro (ID EST-005) tiene asignaturas perdidas: Microeconomía con 1.8 y Estadística con 2.3. Mateo Vargas (ID EST-006) tiene una asignatura sin definitiva: Estadística. Camilo Rojas (ID EST-004) no tiene ninguna asignatura perdida."
     };
 
@@ -56,10 +60,11 @@ public sealed class AfirmacionesDePerdidaApiTests
 
     [Theory]
     [MemberData(nameof(TextosCorrectosDeCoordinador02))]
+    [MemberData(nameof(TextoCorregidoDeCoordinador02))]
     [Trait("CA", "CA-01")]
     [Trait("ESC", "ESC-175")]
     [Trait("RF", "SEG-10f")]
-    public async Task ESC_175f_Los_textos_correctos_de_COORD_02_se_entregan_sin_cambios(string texto)
+    public async Task ESC_175f1f2_Los_textos_correctos_de_COORD_02_se_entregan_sin_cambios(string texto)
     {
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
@@ -76,7 +81,7 @@ public sealed class AfirmacionesDePerdidaApiTests
     [Trait("CA", "CA-01")]
     [Trait("ESC", "ESC-175")]
     [Trait("RF", "SEG-10f")]
-    public async Task ESC_175f_La_perdida_por_inasistencia_real_de_Andres_con_COORD_01_se_entrega()
+    public async Task ESC_175f3_La_perdida_por_inasistencia_real_de_Andres_con_COORD_01_se_entrega()
     {
         const string texto = "Andrés Martínez perdió Cálculo Integral (2.6) y Bases de Datos por inasistencia.";
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);

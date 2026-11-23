@@ -32,14 +32,14 @@ public sealed class SalidaV110ApiTests
 
     public static TheoryData<string, string> FormasDePerdidaRespaldadasONegadas => new()
     {
-        { "p1", "Valentina Castro tiene una asignatura perdida por nota: Microeconomía (1.8)." },
-        { "p2", "Valentina Castro está con Estadística perdida (2.3)." },
-        { "p3", "Valentina Castro tiene asignaturas perdidas." },
-        { "p4", "Mateo Vargas no tiene asignaturas perdidas, solo Estadística sin definitiva." },
-        { "p5", "Mateo Vargas: asignaturas perdidas: ninguna, sin definitiva: Estadística." },
-        { "p6", "Valentina Castro perdió Microeconomía (1.8) y no ha perdido Contabilidad." },
-        { "p7", "Mateo Vargas podría perder Estadística si no aprueba el corte 3." },
-        { "p8", "Valentina Castro perdió Microeconomía (1.8) y Mateo Vargas tiene Estadística sin definitiva." },
+        { "p1-1", "Valentina Castro tiene una asignatura perdida por nota: Microeconomía (1.8)." },
+        { "p1-2", "Valentina Castro está con Estadística perdida (2.3)." },
+        { "p1-3", "Valentina Castro tiene asignaturas perdidas." },
+        { "p1-4", "Mateo Vargas no tiene asignaturas perdidas, solo Estadística sin definitiva." },
+        { "p2-1", "Mateo Vargas: asignaturas perdidas: ninguna, sin definitiva: Estadística." },
+        { "p2-2", "Valentina Castro perdió Microeconomía (1.8) y no ha perdido Contabilidad." },
+        { "p2-3", "Mateo Vargas podría perder Estadística si no aprueba el corte 3." },
+        { "p2-4", "Valentina Castro perdió Microeconomía (1.8) y Mateo Vargas tiene Estadística sin definitiva." },
         { "r", "Valentina Castro:\n- Asignaturas perdidas: Microeconomía (1.8) y Estadística (2.3)\nMateo Vargas:\n- Sin definitiva: Estadística" }
     };
 
@@ -73,7 +73,7 @@ public sealed class SalidaV110ApiTests
     [Trait("CA", "CA-01")]
     [Trait("ESC", "ESC-175")]
     [Trait("RF", "SEG-10f")]
-    public async Task ESC_175_Una_forma_de_perdida_respaldada_negada_o_hipotetica_se_entrega_sin_cambios(string caso, string texto)
+    public async Task ESC_175p1p2_Una_forma_de_perdida_respaldada_negada_o_hipotetica_se_entrega_sin_cambios(string caso, string texto)
     {
         Assert.NotEmpty(caso);
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);

@@ -27,11 +27,15 @@ public sealed class ReferenciasEscritasTests
     public static TheoryData<string[], string, string> LimpiezaUnitaria => new()
     {
         { [Texto(Art3)], "El reglamento_academico_2023.md fue derogado (reglamento_academico_2025.md · Artículo 3).", "El reglamento_academico_2023.md fue derogado (reglamento_academico_2025.md · Artículo 3)." },
-        { [Texto(Art3)], "Ya no aplica reglamento_academico_2023.md · Artículo 9.", "Ya no aplica." },
+        { [Texto(Art3)], "Ya no aplica reglamento_academico_2023.md · Artículo 9.", "Ya no aplica." }
+    };
+
+    public static TheoryData<string[], string, string> LimpiezaUnitariaJ2 => new()
+    {
         { [Texto(Sec3)], "La definitiva se calcula según evaluacion_y_calificaciones.md · Secciones 3 y 5.", "La definitiva se calcula." },
-        { [Texto(Sec3), Texto(Sec4)], "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).", "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4)." },
         { [Texto(Beca31)], "Requisitos: promedio 4.3 o más. Estos requisitos se respaldan en bienestar_y_becas.md · Sección 3.1.", "Requisitos: promedio 4.3 o más. Estos requisitos se respaldan en bienestar_y_becas.md · Sección 3.1." },
-        { [], "El documento_academico_2025.md establece la escala.", "Establece la escala." }
+        { [], "El documento_academico_2025.md establece la escala.", "Establece la escala." },
+        { [Texto(Sec3), Texto(Sec4)], "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).", "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4)." }
     };
 
     private static string Limpiar(string respuesta, IReadOnlyList<Cita> citas)
@@ -61,10 +65,11 @@ public sealed class ReferenciasEscritasTests
 
     [Theory]
     [MemberData(nameof(LimpiezaUnitaria))]
+    [MemberData(nameof(LimpiezaUnitariaJ2))]
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-178")]
     [Trait("COMP", "COMP-02")]
-    public void ESC_178j_La_limpieza_conserva_las_referencias_validas_y_elimina_las_demas(string[] citas, string respuesta, string esperada)
+    public void ESC_178j1j2_La_limpieza_conserva_las_referencias_validas_y_elimina_las_demas(string[] citas, string respuesta, string esperada)
     {
         var resultado = Limpiar(respuesta, [.. citas.Select(DesdeTexto)]);
 

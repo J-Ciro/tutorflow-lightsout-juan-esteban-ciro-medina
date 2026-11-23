@@ -1368,7 +1368,7 @@
     }
   },
   {
-    "id": "ESC-175f1",
+    "id": "ESC-175f1-1",
     "fuente": "SEG-10f, D-34",
     "usuario": {
       "rol": "coordinador",
@@ -1397,7 +1397,7 @@
     }
   },
   {
-    "id": "ESC-175f2",
+    "id": "ESC-175f1-2",
     "fuente": "SEG-10f, D-34",
     "usuario": {
       "rol": "coordinador",
@@ -1426,7 +1426,7 @@
     }
   },
   {
-    "id": "ESC-175f3",
+    "id": "ESC-175f1-3",
     "fuente": "SEG-10f, D-34",
     "usuario": {
       "rol": "coordinador",
@@ -1455,7 +1455,7 @@
     }
   },
   {
-    "id": "ESC-175f4",
+    "id": "ESC-175f2",
     "fuente": "SEG-10f, D-34",
     "usuario": {
       "rol": "coordinador",
@@ -1484,7 +1484,7 @@
     }
   },
   {
-    "id": "ESC-175f5",
+    "id": "ESC-175f3",
     "fuente": "SEG-10f, D-34",
     "usuario": {
       "rol": "coordinador",
@@ -2191,7 +2191,7 @@
     }
   },
   {
-    "id": "ESC-175p1",
+    "id": "ESC-175p1-1",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2220,7 +2220,7 @@
     }
   },
   {
-    "id": "ESC-175p2",
+    "id": "ESC-175p1-2",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2249,7 +2249,7 @@
     }
   },
   {
-    "id": "ESC-175p3",
+    "id": "ESC-175p1-3",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2278,7 +2278,7 @@
     }
   },
   {
-    "id": "ESC-175p4",
+    "id": "ESC-175p1-4",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2307,7 +2307,7 @@
     }
   },
   {
-    "id": "ESC-175p5",
+    "id": "ESC-175p2-1",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2336,7 +2336,7 @@
     }
   },
   {
-    "id": "ESC-175p6",
+    "id": "ESC-175p2-2",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2365,7 +2365,7 @@
     }
   },
   {
-    "id": "ESC-175p7",
+    "id": "ESC-175p2-3",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",
@@ -2394,7 +2394,7 @@
     }
   },
   {
-    "id": "ESC-175p8",
+    "id": "ESC-175p2-4",
     "fuente": "SEG-10f, D-36",
     "usuario": {
       "rol": "coordinador",

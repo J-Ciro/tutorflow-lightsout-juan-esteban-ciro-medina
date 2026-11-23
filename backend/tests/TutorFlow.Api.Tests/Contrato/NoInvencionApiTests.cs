@@ -41,7 +41,7 @@ public sealed class NoInvencionApiTests
     [MemberData(nameof(PreciosInventados))]
     [Trait("CA", "CA-06")]
     [Trait("RF", "SEG-10c")]
-    public async Task ESC_166_Un_precio_que_no_esta_en_las_fuentes_se_reemplaza_por_comp_03(string texto, string caso)
+    public async Task ESC_166ab_Un_precio_que_no_esta_en_las_fuentes_se_reemplaza_por_comp_03(string texto, string caso)
     {
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
 
@@ -58,7 +58,7 @@ public sealed class NoInvencionApiTests
     [Trait("CA", "CA-06")]
     [Trait("ESC", "ESC-166")]
     [Trait("RF", "COMP-02")]
-    public async Task ESC_166_El_descuento_del_30_por_ciento_de_la_fuente_se_conserva_con_la_cita_de_respaldo()
+    public async Task ESC_166c_El_descuento_del_30_por_ciento_de_la_fuente_se_conserva_con_la_cita_de_respaldo()
     {
         const string texto = "La beca de apoyo socioeconómico da un descuento de hasta el 30%.";
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
