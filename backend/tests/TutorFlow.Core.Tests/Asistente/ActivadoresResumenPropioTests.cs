@@ -51,8 +51,6 @@ public sealed class ActivadoresResumenPropioTests
 
     public static TheoryData<string> PreguntasDeCoordinador => new()
     {
-        "¿Cómo van mis estudiantes en Bases de Datos?",
-        "¿Cómo van mis estudiantes en BD-203?",
         "¿Qué materias puedo habilitar?",
         "¿Puedo aplicar a la beca por rendimiento?"
     };

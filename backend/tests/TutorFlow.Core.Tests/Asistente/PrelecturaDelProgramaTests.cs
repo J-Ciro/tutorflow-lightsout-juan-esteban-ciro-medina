@@ -244,4 +244,24 @@ public sealed class PrelecturaDelProgramaTests
         Assert.DoesNotContain("Estudiantes con asignaturas perdidas", PrimeraLlamada(escenario), StringComparison.Ordinal);
         Assert.DoesNotContain("Programa ", PrimeraLlamada(escenario).Replace("Programación", string.Empty, StringComparison.Ordinal), StringComparison.Ordinal);
     }
+
+    [Theory]
+    [InlineData("¿Cómo van mis estudiantes en Bases de Datos?")]
+    [InlineData("¿Cómo van mis estudiantes en BD-203?")]
+    [Trait("CA", "CA-19")]
+    [Trait("ESC", "ESC-155")]
+    [Trait("COMP", "COMP-08")]
+    public async Task ESC_155e_El_coordinador_no_recibe_resumen_pero_estudiantes_activa_la_prelectura_de_su_programa(string pregunta)
+    {
+        var escenario = Con(Fijo(Textos.SinInformacion));
+
+        var resultado = await escenario.PreguntarAsync(Coord01, pregunta);
+
+        var primera = PrimeraLlamada(escenario);
+        Assert.Contains("Programa ING-SIS (Ingeniería de Sistemas): 3 estudiantes.", primera.Split('\n'));
+        Assert.DoesNotContain(Textos.FuenteResumenPropio, primera, StringComparison.Ordinal);
+        Assert.Equal(EstudiantesDeIngSis, escenario.Api.LecturasNotas.Distinct().Order().ToArray());
+        Assert.All(EstudiantesDeAdm, id => Assert.DoesNotContain(id, escenario.Api.LecturasNotas.Concat(escenario.Api.LecturasAsistencia)));
+        Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
+    }
 }

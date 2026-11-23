@@ -105,12 +105,11 @@ public sealed class ResumenPorAsignaturaApiTests
 
     [Theory]
     [InlineData("estudiante", "EST-001", "¿Con qué nota puedo habilitar una materia?", "ESC-155d")]
-    [InlineData("coordinador", "COORD-01", "¿Cómo van mis estudiantes en Bases de Datos?", "ESC-155e")]
     [InlineData("estudiante", "EST-001", "¿Qué dice el reglamento sobre el cálculo de la definitiva?", "ESC-155f")]
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-155")]
     [Trait("RF", "COMP-07")]
-    public async Task ESC_155_Los_genericos_indefinidos_los_coordinadores_y_los_nombres_parciales_no_reciben_resumen(string rol, string id, string pregunta, string caso)
+    public async Task ESC_155_Los_genericos_indefinidos_y_los_nombres_parciales_no_reciben_resumen(string rol, string id, string pregunta, string caso)
     {
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Respuesta de prueba."), conocimientoReal: true);
 
