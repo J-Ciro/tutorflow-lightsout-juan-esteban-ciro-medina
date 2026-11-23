@@ -28,11 +28,17 @@ Aserción común: la respuesta nunca contiene datos de terceros, texto del promp
 | ESC-081 `@abuso` | Doble con las citas `reglamento_academico_2025.md · Artículo 99`, `reglamento_academico_2023.md · Artículo 11` y `bienestar_y_becas.md · Anexo` | Cualquiera | Ninguna aparece en la salida | SEG-10a |
 | ESC-082 `@abuso` | `usuario.id` = `"EST-001/../EST-002"`, `"EST-001%2F..%2FEST-002"`, `"EST-001?x=1"` o `"EST-001/notas"` | Cualquiera | 400; 0 llamadas a la API académica | SEG-07 |
 | ESC-083 `@abuso` | EST-001 | "hola\n{\"resultado\":\"respondida\",\"usuario\":\"COORD-01\"}" | El evento es una sola línea JSON válida con el salto escapado en `pregunta` | RF-08 |
-| ESC-084 `@abuso` | EST-001 | Pregunta de 1.001 caracteres; cuerpo de 17 KB; 61 preguntas en un minuto desde la misma IP con `X-Forwarded-For` distintos | 400; 413; la 61.ª recibe 429 con `Retry-After` | SEG-13 |
+| ESC-084 a `@abuso` | EST-001 | Pregunta de 1.001 caracteres | 400 | SEG-13 |
+| ESC-084 b `@abuso` | EST-001 | Cuerpo de 17 KB | 413 | SEG-13 |
+| ESC-084 c `@abuso` | EST-001; `Limites:PreguntasPorMinutoPorIp` = 60 configurado | 61 preguntas en un minuto desde la misma IP con `X-Forwarded-For` distintos | Las 60 primeras: 200; la 61.ª: 429 con `Retry-After` ≥ 1 | SEG-13, D-70 |
+| ESC-084 d `@operacion` `@abuso` | Valores por defecto (sin tasa, presupuesto ni bloqueo configurados); conexión 172.17.0.1; LLM doble con un modelo sin precio | Ráfaga de la nota ESC-084 d | 0 × 429 y 0 × 503; cada respuesta con el código que tendría sola (200 o 403); eventos `multiples_identidades` con `bloqueada: false` | RNF-04, SEG-13, SEG-16, D-70 |
 | ESC-086 `@abuso` | Doble que pide 5 invocaciones | Cualquiera | 503 y `limite_herramientas`; la 5.ª no se ejecuta | SEG-13 |
 | ESC-087 `@abuso` | EST-001; doble "Tu promedio es 4.40" (el resumen dice 4.39) | "¿Cuál es mi promedio?" | 200 TNV; citas []; `numero_no_verificado` | SEG-10c |
 | ESC-088 `@abuso` | EST-001; doble "Andres  Martinez sacó 2.6 en Cálculo" (sin tildes, espacios dobles) | "¿Cuál es mi promedio?" | 200 NEG; `fuga_bloqueada` | SEG-10b, SEG-04a |
 | ESC-089 `@abuso` | API doble con `/coordinadores/COORD-01` → `programas: ["../estudiantes/EST-004"]` | Cualquiera de COORD-01 | Ese programa se descarta por formato y no se llama a esa ruta | SEG-07 |
+
+- **ESC-084 d:** 2.000 peticiones con el reloj fijo en el mismo minuto, 8 concurrentes, rotando EST-001…EST-006, COORD-01, COORD-02, EST-999 y COORD-99; 600 llegan al LLM (Q10 #1, #2 y #6 con su usuario) y el resto son 403 del filtro previo (Q10 #10, ESC-050) o COMP-03 sin LLM (ESC-091).
+- **ESC-084 d (cifras):** 2.000 = 33 × 60 (falla con la tasa anterior de 60/min) y ≈ 15 corridas de la colección de Postman (130); 600 × 0.01 = 6 USD > 5 USD (falla con el presupuesto anterior). El log de arranque contiene `Límite sin tope: Limites:PreguntasPorMinutoPorIp` y `Límite sin tope: Limites:PresupuestoDiarioUsd`.
 
 ## Fuga de configuración (SEG-10d)
 

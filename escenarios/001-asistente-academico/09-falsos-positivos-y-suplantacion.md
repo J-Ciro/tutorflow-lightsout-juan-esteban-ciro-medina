@@ -35,4 +35,4 @@ Salvo que se indique otra cosa: reloj controlado; conexión 10.0.0.5 sin `Proxy:
 | ESC-098 c `@abuso` | Igual que (a), tras el min 10 | EST-001 en el min 10 | 429 con `Retry-After: 60` (vence EST-002, registrada en el min 1) y 1 evento nuevo con `usuarioIds` EST-002, EST-003, EST-004, EST-001 | SEG-16, D-69 |
 | ESC-099 a `@alterno` | Bloqueo `true` | EST-001…EST-003 en los min 0, 1 y 2; EST-001 en el min 8; EST-004 en el min 9 | Min 8: 200 y EST-001 se renueva. Min 9: 429 con `Retry-After: 120` (la más antigua es EST-002: vence en el min 11) | SEG-16, D-69 |
 | ESC-099 b `@alterno` | Bloqueo `true`; `Limites:MaximoIdentidadesPorIp` = 1 | EST-001 en el min 0; EST-002 en el min 1; EST-001 en el min 1 | 200; 429 con `Retry-After: 540`; 200 | SEG-16, D-69 |
-| ESC-142 `@abuso` | IP A con 61 preguntas en un minuto como EST-001; IP B como EST-001 | Una pregunta desde B | A recibe 429 y B 200: el límite es por IP | SEG-13 |
+| ESC-142 `@abuso` | Tasa configurada en 60; IP A con 61 preguntas en un minuto como EST-001; IP B como EST-001 | Una pregunta desde B | A recibe 429 y B 200: el límite es por IP | SEG-13 |

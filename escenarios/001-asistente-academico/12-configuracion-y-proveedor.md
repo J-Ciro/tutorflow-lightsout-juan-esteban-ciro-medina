@@ -35,7 +35,7 @@ Notación en [`README.md`](../README.md#notación).
 | s | `Conocimiento:RelevanciaMinima` | `10` | Arranca; efectivo 10 | — |
 | t | `Limites:MaximoSeccionesRecuperadas` | `6` | Arranca; efectivo 6 | — |
 | u | `Limites:PresupuestoDiarioUsd` | `0.000001` | Arranca; efectivo 0.000001 | — |
-| v | `Limites:PresupuestoDiarioUsd` | vacío | Arranca; efectivo 5 | — |
+| v | `Limites:PresupuestoDiarioUsd` | vacío o ausente | Arranca; sin tope: 0 reservas y 0 × 503 por presupuesto | `Límite sin tope: Limites:PresupuestoDiarioUsd` |
 | w | `Llm:ReservaSinPrecioUsd` | vacío | Arranca; efectivo 0.01 | — |
 | x | `Autorizacion:Asignaturas:2:Codigo` | `BD-203`, un salto de línea real y `Arranque correcto` | No arranca | `Configuración inválida: Autorizacion:Asignaturas:2:Codigo = "BD-203\nArranque correcto" (formato ^[A-Z]{2,4}-[0-9]{3}\z)`, con `\n` como 2 caracteres; ninguna línea de la consola empieza por `Arranque correcto` |
 | y | `Autorizacion:Asignaturas:2:Codigo` | `BD-203` + salto de línea final | No arranca | `Configuración inválida: Autorizacion:Asignaturas:2:Codigo = "BD-203\n" (formato ^[A-Z]{2,4}-[0-9]{3}\z)` (`$` lo aceptaría) |
@@ -46,13 +46,15 @@ Notación en [`README.md`](../README.md#notación).
 | ad | `Autorizacion:Asignaturas:6:Nombre` | ausente (`null`; la entrada solo tiene `Codigo` `EST-103`) | No arranca | `Configuración inválida: Autorizacion:Asignaturas:6:Nombre = "" (nombre vacío)` |
 | ae | `Autorizacion:Asignaturas:2:Codigo` | 63 veces `A`, una comilla doble y `B` | No arranca | `Configuración inválida: Autorizacion:Asignaturas:2:Codigo = "` + 63 `A` + `\…" (formato ^[A-Z]{2,4}-[0-9]{3}\z)`: se escapa y después se trunca a 64 caracteres (63 `A` y la barra), sin la `B` |
 | af | `Autorizacion:Asignaturas` (prueba unitaria del validador) | Lista vacía | Inválido | Exactamente `Configuración inválida: Autorizacion:Asignaturas = "" (catálogo vacío)` |
+| ag | `Limites:PreguntasPorMinutoPorIp` | vacío o ausente | Arranca; sin tope: 61 preguntas en un minuto desde una IP, las 61 con 200 | `Límite sin tope: Limites:PreguntasPorMinutoPorIp` |
+| ah | `Limites:PreguntasPorMinutoPorIp` y `Limites:PresupuestoDiarioUsd` | `60` y `5` | Arranca; efectivos 60 y 5; ninguna línea `Límite sin tope` | — |
 
 - **(o)–(q):** salud 200 y la advertencia indicada; con un doble que retiene cada llamada, de 3 peticiones simultáneas de EST-001 ("¿Cuál es mi promedio?") exactamente 2 responden 200 y 1 responde 503 sin LLM, con 2 llamadas.
   - Cálculo (o) y (p): 2 × 0.01 = 0.02 ≤ 0.02 y 0.03 > 0.02.
   - Cálculo (q): 8000 × 0.10 / 10⁶ + 2000 × 0.50 / 10⁶ = 0.0018, 2 × 0.0018 = 0.0036 ≤ 0.0036 y 0.0054 > 0.0036.
   - Con la reserva en 0, las 3 darían 200 (control desactivado).
-- **(r)–(w):** salud 200, sin `Configuración inválida` ni `Configuración ignorada`, valor efectivo indicado.
-- Reglas: RNF-05, SEG-11, SEG-13, D-39, D-40. CA-15.
+- **(r)–(w), (ag), (ah):** salud 200, sin `Configuración inválida` ni `Configuración ignorada`, valor efectivo indicado; en (v) y (ag), la línea esperada está en el log de arranque.
+- Reglas: RNF-05, SEG-11, SEG-13, D-39, D-40, D-70. CA-15.
 
 ## Catálogo, avisos y claves nuevas
 

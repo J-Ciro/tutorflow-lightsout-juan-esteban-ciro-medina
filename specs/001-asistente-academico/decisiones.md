@@ -2,7 +2,7 @@
 
 > Regla: cada decisión ocupa como máximo 3 líneas (decisión · por qué · estado). Una corrección actualiza la regla en `spec.md` o `plan.md` y deja aquí su D; la historia está en git.
 
-Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022; D-65, ambigüedades de QA; D-66, arbitraje de la ronda 4; D-67, INT-024 (humano); D-68 y D-69, INT-025 (humano).
+Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022; D-65, ambigüedades de QA; D-66, arbitraje de la ronda 4; D-67, INT-024 (humano); D-68 y D-69, INT-025 (humano); D-70, INT-027 (humano).
 Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitution.md). D-11, D-12, D-18 y D-19 no existen.
 
 ## Decisiones
@@ -16,7 +16,7 @@ Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitutio
 - **D-06** · Una asignatura perdida por inasistencia cuenta 0.0 en el promedio (Evaluación §4). · Por qué: literal. · Vigente.
 - **D-07** · El 403 lleva la salida del contrato con `TEXTO_NEGATIVA` elegido solo por el rol declarado, `citas` [Art. 22], `usoDatosEstudiante` false y `tokens`/`costoUsd` 0 (salvo D-22).
   Por qué: cumple a la vez "403" y "negativa" con textos constantes. · Vigente.
-- **D-08** · ID inexistente o rol incoherente → el mismo 403 que un acceso ajeno. · Por qué: denegar lo normativo a IDs válidos rompería el uso legítimo; la existencia de un ID se puede inferir con una pregunta normativa (limitación mitigada por SEG-13 y SEG-16). · Vigente.
+- **D-08** · ID inexistente o rol incoherente → el mismo 403 que un acceso ajeno. · Por qué: denegar lo normativo a IDs válidos rompería el uso legítimo; la existencia de un ID se puede inferir con una pregunta normativa (no da datos: D-01 ya permite usar cualquier ID existente; SEG-13 y SEG-16 la frenan si el operador los configura, D-70). · Vigente.
 - **D-09** · Terceros: solo deniegan el nombre completo o un ID con forma de persona; un nombre suelto no (lo cubren SEG-06 y SEG-10); el estudiante puede nombrar a su coordinador. · Por qué: privacidad sin falsos 403. · Vigente.
 - **D-10** · `rol` con mayúsculas o espacios → 400. · Por qué: el contrato fija la lista cerrada. · Vigente.
 - **D-13** · La auditoría registra `datosConsultados` (estudiante, programa, recurso, asignatura) sin valores. · Por qué: cumple el PDF y minimiza datos (Ley 1581). · Vigente, confirmada por el humano.
@@ -87,10 +87,13 @@ Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitutio
   Por qué: tras el proxy de la 002 todos compartían su IP (D-002-14); confiar en una subred o en el gateway del bridge dejaría falsificar la IP desde el host por el 8080. · Vigente; decisión del humano; no cambia el contrato ni la matriz.
 - **D-69** · (Humano, INT-025) Corrige SEG-16 con bloqueo: solo la identidad nueva que supera el umbral recibe 429; las registradas siguen atendiéndose; el intento bloqueado no se registra; `Retry-After` = segundos, hacia arriba y mínimo 1, hasta que vence la entrada más antigua; un evento por identidad nueva y ventana.
   Por qué: el bloqueo alcanzaba a las 3 primeras y cada intento renovaba la ventana (bloqueo indefinido). · Vigente; decisión del humano; por defecto sigue solo auditando (D-21).
+- **D-70** · (Humano, INT-027) El evaluador es un cliente legítimo: una IP, 8 identidades e IDs inexistentes, ráfagas, su propia llave y varias corridas al día. Por defecto, tasa por IP y presupuesto diario sin tope (clave ausente o vacía; `0` sigue inválido) y SEG-16 sin bloqueo; endurecer es opt-in validado, con 429 o 503 y `Retry-After`.
+  Por qué: el gasto es del dueño de la llave, el propio evaluador (precisión del humano); 130 peticiones sin retardo tardan ~7 s y superan 60/min, y 5 USD a 0.01 dan 500 preguntas; la enumeración la frenan las herramientas atadas a la identidad, no la tasa.
+  Estado: vigente; decisión del humano, que acepta el riesgo de la tasa sin tope y fija que un 429 del proveedor da 503 con su `Retry-After` (1 a 3600 s; plan §4.1). El `Retry-After` de los 503 no cambia el contrato ni la matriz.
 
 ## Riesgos y su decisión
 
-Ningún riesgo queda aceptado salvo D-01 (aprobado por el humano). Evidencia de la ronda 4 en `diag-riesgos/`.
+Ningún riesgo queda aceptado salvo D-01 y la tasa sin tope por defecto de D-70 (decisiones del humano). Evidencia de la ronda 4 en `diag-riesgos/`.
 
 | Riesgo | Decisión | Control verificable | D | CA / ESC |
 | --- | --- | --- | --- | --- |
@@ -126,4 +129,11 @@ Ningún riesgo queda aceptado salvo D-01 (aprobado por el humano). Evidencia de 
 | Valor no IP o con cabeceras `Forwarded`, `X-Forwarded-Host`/`-Proto` inyectadas | Eliminado: solo se lee `X-Forwarded-For`; un valor inválido conserva la IP de la conexión | ESC-048 e con `ipOrigen` "10.0.0.5" | D-68 | CA-13 |
 | Bloqueo indefinido y legítimos bloqueados con SEG-16 activado | Eliminado: solo la identidad nueva; el intento bloqueado no se registra | ESC-141, 098, 099 con reloj controlado | D-69 | CA-13 |
 | Eventos `multiples_identidades` repetidos por reintentos | Eliminado: uno por identidad nueva y ventana | ESC-097, 098 b | D-69 | CA-13 |
-| Con bloqueo, 429 (ID válido nuevo) frente a 403 (ID inexistente) revela si un ID existe | Mitigado: la misma inferencia ya existe con una normativa (D-08); acotada por SEG-13 y por el bloqueo por defecto desactivado | ESC-141 c | D-08, D-69 | CA-13 |
+| Con bloqueo, 429 (ID válido nuevo) frente a 403 (ID inexistente) revela si un ID existe | Mitigado: la misma inferencia ya existe con una normativa (D-08) y no da datos; el bloqueo es opt-in | ESC-141 c | D-08, D-69, D-70 | CA-13 |
+| El evaluador recibe 429 o 503 con los valores por defecto (INT-027) | Eliminado: tasa y presupuesto sin tope y SEG-16 sin bloqueo por defecto | ESC-084 d (2.000 en ráfaga, una IP, 8 identidades e IDs inexistentes, 600 con LLM sin precio) y la colección de Postman sin retardo contra Compose: 0 × 429 y 0 × 503 | D-70 | CA-12, ESC-084 d |
+| Sin tasa por defecto: ráfagas o enumeración de IDs sin freno | Aceptado: aprobado por el humano (INT-027) para el despliegue por defecto; mitigado en un despliegue real con la tasa configurada (1 a 10.000, 429 con `Retry-After`) | ESC-084 c, ESC-068, ESC-142 con 429; ESC-181 e (`0` no arranca); D-01 y el 403 idéntico (SEG-03) sin cambios | D-08, D-70 | CA-04, CA-13 |
+| El proveedor del evaluador limita su cuenta (429) y TutorFlow responde 503 | Mitigado: 503 sin reintento con el `Retry-After` del proveedor (1 a 3600 s); el cliente sabe cuándo volver | ESC-110 b–e | D-70 | CA-07 |
+| Una llave de DeepSeek (`sk-`) tomada por OpenAI o una de Mistral sin prefijo → 503 | Mitigado: `LLM_PROVEEDOR=openai-compatible` con `LLM_URL_BASE` y `LLM_MODELO` documentado en plan §4.1 y `.env.example` | ESC-110 a, ESC-119 | D-16, D-70 | CA-07 |
+| `0` leído como ilimitado por error de un operador | Eliminado: sin tope solo con la clave ausente o vacía; `0` no arranca | ESC-181 e, h; ESC-181 v, ag con `Límite sin tope` en el log | D-70 | CA-15 |
+| 503 de `limite_herramientas` a una pregunta legítima | Mitigado: resumen y prelectura desde la primera llamada (COMP-07, COMP-08) | Fase V: 0 × 503 en las 50 respuestas | D-27, D-45, D-70 | CA-01 |
+| Timeout de 20 s con Ollama en CPU, un modelo lento o peticiones concurrentes en cola de Ollama → 503 | Decisión condicionada a la medición M-1 (INT-021): si el p95 de la fase del LLM supera 15 s, el defecto sube a 60 s | M-1: p50, p95 y máximo por pregunta de Q10, secuencial y con 8 concurrentes | D-70 | CA-07, ESC-109, ESC-158 |

@@ -28,12 +28,16 @@ Notación en [`README.md`](../README.md#notación).
 | --- | --- | --- | --- | --- |
 | ESC-108 `@operacion` | EST-001; API académica caída | Su promedio | 503 `ProblemDetails` genérico en < 7 s; no inventa; `error` | RNF-02 |
 | ESC-109 `@operacion` | LLM sin respuesta en 20 s | Cualquiera | 503; sin URL, modelo ni llave en el cuerpo (varias llamadas lentas: ESC-158) | SEG-13 |
-| ESC-110 `@operacion` | Sin `LLM_API_KEY` y Ollama caído, o llave de prefijo desconocido sin `LLM_URL_BASE` | — | Arranca; salud 200; una pregunta que necesita el LLM da 503; una denegada sigue dando 403 | plan §4.1 |
+| ESC-110 a `@operacion` | Sin `LLM_API_KEY` y Ollama caído, o llave de prefijo desconocido sin `LLM_URL_BASE` | — | Arranca; salud 200; una pregunta que necesita el LLM da 503; una denegada sigue dando 403 | plan §4.1 |
+| ESC-110 b `@operacion` | EST-001; proveedor doble que responde 429 con `Retry-After: 30` | "¿Cuál es mi promedio?" | 503 con el `ProblemDetails` genérico y `Retry-After: 30`; 1 llamada (sin reintento); `error` | plan §4.1, D-70 |
+| ESC-110 c `@operacion` | Igual; reloj 2026-11-23T10:00:00Z y `Retry-After: Mon, 23 Nov 2026 10:02:00 GMT` | Igual | 503 con `Retry-After: 120` | plan §4.1, D-70 |
+| ESC-110 d `@alterno` `@abuso` | Igual, una corrida por valor de `Retry-After`: `0`, `3601`, `abc`, `-5`, fecha ya pasada, ausente | Igual | 503 con el `ProblemDetails` genérico y sin encabezado `Retry-After` | plan §4.1, D-70 |
+| ESC-110 e `@alterno` | Igual con `Retry-After: 3600` y luego `1` | Igual | 503 con `Retry-After: 3600` y `1` (límites del rango) | plan §4.1, D-70 |
 | ESC-119 `@operacion` | `LLM_API_KEY` con `sk-ant-`, `sk-or-`, `gsk_`, `AIza`, `sk-proj-` y sin llave | — | Proveedor, en orden: Anthropic, OpenRouter, Groq, Gemini, OpenAI y Ollama; con `LLM_PROVEEDOR`, gana la variable; el log muestra proveedor y modelo, nunca la llave | D-16 |
 | ESC-158 `@operacion` | EST-001; doble con 5 llamadas de 6 s y las 4 primeras invocan herramienta | "¿Cuál es mi promedio?" | 503 genérico en < 21 s (la 4.ª empieza en 18 s y se cancela en 20 s); como máximo 4 llamadas; `error` | SEG-13, RNF-02 |
 | ESC-159 `@abuso` | Presupuesto 0.010 USD, `Llm:ReservaPorPeticionUsd` 0.004; doble que retiene y cuesta 0.003 | 5 peticiones simultáneas de EST-001; se libera tras los 503 | 2 responden 200 y 3 responden 503 sin LLM (2 × 0.004 = 0.008 ≤ 0.010; 3 × 0.004 = 0.012 > 0.010); 2 llamadas; gasto 0.006 USD | SEG-13 |
 | ESC-160 `@abuso` | Proveedor doble que responde 302 hacia otro servidor doble | EST-001: "¿Cuál es mi promedio?" | 503 genérico; el servidor de `Location` recibe 0 peticiones; la llave no sale a otro host | SEG-07 |
-| ESC-180 a `@alterno` `@abuso` `@operacion` | Presupuesto 0.03; doble de plan §4.4 (salida 200); sin precio; `Llm:ReservaSinPrecioUsd` 0.01 | EST-001, 4 veces "¿Cuál es mi promedio?" | Peticiones 1–3: 200, tokens = lo reportado, costo 0, `precioDesconocido: true`, 0.01 de gasto cada una (3 × 0.01 = 0.03); la 4.ª: 503 sin LLM (0.03 + 0.01 > 0.03); 3 llamadas | SEG-13, D-39 |
+| ESC-180 a `@alterno` `@abuso` `@operacion` | Presupuesto 0.03; doble de §4.4 (salida 200); sin precio; reserva sin precio 0.01; reloj 23:00:00 UTC | EST-001, 4 veces "¿Cuál es mi promedio?" | 1–3: 200, tokens = lo reportado, costo 0, `precioDesconocido: true`, gasto 0.01 cada una (3 × 0.01 = 0.03); 4.ª: 503 sin LLM con `Retry-After: 3600` (0.03 + 0.01 > 0.03); 3 llamadas | SEG-13, D-39, D-70 |
 | ESC-180 b | Igual con `Llm:ReservaSinPrecioUsd` 0 (se usa 0.01 con advertencia al arrancar) | Igual | Igual que (a) | SEG-13, D-39, D-40 |
 | ESC-180 c `@operacion` | Igual con `ollama` a precio 0 / 0 | Igual | Las 4 responden 200 con costo 0; ningún `precioDesconocido`; 4 llamadas | D-39 |
 
@@ -43,7 +47,7 @@ Salvo que se indique otra cosa: la prueba fija la IP de la conexión (plan §15.
 
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
-| ESC-047 `@abuso` | Sin `Proxy:IpsConfiables` (defecto); conexión 10.0.0.5 | XFF `203.0.113.7` | 200; `ipOrigen` "10.0.0.5"; la petición cuenta para el límite de 10.0.0.5 (ESC-084 sigue dando 429 a la 61.ª) | SEG-19, D-68 |
+| ESC-047 `@abuso` | Sin `Proxy:IpsConfiables` (defecto); conexión 10.0.0.5 | XFF `203.0.113.7` | 200; `ipOrigen` "10.0.0.5"; con la tasa configurada, la petición cuenta para el límite de 10.0.0.5 (ESC-084 c sigue dando 429 a la 61.ª) | SEG-19, D-68 |
 | ESC-048 a `@feliz` | Proxy; conexión 10.0.0.5 | XFF `203.0.113.7` | 200; `ipOrigen` "203.0.113.7"; cuenta para el límite de 203.0.113.7 y no para el de 10.0.0.5 | SEG-19, D-68 |
 | ESC-048 b `@abuso` | Proxy; conexión 10.0.0.5 | XFF `198.51.100.1, 203.0.113.7` | `ipOrigen` "203.0.113.7": solo cuenta el último valor | SEG-19, D-68 |
 | ESC-048 c `@alterno` | Proxy; conexión `::ffff:10.0.0.5` | XFF `203.0.113.7` | `ipOrigen` "203.0.113.7" | D-68 |
@@ -51,7 +55,7 @@ Salvo que se indique otra cosa: la prueba fija la IP de la conexión (plan §15.
 | ESC-048 e `@abuso` | Proxy; conexión 10.0.0.5 | XFF `EST-002`, luego `203.0.113.7, abc`; luego sin XFF y con `Forwarded: for=203.0.113.9`, `X-Real-IP: 203.0.113.9` y `X-Forwarded-Host: evil.example` | Las 3: 200 y `ipOrigen` "10.0.0.5"; ningún evento contiene "EST-002" en `ipOrigen` ni "203.0.113.9" | SEG-19, D-68 |
 | ESC-049 `@permisos` `@abuso` | Proxy; conexión 10.0.0.6 (no está en la lista) | XFF `203.0.113.7` | `ipOrigen` "10.0.0.6"; cuenta para el límite de 10.0.0.6 | SEG-19, D-68 |
 | ESC-067 `@abuso` | (a) proxy y (b) sin `Proxy:IpsConfiables`; conexión 127.0.0.1 y luego `::1` | XFF `203.0.113.7` | `ipOrigen` "127.0.0.1" y "::1" en (a) y (b): loopback nunca se confía implícitamente | D-68 |
-| ESC-068 `@permisos` | Proxy; conexión 10.0.0.5 | 61 preguntas en un minuto con XFF `203.0.113.7` y 1 con XFF `203.0.113.8` | La 61.ª de 203.0.113.7 recibe 429 con `Retry-After`; la de 203.0.113.8, 200: límites independientes tras el proxy | SEG-13, SEG-19 |
+| ESC-068 `@permisos` | Proxy; tasa configurada en 60; conexión 10.0.0.5 | 61 preguntas en un minuto con XFF `203.0.113.7` y 1 con XFF `203.0.113.8` | La 61.ª de 203.0.113.7 recibe 429 con `Retry-After`; la de 203.0.113.8, 200: límites independientes tras el proxy | SEG-13, SEG-19 |
 | ESC-069 `@abuso` | Proxy; conexión 10.0.0.5; bloqueo desactivado; reloj controlado | "¿Cuál es mi promedio?": EST-001…EST-004 en los min 0–3 con XFF `203.0.113.7`; EST-005 en el min 3 con XFF `203.0.113.8` | Las 5: 200; exactamente 1 evento con `ipOrigen` "203.0.113.7" y `usuarioIds` EST-001…EST-004; 0 eventos con "10.0.0.5" o "203.0.113.8" | SEG-16, SEG-19 |
 | ESC-095 a `@operacion` `@abuso` | `docker compose up` sin perfil | `curl` a `localhost:8080/api/asistente/preguntar` con XFF `203.0.113.99` | `ipOrigen` distinto de "203.0.113.99" y de "172.30.80.2"; salud 200; no existe el contenedor `web` | SEG-19, D-68 |
 | ESC-095 b `@operacion` | `docker compose --profile web up` | Una pregunta por `localhost:5173` | `ipOrigen` distinto de toda IP del contenedor `web` (`docker inspect`), en particular de "172.30.80.2" | SEG-19, D-68 |
@@ -70,7 +74,7 @@ Salvo que se indique otra cosa: la prueba fija la IP de la conexión (plan §15.
 | ESC-148 `@abuso` | Registro de personas en caché | "Notas de Andrés Martínez y EST-002" con las variantes (a)–(d) de la nota ESC-148 | (a)–(c): `pregunta` exactamente "Notas de [TERCERO] y [TERCERO]"; (d): exactamente `[NO_EVALUADA]`; ningún evento contiene "Andrés Martínez" ni "EST-002" en `pregunta` | RF-08 |
 | ESC-153 `@abuso` | COORD-01; doble con la herramienta de detalle y `"EST-004"` | "¿Qué estudiantes de mi programa perdieron materias?" | 403 `herramienta_id_ajeno` con `idSolicitado: "EST-004"`; EST-004 fuera de `estudiantesConsultados` y `datosConsultados`; variantes en la nota ESC-153 | SEG-06, D-22 |
 
-- **ESC-148:** variantes (a) `rol: "admin"` → 400; (b) la 61.ª petición del minuto → 429; (c) `EST-999` → 403 `identidad_invalida`; (d) cuerpo de 17 KB → 413.
+- **ESC-148:** variantes (a) `rol: "admin"` → 400; (b) con la tasa configurada en 60, la 61.ª petición del minuto → 429; (c) `EST-999` → 403 `identidad_invalida`; (d) cuerpo de 17 KB → 413.
 - **ESC-153:** con `"../EST-004\nx"`, `idSolicitado` = `[FORMATO_INVALIDO]` y una sola línea JSON; con EST-001 y `"EST-002"` ("¿Cuál es mi promedio?"), `idSolicitado: "EST-002"`.
 
 ## Despliegue y CI

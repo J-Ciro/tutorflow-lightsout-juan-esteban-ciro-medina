@@ -77,7 +77,7 @@ Estructura de proyectos, convenciones y antipatrones: [`AGENTS.md`](AGENTS.md) �
 3. **Herramientas acotadas al rol.** La identidad de una herramienta la pone el servidor, nunca el modelo.
 4. **Auditoría.** Cada petición produce exactamente un evento estructurado, en consola y en archivo persistente, con terceros enmascarados y sin valores académicos ni secretos.
 5. **Secretos.** `LLM_API_KEY` se lee solo de la variable de entorno; nunca se registra, se devuelve ni entra en la imagen.
-6. **Límites explícitos.** Tamaño de entrada, tasa por IP, tiempo, invocaciones de herramientas y presupuesto diario están acotados y son configurables con rangos validados.
+6. **Límites explícitos.** Tamaño de entrada, tiempo e invocaciones de herramientas están acotados; la tasa por IP y el presupuesto diario son configurables con rangos validados y, sin configurar, no tienen tope (lo registra el arranque; D-70, INT-027).
 
 ## 5. Documentos de cada feature
 

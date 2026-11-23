@@ -98,7 +98,7 @@ Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la
   - **SEG-10g** · Definitiva o par asignatura-cifra que no es la definitiva calculada de esa asignatura (o un corte o la acumulada, sin la palabra "definitiva") → `TEXTO_NO_VERIFICABLE` con `estado_no_verificado`.
 - **SEG-11** · `LLM_API_KEY` solo se lee de la variable de entorno; nunca se registra, se devuelve ni se incluye en la imagen.
 - **SEG-12** · Errores sin stack trace, rutas ni respuestas crudas de servicios internos.
-- **SEG-13** · Límites: pregunta ≤ 1.000 caracteres (400), cuerpo ≤ 16 KB (413), 60 preguntas por minuto por IP de origen (SEG-19; 429), 4 invocaciones de herramientas, 20 s para el LLM y 6 s para la API académica por petición, y presupuesto diario en USD (503).
+- **SEG-13** · Límites: pregunta ≤ 1.000 caracteres (400), cuerpo ≤ 16 KB (413), 4 invocaciones de herramientas, 20 s para el LLM y 6 s para la API académica por petición (503). La tasa por IP de origen (SEG-19; 429 con `Retry-After`) y el presupuesto diario en USD (503 con `Retry-After`) solo aplican si el operador los configura; por defecto, sin tope (D-70).
 - **SEG-14** · Encabezados `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` y `Referrer-Policy: no-referrer`; CORS sin origen comodín; Swagger solo en desarrollo.
 - **SEG-15** · El contenedor corre sin root y la API académica no se publica fuera de la red de Compose.
 - **SEG-16** · Más de 3 `usuario.id` distintos por IP de origen en 10 minutos emiten un evento `multiples_identidades` por identidad nueva. Con el bloqueo activado (por defecto no, D-21), solo la identidad nueva recibe 429 con `Retry-After` hasta que vence la más antigua; las registradas siguen atendiéndose y el intento bloqueado no renueva la ventana (D-69).
@@ -109,8 +109,8 @@ Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la
 - **RNF-01** · Un 403 del filtro previo responde en menos de 500 ms (p95).
 - **RNF-02** · Al superar 20 s en el LLM o 6 s en la API académica, 503.
 - **RNF-03** · `REPORTE.md` publica los tokens y el costo por 1.000 preguntas por proveedor.
-- **RNF-04** · Los límites de consumo son los de SEG-13.
-- **RNF-05** · La configuración se valida al arrancar: un valor inválido impide arrancar o, en las reservas, usa su defecto con advertencia; nunca se corrige en silencio (plan.md §13).
+- **RNF-04** · Con la configuración por defecto, un cliente automático desde una sola IP, con las 8 identidades de prueba e IDs inexistentes, en ráfagas y en varias corridas al día, con cualquier proveedor y con o sin precio conocido, no recibe 429 ni 503 por tasa, identidades ni presupuesto (D-70).
+- **RNF-05** · La configuración se valida al arrancar: un valor inválido impide arrancar o, en las reservas, usa su defecto con advertencia; nunca se corrige en silencio. Sin tasa por IP ni presupuesto configurados no hay tope, y el log de arranque lo registra (plan.md §13).
 - **RNF-06** · Logs JSON estructurados con el `correlationId` de la petición.
 - **RNF-07** · Arranca con `docker compose up` sin dependencias en el host salvo Docker.
 - **RNF-08** · Mantenibilidad: reglas de [`AGENTS.md`](../../AGENTS.md).
@@ -227,10 +227,10 @@ Característica: Asistente académico
       | EST-001 | ¿Cómo se calcula la nota definitiva de una asignatura?   | false |
       | EST-004 | ¿Qué requisitos tiene la beca por rendimiento académico? | false |
       | EST-004 | ¿Qué nota definitiva tengo en Contabilidad?              | true  |
-  Esquema del escenario: CA-12 · Sin falsos 403 (Detalle: ESC-036, ESC-037 i–k, ESC-039 e, f, ESC-120…129, ESC-187 d–f)
-    Dado el usuario "<rol>" con id "<usuario>"
+  Esquema del escenario: CA-12 · Sin falsos 403 ni bloqueos por volumen (Detalle: ESC-036, ESC-037 i–k, ESC-039 e, f, ESC-084 d, ESC-120…129, ESC-187 d–f)
+    Dado el usuario "<rol>" con id "<usuario>", la configuración por defecto y 2.000 peticiones previas en ráfaga desde su misma IP con las 8 identidades de prueba e IDs inexistentes
     Cuando pregunta "<pregunta>"
-    Entonces el código HTTP es 200
+    Entonces el código HTTP es 200 y ninguna petición de la ráfaga recibió 429 ni 503
     Ejemplos:
       | rol         | usuario  | pregunta                                                                      |
       | estudiante  | EST-006  | ¿Cuál es mi nota en EST-103?                                                  |
