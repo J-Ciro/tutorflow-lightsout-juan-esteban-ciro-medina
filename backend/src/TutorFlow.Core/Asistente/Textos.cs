@@ -33,6 +33,7 @@ public static class Textos
     public const string AsignaturaNoEncontrada = "No hay una asignatura con ese nombre o código.";
     public const string SinProgramasAsignados = "No tienes programas asignados, por lo que no hay datos de estudiantes para consultar.";
     public const string FormatoInvalido = "[FORMATO_INVALIDO]";
+    public const string PrefijoConfiguracionIgnorada = "Configuración ignorada";
     public const string FuenteResumenPropio = "Resumen académico propio";
 
     public static string Negativa(Rol rol) => rol == Rol.Coordinador ? NegativaCoordinador : NegativaEstudiante;

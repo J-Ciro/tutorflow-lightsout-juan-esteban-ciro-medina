@@ -48,13 +48,13 @@ internal sealed partial class DefinitivaPorAsignatura
         DirectorioAcademico directorio,
         IReadOnlyDictionary<string, ResumenEstudiante> resumenesLeidos) =>
         TramosDePersonas.DeRespuesta(respuesta, usuario.Rol, idsAutorizados, directorio)
-            .SelectMany(oracion => Atribuciones(oracion, usuario))
+            .SelectMany(oracion => Atribuciones(oracion, usuario, CatalogoAsignaturas.Vigente(_catalogo, directorio)))
             .All(atribucion => Coincide(atribucion, resumenesLeidos));
 
-    private IEnumerable<AtribucionDeDefinitiva> Atribuciones(OracionAnalizada oracion, Usuario usuario)
+    private static IEnumerable<AtribucionDeDefinitiva> Atribuciones(OracionAnalizada oracion, Usuario usuario, IReadOnlyList<AsignaturaCatalogo> catalogo)
     {
         var tokens = TokenizadorTexto.TokenizarConCifras(oracion.Texto);
-        var apariciones = CatalogoAsignaturas.Apariciones(tokens, _catalogo);
+        var apariciones = CatalogoAsignaturas.Apariciones(tokens, catalogo);
         return Enumerable.Range(0, tokens.Count)
             .Where(indice => tokens[indice].Valor == Definitiva && !EstaNegada(tokens, indice))
             .Select(indice => (Definitiva: indice, Cifra: CifraAsociada(tokens, indice)))

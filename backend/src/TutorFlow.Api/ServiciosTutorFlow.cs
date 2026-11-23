@@ -20,7 +20,7 @@ public static class ServiciosTutorFlow
     private const string SeccionAsignaturas = "Autorizacion:Asignaturas";
     private const string ClaveMarcadorCanario = "Llm:MarcadorCanario";
     private const string ClaveReservaPorPeticion = "Llm:ReservaPorPeticionUsd";
-    public const string ClaveReservaSinPrecio = "Llm:ReservaSinPrecioUsd";
+    private const string ClaveReservaSinPrecio = "Llm:ReservaSinPrecioUsd";
     private const string ClaveRelevanciaMinima = "Conocimiento:RelevanciaMinima";
     private const string ClaveApoyoMinimoRespaldo = "Conocimiento:ApoyoMinimoRespaldo";
     private const string ClaveSeccionLimites = "Limites";
@@ -29,6 +29,7 @@ public static class ServiciosTutorFlow
 
     public static IServiceCollection AgregarTutorFlow(this IServiceCollection servicios, IConfiguration configuracion)
     {
+        servicios.AddHostedService<ValidacionDeArranque>();
         AgregarOpciones(servicios);
         AgregarNucleo(servicios, configuracion);
         AgregarInfraestructura(servicios, configuracion);
@@ -49,12 +50,10 @@ public static class ServiciosTutorFlow
             .ValidateOnStart();
         servicios.AddOptions<OpcionesLlm>()
             .BindConfiguration(OpcionesLlm.Seccion)
-            .Validate(o => o.Proveedores.Count > 0, "Llm:Proveedores no puede estar vacio")
-            .ValidateOnStart();
+            .Validate(o => o.Proveedores.Count > 0, "Llm:Proveedores no puede estar vacio");
         servicios.AddOptions<LimitesAsistente>()
             .BindConfiguration(ClaveSeccionLimites)
-            .Validate(l => l.MaximoCaracteresPregunta > 0 && l.PreguntasPorMinutoPorIp > 0, "Limites invalidos")
-            .ValidateOnStart();
+            .Validate(l => l.MaximoCaracteresPregunta > 0 && l.PreguntasPorMinutoPorIp > 0, "Limites invalidos");
         servicios.AddOptions<OpcionesConocimiento>()
             .BindConfiguration(OpcionesConocimiento.Seccion)
             .Validate(o => o.DocumentosVigentes.Count > 0, "Conocimiento:DocumentosVigentes no puede estar vacio")
@@ -124,8 +123,8 @@ public static class ServiciosTutorFlow
             LeerDecimal(Valor("LLM_PRECIO_SALIDA")));
     }
 
-    public static decimal? LeerReservaSinPrecio(IConfiguration configuracion) =>
-        LeerDecimal(configuracion[ClaveReservaSinPrecio]) is > 0m and var reserva ? reserva : null;
+    private static Action<string> AdvertirPor(ILogger logger) =>
+        mensaje => ValidacionDeArranque.RegistrarAdvertencia(logger, mensaje);
 
     private static decimal? LeerDecimal(string? valor) =>
         decimal.TryParse(valor, NumberStyles.Number, CultureInfo.InvariantCulture, out var numero) ? numero : null;
@@ -142,6 +141,7 @@ public static class ServiciosTutorFlow
             configuracion.GetValue(ClaveRelevanciaMinima, ConfiguracionAsistente.RelevanciaMinimaPorDefecto),
             configuracion.GetValue(ClaveApoyoMinimoRespaldo, ConfiguracionAsistente.ApoyoMinimoPorDefecto),
             configuracion.GetSection(SeccionAsignaturas).Get<AsignaturaCatalogo[]>(),
-            LeerReservaSinPrecio(configuracion) ?? ConfiguracionAsistente.ReservaSinPrecioPorDefectoUsd);
+            LeerDecimal(configuracion[ClaveReservaSinPrecio]) ?? ConfiguracionAsistente.ReservaSinPrecioPorDefectoUsd,
+            AdvertirPor(proveedor.GetRequiredService<ILoggerFactory>().CreateLogger("TutorFlow.Configuracion")));
     }
 }

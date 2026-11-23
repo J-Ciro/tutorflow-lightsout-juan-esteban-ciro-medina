@@ -8,6 +8,12 @@ internal sealed record AparicionDeAsignatura(string Clave, int Inicio, int Fin);
 
 internal static class CatalogoAsignaturas
 {
+    public static IReadOnlyList<AsignaturaCatalogo> Vigente(IReadOnlyList<AsignaturaCatalogo> catalogo, DirectorioAcademico directorio) =>
+        [.. catalogo.Where(asignatura => !EsIdDePersona(asignatura.Codigo, directorio))];
+
+    public static bool EsIdDePersona(string codigo, DirectorioAcademico directorio) =>
+        directorio.Estudiantes.Any(estudiante => estudiante.Id == codigo) || directorio.Coordinadores.Any(coordinador => coordinador.Id == codigo);
+
     public static IReadOnlyList<string> CodigosNombrados(
         string pregunta,
         IReadOnlyList<AsignaturaCatalogo> catalogo,
