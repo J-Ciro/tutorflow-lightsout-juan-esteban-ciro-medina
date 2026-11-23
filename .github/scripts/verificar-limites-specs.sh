@@ -41,11 +41,11 @@ revisar_awk() {
       }
       if (id != "") n++
     }
-    modo != "decisiones" && /^\|/ {
+    {
       t = $0
       gsub(/[\200-\277]/, "", t)
       largo = length(t)
-      if (largo > 400) print archivo ":" NR ": fila de tabla de " largo " caracteres y el maximo es 400"
+      if (largo > 400) print archivo ":" NR ": linea de " largo " caracteres y el maximo es 400"
     }
     modo == "spec" {
       if ($0 ~ /~~/) print archivo ":" NR ": texto tachado (~~)"
