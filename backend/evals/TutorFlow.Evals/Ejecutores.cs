@@ -59,7 +59,7 @@ public sealed class EjecutorEnProceso : IEjecutor
             return null;
         }
 
-        using var fabrica = new FabricaApi(llm: LlmPara(caso.Offline), configuracion: FabricaApi.Precios("0.10", "0.50"));
+        using var fabrica = new FabricaApi(llm: LlmPara(caso.Offline), conocimientoReal: true, configuracion: FabricaApi.Precios("0.10", "0.50"));
         var reloj = Stopwatch.StartNew();
         var respuesta = await fabrica.EnviarAsync(HttpMethod.Post, Cuerpos.Ruta, Cuerpos.De(caso));
         reloj.Stop();
