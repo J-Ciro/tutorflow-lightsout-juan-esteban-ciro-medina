@@ -225,3 +225,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** los procesos huérfanos consumen recursos, bloquean archivos y puertos, y dejan el estado de la fábrica opaco.
 - **Costo:** ~1 min humano.
 - **Prevención:** aprobada por el humano y aplicada: `AGENTS.md` §7 prohíbe entregar el informe con procesos propios vivos y exige la línea "Procesos en segundo plano: ninguno". El orquestador detuvo los tres agentes y verificó que no quedaban procesos `dotnet`, `testhost` ni contenedores.
+
+### INT-027 · 2026-11-23 · Los controles por IP no pueden bloquear al evaluador
+- **Fase:** spec
+- **Qué pasó:** la 001 aplica un límite de 60 preguntas por minuto por IP antes de validar la identidad (SEG-13). También tiene detección de identidades múltiples por IP (SEG-16, D-69) y un presupuesto diario. El evaluador de Q10 probablemente correrá su batería oculta desde una sola IP, con muchas identidades y peticiones rápidas (las denegaciones del filtro previo tardan milisegundos). Puede recibir 429 donde espera 403 o 200.
+- **Qué hizo el humano:** *"Hay que tener bien el tema de la IP ya que puede que el evaluador de esta prueba tenica lo bloquee por IP y demas enotnces ten eso en cuenta, esot no puede ser un bloqueante"*.
+- **Por qué:** un control de abuso que hace fallar las pruebas ocultas del evaluador anula la entrega.
+- **Costo:** ~1 min humano.
+- **Prevención:** el análisis de toda regla de límites o bloqueos considera al evaluador automático como un cliente legítimo: una IP, muchas identidades, ráfagas. Los valores por defecto nunca lo bloquean; endurecerlos es una configuración explícita.
