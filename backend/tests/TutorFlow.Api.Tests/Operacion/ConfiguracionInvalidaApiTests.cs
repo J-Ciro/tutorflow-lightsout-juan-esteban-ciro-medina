@@ -8,7 +8,7 @@ public sealed class ConfiguracionInvalidaApiTests
     private const string ReglaEntero1a10 = "entero de 1 a 10";
     private const string ReglaPresupuesto = "decimal mayor que 0 y hasta 1000";
     private const string ReglaPrecio = "decimal de 0 a 1000";
-    private const string ReglaFormatoCodigo = @"formato ^[A-Z]{2,4}-\d{3}$";
+    private const string ReglaFormatoCodigo = @"formato ^[A-Z]{2,4}-[0-9]{3}\z";
     private const string RelevanciaMinima = "Conocimiento:RelevanciaMinima";
     private const string PresupuestoDiario = "Limites:PresupuestoDiarioUsd";
     private const string CodigoBd = "Autorizacion:Asignaturas:2:Codigo";

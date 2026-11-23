@@ -14,9 +14,9 @@ public sealed class CifrasComoApoyoApiTests
 
     public static TheoryData<string, string[], string> RespuestasConApoyoNumerico => new()
     {
-        { RespuestaPesos, [CitaSeccion2, CitaSeccion3], "ESC-171a" },
-        { "El corte 1 pesa 30%.", [CitaSeccion2], "ESC-171b" },
-        { "La definitiva se redondea a una cifra decimal.", [CitaSeccion3], "ESC-171c" }
+        { "La definitiva pondera 30% el corte 1, 30% el corte 2 y 40% el corte 3, y se redondea a una cifra decimal", [CitaSeccion2, CitaSeccion3], "ESC-171a" },
+        { "El corte 1 pesa 30%", [CitaSeccion2], "ESC-171b" },
+        { "La definitiva se redondea a una cifra decimal", [CitaSeccion3], "ESC-171c" }
     };
 
     [Fact]
@@ -57,14 +57,16 @@ public sealed class CifrasComoApoyoApiTests
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-171")]
     [Trait("RF", "COMP-02")]
-    public async Task ESC_171_Las_citas_escritas_se_conservan_si_la_seccion_comparte_dos_raices_contando_las_cifras(string respuesta, string[] citasEsperadas, string caso)
+    [Trait("D", "D-37")]
+    public async Task ESC_171_La_cita_escrita_con_apoyo_se_conserva_y_la_escrita_sin_apoyo_se_elimina_del_texto(string cuerpo, string[] citasEsperadas, string caso)
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => $"{respuesta} {CitasEscritas}"), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => $"{cuerpo} {CitasEscritas}."), conocimientoReal: true);
+        var conservadas = string.Join(" ", citasEsperadas.Select(c => $"({c})"));
 
         var resultado = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaDefinitiva);
 
         Assert.True(resultado.Estado == 200, caso);
-        Assert.Equal($"{respuesta} {CitasEscritas}", resultado.Respuesta);
+        Assert.Equal($"{cuerpo} {conservadas}.", resultado.Respuesta);
         Assert.Equal(citasEsperadas.Order(StringComparer.Ordinal), resultado.Citas.Order(StringComparer.Ordinal));
         Assert.False(resultado.UsoDatosEstudiante, caso);
     }

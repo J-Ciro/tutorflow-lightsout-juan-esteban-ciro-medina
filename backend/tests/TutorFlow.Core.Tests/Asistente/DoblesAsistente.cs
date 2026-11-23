@@ -54,13 +54,12 @@ internal sealed class LlmDoble(Func<SolicitudLlm, int, RespuestaLlm> guion) : IC
 
 internal sealed class IndiceFijo(IReadOnlyList<SeccionDocumento> indice, IReadOnlyList<SeccionDocumento> entregadas) : IBaseConocimiento
 {
-    private int _busquedas;
+    public IReadOnlyList<SeccionDocumento> BuscarSecciones(string consulta, int maximo) => entregadas;
 
-    public IReadOnlyList<SeccionDocumento> BuscarSecciones(string consulta, int maximo) =>
-        _busquedas++ == 0 ? entregadas : indice;
+    public bool ExisteCita(Cita cita) => ObtenerSeccion(cita) is not null;
 
-    public bool ExisteCita(Cita cita) =>
-        indice.Any(s => s.Documento == cita.Documento && s.Seccion == cita.Seccion);
+    public SeccionDocumento? ObtenerSeccion(Cita cita) =>
+        indice.FirstOrDefault(s => s.Documento == cita.Documento && s.Seccion == cita.Seccion);
 }
 
 internal sealed class IndiceRelevante : IBaseConocimiento
@@ -69,6 +68,8 @@ internal sealed class IndiceRelevante : IBaseConocimiento
         [new SeccionDocumento("reglamento_academico_2025.md", "Artículo 99", "Ley", consulta)];
 
     public bool ExisteCita(Cita cita) => false;
+
+    public SeccionDocumento? ObtenerSeccion(Cita cita) => null;
 }
 
 internal sealed class AuditoriaDoble : IAuditoria
@@ -108,7 +109,7 @@ internal sealed class EscenarioAsistente
             new PoliticaAcceso(),
             new VerificadorSalida(),
             limites,
-            new ConfiguracionAsistente(null, canario, datos.Directorio.CodigosAsignatura),
+            new ConfiguracionAsistente(null, canario, datos.Directorio.CodigosAsignatura, catalogo: CatalogoDePrueba.Asignaturas),
             new PresupuestoDiario(reloj, limites));
     }
 

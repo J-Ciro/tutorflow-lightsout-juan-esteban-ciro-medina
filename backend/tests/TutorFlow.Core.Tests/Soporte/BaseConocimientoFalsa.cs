@@ -47,8 +47,10 @@ public sealed partial class BaseConocimientoFalsa : IBaseConocimiento
             .ToList();
     }
 
-    public bool ExisteCita(Cita cita) =>
-        _secciones.Any(s => s.Documento == cita.Documento && s.Seccion == cita.Seccion);
+    public bool ExisteCita(Cita cita) => ObtenerSeccion(cita) is not null;
+
+    public SeccionDocumento? ObtenerSeccion(Cita cita) =>
+        _secciones.FirstOrDefault(s => s.Documento == cita.Documento && s.Seccion == cita.Seccion);
 
     private static List<SeccionDocumento> LeerArticulos(string ruta) =>
         File.ReadAllLines(ruta)
