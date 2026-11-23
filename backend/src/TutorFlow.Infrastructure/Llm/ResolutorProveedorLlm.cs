@@ -2,8 +2,6 @@ namespace TutorFlow.Infrastructure.Llm;
 
 public static class ResolutorProveedorLlm
 {
-    private const string ModeloOpenAiPorDefecto = "gpt-4o-mini";
-
     private static readonly Dictionary<string, ProveedorLlm> ProveedoresExplicitos =
         new Dictionary<string, ProveedorLlm>(StringComparer.OrdinalIgnoreCase)
         {
@@ -43,7 +41,7 @@ public static class ResolutorProveedorLlm
     }
 
     private static string ElegirModelo(EntornoLlm entorno, ConfiguracionProveedor? configuracion) =>
-        Limpiar(entorno.Modelo) ?? configuracion?.ModeloPorDefecto ?? ModeloOpenAiPorDefecto;
+        Limpiar(entorno.Modelo) ?? configuracion?.ModeloPorDefecto ?? string.Empty;
 
     private static string ElegirUrl(ProveedorLlm proveedor, string? urlExplicita, ConfiguracionProveedor? configuracion) =>
         proveedor == ProveedorLlm.Desconocido ? string.Empty : urlExplicita ?? configuracion?.UrlBase ?? string.Empty;
