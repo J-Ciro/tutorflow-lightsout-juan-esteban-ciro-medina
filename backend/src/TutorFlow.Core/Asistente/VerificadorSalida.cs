@@ -22,20 +22,34 @@ public sealed partial class VerificadorSalida
         IReadOnlyCollection<string> idsPersonasAutorizadas,
         IReadOnlyCollection<string> textosFuente,
         IBaseConocimiento baseConocimiento,
-        DirectorioAcademico directorio)
-    {
-        if (ContienePersonaNoAutorizada(respuesta, idsPersonasAutorizadas, directorio))
-        {
-            return new SalidaVerificada(Textos.Negativa(usuario.Rol), [Textos.CitaNegativa()], ResultadoAuditoria.FugaBloqueada);
-        }
+        DirectorioAcademico directorio,
+        MaterialConfidencial? confidencial = null) =>
+        RechazoPorPersona(usuario, respuesta, idsPersonasAutorizadas, directorio)
+        ?? RechazoPorConfiguracion(respuesta, textosFuente, confidencial)
+        ?? RechazoPorNumero(respuesta, textosFuente)
+        ?? new SalidaVerificada(respuesta, DescartarCitasInexistentes(citas, baseConocimiento), ResultadoAuditoria.Respondida);
 
-        if (!TodosLosNumerosSonVerificables(respuesta, textosFuente))
-        {
-            return new SalidaVerificada(Textos.NoVerificable, [], ResultadoAuditoria.NumeroNoVerificado);
-        }
+    private SalidaVerificada? RechazoPorPersona(
+        Usuario usuario,
+        string respuesta,
+        IReadOnlyCollection<string> idsPersonasAutorizadas,
+        DirectorioAcademico directorio) =>
+        ContienePersonaNoAutorizada(respuesta, idsPersonasAutorizadas, directorio)
+            ? new SalidaVerificada(Textos.Negativa(usuario.Rol), [Textos.CitaNegativa()], ResultadoAuditoria.FugaBloqueada)
+            : null;
 
-        return new SalidaVerificada(respuesta, DescartarCitasInexistentes(citas, baseConocimiento), ResultadoAuditoria.Respondida);
-    }
+    private static SalidaVerificada? RechazoPorConfiguracion(
+        string respuesta,
+        IReadOnlyCollection<string> textosFuente,
+        MaterialConfidencial? confidencial) =>
+        confidencial is not null && DetectorFugaConfiguracion.HayFuga(respuesta, confidencial, textosFuente)
+            ? new SalidaVerificada(Textos.SinInformacion, [], ResultadoAuditoria.FugaBloqueada)
+            : null;
+
+    private SalidaVerificada? RechazoPorNumero(string respuesta, IReadOnlyCollection<string> textosFuente) =>
+        TodosLosNumerosSonVerificables(respuesta, textosFuente)
+            ? null
+            : new SalidaVerificada(Textos.NoVerificable, [], ResultadoAuditoria.NumeroNoVerificado);
 
     public IReadOnlyList<Cita> DescartarCitasInexistentes(IReadOnlyList<Cita> citas, IBaseConocimiento baseConocimiento) =>
         citas.Where(cita => !_documentosDerogados.Contains(cita.Documento) && baseConocimiento.ExisteCita(cita)).ToList();

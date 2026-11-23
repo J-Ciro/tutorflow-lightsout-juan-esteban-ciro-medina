@@ -1,11 +1,13 @@
 using System.Globalization;
 using System.Net;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using TutorFlow.Core.Asistente;
 using TutorFlow.Core.Autorizacion;
 using TutorFlow.Infrastructure.ApiAcademica;
 using TutorFlow.Infrastructure.Auditoria;
+using TutorFlow.Infrastructure.Configuracion;
 using TutorFlow.Infrastructure.Conocimiento;
 using TutorFlow.Infrastructure.Llm;
 using TutorFlow.Infrastructure.Tiempo;
@@ -17,7 +19,10 @@ public static class ServiciosTutorFlow
     private const string NombreClienteLlm = "llm";
     private const string SeccionCodigosAsignatura = "Autorizacion:CodigosAsignatura";
     private const string ClaveMarcadorCanario = "Llm:MarcadorCanario";
+    private const string ClaveReservaPorPeticion = "Llm:ReservaPorPeticionUsd";
     private const string ClaveSeccionLimites = "Limites";
+    private const string ClaveTraceId = "traceId";
+    private const string VariableLlaveLlm = "LLM_API_KEY";
 
     public static IServiceCollection AgregarTutorFlow(this IServiceCollection servicios, IConfiguration configuracion)
     {
@@ -25,7 +30,8 @@ public static class ServiciosTutorFlow
         AgregarNucleo(servicios, configuracion);
         AgregarInfraestructura(servicios, configuracion);
         AgregarLlm(servicios, configuracion);
-        servicios.AddProblemDetails();
+        servicios.AddProblemDetails(opciones =>
+            opciones.CustomizeProblemDetails = contexto => contexto.ProblemDetails.Extensions[ClaveTraceId] = contexto.HttpContext.TraceIdentifier);
         servicios.AddExceptionHandler<ManejadorExcepciones>();
         servicios.ConfigureHttpJsonOptions(opciones => opciones.SerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping);
         servicios.AddHostedService<RegistroArranqueLlm>();
@@ -89,25 +95,31 @@ public static class ServiciosTutorFlow
 
     private static void AgregarLlm(IServiceCollection servicios, IConfiguration configuracion)
     {
+        servicios.AddSingleton<IVariablesEntorno, VariablesEntornoProceso>();
         servicios.AddSingleton(proveedor => ResolutorProveedorLlm.Resolver(
-            EntornoDesde(configuracion),
+            EntornoDesde(proveedor.GetRequiredService<IVariablesEntorno>(), configuracion),
             proveedor.GetRequiredService<IOptions<OpcionesLlm>>().Value));
         servicios.AddHttpClient(NombreClienteLlm)
             .ConfigureHttpClient((proveedor, cliente) =>
                 cliente.Timeout = TimeSpan.FromSeconds(proveedor.GetRequiredService<LimitesAsistente>().TimeoutLlmSegundos));
+        servicios.AddSingleton<IHttpMessageHandlerBuilderFilter>(new SinRedireccionesLlm(NombreClienteLlm));
         servicios.AddScoped<IClienteLlm>(proveedor => FabricaClienteLlm.Crear(
             proveedor.GetRequiredService<ProveedorResuelto>(),
-            configuracion["LLM_API_KEY"],
+            proveedor.GetRequiredService<IVariablesEntorno>().Leer(VariableLlaveLlm),
             proveedor.GetRequiredService<IHttpClientFactory>().CreateClient(NombreClienteLlm)));
     }
 
-    private static EntornoLlm EntornoDesde(IConfiguration configuracion) => new(
-        configuracion["LLM_API_KEY"],
-        configuracion["LLM_PROVEEDOR"],
-        configuracion["LLM_URL_BASE"],
-        configuracion["LLM_MODELO"],
-        LeerDecimal(configuracion["LLM_PRECIO_ENTRADA"]),
-        LeerDecimal(configuracion["LLM_PRECIO_SALIDA"]));
+    private static EntornoLlm EntornoDesde(IVariablesEntorno variables, IConfiguration configuracion)
+    {
+        string? Valor(string nombre) => variables.Leer(nombre) ?? configuracion[nombre];
+        return new EntornoLlm(
+            variables.Leer(VariableLlaveLlm),
+            Valor("LLM_PROVEEDOR"),
+            Valor("LLM_URL_BASE"),
+            Valor("LLM_MODELO"),
+            LeerDecimal(Valor("LLM_PRECIO_ENTRADA")),
+            LeerDecimal(Valor("LLM_PRECIO_SALIDA")));
+    }
 
     private static decimal? LeerDecimal(string? valor) =>
         decimal.TryParse(valor, NumberStyles.Number, CultureInfo.InvariantCulture, out var numero) ? numero : null;
@@ -117,6 +129,6 @@ public static class ServiciosTutorFlow
         var resuelto = proveedor.GetRequiredService<ProveedorResuelto>();
         var precio = resuelto.PrecioDesconocido ? null : new PrecioModelo(resuelto.PrecioEntradaPorMillon, resuelto.PrecioSalidaPorMillon);
         var codigos = configuracion.GetSection(SeccionCodigosAsignatura).Get<string[]>() ?? [];
-        return new ConfiguracionAsistente(precio, configuracion[ClaveMarcadorCanario], codigos);
+        return new ConfiguracionAsistente(precio, configuracion[ClaveMarcadorCanario], codigos, LeerDecimal(configuracion[ClaveReservaPorPeticion]));
     }
 }

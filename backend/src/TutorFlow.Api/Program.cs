@@ -12,6 +12,7 @@ builder.Services.AgregarTutorFlow(builder.Configuration);
 
 var app = builder.Build();
 
+app.UsarCorrelacion();
 app.UsarEncabezadosDeSeguridad();
 app.UseExceptionHandler();
 

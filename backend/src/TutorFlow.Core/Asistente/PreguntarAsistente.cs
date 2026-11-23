@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using TutorFlow.Core.Autorizacion;
 using TutorFlow.Core.Conocimiento;
 
@@ -26,22 +25,6 @@ public sealed record ResultadoPregunta(
     ResultadoAuditoria Auditoria,
     MotivoDenegacion? Motivo);
 
-public sealed class LimitesAsistente
-{
-    public int MaximoCaracteresPregunta { get; init; } = 1000;
-    public int MaximoBytesCuerpo { get; init; } = 16 * 1024;
-    public int PreguntasPorMinutoPorIp { get; init; } = 60;
-    public int MaximoSeccionesRecuperadas { get; init; } = 6;
-    public int MaximoTokensSalida { get; init; } = 2000;
-    public int MaximoInvocacionesHerramientas { get; init; } = 4;
-    public int TimeoutLlmSegundos { get; init; } = 20;
-    public int PresupuestoApiAcademicaSegundos { get; init; } = 6;
-    public decimal PresupuestoDiarioUsd { get; init; } = 5m;
-    public int MaximoIdentidadesPorIp { get; init; } = 3;
-    public int VentanaIdentidadesMinutos { get; init; } = 10;
-    public bool BloquearMultiplesIdentidades { get; init; }
-}
-
 public sealed class PreguntarAsistente
 {
     private readonly IApiAcademica _apiAcademica;
@@ -53,6 +36,7 @@ public sealed class PreguntarAsistente
     private readonly LimitesAsistente _limites;
     private readonly ConfiguracionAsistente _configuracion;
     private readonly PresupuestoDiario _presupuesto;
+    private readonly LectorResumenPropio _lectorResumen;
 
     public PreguntarAsistente(
         IApiAcademica apiAcademica,
@@ -74,6 +58,7 @@ public sealed class PreguntarAsistente
         _limites = limites;
         _configuracion = configuracion;
         _presupuesto = presupuesto;
+        _lectorResumen = new LectorResumenPropio(politicaAcceso);
     }
 
     public async Task<ResultadoPregunta> EjecutarAsync(
@@ -83,87 +68,118 @@ public sealed class PreguntarAsistente
         CancellationToken cancellationToken)
     {
         var presupuestoApi = TimeSpan.FromSeconds(_limites.PresupuestoApiAcademicaSegundos);
-        var sesion = new SesionPregunta(entrada, ipOrigen, correlationId, new ApiAcademicaConPresupuesto(_apiAcademica, presupuestoApi));
-        sesion.Directorio = await ConstructorDirectorio.ConstruirAsync(entrada.Usuario, sesion.Api, _configuracion.CodigosAsignatura, cancellationToken);
-        var decision = Autorizar(sesion);
-        if (!decision.Permitido)
+        var api = new ApiAcademicaConPresupuesto(_apiAcademica, presupuestoApi);
+        var directorio = await ConstructorDirectorio.ConstruirAsync(entrada.Usuario, api, _configuracion.CodigosAsignatura, cancellationToken);
+        if (directorio is not null)
         {
-            return Denegar(sesion, decision.Motivo, 0);
+            _auditor.RecordarPersonas(directorio);
         }
 
-        return _presupuesto.Agotado
-            ? NoDisponible(sesion, ResultadoAuditoria.Error)
-            : await ResponderAsync(sesion, cancellationToken);
+        var sesion = new SesionPregunta(entrada, ipOrigen, correlationId, api, directorio ?? ConstructorDirectorio.Vacio);
+        var decision = Autorizar(sesion);
+        return decision.Permitido
+            ? await ResponderConReservaAsync(sesion, cancellationToken)
+            : Denegar(sesion, decision.Motivo, 0);
     }
 
     private DecisionAcceso Autorizar(SesionPregunta sesion)
     {
-        if (sesion.Directorio is not { } directorio)
+        var identidad = _politicaAcceso.EvaluarIdentidad(sesion.Entrada.Usuario, sesion.Directorio);
+        return identidad.Permitido
+            ? _politicaAcceso.EvaluarPregunta(sesion.Entrada.Usuario, sesion.Entrada.Pregunta, sesion.Directorio)
+            : identidad;
+    }
+
+    private async Task<ResultadoPregunta> ResponderConReservaAsync(SesionPregunta sesion, CancellationToken cancellationToken)
+    {
+        var reserva = _configuracion.ReservaPorPeticionUsd;
+        if (!_presupuesto.TryReservar(reserva))
         {
-            return DecisionAcceso.Denegar(MotivoDenegacion.IdentidadInvalida);
+            return NoDisponible(sesion, ResultadoAuditoria.Error);
         }
 
-        var identidad = _politicaAcceso.EvaluarIdentidad(sesion.Entrada.Usuario, directorio);
-        return identidad.Permitido
-            ? _politicaAcceso.EvaluarPregunta(sesion.Entrada.Usuario, sesion.Entrada.Pregunta, directorio)
-            : identidad;
+        try
+        {
+            return await ResponderConTimeoutAsync(sesion, cancellationToken);
+        }
+        finally
+        {
+            _presupuesto.Sustituir(reserva, CalculadoraCosto.Calcular(sesion.Uso.Valor, _configuracion.Precio));
+        }
+    }
+
+    private async Task<ResultadoPregunta> ResponderConTimeoutAsync(SesionPregunta sesion, CancellationToken cancellationToken)
+    {
+        using var limite = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        limite.CancelAfter(TimeSpan.FromSeconds(_limites.TimeoutLlmSegundos));
+        try
+        {
+            return await ResponderAsync(sesion, limite.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new DependenciaNoDisponibleException("El tiempo total de la petición se agotó.");
+        }
     }
 
     private async Task<ResultadoPregunta> ResponderAsync(SesionPregunta sesion, CancellationToken cancellationToken)
     {
-        var directorio = sesion.Directorio!;
-        var secciones = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(sesion.Entrada.Pregunta), _limites.MaximoSeccionesRecuperadas);
-        var conversacion = new ConversacionLlm(_clienteLlm, new HerramientasAsistente(sesion.Api, _politicaAcceso), _limites, _configuracion);
-        var contexto = new ContextoUsuario(sesion.Entrada.Usuario, directorio);
-        var resultado = await conversacion.EjecutarAsync(contexto, sesion.Entrada.Pregunta, secciones, sesion.Registro, cancellationToken);
-        sesion.Uso = resultado.Uso;
-        _presupuesto.Registrar(CalculadoraCosto.Calcular(resultado.Uso, _configuracion.Precio));
+        var usuario = sesion.Entrada.Usuario;
+        var contexto = new ContextoUsuario(usuario, sesion.Directorio);
+        var entrada = await PrepararEntradaAsync(sesion, contexto, cancellationToken);
+        var conversacion = new ConversacionLlm(_clienteLlm, new HerramientasAsistente(sesion.Api, _politicaAcceso), _limites, sesion.Uso);
+        var resultado = await conversacion.EjecutarAsync(contexto, entrada, sesion.Registro, cancellationToken);
         return resultado.Estado switch
         {
-            EstadoConversacion.IdAjeno => Denegar(sesion, MotivoDenegacion.HerramientaIdAjeno, resultado.Uso.Total),
+            EstadoConversacion.IdAjeno => Denegar(sesion, MotivoDenegacion.HerramientaIdAjeno, sesion.Uso.Valor.Total, resultado.IdSolicitado),
             EstadoConversacion.LimiteHerramientas => NoDisponible(sesion, ResultadoAuditoria.LimiteHerramientas),
             EstadoConversacion.Rechazada => Responder(sesion, Textos.NoVerificable, [], ResultadoAuditoria.Error),
-            _ => Completar(sesion, resultado.Texto ?? string.Empty, secciones)
+            _ => Completar(sesion, resultado.Texto ?? string.Empty, entrada)
         };
     }
 
-    private ResultadoPregunta Completar(SesionPregunta sesion, string texto, IReadOnlyList<SeccionDocumento> secciones)
+    private async Task<EntradaConversacion> PrepararEntradaAsync(SesionPregunta sesion, ContextoUsuario contexto, CancellationToken cancellationToken)
+    {
+        var pregunta = sesion.Entrada.Pregunta;
+        var secciones = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(pregunta), _limites.MaximoSeccionesRecuperadas);
+        var resumen = await _lectorResumen.LeerAsync(contexto, pregunta, sesion.Api, sesion.Registro, cancellationToken);
+        return new EntradaConversacion(pregunta, secciones, resumen, ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
+    }
+
+    private ResultadoPregunta Completar(SesionPregunta sesion, string texto, EntradaConversacion entrada)
     {
         if (texto.Trim() == Textos.SinInformacion)
         {
             return Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, usoDatos: false);
         }
 
-        var fundamentos = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(texto), _limites.MaximoSeccionesRecuperadas);
-        foreach (var seccion in secciones.Concat(fundamentos))
+        foreach (var seccion in entrada.Secciones)
         {
             sesion.Registro.AgregarFuente($"{seccion.Titulo}. {seccion.Texto}");
         }
 
-        var directorio = sesion.Directorio!;
+        var directorio = sesion.Directorio;
         var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, directorio);
-        var candidatas = ElegirCitasNormativas(texto, fundamentos, secciones);
-        var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio);
+        var candidatas = CitasEntregadasYCitadas(texto, entrada, sesion.Registro.Reglas);
+        var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio, Confidencial(entrada));
         return Responder(sesion, verificada.Respuesta, CitasFinales(sesion, verificada), verificada.Resultado);
     }
 
-    private IReadOnlyList<Cita> CitasFinales(SesionPregunta sesion, SalidaVerificada verificada)
-    {
-        if (verificada.Resultado != ResultadoAuditoria.Respondida)
-        {
-            return verificada.Citas;
-        }
+    private MaterialConfidencial Confidencial(EntradaConversacion entrada) =>
+        new(_configuracion.MarcadorCanario, entrada.PromptSistema, HerramientasAsistente.NombresInternos);
 
-        var reglas = _verificadorSalida.DescartarCitasInexistentes(sesion.Registro.Reglas, _baseConocimiento);
-        return [.. verificada.Citas.Concat(reglas).Concat(sesion.Registro.Citas).Distinct()];
-    }
+    private static IReadOnlyList<Cita> CitasFinales(SesionPregunta sesion, SalidaVerificada verificada) =>
+        verificada.Resultado == ResultadoAuditoria.Respondida
+            ? [.. verificada.Citas.Concat(sesion.Registro.Citas).Distinct()]
+            : verificada.Citas;
 
-    private IReadOnlyList<Cita> ElegirCitasNormativas(string texto, IReadOnlyList<SeccionDocumento> fundamentos, IReadOnlyList<SeccionDocumento> secciones)
+    private static IReadOnlyList<Cita> CitasEntregadasYCitadas(string texto, EntradaConversacion entrada, IReadOnlyList<Cita> reglasDeHerramientas)
     {
-        var explicitas = _verificadorSalida.DescartarCitasInexistentes(ExtractorCitas.De(texto), _baseConocimiento);
-        return explicitas.Count > 0
-            ? explicitas
-            : [.. fundamentos.Concat(secciones).Select(s => new Cita(s.Documento, s.Seccion)).Distinct()];
+        var entregadas = entrada.Secciones.Select(s => new Cita(s.Documento, s.Seccion))
+            .Concat(entrada.Resumen?.Reglas ?? [])
+            .Concat(reglasDeHerramientas)
+            .ToHashSet();
+        return [.. ExtractorCitas.De(texto).Where(entregadas.Contains)];
     }
 
     private ResultadoPregunta Responder(
@@ -177,18 +193,18 @@ public sealed class PreguntarAsistente
             texto,
             citas,
             usoDatos ?? sesion.Registro.UsoDatos,
-            sesion.Uso.Total,
-            CalculadoraCosto.Calcular(sesion.Uso, _configuracion.Precio));
+            sesion.Uso.Valor.Total,
+            CalculadoraCosto.Calcular(sesion.Uso.Valor, _configuracion.Precio));
         Auditar(sesion, resultado, null, citas);
         return new ResultadoPregunta(TipoResultadoPregunta.Respondida, respuesta, resultado, null);
     }
 
-    private ResultadoPregunta Denegar(SesionPregunta sesion, MotivoDenegacion? motivo, int tokens)
+    private ResultadoPregunta Denegar(SesionPregunta sesion, MotivoDenegacion? motivo, int tokens, string? idSolicitado = null)
     {
-        var costo = CalculadoraCosto.Calcular(sesion.Uso, _configuracion.Precio);
+        var costo = CalculadoraCosto.Calcular(sesion.Uso.Valor, _configuracion.Precio);
         var citas = new[] { Textos.CitaNegativa() };
         var respuesta = new RespuestaAsistente(Textos.Negativa(sesion.Entrada.Usuario.Rol), citas, false, tokens, costo);
-        Auditar(sesion, ResultadoAuditoria.Denegada, motivo, citas);
+        Auditar(sesion, ResultadoAuditoria.Denegada, motivo, citas, idSolicitado);
         return new ResultadoPregunta(TipoResultadoPregunta.Denegada, respuesta, ResultadoAuditoria.Denegada, motivo);
     }
 
@@ -198,37 +214,32 @@ public sealed class PreguntarAsistente
         return new ResultadoPregunta(TipoResultadoPregunta.NoDisponible, null, resultado, null);
     }
 
-    private void Auditar(SesionPregunta sesion, ResultadoAuditoria resultado, MotivoDenegacion? motivo, IReadOnlyList<Cita> citas)
+    private void Auditar(
+        SesionPregunta sesion,
+        ResultadoAuditoria resultado,
+        MotivoDenegacion? motivo,
+        IReadOnlyList<Cita> citas,
+        string? idSolicitado = null)
     {
         var usuario = sesion.Entrada.Usuario;
-        var pregunta = AuditorPeticiones.SanearPregunta(usuario, sesion.Entrada.Pregunta, sesion.Directorio ?? ConstructorDirectorio.Vacio);
-        var costo = CalculadoraCosto.Calcular(sesion.Uso, _configuracion.Precio);
+        var pregunta = PreguntaAuditable(sesion);
+        var costo = CalculadoraCosto.Calcular(sesion.Uso.Valor, _configuracion.Precio);
         var registro = sesion.Registro;
         _auditor.Registrar(new EventoAuditoria(
             _auditor.AhoraUtc, sesion.CorrelationId, sesion.IpOrigen, usuario.Rol, usuario.Id, pregunta, resultado, motivo,
-            registro.Estudiantes, registro.Recursos, citas, sesion.Uso.Total, costo,
+            registro.Estudiantes, registro.Recursos, citas, sesion.Uso.Valor.Total, costo,
             sesion.Cronometro.ElapsedMilliseconds, _configuracion.Precio is null)
         {
-            DatosConsultados = registro.DatosConsultados
+            DatosConsultados = registro.DatosConsultados,
+            IdSolicitado = idSolicitado
         });
     }
 
-    private sealed class SesionPregunta(PreguntaEntrada entrada, string ipOrigen, string correlationId, ApiAcademicaConPresupuesto api)
+    private string PreguntaAuditable(SesionPregunta sesion)
     {
-        public PreguntaEntrada Entrada { get; } = entrada;
-
-        public string IpOrigen { get; } = ipOrigen;
-
-        public string CorrelationId { get; } = correlationId;
-
-        public ApiAcademicaConPresupuesto Api { get; } = api;
-
-        public Stopwatch Cronometro { get; } = Stopwatch.StartNew();
-
-        public RegistroConsultas Registro { get; } = new();
-
-        public DirectorioAcademico? Directorio { get; set; }
-
-        public UsoTokens Uso { get; set; } = new(0, 0);
+        var usuario = sesion.Entrada.Usuario;
+        return _politicaAcceso.EvaluarIdentidad(usuario, sesion.Directorio).Permitido
+            ? AuditorPeticiones.SanearPregunta(usuario, sesion.Entrada.Pregunta, sesion.Directorio)
+            : _auditor.PreguntaSinIdentidad(sesion.Entrada.Pregunta);
     }
 }

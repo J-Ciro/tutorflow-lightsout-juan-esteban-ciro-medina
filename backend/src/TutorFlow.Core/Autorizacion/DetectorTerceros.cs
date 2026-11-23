@@ -44,6 +44,13 @@ public static partial class DetectorTerceros
         return Reemplazar(pregunta, terceros);
     }
 
+    public static string EnmascararPersonas(string pregunta, DirectorioAcademico directorio)
+    {
+        var tokens = TokenizadorTexto.Tokenizar(pregunta);
+        var personas = MencionesDeId(tokens, directorio).Concat(MencionesDeNombre(tokens, directorio));
+        return Reemplazar(pregunta, [.. personas.OrderByDescending(mencion => mencion.Inicio)]);
+    }
+
     private static string Reemplazar(string texto, List<MencionPersona> mencionesDeFinAInicio)
     {
         var limite = texto.Length;

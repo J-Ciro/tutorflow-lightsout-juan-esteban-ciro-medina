@@ -7,6 +7,7 @@ public sealed class PresupuestoDiario
     private readonly LimitesAsistente _limites;
     private DateOnly _dia;
     private decimal _gastado;
+    private decimal _reservado;
 
     public PresupuestoDiario(IReloj reloj, LimitesAsistente limites)
     {
@@ -15,24 +16,30 @@ public sealed class PresupuestoDiario
         _dia = DiaActual();
     }
 
-    public bool Agotado
-    {
-        get
-        {
-            lock (_candado)
-            {
-                ReiniciarSiCambioElDia();
-                return _gastado >= _limites.PresupuestoDiarioUsd;
-            }
-        }
-    }
-
-    public void Registrar(decimal costoUsd)
+    public bool TryReservar(decimal reservaUsd)
     {
         lock (_candado)
         {
             ReiniciarSiCambioElDia();
-            _gastado += costoUsd;
+            var reserva = Math.Min(reservaUsd, _limites.PresupuestoDiarioUsd);
+            if (_gastado + _reservado + reserva > _limites.PresupuestoDiarioUsd)
+            {
+                return false;
+            }
+
+            _reservado += reserva;
+            return true;
+        }
+    }
+
+    public void Sustituir(decimal reservaUsd, decimal costoRealUsd)
+    {
+        lock (_candado)
+        {
+            var reserva = Math.Min(reservaUsd, _limites.PresupuestoDiarioUsd);
+            _reservado = Math.Max(0m, _reservado - reserva);
+            ReiniciarSiCambioElDia();
+            _gastado += costoRealUsd;
         }
     }
 

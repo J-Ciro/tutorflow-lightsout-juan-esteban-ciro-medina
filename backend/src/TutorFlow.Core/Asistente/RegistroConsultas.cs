@@ -19,6 +19,7 @@ public sealed class RegistroConsultas
 
     public IReadOnlyList<Cita> Citas => _citas;
 
+
     public IReadOnlyList<Cita> Reglas => _reglas;
 
     public IReadOnlyList<string> Fuentes => _fuentes;

@@ -2,8 +2,7 @@ namespace TutorFlow.Core.Autorizacion;
 
 public sealed class PoliticaAcceso
 {
-    private static readonly DecisionAcceso AccesoPermitido = DecisionAcceso.Permitir();
-    private readonly DecisionAcceso _decisionPermitida = AccesoPermitido;
+    private readonly DecisionAcceso _decisionPermitida = DecisionAcceso.Permitir();
 
     public DecisionAcceso EvaluarIdentidad(Usuario usuario, DirectorioAcademico directorio) =>
         ExisteIdentidad(usuario, directorio)
