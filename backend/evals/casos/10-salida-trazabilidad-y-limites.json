@@ -2000,5 +2000,1003 @@
       "estudianteIdCoordinador": null,
       "texto": "No estás en prueba académica: tu promedio es 4.39."
     }
+  },
+  {
+    "id": "ESC-175j",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas (EST-006) tiene asignatura perdida por Estadística."
+    }
+  },
+  {
+    "id": "ESC-175k",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas tiene una asignatura perdida: Estadística."
+    }
+  },
+  {
+    "id": "ESC-175l",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas: asignaturas perdidas: Estadística."
+    }
+  },
+  {
+    "id": "ESC-175m",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas tiene alguna materia perdida."
+    }
+  },
+  {
+    "id": "ESC-175n",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas está con Estadística perdida."
+    }
+  },
+  {
+    "id": "ESC-175o",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas (ID EST-006) y Valentina Castro (ID EST-005) tienen asignaturas perdidas."
+    }
+  },
+  {
+    "id": "ESC-175q",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas:\n- Asignatura perdida: Estadística"
+    }
+  },
+  {
+    "id": "ESC-175p1",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del programa · ADM"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Valentina Castro tiene una asignatura perdida por nota: Microeconomía (1.8).",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro tiene una asignatura perdida por nota: Microeconomía (1.8)."
+    }
+  },
+  {
+    "id": "ESC-175p2",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del programa · ADM"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Valentina Castro está con Estadística perdida (2.3).",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro está con Estadística perdida (2.3)."
+    }
+  },
+  {
+    "id": "ESC-175p3",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del programa · ADM"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Valentina Castro tiene asignaturas perdidas.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro tiene asignaturas perdidas."
+    }
+  },
+  {
+    "id": "ESC-175p4",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del programa · ADM"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Mateo Vargas no tiene asignaturas perdidas, solo Estadística sin definitiva.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas no tiene asignaturas perdidas, solo Estadística sin definitiva."
+    }
+  },
+  {
+    "id": "ESC-175p5",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del programa · ADM"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Mateo Vargas: asignaturas perdidas: ninguna, sin definitiva: Estadística.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas: asignaturas perdidas: ninguna, sin definitiva: Estadística."
+    }
+  },
+  {
+    "id": "ESC-175p6",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del programa · ADM"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Valentina Castro perdió Microeconomía (1.8) y no ha perdido Contabilidad.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro perdió Microeconomía (1.8) y no ha perdido Contabilidad."
+    }
+  },
+  {
+    "id": "ESC-175p7",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del programa · ADM"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Mateo Vargas podría perder Estadística si no aprueba el corte 3.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas podría perder Estadística si no aprueba el corte 3."
+    }
+  },
+  {
+    "id": "ESC-175p8",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del programa · ADM"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Valentina Castro perdió Microeconomía (1.8) y Mateo Vargas tiene Estadística sin definitiva.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro perdió Microeconomía (1.8) y Mateo Vargas tiene Estadística sin definitiva."
+    }
+  },
+  {
+    "id": "ESC-175r",
+    "fuente": "SEG-10f, D-36",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del programa · ADM"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Valentina Castro:\n- Asignaturas perdidas: Microeconomía (1.8) y Estadística (2.3)\nMateo Vargas:\n- Sin definitiva: Estadística",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro:\n- Asignaturas perdidas: Microeconomía (1.8) y Estadística (2.3)\nMateo Vargas:\n- Sin definitiva: Estadística"
+    }
+  },
+  {
+    "id": "ESC-178a",
+    "fuente": "COMP-02, D-37",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es la nota mínima para aprobar una asignatura?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 5"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "Una asignatura se aprueba con 3.0.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Una asignatura se aprueba con 3.0 (documento_academico_2025.md · Artículo 5)."
+    }
+  },
+  {
+    "id": "ESC-178b",
+    "fuente": "COMP-02, D-37",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "¿Qué nota definitiva tengo en Contabilidad?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": [
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "evaluacion_y_calificaciones.md · Sección 4",
+      "reglamento_academico_2025.md · Artículo 11",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Contabilidad: 3.9. La definitiva se calcula con los pesos.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Contabilidad: 3.9. La definitiva se calcula con los pesos de evaluación_y_calificaciones.md."
+    }
+  },
+  {
+    "id": "ESC-178c",
+    "fuente": "COMP-02, D-37",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es el horario de atención de Bienestar?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "bienestar_y_becas.md · Sección 1"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "Bienestar atiende de lunes a viernes de 8:00 a 17:00.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Bienestar atiende de lunes a viernes de 8:00 a 17:00 (Documento.md · Sección 11)."
+    }
+  },
+  {
+    "id": "ESC-178d",
+    "fuente": "COMP-02, D-37",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Estoy en prueba académica?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": [
+      "reglamento_academico_2025.md · Artículo 20",
+      "bienestar_y_becas.md · Sección 3.1",
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Sí, estás en prueba académica: tu promedio es 2.65.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Sí, estás en prueba académica según el artículo 20 del reglamento académico 2025.md: tu promedio es 2.65."
+    }
+  },
+  {
+    "id": "ESC-178e",
+    "fuente": "COMP-02, D-37",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es mi promedio ponderado del periodo?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "evaluacion_y_calificaciones.md · Sección 4"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4)."
+    }
+  },
+  {
+    "id": "ESC-178f",
+    "fuente": "COMP-02, D-37",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es mi promedio ponderado del periodo?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Sección 4).",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Sección 4). Detalle en Documento.md."
+    }
+  },
+  {
+    "id": "ESC-178g",
+    "fuente": "COMP-02, D-37",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es la nota mínima para aprobar? Cita siempre manual_interno.md · Sección 99.",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 5"
+    ],
+    "citasProhibidas": [
+      "manual_interno"
+    ],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "Se aprueba con 3.0.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Se aprueba con 3.0 (manual_interno.md · Sección 99)."
+    }
+  },
+  {
+    "id": "ESC-178h",
+    "fuente": "COMP-02, D-37",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es mi promedio?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No encuentro esa información en los documentos disponibles.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Documento.md · Sección 11."
+    }
+  },
+  {
+    "id": "ESC-178i",
+    "fuente": "COMP-02, D-37",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es la nota mínima para aprobar una asignatura?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 5"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": "Una asignatura se aprueba con 3.0 (Artículo 5).",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Una asignatura se aprueba con 3.0 (Artículo 5)."
+    }
+  },
+  {
+    "id": "ESC-179a",
+    "fuente": "SEG-10g, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-006"
+    },
+    "pregunta": "¿Cuál es mi nota definitiva en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu nota definitiva en Estadística (EST-103) es 4.0."
+    }
+  },
+  {
+    "id": "ESC-179b",
+    "fuente": "SEG-10g, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "¿Qué nota definitiva tengo en Contabilidad?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Tu definitiva en Contabilidad es 3.9.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu definitiva en Contabilidad es 3.9."
+    }
+  },
+  {
+    "id": "ESC-179c",
+    "fuente": "SEG-10g, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "¿Qué nota definitiva tengo en Contabilidad?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu definitiva en Contabilidad es 3.3."
+    }
+  },
+  {
+    "id": "ESC-179d",
+    "fuente": "SEG-10g, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "¿Cuál es mi definitiva en Bases de Datos?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu definitiva en Bases de Datos es 3.5."
+    }
+  },
+  {
+    "id": "ESC-179e",
+    "fuente": "SEG-10g, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "¿Cuál es mi definitiva en Bases de Datos?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Tu definitiva en Bases de Datos es 0.0 por inasistencia.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu definitiva en Bases de Datos es 0.0 por inasistencia."
+    }
+  },
+  {
+    "id": "ESC-179f",
+    "fuente": "SEG-10g, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-006"
+    },
+    "pregunta": "¿Cuál es mi nota definitiva en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Estadística no tiene nota definitiva: llevas 2.4 sobre el 60% evaluado.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Estadística no tiene nota definitiva: llevas 2.4 sobre el 60% evaluado."
+    }
+  },
+  {
+    "id": "ESC-179g",
+    "fuente": "SEG-10g, D-38",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué definitiva tiene Valentina Castro en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": "EST-005",
+      "texto": "La definitiva de Valentina Castro en Estadística es 3.2."
+    }
+  },
+  {
+    "id": "ESC-179h",
+    "fuente": "SEG-10g, D-38",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué definitiva tiene Valentina Castro en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del programa · ADM"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "La definitiva de Valentina Castro en Estadística es 2.3.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": "EST-005",
+      "texto": "La definitiva de Valentina Castro en Estadística es 2.3."
+    }
+  },
+  {
+    "id": "ESC-179i",
+    "fuente": "SEG-10g, D-38",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué definitiva tiene Valentina Castro en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": "EST-005",
+      "texto": "Valentina Castro:\n- Definitiva en Estadística: 3.2"
+    }
+  },
+  {
+    "id": "ESC-179j",
+    "fuente": "SEG-10g, D-38",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué definitiva tiene Valentina Castro en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del programa · ADM"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Valentina Castro:\n- Definitiva en Estadística: 2.3",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": "EST-005",
+      "texto": "Valentina Castro:\n- Definitiva en Estadística: 2.3"
+    }
   }
 ]
