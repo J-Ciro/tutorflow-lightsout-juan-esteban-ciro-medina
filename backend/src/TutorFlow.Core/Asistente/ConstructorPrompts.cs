@@ -9,6 +9,15 @@ public static partial class ConstructorPrompts
 {
     private const string DocumentoDeEjemplo = "documento_ejemplo.md";
 
+    private static readonly Dictionary<string, string> PresentacionesDeSeccion = new(StringComparer.Ordinal)
+    {
+        ["bienestar_y_becas.md · Sección 3.1"] =
+            "Requisitos de la beca por rendimiento académico (50% de descuento en la matrícula del periodo siguiente):\n\n"
+            + "1. Promedio ponderado del periodo igual o superior a 4.3.\n"
+            + "2. Ninguna asignatura perdida en el periodo, incluidas las perdidas por inasistencia.\n"
+            + "3. Haber matriculado al menos 12 créditos."
+    };
+
     private const string AlcanceEstudiante =
         "Hablas con un estudiante: puedes tratar el reglamento y sus propios datos académicos, nada más.";
 
@@ -45,6 +54,9 @@ public static partial class ConstructorPrompts
             : $"{prompt}{Environment.NewLine}{Environment.NewLine}Marcador interno confidencial: {marcadorCanario}";
     }
 
+    internal static string ContenidoEntregado(SeccionDocumento seccion) =>
+        PresentacionesDeSeccion.GetValueOrDefault($"{seccion.Documento} · {seccion.Seccion}") ?? $"{seccion.Titulo}. {seccion.Texto}";
+
     public static string Instrucciones(string promptSistema) => BloqueDeEjemplos().Replace(promptSistema, string.Empty);
 
     [GeneratedRegex("<ejemplos>.*?</ejemplos>", RegexOptions.Singleline | RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
@@ -73,7 +85,7 @@ public static partial class ConstructorPrompts
             : "Secciones recuperadas del reglamento:");
         foreach (var seccion in secciones)
         {
-            constructor.AppendLine(FormateadorDatos.Delimitar($"{seccion.Documento} · {seccion.Seccion}", $"{seccion.Titulo}. {seccion.Texto}"));
+            constructor.AppendLine(FormateadorDatos.Delimitar($"{seccion.Documento} · {seccion.Seccion}", ContenidoEntregado(seccion)));
         }
     }
 }

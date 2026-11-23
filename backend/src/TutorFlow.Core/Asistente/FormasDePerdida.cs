@@ -4,7 +4,6 @@ internal sealed record FormaDePerdida(int Inicio, int Fin, bool Nominal, bool Ne
 
 internal static class FormasDePerdida
 {
-    private const int PalabrasDeNegacionPrevia = 2;
     private const string Ninguna = "ninguna";
     private const string PorInasistencia = "por";
 
@@ -40,7 +39,12 @@ internal static class FormasDePerdida
         Ninguna, "ninguno", "ningun", "no", "cero", "0"
     };
 
-    private static readonly HashSet<string> Inasistencias = new(StringComparer.Ordinal) { "inasistencia", "inasistencias" };
+    internal static readonly HashSet<string> Inasistencias = new(StringComparer.Ordinal) { "inasistencia", "inasistencias" };
+
+    internal static readonly HashSet<string> Auxiliares = new(StringComparer.Ordinal)
+    {
+        "ha", "han", "has", "he", "hemos", "hay", "tiene", "tienen", "tienes", "tengo", "registra", "registran", "es", "son", "esta", "estan", "fue"
+    };
 
     public static IReadOnlyList<FormaDePerdida> En(IReadOnlyList<string> palabras) =>
         [.. Enumerable.Range(0, palabras.Count).Select(indice => FormaEn(palabras, indice)).OfType<FormaDePerdida>()];
@@ -74,8 +78,11 @@ internal static class FormasDePerdida
         || palabras.Skip(inicio).Take(fin - inicio).Contains(Ninguna)
         || (fin + 1 < palabras.Count && NegacionesPosteriores.Contains(palabras[fin + 1]));
 
-    private static bool NegadaAntes(IReadOnlyList<string> palabras, int inicio) =>
-        palabras.Skip(Math.Max(0, inicio - PalabrasDeNegacionPrevia)).Take(Math.Min(PalabrasDeNegacionPrevia, inicio)).Any(NegacionesPrevias.Contains);
+    private static bool NegadaAntes(IReadOnlyList<string> palabras, int inicio)
+    {
+        var anterior = inicio - 1 - (inicio > 0 && Auxiliares.Contains(palabras[inicio - 1]) ? 1 : 0);
+        return anterior >= 0 && NegacionesPrevias.Contains(palabras[anterior]);
+    }
 
     private static bool SeguidaDePorInasistencia(IReadOnlyList<string> palabras, int fin) =>
         fin + 2 < palabras.Count && palabras[fin + 1] == PorInasistencia && Inasistencias.Contains(palabras[fin + 2]);

@@ -7,12 +7,12 @@ public static partial class DetectorValorMonetario
 {
     private const string SeparadoresFinales = ".,";
 
-    public static bool HayValorNoRespaldado(string respuesta, IReadOnlyCollection<string> textosFuente)
+    public static string? PrimerValorNoRespaldado(string respuesta, IReadOnlyCollection<string> textosFuente)
     {
         var respaldados = textosFuente
             .SelectMany(texto => Numero().Matches(texto).Select(coincidencia => coincidencia.Value))
             .ToHashSet(StringComparer.Ordinal);
-        return ValoresMonetarios(respuesta).Any(valor => !respaldados.Contains(valor));
+        return ValoresMonetarios(respuesta).FirstOrDefault(valor => !respaldados.Contains(valor));
     }
 
     private static IEnumerable<string> ValoresMonetarios(string respuesta)

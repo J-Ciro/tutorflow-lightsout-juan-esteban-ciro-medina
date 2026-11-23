@@ -12,7 +12,12 @@ public enum EstadoConversacion
     ContextoTruncado
 }
 
-public sealed record ResultadoConversacion(EstadoConversacion Estado, string? Texto, string? IdSolicitado = null);
+public sealed record ResultadoConversacion(
+    EstadoConversacion Estado,
+    string? Texto,
+    string? IdSolicitado = null,
+    IReadOnlyList<MensajeLlm>? Mensajes = null,
+    int Invocaciones = 0);
 
 internal sealed record EntradaConversacion(
     string Pregunta,
@@ -53,6 +58,28 @@ internal sealed class ConversacionLlm
             registro,
             [ConstructorPrompts.MensajeInicial(entrada.Pregunta, entrada.Secciones, entrada.Resumen)],
             entrada.PromptSistema);
+        return await CorrerAsync(estado, cancellationToken);
+    }
+
+    public async Task<ResultadoConversacion> ReintentarAsync(
+        ContextoUsuario contexto,
+        string promptSistema,
+        ResultadoConversacion anterior,
+        string instruccion,
+        RegistroConsultas registro,
+        CancellationToken cancellationToken)
+    {
+        List<MensajeLlm> mensajes =
+        [
+            .. anterior.Mensajes ?? [],
+            new MensajeLlm(RolMensaje.Asistente, anterior.Texto ?? string.Empty, null, []),
+            new MensajeLlm(RolMensaje.Usuario, instruccion, null, [])
+        ];
+        return await CorrerAsync(new Turnos(contexto, registro, mensajes, promptSistema) { Invocaciones = anterior.Invocaciones }, cancellationToken);
+    }
+
+    private async Task<ResultadoConversacion> CorrerAsync(Turnos estado, CancellationToken cancellationToken)
+    {
         ResultadoConversacion? final = null;
         while (final is null)
         {
@@ -86,7 +113,7 @@ internal sealed class ConversacionLlm
 
         if (respuesta.Llamadas.Count == 0)
         {
-            return new ResultadoConversacion(EstadoConversacion.Completada, respuesta.Texto);
+            return new ResultadoConversacion(EstadoConversacion.Completada, respuesta.Texto, null, [.. estado.Mensajes], estado.Invocaciones);
         }
 
         return estado.Invocaciones > _limites.MaximoInvocacionesHerramientas

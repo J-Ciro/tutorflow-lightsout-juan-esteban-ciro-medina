@@ -74,8 +74,8 @@ public sealed class ConfiguracionAsistente
     private static IReadOnlyCollection<string> CodigosOCatalogo(IReadOnlyCollection<string>? codigos, IReadOnlyList<AsignaturaCatalogo> catalogo) =>
         codigos ?? [.. catalogo.Select(asignatura => asignatura.Codigo)];
 
-    public decimal GastoDe(UsoTokens uso) =>
-        Precio is null ? ReservaPorPeticionUsd : CalculadoraCosto.Calcular(uso, Precio);
+    public decimal GastoDe(UsoTokens uso, int llamadas = 1) =>
+        Precio is null ? ReservaPorPeticionUsd * llamadas : CalculadoraCosto.Calcular(uso, Precio);
 
     private static decimal ReservaPorDefecto(PrecioModelo? precio, decimal reservaSinPrecioUsd) =>
         precio is null
