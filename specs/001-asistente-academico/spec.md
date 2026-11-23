@@ -98,7 +98,7 @@ Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la
   - **SEG-10g** · Definitiva o par asignatura-cifra que no es la definitiva calculada de esa asignatura (o un corte o la acumulada, sin la palabra "definitiva") → `TEXTO_NO_VERIFICABLE` con `estado_no_verificado`.
 - **SEG-11** · `LLM_API_KEY` solo se lee de la variable de entorno; nunca se registra, se devuelve ni se incluye en la imagen.
 - **SEG-12** · Errores sin stack trace, rutas ni respuestas crudas de servicios internos.
-- **SEG-13** · Límites: pregunta ≤ 1.000 caracteres (400), cuerpo ≤ 16 KB (413), 4 invocaciones de herramientas, 20 s para el LLM y 6 s para la API académica por petición (503). La tasa por IP de origen (SEG-19; 429 con `Retry-After`) y el presupuesto diario en USD (503 con `Retry-After`) solo aplican si el operador los configura; por defecto, sin tope (D-70).
+- **SEG-13** · Límites: pregunta ≤ 1.000 caracteres (400), cuerpo ≤ 16 KB (413), 4 invocaciones de herramientas, 20 s para la fase del LLM y 6 s para la API académica por petición (503; RNF-02). La tasa por IP de origen (SEG-19; 429 con `Retry-After`) y el presupuesto diario en USD (503 con `Retry-After`) solo aplican si el operador los configura; por defecto, sin tope (D-70).
 - **SEG-14** · Encabezados `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` y `Referrer-Policy: no-referrer`; CORS sin origen comodín; Swagger solo en desarrollo.
 - **SEG-15** · El contenedor corre sin root y la API académica no se publica fuera de la red de Compose.
 - **SEG-16** · Más de 3 `usuario.id` distintos por IP de origen en 10 minutos emiten un evento `multiples_identidades` por identidad nueva. Con el bloqueo activado (por defecto no, D-21), solo la identidad nueva recibe 429 con `Retry-After` hasta que vence la más antigua; las registradas siguen atendiéndose y el intento bloqueado no renueva la ventana (D-69).
@@ -107,7 +107,7 @@ Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la
 - **SEG-19** · La IP de origen es la de la conexión; `X-Forwarded-For` solo cuenta, con su último valor, si la conexión viene de una IP de la lista de proxies de confianza, vacía por defecto (D-68). Alimenta SEG-13, SEG-16 y la auditoría.
 ## 8. Requerimientos no funcionales
 - **RNF-01** · Un 403 del filtro previo responde en menos de 500 ms (p95).
-- **RNF-02** · Al superar 20 s en el LLM o 6 s en la API académica, 503.
+- **RNF-02** · 503 al superar 20 s desde que empieza la fase del LLM o 6 s acumulados en la API académica; con esos valores por defecto, ninguna petición tarda 27 s o más (D-71).
 - **RNF-03** · `REPORTE.md` publica los tokens y el costo por 1.000 preguntas por proveedor.
 - **RNF-04** · Con la configuración por defecto, un cliente automático desde una sola IP, con las 8 identidades de prueba e IDs inexistentes, en ráfagas y en varias corridas al día, con cualquier proveedor y con o sin precio conocido, no recibe 429 ni 503 por tasa, identidades ni presupuesto (D-70).
 - **RNF-05** · La configuración se valida al arrancar: un valor inválido impide arrancar o, en las reservas, usa su defecto con advertencia; nunca se corrige en silencio. Sin tasa por IP ni presupuesto configurados no hay tope, y el log de arranque lo registra (plan.md §13).
