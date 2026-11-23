@@ -18,11 +18,13 @@ public sealed class CifrasComoApoyoTests
 
     public static TheoryData<string, string[]> RespuestasConApoyoNumerico => new()
     {
-        { RespuestaPesos, ["Sección 2", "Sección 3"] },
-        { "El corte 1 pesa 30%.", ["Sección 2"] },
-        { "El corte 1 pesa 30 %.", ["Sección 2"] },
-        { "La definitiva se redondea a una cifra decimal.", ["Sección 3"] }
+        { "La definitiva pondera 30% el corte 1, 30% el corte 2 y 40% el corte 3, y se redondea a una cifra decimal", ["Sección 2", "Sección 3"] },
+        { "El corte 1 pesa 30%", ["Sección 2"] },
+        { "El corte 1 pesa 30 %", ["Sección 2"] },
+        { "La definitiva se redondea a una cifra decimal", ["Sección 3"] }
     };
+
+    private static string ReferenciaEscrita(string seccion) => $"({Evaluacion} · {seccion})";
 
     public static TheoryData<string> RespuestasSinApoyoNumerico => new()
     {
@@ -38,15 +40,16 @@ public sealed class CifrasComoApoyoTests
     [Trait("CA", "CA-14")]
     [Trait("COMP", "COMP-02")]
     [Trait("SEG", "SEG-10a")]
-    public async Task Una_cita_escrita_se_conserva_si_la_seccion_comparte_dos_raices_contando_las_cifras(string respuesta, string[] seccionesEsperadas)
+    [Trait("D", "D-37")]
+    public async Task La_cita_escrita_con_apoyo_se_conserva_y_la_escrita_sin_apoyo_se_elimina_del_texto(string cuerpo, string[] seccionesEsperadas)
     {
-        var texto = $"{respuesta} {CitasEscritas}";
-        var escenario = Con(Fijo(texto), Indice(Cortes, NotaDefinitiva));
+        var escenario = Con(Fijo($"{cuerpo} {CitasEscritas}."), Indice(Cortes, NotaDefinitiva));
+        var conservadas = string.Join(" ", seccionesEsperadas.Select(ReferenciaEscrita));
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaDefinitiva);
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.Equal(texto, resultado.Respuesta!.Respuesta);
+        Assert.Equal($"{cuerpo} {conservadas}.", resultado.Respuesta!.Respuesta);
         Assert.Equal(seccionesEsperadas.Select(s => new Cita(Evaluacion, s)), resultado.Respuesta.Citas);
         Assert.False(resultado.Respuesta.UsoDatosEstudiante);
     }

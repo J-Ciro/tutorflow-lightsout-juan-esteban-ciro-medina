@@ -165,14 +165,14 @@ public sealed class ApoyoYSinRespaldoTests
     [Trait("ESC", "ESC-164")]
     [Trait("CA", "CA-14")]
     [Trait("SEG", "SEG-10a")]
-    public async Task La_cita_al_reglamento_2023_se_descarta_y_el_respaldo_es_el_mismo_de_la_respuesta_sin_cita()
+    [Trait("D", "D-37")]
+    public async Task La_cita_al_reglamento_2023_con_seccion_se_elimina_del_texto_y_el_respaldo_es_el_mismo_de_la_respuesta_sin_cita()
     {
-        var texto = "Una asignatura se aprueba con 3.0. reglamento_academico_2023.md · Artículo 5";
-        var escenario = Con(Fijo(texto), Indice(Articulo5, Articulo6, Articulo11, Articulo12, Articulo20, Articulo22));
+        var escenario = Con(Fijo("Una asignatura se aprueba con 3.0. reglamento_academico_2023.md · Artículo 5"), Indice(Articulo5, Articulo6, Articulo11, Articulo12, Articulo20, Articulo22));
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
-        AfirmarRespondida(resultado, texto, [new Cita(Reglamento, "Artículo 5"), new Cita(Reglamento, "Artículo 6")]);
+        AfirmarRespondida(resultado, "Una asignatura se aprueba con 3.0.", [new Cita(Reglamento, "Artículo 5"), new Cita(Reglamento, "Artículo 6")]);
     }
 
     [Fact]
@@ -325,14 +325,15 @@ public sealed class ApoyoYSinRespaldoTests
     [Trait("ESC", "ESC-170")]
     [Trait("CA", "CA-14")]
     [Trait("COMP", "COMP-02")]
-    public async Task Con_la_herramienta_de_programa_la_cita_fuera_del_bloque_y_sin_apoyo_se_descarta_sin_reemplazar_la_respuesta()
+    [Trait("D", "D-37")]
+    public async Task Con_la_herramienta_de_programa_la_cita_fuera_del_bloque_y_sin_apoyo_se_elimina_del_texto_sin_reemplazar_la_respuesta()
     {
         var texto = $"Valentina Castro: Microeconomía (1.8) y Estadística (2.3). ({Reglamento} · Artículo 22)";
         var escenario = Con(GuionDePrograma(texto), Indice(Indexadas(Articulo5, Articulo6, Articulo20, Articulo22, NotaDefinitiva), [Articulo22]));
 
         var resultado = await escenario.PreguntarAsync(Coord02, "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?");
 
-        AfirmarRespondida(resultado, texto, [new Cita(Reglamento, "Artículo 6"), new Cita(Evaluacion, "Sección 3"), new Cita(Reglamento, "Artículo 5"), DatosProgramaAdm]);
+        AfirmarRespondida(resultado, "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).", [new Cita(Reglamento, "Artículo 6"), new Cita(Evaluacion, "Sección 3"), new Cita(Reglamento, "Artículo 5"), DatosProgramaAdm]);
         Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
     }
 
