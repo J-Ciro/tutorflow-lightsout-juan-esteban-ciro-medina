@@ -4,7 +4,7 @@ namespace TutorFlow.Core.Autorizacion;
 
 internal readonly record struct MencionPersona(string Clave, int Inicio, int Fin);
 
-internal readonly record struct MencionDeAutorizado(string Id, int Inicio);
+internal readonly record struct MencionDeAutorizado(string Id, int Inicio, int Fin);
 
 public static partial class DetectorTerceros
 {
@@ -40,7 +40,7 @@ public static partial class DetectorTerceros
         return [.. MencionesDeId(tokens, directorio)
             .Concat(MencionesDeNombre(tokens, directorio))
             .Where(mencion => idPorClave.ContainsKey(mencion.Clave))
-            .Select(mencion => new MencionDeAutorizado(idPorClave[mencion.Clave], mencion.Inicio))
+            .Select(mencion => new MencionDeAutorizado(idPorClave[mencion.Clave], mencion.Inicio, mencion.Fin))
             .OrderBy(mencion => mencion.Inicio)];
     }
 

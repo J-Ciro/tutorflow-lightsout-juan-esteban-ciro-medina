@@ -4,6 +4,8 @@ namespace TutorFlow.Core.Asistente;
 
 public sealed record AsignaturaCatalogo(string Codigo, string Nombre);
 
+internal sealed record AparicionDeAsignatura(string Clave, int Inicio, int Fin);
+
 internal static class CatalogoAsignaturas
 {
     public static IReadOnlyList<AsignaturaCatalogo> PorDefecto { get; } =
@@ -28,6 +30,15 @@ internal static class CatalogoAsignaturas
         var porCodigo = codigosDelDirectorio.Concat(catalogo.Select(a => a.Codigo)).Where(codigo => Aparece(tokens, codigo));
         return [.. porNombre.Concat(porCodigo).Select(AmbitoPersonal.Clave).Distinct(StringComparer.Ordinal)];
     }
+
+    public static IReadOnlyList<AparicionDeAsignatura> Apariciones(
+        IReadOnlyList<TokenTexto> tokens,
+        IReadOnlyList<AsignaturaCatalogo> catalogo) =>
+        [.. catalogo.SelectMany(asignatura => new[] { asignatura.Nombre, asignatura.Codigo }
+            .Select(TokenizadorTexto.Valores)
+            .Where(secuencia => secuencia.Count > 0)
+            .SelectMany(secuencia => TokenizadorTexto.BuscarSecuencias(tokens, secuencia)
+                .Select(inicio => new AparicionDeAsignatura(AmbitoPersonal.Clave(asignatura.Codigo), inicio, inicio + secuencia.Count - 1))))];
 
     private static bool Aparece(IReadOnlyList<TokenTexto> tokens, string texto)
     {

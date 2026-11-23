@@ -7,6 +7,9 @@ internal readonly record struct TokenTexto(string Valor, int Inicio, int Fin);
 
 internal static class TokenizadorTexto
 {
+    private const int UnDigito = 1;
+    private const int HastaDosDigitos = 2;
+    private const int SinLimite = int.MaxValue;
     private const string CaracteresIgnorables = "​‌‍⁠﻿­";
 
     private static readonly IReadOnlyDictionary<char, char> SinAcento = ConstruirTablaSinAcento(
@@ -34,6 +37,22 @@ internal static class TokenizadorTexto
         return acumulador.Tokens;
     }
 
+    public static IReadOnlyList<TokenTexto> TokenizarConCifras(string texto)
+    {
+        var tokens = Tokenizar(texto);
+        var resultado = new List<TokenTexto>();
+        for (var indice = 0; indice < tokens.Count; indice++)
+        {
+            var esCifra = EsCifraDeNota(texto, tokens, indice);
+            resultado.Add(esCifra
+                ? new TokenTexto(tokens[indice].Valor + "." + tokens[indice + 1].Valor, tokens[indice].Inicio, tokens[indice + 1].Fin)
+                : tokens[indice]);
+            indice += esCifra ? 1 : 0;
+        }
+
+        return resultado;
+    }
+
     public static int BuscarSecuencia(IReadOnlyList<TokenTexto> tokens, IReadOnlyList<string> secuencia) =>
         BuscarSecuencias(tokens, secuencia).DefaultIfEmpty(-1).First();
 
@@ -49,6 +68,28 @@ internal static class TokenizadorTexto
 
     public static IReadOnlyList<string> Valores(string texto) =>
         Tokenizar(texto).Select(token => token.Valor).ToList();
+
+    private static bool EsCifraDeNota(string texto, IReadOnlyList<TokenTexto> tokens, int indice) =>
+        indice + 1 < tokens.Count
+        && FormaDeCifra(texto, tokens[indice], tokens[indice + 1])
+        && !ContinuaUnaCifra(texto, tokens, indice - 1, indice)
+        && !ContinuaUnaCifra(texto, tokens, indice + 1, indice + 2);
+
+    private static bool FormaDeCifra(string texto, TokenTexto entera, TokenTexto decimales) =>
+        EsDigitos(entera.Valor, UnDigito) && EsDigitos(decimales.Valor, HastaDosDigitos) && UnidosPorPunto(texto, entera, decimales);
+
+    private static bool ContinuaUnaCifra(string texto, IReadOnlyList<TokenTexto> tokens, int desde, int hasta) =>
+        desde >= 0
+        && hasta < tokens.Count
+        && EsDigitos(tokens[desde].Valor, SinLimite)
+        && EsDigitos(tokens[hasta].Valor, SinLimite)
+        && UnidosPorPunto(texto, tokens[desde], tokens[hasta]);
+
+    private static bool EsDigitos(string valor, int maximo) =>
+        valor.Length <= maximo && valor.All(char.IsAsciiDigit);
+
+    private static bool UnidosPorPunto(string texto, TokenTexto anterior, TokenTexto siguiente) =>
+        PlegadoCompatibilidad.Aplicar(texto[anterior.Fin..siguiente.Inicio]) == ".";
 
     private static bool CoincideEn(IReadOnlyList<TokenTexto> tokens, int indice, IReadOnlyList<string> secuencia) =>
         secuencia.Select((valor, desplazamiento) => tokens[indice + desplazamiento].Valor == valor).All(coincide => coincide);

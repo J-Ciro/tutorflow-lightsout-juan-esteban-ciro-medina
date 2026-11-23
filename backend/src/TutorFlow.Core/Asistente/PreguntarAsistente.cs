@@ -43,6 +43,7 @@ public sealed class PreguntarAsistente
     private readonly CitasDeRespuesta _citasDeRespuesta;
     private readonly OrdenDeReglasPorRelevancia _ordenDeReglas;
     private readonly AfirmacionesDePerdida _afirmacionesDePerdida;
+    private readonly DefinitivaPorAsignatura _definitivaPorAsignatura;
 
     public PreguntarAsistente(
         IApiAcademica apiAcademica,
@@ -69,6 +70,7 @@ public sealed class PreguntarAsistente
         _citasDeRespuesta = new CitasDeRespuesta(configuracion.ApoyoMinimoRespaldo);
         _ordenDeReglas = new OrdenDeReglasPorRelevancia(baseConocimiento);
         _afirmacionesDePerdida = new AfirmacionesDePerdida(configuracion.Catalogo);
+        _definitivaPorAsignatura = new DefinitivaPorAsignatura(configuracion.Catalogo);
     }
 
     public async Task<ResultadoPregunta> EjecutarAsync(
@@ -216,9 +218,17 @@ public sealed class PreguntarAsistente
         SalidaVerificada verificada,
         EntradaConversacion entrada,
         IReadOnlyCollection<string> autorizados) =>
-        _afirmacionesDePerdida.SonVerificables(verificada.Respuesta, autorizados, sesion.Directorio, sesion.Registro.Resumenes)
+        AfirmacionesSonVerificables(sesion, verificada.Respuesta, autorizados)
             ? ResponderVerificada(sesion, verificada, entrada)
             : Responder(sesion, Textos.NoVerificable, [], ResultadoAuditoria.EstadoNoVerificado);
+
+    private bool AfirmacionesSonVerificables(SesionPregunta sesion, string respuesta, IReadOnlyCollection<string> autorizados)
+    {
+        var usuario = sesion.Entrada.Usuario;
+        var resumenes = sesion.Registro.Resumenes;
+        return _afirmacionesDePerdida.SonVerificables(respuesta, usuario.Rol, autorizados, sesion.Directorio, resumenes)
+            && _definitivaPorAsignatura.SonVerificables(respuesta, usuario, autorizados, sesion.Directorio, resumenes);
+    }
 
     private ResultadoPregunta ResponderVerificada(SesionPregunta sesion, SalidaVerificada verificada, EntradaConversacion entrada)
     {
