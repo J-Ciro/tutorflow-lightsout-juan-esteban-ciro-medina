@@ -74,6 +74,10 @@ revisar_awk() {
 limite_lineas "$RAIZ/SPEC.md" 60
 limite_lineas "$RAIZ/constitution.md" 150
 
+for archivo in "$RAIZ/constitution.md" "$RAIZ/SPEC.md" "$RAIZ"/escenarios/*/*.md "$RAIZ/escenarios/README.md"; do
+  [ -f "$archivo" ] && revisar_awk "$archivo" largo
+done
+
 for dir in "$RAIZ"/specs/*/; do
   [ -d "$dir" ] || continue
   nombre="$(basename "$dir")"
