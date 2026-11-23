@@ -27,6 +27,8 @@ public sealed record ResultadoPregunta(
 
 public sealed class PreguntarAsistente
 {
+    private const int MaximoCitasDeRespaldo = 2;
+
     private readonly IApiAcademica _apiAcademica;
     private readonly IClienteLlm _clienteLlm;
     private readonly IBaseConocimiento _baseConocimiento;
@@ -162,16 +164,21 @@ public sealed class PreguntarAsistente
         var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, directorio);
         var candidatas = CitasEntregadasYCitadas(texto, entrada, sesion.Registro.Reglas);
         var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio, Confidencial(entrada));
-        return Responder(sesion, verificada.Respuesta, CitasFinales(sesion, verificada), verificada.Resultado);
+        return Responder(sesion, verificada.Respuesta, CitasFinales(sesion, verificada, entrada), verificada.Resultado);
     }
 
     private MaterialConfidencial Confidencial(EntradaConversacion entrada) =>
         new(_configuracion.MarcadorCanario, entrada.PromptSistema, HerramientasAsistente.NombresInternos);
 
-    private static IReadOnlyList<Cita> CitasFinales(SesionPregunta sesion, SalidaVerificada verificada) =>
+    private static IReadOnlyList<Cita> CitasFinales(SesionPregunta sesion, SalidaVerificada verificada, EntradaConversacion entrada) =>
         verificada.Resultado == ResultadoAuditoria.Respondida
-            ? [.. verificada.Citas.Concat(sesion.Registro.Citas).Distinct()]
+            ? [.. ConRespaldo(verificada.Citas, entrada.Secciones).Concat(sesion.Registro.Citas).Distinct()]
             : verificada.Citas;
+
+    private static IEnumerable<Cita> ConRespaldo(IReadOnlyList<Cita> escritas, IReadOnlyList<SeccionDocumento> entregadas) =>
+        escritas.Count > 0
+            ? escritas
+            : entregadas.Take(MaximoCitasDeRespaldo).Select(s => new Cita(s.Documento, s.Seccion));
 
     private static IReadOnlyList<Cita> CitasEntregadasYCitadas(string texto, EntradaConversacion entrada, IReadOnlyList<Cita> reglasDeHerramientas)
     {
