@@ -17,11 +17,13 @@ public sealed record CasoEval(
     IReadOnlyList<string> CitasIncluye,
     IReadOnlyList<string> CitasProhibidas,
     bool CitasVacias,
+    IReadOnlyList<string>? CitasExactas,
     bool? UsoDatosEstudiante,
     string? RespuestaExacta,
     bool TokensCero,
     bool FiltroPrevio,
     bool RequiereLlm,
+    bool SoloOffline,
     GuionOffline? Offline)
 {
     public string Etiqueta => $"{Id} [{Usuario.Rol}:{Usuario.Id}] {Resumen(Pregunta)}";

@@ -33,6 +33,11 @@ public sealed class EjecutorHttp : IEjecutor
 
     public async Task<Ejecucion?> EjecutarAsync(CasoEval caso, CancellationToken cancellationToken)
     {
+        if (caso.SoloOffline)
+        {
+            return null;
+        }
+
         await Task.Delay(_pausaMs, cancellationToken);
         var reloj = Stopwatch.StartNew();
         using var contenido = new StringContent(Cuerpos.De(caso), Encoding.UTF8, "application/json");
