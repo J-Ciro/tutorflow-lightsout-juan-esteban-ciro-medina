@@ -220,9 +220,9 @@ Característica: Asistente académico
       | tiene un commit con asunto de 61 caracteres         | commits       |
       | agrega un paquete NuGet con vulnerabilidad conocida | security      |
   Esquema del escenario: CA-11 · Metadatos coherentes (Detalle: ESC-004, ESC-008, ESC-079, ESC-106, ESC-180)
-    Dado un LLM doble que reporta 1000 tokens de entrada y 200 de salida, con precios de 1.0 y 5.0 USD por millón
+    Dado un LLM doble que reporta en cada llamada E' = ⌈1.04 × E⌉ tokens de entrada (E, la estimación de plan.md §4.4 de esa llamada) y 200 de salida, con precios de 1.0 y 5.0 USD por millón
     Cuando "<usuario>" pregunta "<pregunta>"
-    Entonces "tokens" es 1200, "costoUsd" es 0.002 (1000 × 1.0 / 10⁶ + 200 × 5.0 / 10⁶) y "usoDatosEstudiante" es <uso>
+    Entonces "tokens" es Σ(E' + 200), "costoUsd" es Σ(E' × 1.0 / 10⁶ + 200 × 5.0 / 10⁶) con tolerancia 1e-6 y "usoDatosEstudiante" es <uso>
     Ejemplos:
       | usuario | pregunta                                                 | uso   |
       | EST-001 | ¿Cómo se calcula la nota definitiva de una asignatura?   | false |
