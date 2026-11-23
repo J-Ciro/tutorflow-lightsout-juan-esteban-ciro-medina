@@ -188,7 +188,7 @@ public sealed class PreguntarAsistente
         var reserva = _configuracion.ReservaPorPeticionUsd;
         if (!_presupuesto.TryReservar(reserva))
         {
-            return _emisor.NoDisponible(sesion, ResultadoAuditoria.Error);
+            return _emisor.NoDisponible(sesion, ResultadoAuditoria.Error) with { SegundosParaReintentar = _presupuesto.SegundosHastaElReinicio() };
         }
 
         sesion.ReservaHecha = true;

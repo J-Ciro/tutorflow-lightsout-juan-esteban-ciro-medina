@@ -18,6 +18,7 @@ public sealed partial class ProcesadorPregunta
 
     private readonly LimitesAsistente _limites;
     private readonly LimitadorTasaPorIp _limitadorTasa;
+    private readonly IReloj _reloj;
     private readonly AuditorPeticiones _auditor;
     private readonly PreguntarAsistente _preguntarAsistente;
     private readonly ILogger<ProcesadorPregunta> _logger;
@@ -25,12 +26,14 @@ public sealed partial class ProcesadorPregunta
     public ProcesadorPregunta(
         LimitesAsistente limites,
         LimitadorTasaPorIp limitadorTasa,
+        IReloj reloj,
         AuditorPeticiones auditor,
         PreguntarAsistente preguntarAsistente,
         ILogger<ProcesadorPregunta> logger)
     {
         _limites = limites;
         _limitadorTasa = limitadorTasa;
+        _reloj = reloj;
         _auditor = auditor;
         _preguntarAsistente = preguntarAsistente;
         _logger = logger;
@@ -112,9 +115,14 @@ public sealed partial class ProcesadorPregunta
         catch (Exception excepcion) when (EsFalloDeDependencia(excepcion, cancellationToken))
         {
             RegistrarDependenciaCaida(_logger, excepcion.GetType().Name);
-            return Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable, title: TituloServicioNoDisponible);
+            return Responder503(contexto, SegundosDelProveedor(excepcion));
         }
     }
+
+    private int SegundosDelProveedor(Exception excepcion) =>
+        excepcion is DependenciaNoDisponibleException dependencia
+            ? RetryAfterDelProveedor.Segundos(dependencia.RetryAfterDelProveedor, _reloj.AhoraUtc) ?? 0
+            : 0;
 
     private static bool EsFalloDeDependencia(Exception excepcion, CancellationToken cancellationToken) =>
         excepcion is DependenciaNoDisponibleException or HttpRequestException or TimeoutException
@@ -129,7 +137,7 @@ public sealed partial class ProcesadorPregunta
 
         if (resultado.Respuesta is not { } respuesta)
         {
-            return Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable, title: TituloServicioNoDisponible);
+            return Responder503(contexto, resultado.SegundosParaReintentar);
         }
 
         var cuerpo = new PreguntaRespuesta(
@@ -166,6 +174,16 @@ public sealed partial class ProcesadorPregunta
             ResultadoAuditoria.Denegada,
             peticion.Cronometro.ElapsedMilliseconds));
         return Responder429(contexto, segundosParaReintentar);
+    }
+
+    private static IResult Responder503(HttpContext contexto, int segundosParaReintentar)
+    {
+        if (segundosParaReintentar > 0)
+        {
+            contexto.Response.Headers.RetryAfter = segundosParaReintentar.ToString(CultureInfo.InvariantCulture);
+        }
+
+        return Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable, title: TituloServicioNoDisponible);
     }
 
     private static IResult Responder429(HttpContext contexto, int segundosParaReintentar)

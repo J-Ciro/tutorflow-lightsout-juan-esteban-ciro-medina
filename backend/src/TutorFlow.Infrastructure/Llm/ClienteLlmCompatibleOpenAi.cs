@@ -1,5 +1,6 @@
 using System.ClientModel;
 using System.ClientModel.Primitives;
+using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.AI;
 using OpenAI;
@@ -12,6 +13,8 @@ public sealed class ClienteLlmCompatibleOpenAi : IClienteLlm
     private const string LlaveParaServidoresSinAutenticacion = "sin-llave";
     private const string SegmentoDeVersion = "v1/";
     private const int ReintentosMaximos = 0;
+    private const string EncabezadoRetryAfter = "Retry-After";
+    private const string MensajeDelProveedor = "El proveedor del LLM respondió con un error.";
 
     private readonly IChatClient _cliente;
     private readonly string _modelo;
@@ -46,11 +49,16 @@ public sealed class ClienteLlmCompatibleOpenAi : IClienteLlm
             var respuesta = await _cliente.GetResponseAsync(Mensajes(solicitud), opciones, cancellationToken);
             return ConControlDeContexto(solicitud, Traducir(respuesta), respuesta.Usage?.InputTokenCount is not null);
         }
-        catch (ClientResultException)
+        catch (ClientResultException excepcion)
         {
-            throw new DependenciaNoDisponibleException("El proveedor del LLM respondió con un error.");
+            throw new DependenciaNoDisponibleException(MensajeDelProveedor, RetryAfterDe(excepcion));
         }
     }
+
+    private static string? RetryAfterDe(ClientResultException excepcion) =>
+        excepcion.Status == (int)HttpStatusCode.TooManyRequests && excepcion.GetRawResponse() is { } respuesta && respuesta.Headers.TryGetValue(EncabezadoRetryAfter, out var valor)
+            ? valor
+            : null;
 
     private RespuestaLlm ConControlDeContexto(SolicitudLlm solicitud, RespuestaLlm respuesta, bool usoReportado) =>
         _controlaContexto && usoReportado ? respuesta with { ContextoTruncado = EstimadorDeContexto.Evaluar(solicitud, respuesta.Uso) } : respuesta;

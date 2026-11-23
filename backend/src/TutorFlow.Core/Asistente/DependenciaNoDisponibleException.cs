@@ -15,4 +15,12 @@ public sealed class DependenciaNoDisponibleException : Exception
         : base(message, innerException)
     {
     }
+
+    public DependenciaNoDisponibleException(string message, string? retryAfterDelProveedor)
+        : base(message)
+    {
+        RetryAfterDelProveedor = retryAfterDelProveedor;
+    }
+
+    public string? RetryAfterDelProveedor { get; }
 }
