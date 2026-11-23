@@ -35,12 +35,29 @@ public sealed class AuditoriaJsonConsola : IAuditoria
         motivoDenegacion = evento.MotivoDenegacion is { } motivo ? NombreSnake(motivo) : null,
         estudiantesConsultados = evento.EstudiantesConsultados,
         recursosConsultados = evento.RecursosConsultados.Select(NombreSnake).ToList(),
+        datosConsultados = evento.DatosConsultados.Select(Proyectar).ToList(),
         citas = evento.Citas.Select(cita => new { documento = cita.Documento, seccion = cita.Seccion }).ToList(),
         tokens = evento.Tokens,
         costoUsd = evento.CostoUsd,
         duracionMs = evento.DuracionMs,
         precioDesconocido = evento.PrecioDesconocido
     };
+
+    private static Dictionary<string, string> Proyectar(DatoConsultado dato)
+    {
+        var proyeccion = new Dictionary<string, string>
+        {
+            ["estudianteId"] = dato.EstudianteId,
+            ["programaId"] = dato.ProgramaId,
+            ["recurso"] = NombreSnake(dato.Recurso)
+        };
+        if (dato.Asignatura is { } asignatura)
+        {
+            proyeccion["asignatura"] = asignatura;
+        }
+
+        return proyeccion;
+    }
 
     private static object Proyectar(EventoMultiplesIdentidades evento) => new
     {

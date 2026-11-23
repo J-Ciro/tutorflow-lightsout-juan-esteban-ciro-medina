@@ -23,6 +23,12 @@ public enum RecursoConsultado
     Programa
 }
 
+public sealed record DatoConsultado(
+    string EstudianteId,
+    string ProgramaId,
+    RecursoConsultado Recurso,
+    string? Asignatura = null);
+
 public sealed record EventoAuditoria(
     DateTimeOffset Timestamp,
     string CorrelationId,
@@ -38,7 +44,10 @@ public sealed record EventoAuditoria(
     int Tokens,
     decimal CostoUsd,
     long DuracionMs,
-    bool PrecioDesconocido);
+    bool PrecioDesconocido)
+{
+    public IReadOnlyList<DatoConsultado> DatosConsultados { get; init; } = [];
+}
 
 public sealed record EventoMultiplesIdentidades(
     DateTimeOffset Timestamp,

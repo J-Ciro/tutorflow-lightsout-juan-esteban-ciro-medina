@@ -79,13 +79,15 @@ public static class FormateadorDatos
 
     public static string Cortes(IReadOnlyList<NotasAsignatura> notas, string consulta)
     {
-        var buscada = NormalizadorTexto.Normalizar(consulta);
-        var coincidencias = notas
-            .Where(nota => NormalizadorTexto.Normalizar(nota.Nombre).Contains(buscada, StringComparison.Ordinal)
-                || NormalizadorTexto.Normalizar(nota.Codigo) == buscada)
-            .Select(LineaDeCortes)
-            .ToList();
+        var coincidencias = BuscarAsignaturas(notas, consulta).Select(LineaDeCortes).ToList();
         return coincidencias.Count == 0 ? "No hay una asignatura con ese nombre o código." : string.Join(Environment.NewLine, coincidencias);
+    }
+
+    public static IReadOnlyList<NotasAsignatura> BuscarAsignaturas(IReadOnlyList<NotasAsignatura> notas, string consulta)
+    {
+        var buscada = NormalizadorTexto.Normalizar(consulta);
+        return [.. notas.Where(nota => NormalizadorTexto.Normalizar(nota.Nombre).Contains(buscada, StringComparison.Ordinal)
+            || NormalizadorTexto.Normalizar(nota.Codigo) == buscada)];
     }
 
     private static string LineaDeCortes(NotasAsignatura nota) =>

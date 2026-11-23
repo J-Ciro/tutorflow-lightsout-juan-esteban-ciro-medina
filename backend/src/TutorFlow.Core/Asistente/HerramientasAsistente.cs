@@ -92,6 +92,7 @@ public sealed class HerramientasAsistente
     {
         var estudiante = solicitud.Contexto.Directorio.Estudiantes.First(e => e.Id == solicitud.Contexto.Usuario.Id);
         var contenido = FormateadorDatos.DatosBasicos(estudiante, solicitud.Contexto.Directorio);
+        solicitud.Registro.RegistrarDatos([DatosLeidos.SinAsignatura(estudiante.Id, estudiante.ProgramaId, RecursoConsultado.DatosBasicos)]);
         return Task.FromResult(Responder(solicitud, contenido, estudiante.Id, [RecursoConsultado.DatosBasicos], Textos.SeccionDatosBasicos));
     }
 
@@ -100,6 +101,7 @@ public sealed class HerramientasAsistente
         var id = solicitud.Contexto.Usuario.Id;
         var resumen = await ResumirAsync(id, solicitud.CancellationToken);
         solicitud.Registro.RegistrarReglas(ReglasAplicadas.DeNotas([resumen]));
+        solicitud.Registro.RegistrarDatos(DatosLeidos.PorAsignatura(resumen, ProgramaDe(solicitud, id), RecursoConsultado.Notas, RecursoConsultado.Asistencia));
         return Responder(solicitud, FormateadorDatos.Notas(resumen), id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], Textos.SeccionNotas);
     }
 
@@ -113,6 +115,8 @@ public sealed class HerramientasAsistente
         var id = solicitud.Contexto.Usuario.Id;
         var notas = await _apiAcademica.ObtenerNotasAsync(id, solicitud.CancellationToken);
         var contenido = FormateadorDatos.Cortes(notas, solicitud.Asignatura);
+        var codigos = FormateadorDatos.BuscarAsignaturas(notas, solicitud.Asignatura).Select(nota => nota.Codigo);
+        solicitud.Registro.RegistrarDatos(DatosLeidos.PorCodigos(id, ProgramaDe(solicitud, id), codigos, RecursoConsultado.Notas));
         return Responder(solicitud, contenido, id, [RecursoConsultado.Notas], Textos.SeccionNotas);
     }
 
@@ -121,6 +125,7 @@ public sealed class HerramientasAsistente
         var id = solicitud.Contexto.Usuario.Id;
         var resumen = await ResumirAsync(id, solicitud.CancellationToken);
         solicitud.Registro.RegistrarReglas(ReglasAplicadas.DeAsistencia([resumen]));
+        solicitud.Registro.RegistrarDatos(DatosLeidos.PorAsignatura(resumen, ProgramaDe(solicitud, id), RecursoConsultado.Notas, RecursoConsultado.Asistencia));
         return Responder(solicitud, FormateadorDatos.Asistencia(resumen), id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], Textos.SeccionAsistencia);
     }
 
@@ -138,6 +143,7 @@ public sealed class HerramientasAsistente
         var recursos = new[] { RecursoConsultado.DatosBasicos, RecursoConsultado.Notas, RecursoConsultado.Asistencia };
         solicitud.Registro.RegistrarReglas([.. ReglasAplicadas.DeNotas([resumen]), .. ReglasAplicadas.DeAsistencia([resumen])]);
         solicitud.Registro.Registrar(estudiante.Id, recursos, new Cita(Textos.DocumentoDatosEstudiante, Textos.SeccionAsistencia));
+        solicitud.Registro.RegistrarDatos(DatosDeEstudiante(estudiante, resumen, RecursoConsultado.DatosBasicos));
         return Responder(solicitud, contenido, estudiante.Id, recursos, Textos.SeccionNotas);
     }
 
@@ -170,11 +176,19 @@ public sealed class HerramientasAsistente
             resumenes.Add(resumen);
             lineas.Add(FormateadorDatos.LineaDePrograma(estudiante, resumen));
             solicitud.Registro.Registrar(estudiante.Id, [RecursoConsultado.Programa, RecursoConsultado.Notas, RecursoConsultado.Asistencia], null);
+            solicitud.Registro.RegistrarDatos(DatosDeEstudiante(estudiante, resumen, RecursoConsultado.Programa));
         }
 
         solicitud.Registro.RegistrarCita(new Cita(Textos.DocumentoDatosPrograma, programa.Id));
         return FormateadorDatos.Delimitar($"{Textos.DocumentoDatosPrograma} · {programa.Id}", string.Join("\n", lineas));
     }
+
+    private static string ProgramaDe(SolicitudHerramienta solicitud, string estudianteId) =>
+        solicitud.Contexto.Directorio.Estudiantes.First(e => e.Id == estudianteId).ProgramaId;
+
+    private static IEnumerable<DatoConsultado> DatosDeEstudiante(Estudiante estudiante, ResumenEstudiante resumen, RecursoConsultado recursoSinAsignatura) =>
+        DatosLeidos.PorAsignatura(resumen, estudiante.ProgramaId, RecursoConsultado.Notas, RecursoConsultado.Asistencia)
+            .Prepend(DatosLeidos.SinAsignatura(estudiante.Id, estudiante.ProgramaId, recursoSinAsignatura));
 
     private static ResultadoHerramienta Responder(
         SolicitudHerramienta solicitud,

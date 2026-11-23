@@ -201,22 +201,16 @@ public sealed class PreguntarAsistente
     private void Auditar(SesionPregunta sesion, ResultadoAuditoria resultado, MotivoDenegacion? motivo, IReadOnlyList<Cita> citas)
     {
         var usuario = sesion.Entrada.Usuario;
+        var pregunta = AuditorPeticiones.SanearPregunta(usuario, sesion.Entrada.Pregunta, sesion.Directorio ?? ConstructorDirectorio.Vacio);
+        var costo = CalculadoraCosto.Calcular(sesion.Uso, _configuracion.Precio);
+        var registro = sesion.Registro;
         _auditor.Registrar(new EventoAuditoria(
-            _auditor.AhoraUtc,
-            sesion.CorrelationId,
-            sesion.IpOrigen,
-            usuario.Rol,
-            usuario.Id,
-            AuditorPeticiones.SanearPregunta(usuario, sesion.Entrada.Pregunta, sesion.Directorio ?? ConstructorDirectorio.Vacio),
-            resultado,
-            motivo,
-            sesion.Registro.Estudiantes,
-            sesion.Registro.Recursos,
-            citas,
-            sesion.Uso.Total,
-            CalculadoraCosto.Calcular(sesion.Uso, _configuracion.Precio),
-            sesion.Cronometro.ElapsedMilliseconds,
-            _configuracion.Precio is null));
+            _auditor.AhoraUtc, sesion.CorrelationId, sesion.IpOrigen, usuario.Rol, usuario.Id, pregunta, resultado, motivo,
+            registro.Estudiantes, registro.Recursos, citas, sesion.Uso.Total, costo,
+            sesion.Cronometro.ElapsedMilliseconds, _configuracion.Precio is null)
+        {
+            DatosConsultados = registro.DatosConsultados
+        });
     }
 
     private sealed class SesionPregunta(PreguntaEntrada entrada, string ipOrigen, string correlationId, ApiAcademicaConPresupuesto api)
