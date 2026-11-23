@@ -40,6 +40,16 @@ public sealed class RegistroConsultas
         }
     }
 
+    public void RegistrarVerificacion(IEnumerable<RecursoConsultado> recursos, IEnumerable<DatoConsultado> datos)
+    {
+        foreach (var recurso in recursos)
+        {
+            AgregarSiFalta(_recursos, recurso);
+        }
+
+        RegistrarDatos(datos);
+    }
+
     public void RegistrarDatos(IEnumerable<DatoConsultado> datos)
     {
         foreach (var dato in datos)

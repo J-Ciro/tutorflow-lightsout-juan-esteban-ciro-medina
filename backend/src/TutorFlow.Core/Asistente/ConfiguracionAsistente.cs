@@ -18,8 +18,10 @@ public sealed class ConfiguracionAsistente
         IReadOnlyCollection<string> codigosAsignatura,
         decimal? reservaPorPeticionUsd = null,
         int relevanciaMinima = RelevanciaMinimaPorDefecto,
-        int apoyoMinimoRespaldo = ApoyoMinimoPorDefecto)
+        int apoyoMinimoRespaldo = ApoyoMinimoPorDefecto,
+        IReadOnlyList<AsignaturaCatalogo>? catalogo = null)
     {
+        Catalogo = catalogo is { Count: > 0 } ? catalogo : CatalogoAsignaturas.PorDefecto;
         Precio = precio;
         MarcadorCanario = string.IsNullOrWhiteSpace(marcadorCanarioConfigurado)
             ? Convert.ToHexString(RandomNumberGenerator.GetBytes(BytesDelMarcadorAleatorio))
@@ -35,6 +37,8 @@ public sealed class ConfiguracionAsistente
     public string MarcadorCanario { get; }
 
     public IReadOnlyCollection<string> CodigosAsignatura { get; }
+
+    public IReadOnlyList<AsignaturaCatalogo> Catalogo { get; }
 
     public decimal ReservaPorPeticionUsd { get; }
 

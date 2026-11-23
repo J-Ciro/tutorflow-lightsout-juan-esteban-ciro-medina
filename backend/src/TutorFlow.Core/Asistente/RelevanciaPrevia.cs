@@ -24,12 +24,22 @@ internal sealed class RelevanciaPrevia
         _relevanciaMinima = relevanciaMinima;
     }
 
-    public bool DebeResponderSinInformacion(ContextoUsuario contexto, string pregunta, IReadOnlyList<SeccionDocumento> secciones)
+    public bool PeriodoNoDisponible(ContextoUsuario contexto, string pregunta, ActivacionResumen activacion)
     {
         var palabras = TokenizadorTexto.Valores(pregunta);
-        if (ActivadorResumenPropio.Activa(contexto, pregunta) || EsConsultaDeDatosDeCoordinador(contexto, palabras))
+        return (activacion.Candidata || EsConsultaDeDatosDeCoordinador(contexto, palabras)) && PideOtroPeriodo(palabras);
+    }
+
+    public bool DebeResponderSinInformacion(
+        ContextoUsuario contexto,
+        string pregunta,
+        IReadOnlyList<SeccionDocumento> secciones,
+        ActivacionResumen activacion)
+    {
+        var palabras = TokenizadorTexto.Valores(pregunta);
+        if (activacion.Entrega || EsConsultaDeDatosDeCoordinador(contexto, palabras))
         {
-            return PideOtroPeriodo(palabras);
+            return false;
         }
 
         return !palabras.Contains(PalabraDelReglamentoDerogado) && !HaySeccionRelevante(pregunta, secciones);

@@ -26,6 +26,9 @@ public static class RaicesDeContenido
             .Select(palabra => palabra[..LongitudDeRaiz])
             .Distinct(StringComparer.Ordinal);
 
+    public static IReadOnlyCollection<string> DeApoyo(string texto) =>
+        [.. De(texto).Concat(RaicesNumericas.De(texto))];
+
     private static bool EsPalabraDeContenido(string palabra) =>
         palabra.Length >= LongitudDeRaiz
         && !PalabrasVacias.Contains(palabra)

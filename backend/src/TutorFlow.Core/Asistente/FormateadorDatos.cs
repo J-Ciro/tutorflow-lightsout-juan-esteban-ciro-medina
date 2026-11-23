@@ -105,7 +105,7 @@ public static class FormateadorDatos
     {
         var clases = resultado.Asignatura.Asistencia.ClasesProgramadas;
         return resultado.Asignatura.Asistencia.Inasistencias is { } faltas
-            ? $"{faltas} inasistencias de {clases} clases programadas; máximo permitido sin perder: {resultado.FaltasPermitidas}; faltas restantes: {resultado.FaltasRestantes}{(resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia ? "; perdida por inasistencia" : string.Empty)}"
+            ? $"{faltas} inasistencias de {clases} clases programadas; faltas restantes: {resultado.FaltasRestantes} (máximo permitido sin perder: {resultado.FaltasPermitidas}){(resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia ? "; perdida por inasistencia" : string.Empty)}"
             : $"sin registro de inasistencias en {clases} clases programadas; no se declara pérdida y se debe solicitar la revisión al coordinador ({Textos.SeccionAsistenciaSinRegistro})";
     }
 

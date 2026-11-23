@@ -18,6 +18,7 @@ public static class ServiciosTutorFlow
 {
     private const string NombreClienteLlm = "llm";
     private const string SeccionCodigosAsignatura = "Autorizacion:CodigosAsignatura";
+    private const string SeccionAsignaturas = "Autorizacion:Asignaturas";
     private const string ClaveMarcadorCanario = "Llm:MarcadorCanario";
     private const string ClaveReservaPorPeticion = "Llm:ReservaPorPeticionUsd";
     private const string ClaveRelevanciaMinima = "Conocimiento:RelevanciaMinima";
@@ -137,6 +138,7 @@ public static class ServiciosTutorFlow
             codigos,
             LeerDecimal(configuracion[ClaveReservaPorPeticion]),
             configuracion.GetValue(ClaveRelevanciaMinima, ConfiguracionAsistente.RelevanciaMinimaPorDefecto),
-            configuracion.GetValue(ClaveApoyoMinimoRespaldo, ConfiguracionAsistente.ApoyoMinimoPorDefecto));
+            configuracion.GetValue(ClaveApoyoMinimoRespaldo, ConfiguracionAsistente.ApoyoMinimoPorDefecto),
+            configuracion.GetSection(SeccionAsignaturas).Get<AsignaturaCatalogo[]>());
     }
 }
