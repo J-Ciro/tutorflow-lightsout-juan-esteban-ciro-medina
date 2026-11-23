@@ -24,8 +24,8 @@ internal sealed class CitasDeRespuesta
 
     private IEnumerable<SeccionDocumento> SeccionesConApoyo(string texto, IReadOnlyList<SeccionDocumento> entregadas)
     {
-        var raicesDeLaRespuesta = RaicesDeContenido.De(ExtractorCitas.SinCitas(texto)).ToHashSet(StringComparer.Ordinal);
-        return entregadas.Where(seccion => RaicesDeContenido.De($"{seccion.Titulo} {seccion.Texto}").Count(raicesDeLaRespuesta.Contains) >= _apoyoMinimo);
+        var raicesDeLaRespuesta = RaicesDeContenido.DeApoyo(ExtractorCitas.SinCitas(texto)).ToHashSet(StringComparer.Ordinal);
+        return entregadas.Where(seccion => RaicesDeContenido.DeApoyo($"{seccion.Titulo} {seccion.Texto}").Count(raicesDeLaRespuesta.Contains) >= _apoyoMinimo);
     }
 
     private static Cita CitaDe(SeccionDocumento seccion) => new(seccion.Documento, seccion.Seccion);
