@@ -91,10 +91,20 @@ public sealed class PreguntarAsistente
         var pregunta = sesion.Entrada.Pregunta;
         var contexto = new ContextoUsuario(sesion.Entrada.Usuario, sesion.Directorio);
         sesion.Secciones = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(pregunta), _limites.MaximoSeccionesRecuperadas);
-        return _relevancia.DebeResponderSinInformacion(contexto, pregunta, sesion.Secciones)
-            ? Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, usoDatos: false)
+        var activacion = ActivadorResumenPropio.Evaluar(contexto, pregunta, _configuracion.Catalogo);
+        if (_relevancia.PeriodoNoDisponible(contexto, pregunta, activacion))
+        {
+            return SinInformacionPrevia(sesion);
+        }
+
+        sesion.Activacion = await _lectorResumen.VerificarMatriculaAsync(contexto, activacion, sesion.Api, sesion.Registro, cancellationToken);
+        return _relevancia.DebeResponderSinInformacion(contexto, pregunta, sesion.Secciones, sesion.Activacion)
+            ? SinInformacionPrevia(sesion)
             : await ResponderConReservaAsync(sesion, cancellationToken);
     }
+
+    private ResultadoPregunta SinInformacionPrevia(SesionPregunta sesion) =>
+        Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, usoDatos: false);
 
     private DecisionAcceso Autorizar(SesionPregunta sesion)
     {
@@ -155,7 +165,7 @@ public sealed class PreguntarAsistente
     private async Task<EntradaConversacion> PrepararEntradaAsync(SesionPregunta sesion, ContextoUsuario contexto, CancellationToken cancellationToken)
     {
         var pregunta = sesion.Entrada.Pregunta;
-        var resumen = await _lectorResumen.LeerAsync(contexto, pregunta, sesion.Api, sesion.Registro, cancellationToken);
+        var resumen = await _lectorResumen.LeerAsync(contexto, sesion.Activacion, sesion.Api, sesion.Registro, cancellationToken);
         return new EntradaConversacion(pregunta, sesion.Secciones, resumen, ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
     }
 

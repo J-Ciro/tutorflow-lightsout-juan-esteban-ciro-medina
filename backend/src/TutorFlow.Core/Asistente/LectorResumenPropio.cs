@@ -13,35 +13,69 @@ internal sealed class LectorResumenPropio
         _politicaAcceso = politicaAcceso;
     }
 
-    public async Task<ResumenEntregado?> LeerAsync(
+    public async Task<ActivacionResumen> VerificarMatriculaAsync(
         ContextoUsuario contexto,
-        string pregunta,
+        ActivacionResumen activacion,
         IApiAcademica api,
         RegistroConsultas registro,
         CancellationToken cancellationToken)
     {
-        var usuario = contexto.Usuario;
-        if (!ActivadorResumenPropio.Activa(contexto, pregunta) || !PuedeLeerSusDatos(contexto))
+        if (!activacion.RequiereVerificacion || !PuedeLeerSusDatos(contexto))
+        {
+            return activacion;
+        }
+
+        var notas = await api.ObtenerNotasAsync(contexto.Usuario.Id, cancellationToken);
+        RegistrarVerificacion(contexto, notas, registro);
+        var matriculada = notas.Any(nota => activacion.CodigosNombrados.Contains(AmbitoPersonal.Clave(nota.Codigo)));
+        return activacion with { NotasVerificadas = notas, Matriculada = matriculada };
+    }
+
+    public async Task<ResumenEntregado?> LeerAsync(
+        ContextoUsuario contexto,
+        ActivacionResumen activacion,
+        IApiAcademica api,
+        RegistroConsultas registro,
+        CancellationToken cancellationToken)
+    {
+        if (!activacion.Entrega || !PuedeLeerSusDatos(contexto))
         {
             return null;
         }
 
-        var resumen = await ResumenesAcademicos.ResumirAsync(api, usuario.Id, cancellationToken);
+        var resumen = await ResumirAsync(contexto, activacion, api, cancellationToken);
         Registrar(contexto, resumen, registro);
         var entregado = FormateadorResumen.Resumir(resumen);
         registro.AgregarFuente(entregado.Texto);
         return entregado;
     }
 
+    private static Task<ResumenEstudiante> ResumirAsync(
+        ContextoUsuario contexto,
+        ActivacionResumen activacion,
+        IApiAcademica api,
+        CancellationToken cancellationToken) =>
+        activacion.NotasVerificadas is null
+            ? ResumenesAcademicos.ResumirAsync(api, contexto.Usuario.Id, cancellationToken)
+            : ResumenesAcademicos.ResumirAsync(api, contexto.Usuario.Id, activacion.NotasVerificadas, cancellationToken);
+
     private bool PuedeLeerSusDatos(ContextoUsuario contexto) =>
         _politicaAcceso.EvaluarLecturaEstudiante(contexto.Usuario, contexto.Usuario.Id, contexto.Directorio).Permitido;
+
+    private static string ProgramaDe(ContextoUsuario contexto) =>
+        contexto.Directorio.Estudiantes.First(e => e.Id == contexto.Usuario.Id).ProgramaId;
+
+    private static void RegistrarVerificacion(ContextoUsuario contexto, IReadOnlyList<NotasAsignatura> notas, RegistroConsultas registro)
+    {
+        var datos = DatosLeidos.PorCodigos(contexto.Usuario.Id, ProgramaDe(contexto), notas.Select(n => n.Codigo), RecursoConsultado.Notas);
+        registro.RegistrarVerificacion([RecursoConsultado.Notas], datos);
+    }
 
     private static void Registrar(ContextoUsuario contexto, ResumenEstudiante resumen, RegistroConsultas registro)
     {
         var id = contexto.Usuario.Id;
-        var programaId = contexto.Directorio.Estudiantes.First(e => e.Id == id).ProgramaId;
         registro.Registrar(id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], new Cita(Textos.DocumentoDatosEstudiante, Textos.SeccionNotas));
         registro.RegistrarCita(new Cita(Textos.DocumentoDatosEstudiante, Textos.SeccionAsistencia));
-        registro.RegistrarDatos(DatosLeidos.PorAsignatura(resumen, programaId, RecursoConsultado.Notas, RecursoConsultado.Asistencia));
+        registro.RegistrarDatos(DatosLeidos.PorAsignatura(resumen, ProgramaDe(contexto), RecursoConsultado.Notas, RecursoConsultado.Asistencia));
     }
 }
