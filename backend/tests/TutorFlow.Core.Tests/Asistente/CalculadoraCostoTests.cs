@@ -21,18 +21,23 @@ public sealed class CalculadoraCostoTests
         Assert.Equal(1200, new UsoTokens(1000, 200).Total);
     }
 
-    [Theory]
-    [InlineData(5, 0, 0.1, 0.5, 0.000001)]
-    [InlineData(0, 3, 0.1, 0.5, 0.000002)]
-    [InlineData(1000000, 1000000, 0.1, 0.5, 0.6)]
-    [InlineData(0, 0, 1.0, 5.0, 0.0)]
-    [InlineData(1500, 0, 0.0, 0.0, 0.0)]
-    [Trait("CA", "CA-11")]
-    public void Costo_se_redondea_a_seis_decimales_con_medio_hacia_arriba(int entrada, int salida, double precioEntrada, double precioSalida, double esperado)
+    public static TheoryData<int, int, decimal, decimal, decimal> CasosDeCosto => new()
     {
-        var costo = CalculadoraCosto.Calcular(new UsoTokens(entrada, salida), new PrecioModelo((decimal)precioEntrada, (decimal)precioSalida));
+        { 5, 0, 0.1m, 0.5m, 0.000001m },
+        { 0, 3, 0.1m, 0.5m, 0.000002m },
+        { 1000000, 1000000, 0.1m, 0.5m, 0.6m },
+        { 0, 0, 1.0m, 5.0m, 0.0m },
+        { 1500, 0, 0.0m, 0.0m, 0.0m }
+    };
 
-        Assert.Equal((decimal)esperado, costo);
+    [Theory]
+    [MemberData(nameof(CasosDeCosto))]
+    [Trait("CA", "CA-11")]
+    public void Costo_se_redondea_a_seis_decimales_con_medio_hacia_arriba(int entrada, int salida, decimal precioEntrada, decimal precioSalida, decimal esperado)
+    {
+        var costo = CalculadoraCosto.Calcular(new UsoTokens(entrada, salida), new PrecioModelo(precioEntrada, precioSalida));
+
+        Assert.Equal(esperado, costo);
     }
 
     [Fact]

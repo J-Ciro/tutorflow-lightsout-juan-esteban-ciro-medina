@@ -102,23 +102,28 @@ public sealed class DefinitivaTests
         Assert.Contains(acumulada.PorcentajeEvaluado, PorcentajesAceptados);
     }
 
+    public static TheoryData<decimal, int, decimal> PuntosMedios => new()
+    {
+        { 4.45m, 1, 4.5m },
+        { 4.44m, 1, 4.4m },
+        { 3.45m, 1, 3.5m },
+        { 4.05m, 1, 4.1m },
+        { 4.55m, 1, 4.6m },
+        { 3.75m, 1, 3.8m },
+        { 4.15m, 1, 4.2m },
+        { 2.275m, 2, 2.28m },
+        { 2.674m, 2, 2.67m },
+        { 2.5m, 0, 3m },
+        { 0.5m, 0, 1m }
+    };
+
     [Theory]
-    [InlineData(4.45, 1, 4.5)]
-    [InlineData(4.44, 1, 4.4)]
-    [InlineData(3.45, 1, 3.5)]
-    [InlineData(4.05, 1, 4.1)]
-    [InlineData(4.55, 1, 4.6)]
-    [InlineData(3.75, 1, 3.8)]
-    [InlineData(4.15, 1, 4.2)]
-    [InlineData(2.275, 2, 2.28)]
-    [InlineData(2.674, 2, 2.67)]
-    [InlineData(2.5, 0, 3)]
-    [InlineData(0.5, 0, 1)]
+    [MemberData(nameof(PuntosMedios))]
     [Trait("CA", "CA-02")]
     [Trait("RN", "RN-04")]
     [Trait("RN", "RN-06")]
-    public void Redondear_lleva_el_punto_medio_hacia_arriba(double valor, int decimales, double esperado)
+    public void Redondear_lleva_el_punto_medio_hacia_arriba(decimal valor, int decimales, decimal esperado)
     {
-        Assert.Equal((decimal)esperado, CalculosAcademicos.Redondear((decimal)valor, decimales));
+        Assert.Equal(esperado, CalculosAcademicos.Redondear(valor, decimales));
     }
 }
