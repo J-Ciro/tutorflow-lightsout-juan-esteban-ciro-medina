@@ -17,7 +17,6 @@ namespace TutorFlow.Api;
 public static class ServiciosTutorFlow
 {
     private const string NombreClienteLlm = "llm";
-    private const string SeccionCodigosAsignatura = "Autorizacion:CodigosAsignatura";
     private const string SeccionAsignaturas = "Autorizacion:Asignaturas";
     private const string ClaveMarcadorCanario = "Llm:MarcadorCanario";
     private const string ClaveReservaPorPeticion = "Llm:ReservaPorPeticionUsd";
@@ -135,11 +134,10 @@ public static class ServiciosTutorFlow
     {
         var resuelto = proveedor.GetRequiredService<ProveedorResuelto>();
         var precio = resuelto.PrecioDesconocido ? null : new PrecioModelo(resuelto.PrecioEntradaPorMillon, resuelto.PrecioSalidaPorMillon);
-        var codigos = configuracion.GetSection(SeccionCodigosAsignatura).Get<string[]>() ?? [];
         return new ConfiguracionAsistente(
             precio,
             configuracion[ClaveMarcadorCanario],
-            codigos,
+            null,
             LeerDecimal(configuracion[ClaveReservaPorPeticion]),
             configuracion.GetValue(ClaveRelevanciaMinima, ConfiguracionAsistente.RelevanciaMinimaPorDefecto),
             configuracion.GetValue(ClaveApoyoMinimoRespaldo, ConfiguracionAsistente.ApoyoMinimoPorDefecto),

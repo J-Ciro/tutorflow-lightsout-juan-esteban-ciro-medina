@@ -16,7 +16,7 @@ public sealed class ConfiguracionAsistente
     public ConfiguracionAsistente(
         PrecioModelo? precio,
         string? marcadorCanarioConfigurado,
-        IReadOnlyCollection<string> codigosAsignatura,
+        IReadOnlyCollection<string>? codigosAsignatura,
         decimal? reservaPorPeticionUsd = null,
         int relevanciaMinima = RelevanciaMinimaPorDefecto,
         int apoyoMinimoRespaldo = ApoyoMinimoPorDefecto,
@@ -28,7 +28,7 @@ public sealed class ConfiguracionAsistente
         MarcadorCanario = string.IsNullOrWhiteSpace(marcadorCanarioConfigurado)
             ? Convert.ToHexString(RandomNumberGenerator.GetBytes(BytesDelMarcadorAleatorio))
             : marcadorCanarioConfigurado;
-        CodigosAsignatura = codigosAsignatura;
+        CodigosAsignatura = codigosAsignatura ?? [.. Catalogo.Select(asignatura => asignatura.Codigo)];
         ReservaPorPeticionUsd = reservaPorPeticionUsd ?? ReservaPorDefecto(precio, reservaSinPrecioUsd);
         RelevanciaMinima = Math.Max(MinimoPermitido, relevanciaMinima);
         ApoyoMinimoRespaldo = Math.Max(MinimoPermitido, apoyoMinimoRespaldo);
