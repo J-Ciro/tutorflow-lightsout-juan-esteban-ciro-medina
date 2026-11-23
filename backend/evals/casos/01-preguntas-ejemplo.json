@@ -48,6 +48,7 @@
     ],
     "noContiene": [],
     "citasIncluye": [
+      "evaluacion_y_calificaciones.md · Sección 3",
       "evaluacion_y_calificaciones.md · Sección 4"
     ],
     "citasProhibidas": [],
@@ -60,7 +61,7 @@
     "offline": {
       "herramientas": "todas",
       "estudianteIdCoordinador": null,
-      "texto": "Tu promedio ponderado del periodo es 4.39.\nCálculo Integral: 4.5\nProgramación Orientada a Objetos: 4.8\nBases de Datos: 4.1\nInglés III: 4.0"
+      "texto": "Tu promedio ponderado del periodo es 4.39.\nCálculo Integral: 4.5\nProgramación Orientada a Objetos: 4.8\nBases de Datos: 4.1\nInglés III: 4.0\nFuentes: evaluacion_y_calificaciones.md · Sección 3 y evaluacion_y_calificaciones.md · Sección 4."
     }
   },
   {
