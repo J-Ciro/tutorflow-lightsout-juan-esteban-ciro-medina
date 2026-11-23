@@ -217,7 +217,8 @@
     ],
     "noContiene": [],
     "citasIncluye": [
-      "reglamento_academico_2025.md · Artículo 11"
+      "reglamento_academico_2025.md · Artículo 11",
+      "Datos del estudiante · Asistencia"
     ],
     "citasProhibidas": [],
     "citasVacias": false,
@@ -227,9 +228,9 @@
     "filtroPrevio": false,
     "requiereLlm": true,
     "offline": {
-      "herramientas": "todas",
+      "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "{herramientas}"
+      "texto": "Puedes faltar 5 clases más en Bases de Datos: el máximo es 7 de 48 y llevas 2. (reglamento_academico_2025.md · Artículo 11)"
     }
   },
   {
@@ -274,7 +275,9 @@
       "3.88"
     ],
     "noContiene": [],
-    "citasIncluye": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
     "citasProhibidas": [],
     "citasVacias": false,
     "usoDatosEstudiante": true,
@@ -283,9 +286,9 @@
     "filtroPrevio": false,
     "requiereLlm": true,
     "offline": {
-      "herramientas": "todas",
+      "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "{herramientas}"
+      "texto": "No cumples el requisito: tu promedio del periodo es 3.88."
     }
   },
   {
@@ -331,7 +334,8 @@
     ],
     "noContiene": [],
     "citasIncluye": [
-      "reglamento_academico_2025.md · Artículo 6"
+      "reglamento_academico_2025.md · Artículo 6",
+      "Datos del estudiante · Notas"
     ],
     "citasProhibidas": [],
     "citasVacias": false,
@@ -341,9 +345,9 @@
     "filtroPrevio": false,
     "requiereLlm": true,
     "offline": {
-      "herramientas": "todas",
+      "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "Puedes habilitar Estadística (2.3), no Microeconomía (1.8). {herramientas}"
+      "texto": "Puedes habilitar Estadística (2.3) y no Microeconomía (1.8). (reglamento_academico_2025.md · Artículo 6)"
     }
   },
   {
@@ -356,12 +360,15 @@
     "pregunta": "¿Puedo habilitar Bases de Datos?",
     "http": 200,
     "contiene": [
-      "inasistencia"
+      "inasistencia",
+      "2.6"
     ],
     "noContiene": [],
     "citasIncluye": [
       "reglamento_academico_2025.md · Artículo 6",
-      "reglamento_academico_2025.md · Artículo 7"
+      "reglamento_academico_2025.md · Artículo 7",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
     ],
     "citasProhibidas": [],
     "citasVacias": false,
@@ -371,9 +378,9 @@
     "filtroPrevio": false,
     "requiereLlm": true,
     "offline": {
-      "herramientas": "todas",
+      "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "No puedes habilitar Bases de Datos porque la perdiste por inasistencia. {herramientas}"
+      "texto": "No puedes habilitar Bases de Datos porque la perdiste por inasistencia (9 de 48 clases). Sí puedes habilitar Cálculo Integral (2.6). (reglamento_academico_2025.md · Artículo 6) (reglamento_academico_2025.md · Artículo 7)"
     }
   },
   {
