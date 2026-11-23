@@ -9,9 +9,12 @@ public static class FormateadorDatos
     private const string FormatoNota = "0.0";
     private const string FormatoPromedio = "0.00";
     private const string SinCalificar = "sin calificar";
-    private const string Ninguna = "ninguna";
     private const string MarcaDelimitadorOriginal = "DATOS_NO_CONFIABLES";
     private const string MarcaDelimitadorNeutra = "DATOS NO CONFIABLES";
+    private const string SinDefinitivaEncabezado = "Sin definitiva (falta calificar un corte)";
+
+    private static readonly VozDeLosDatos Segunda = new("Solicita la revisión a tu coordinador", "superaste", "superas", "pierdes");
+    private static readonly VozDeLosDatos Tercera = new("Solicite la revisión al coordinador del programa", "superó", "supera", "pierde");
 
     public static string Delimitar(string fuente, string contenido) =>
         $"<<<{MarcaDelimitadorOriginal} fuente=\"{fuente}\">>>\n"
@@ -30,52 +33,10 @@ public static class FormateadorDatos
             + $"Coordinador del programa: {(coordinadores.Count == 0 ? "sin coordinador asignado" : string.Join(", ", coordinadores))}.";
     }
 
-    public static string Notas(ResumenEstudiante resumen)
-    {
-        var lineas = resumen.Asignaturas.Select(LineaDeNotas).ToList();
-        lineas.Add($"Promedio ponderado del periodo: {Promedio(resumen.Promedio)}.");
-        lineas.Add($"Créditos matriculados: {resumen.CreditosMatriculados}.");
-        lineas.Add($"Prueba académica: {(resumen.PruebaAcademica ? "sí" : "no")}.");
-        lineas.Add($"Beca por rendimiento: {TextoBeca(resumen.Beca)}.");
-        return string.Join("\n", lineas);
-    }
+    public static string Notas(ResumenEstudiante resumen) => string.Join("\n", LineasDeNotas(resumen));
 
-    public static string Asistencia(ResumenEstudiante resumen) =>
-        string.Join("\n", resumen.Asignaturas.Select(LineaDeAsistencia));
-
-    public static string LineaDePrograma(Estudiante estudiante, ResumenEstudiante resumen) =>
-        $"{estudiante.Nombre} (ID {estudiante.Id}): promedio {Promedio(resumen.Promedio)}; "
-        + $"prueba académica: {(resumen.PruebaAcademica ? "sí" : "no")}; "
-        + $"asignaturas perdidas: {Lista(resumen.Asignaturas.Where(EstaPerdida).Select(DescribirPerdida))}; "
-        + $"asignaturas sin definitiva: {Lista(resumen.Asignaturas.Where(SinDefinitiva).Select(a => a.Asignatura.Nombre))}; "
-        + $"asistencia sin registro: {Lista(resumen.Asignaturas.Where(SinRegistro).Select(a => a.Asignatura.Nombre))}.";
-
-    public static string EncabezadoPrograma(Programa programa, int cantidadEstudiantes) =>
-        $"Programa {programa.Id} ({programa.Nombre}): {cantidadEstudiantes} estudiantes.";
-
-    private static string LineaDeNotas(ResultadoAsignatura resultado)
-    {
-        var asignatura = resultado.Asignatura;
-        return $"{asignatura.Nombre} ({asignatura.Codigo}, {asignatura.Creditos} créditos): {DescribirEstado(resultado)}.";
-    }
-
-    internal static string DescribirEstado(ResultadoAsignatura resultado) => resultado.Estado switch
-    {
-        EstadoAsignatura.Aprobada => $"definitiva {Nota(resultado.Definitiva)}, aprobada",
-        EstadoAsignatura.Perdida => $"definitiva {Nota(resultado.Definitiva)}, perdida porque se aprueba con {Nota(CalculosAcademicos.NotaMinimaAprobacion)} o más, {DescribirHabilitacion(resultado)}",
-        EstadoAsignatura.PerdidaPorInasistencia => "perdida por inasistencia con definitiva 0.0, no habilitable",
-        _ => DescribirSinDefinitiva(resultado)
-    };
-
-    private static string DescribirHabilitacion(ResultadoAsignatura resultado) =>
-        resultado.Habilitable
-            ? "puede presentar examen de habilitación"
-            : "no es habilitable porque su nota final es menor a 2.0";
-
-    private static string DescribirSinDefinitiva(ResultadoAsignatura resultado) =>
-        resultado.Acumulada is { } acumulada
-            ? $"sin definitiva porque falta calificar un corte (calificados: {CortesCalificados(resultado.Asignatura.Cortes)}); nota acumulada {Nota(acumulada.Valor)} sobre el {acumulada.PorcentajeEvaluado.ToString("0", CultureInfo.InvariantCulture)}% evaluado (equivale a {Nota(acumulada.EquivalenteSobreEvaluado)})"
-            : "sin definitiva porque no hay cortes calificados";
+    public static string Asistencia(ResumenEstudiante resumen, bool terceraPersona = false) =>
+        string.Join("\n", resumen.Asignaturas.Select(resultado => LineaDeAsistencia(resultado, terceraPersona)));
 
     public static string Cortes(IReadOnlyList<NotasAsignatura> notas, string consulta)
     {
@@ -90,41 +51,24 @@ public static class FormateadorDatos
             || NormalizadorTexto.Normalizar(nota.Codigo) == buscada)];
     }
 
-    private static string LineaDeCortes(NotasAsignatura nota) =>
-        $"{nota.Nombre} ({nota.Codigo}): corte 1 {Nota(nota.Cortes.Corte1)} (30%), corte 2 {Nota(nota.Cortes.Corte2)} (30%), corte 3 {Nota(nota.Cortes.Corte3)} (40%).";
-
-    private static string CortesCalificados(NotasCorte cortes)
+    internal static IEnumerable<string> LineasDeNotas(ResumenEstudiante resumen)
     {
-        var calificados = new[] { ("corte 1", cortes.Corte1), ("corte 2", cortes.Corte2), ("corte 3", cortes.Corte3) }
-            .Where(corte => corte.Item2.HasValue)
-            .Select(corte => $"{corte.Item1} {Nota(corte.Item2)}");
-        return Lista(calificados);
+        var conDefinitiva = resumen.Asignaturas.Where(resultado => resultado.Estado != EstadoAsignatura.SinDefinitiva).ToList();
+        var lineas = new List<string>();
+        lineas.AddRange(conDefinitiva.Count == 0 ? [] : [$"Definitivas: {string.Join(", ", conDefinitiva.Select(DefinitivaEnLinea))}"]);
+        lineas.AddRange(resumen.Asignaturas.SelectMany(LineasDeEstadoDeLaAsignatura));
+        lineas.AddRange(conDefinitiva.Count == 0 ? [] : [$"Promedio ponderado del periodo: {Promedio(resumen.Promedio)}"]);
+        lineas.Add($"Créditos matriculados: {resumen.CreditosMatriculados}");
+        lineas.Add($"Prueba académica: {(resumen.PruebaAcademica ? "sí" : "no")}");
+        lineas.Add($"Beca por rendimiento: {TextoBeca(resumen.Beca)}");
+        return lineas;
     }
 
-    internal static string DescribirAsistencia(ResultadoAsignatura resultado)
-    {
-        var clases = resultado.Asignatura.Asistencia.ClasesProgramadas;
-        return resultado.Asignatura.Asistencia.Inasistencias is { } faltas
-            ? $"{faltas} inasistencias de {clases} clases programadas; faltas restantes: {resultado.FaltasRestantes} (máximo permitido sin perder: {resultado.FaltasPermitidas}){(resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia ? "; perdida por inasistencia" : string.Empty)}"
-            : $"sin registro de inasistencias en {clases} clases programadas; no se declara pérdida y se debe solicitar la revisión al coordinador ({Textos.SeccionAsistenciaSinRegistro})";
-    }
+    internal static string Promedio(decimal? valor) =>
+        valor is { } promedio ? promedio.ToString(FormatoPromedio, CultureInfo.InvariantCulture) : "no disponible";
 
-    private static string LineaDeAsistencia(ResultadoAsignatura resultado) =>
-        $"{resultado.Asignatura.Nombre}: {DescribirAsistencia(resultado)}.";
-
-    private static string DescribirPerdida(ResultadoAsignatura resultado) =>
-        resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia
-            ? $"{resultado.Asignatura.Nombre} (0.0, por inasistencia)"
-            : $"{resultado.Asignatura.Nombre} ({Nota(resultado.Definitiva)})";
-
-    private static bool EstaPerdida(ResultadoAsignatura resultado) =>
-        resultado.Estado is EstadoAsignatura.Perdida or EstadoAsignatura.PerdidaPorInasistencia;
-
-    private static bool SinDefinitiva(ResultadoAsignatura resultado) =>
-        resultado.Estado == EstadoAsignatura.SinDefinitiva;
-
-    private static bool SinRegistro(ResultadoAsignatura resultado) =>
-        resultado.EstadoAsistencia == EstadoAsistencia.SinRegistro;
+    internal static string Nota(decimal? valor) =>
+        valor is { } nota ? nota.ToString(FormatoNota, CultureInfo.InvariantCulture) : SinCalificar;
 
     internal static string TextoBeca(ElegibilidadBeca beca) => beca switch
     {
@@ -133,15 +77,58 @@ public static class FormateadorDatos
         _ => "no determinable aún porque hay asignaturas sin definitiva"
     };
 
-    private static string Lista(IEnumerable<string> elementos)
+    private static string DefinitivaEnLinea(ResultadoAsignatura resultado) =>
+        resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia
+            ? $"{resultado.Asignatura.Nombre} {Nota(0m)} (por inasistencia)"
+            : $"{resultado.Asignatura.Nombre} {Nota(resultado.Definitiva)}";
+
+    private static IEnumerable<string> LineasDeEstadoDeLaAsignatura(ResultadoAsignatura resultado) => resultado.Estado switch
     {
-        var lista = elementos.ToList();
-        return lista.Count == 0 ? Ninguna : string.Join(", ", lista);
+        EstadoAsignatura.Perdida =>
+        [
+            $"Perdida por nota: {resultado.Asignatura.Nombre} (definitiva {Nota(resultado.Definitiva)})",
+            resultado.Habilitable ? $"Habilitable: {resultado.Asignatura.Nombre}" : $"No habilitable: {resultado.Asignatura.Nombre}"
+        ],
+        EstadoAsignatura.PerdidaPorInasistencia =>
+        [
+            $"Perdida por inasistencia: {resultado.Asignatura.Nombre} (definitiva {Nota(0m)})",
+            $"No habilitable: {resultado.Asignatura.Nombre}"
+        ],
+        EstadoAsignatura.SinDefinitiva => [LineaSinDefinitiva(resultado), .. LineaDeEquivalente(resultado)],
+        _ => []
+    };
+
+    private static IEnumerable<string> LineaDeEquivalente(ResultadoAsignatura resultado) =>
+        resultado.Acumulada is { } acumulada
+            ? [$"Equivalente de la acumulada de {resultado.Asignatura.Nombre} sobre la nota completa: {Nota(acumulada.EquivalenteSobreEvaluado)}"]
+            : [];
+
+    private static string LineaSinDefinitiva(ResultadoAsignatura resultado) =>
+        resultado.Acumulada is { } acumulada
+            ? $"{SinDefinitivaEncabezado}: {resultado.Asignatura.Nombre} (acumulada {Nota(acumulada.Valor)} sobre el {acumulada.PorcentajeEvaluado.ToString("0", CultureInfo.InvariantCulture)}% evaluado)"
+            : $"{SinDefinitivaEncabezado}: {resultado.Asignatura.Nombre}";
+
+    private static string LineaDeCortes(NotasAsignatura nota) =>
+        $"{nota.Nombre} ({nota.Codigo}): corte 1 {Nota(nota.Cortes.Corte1)} (30%), corte 2 {Nota(nota.Cortes.Corte2)} (30%), corte 3 {Nota(nota.Cortes.Corte3)} (40%).";
+
+
+    private static string LineaDeAsistencia(ResultadoAsignatura resultado, bool terceraPersona)
+    {
+        var voz = terceraPersona ? Tercera : Segunda;
+        var nombre = resultado.Asignatura.Nombre;
+        var clases = resultado.Asignatura.Asistencia.ClasesProgramadas;
+        var maximo = resultado.FaltasPermitidas;
+        if (resultado.Asignatura.Asistencia.Inasistencias is not { } faltas)
+        {
+            return $"{nombre}: sin registro de inasistencias en {clases} clases programadas (máximo sin perder: {maximo}). {voz.Revision} ({Textos.SeccionAsistenciaSinRegistro}).";
+        }
+
+        var restantes = resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia ? 0 : Math.Max(maximo - faltas, 0);
+        var consecuencia = resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia
+            ? $"Perdida por inasistencia: {voz.Superaste} {maximo} inasistencias."
+            : $"Si {voz.Supera} {maximo} inasistencias {voz.Pierde} la asignatura por inasistencia.";
+        return $"{nombre}: faltas {faltas} de {clases} clases programadas (faltas restantes: {restantes}; máximo sin perder: {maximo}). {consecuencia}";
     }
 
-    internal static string Nota(decimal? valor) =>
-        valor is { } nota ? nota.ToString(FormatoNota, CultureInfo.InvariantCulture) : SinCalificar;
-
-    internal static string Promedio(decimal? valor) =>
-        valor is { } promedio ? promedio.ToString(FormatoPromedio, CultureInfo.InvariantCulture) : "no disponible";
+    private sealed record VozDeLosDatos(string Revision, string Superaste, string Supera, string Pierde);
 }

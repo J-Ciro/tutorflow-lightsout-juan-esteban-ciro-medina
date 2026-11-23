@@ -38,8 +38,9 @@ internal sealed class FaseDelModelo
     public async Task<ResultadoPregunta> ResponderAsync(SesionPregunta sesion, CancellationToken limite, CancellationToken cliente)
     {
         var contexto = new ContextoUsuario(sesion.Entrada.Usuario, sesion.Directorio);
-        var entrada = await PrepararEntradaAsync(sesion, contexto, limite);
-        var conversacion = new ConversacionLlm(_clienteLlm, new HerramientasAsistente(sesion.Api, _politicaAcceso), _limites, sesion.Uso, _configuracion);
+        var herramientas = new HerramientasAsistente(sesion.Api, _politicaAcceso);
+        var entrada = await PrepararEntradaAsync(sesion, contexto, herramientas, limite);
+        var conversacion = new ConversacionLlm(_clienteLlm, herramientas, _limites, sesion.Uso, _configuracion);
         var resultado = await conversacion.EjecutarAsync(contexto, entrada, sesion.Registro, limite);
         return resultado.Estado == EstadoConversacion.Completada
             ? await CerrarAsync(new Turno(sesion, contexto, entrada, conversacion, resultado), limite, cliente)
@@ -97,10 +98,20 @@ internal sealed class FaseDelModelo
         return _emisor.Responder(sesion, Textos.NoVerificable, [], ResultadoAuditoria.Error);
     }
 
-    private async Task<EntradaConversacion> PrepararEntradaAsync(SesionPregunta sesion, ContextoUsuario contexto, CancellationToken cancellationToken)
+    private async Task<EntradaConversacion> PrepararEntradaAsync(SesionPregunta sesion, ContextoUsuario contexto, HerramientasAsistente herramientas, CancellationToken cancellationToken)
     {
         var resumen = await _lectorResumen.LeerAsync(contexto, sesion.Activacion, sesion.Api, sesion.Registro, cancellationToken);
-        return new EntradaConversacion(sesion.Entrada.Pregunta, sesion.Secciones, resumen, ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
+        var prelectura = await PrelecturaAsync(sesion, contexto, herramientas, cancellationToken);
+        return new EntradaConversacion(sesion.Entrada.Pregunta, sesion.Secciones, resumen, prelectura, ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
+    }
+
+    private async Task<string?> PrelecturaAsync(SesionPregunta sesion, ContextoUsuario contexto, HerramientasAsistente herramientas, CancellationToken cancellationToken)
+    {
+        var programas = _politicaAcceso.ProgramasAutorizados(contexto.Usuario, contexto.Directorio);
+        var palabras = TokenizadorTexto.Valores(sesion.Entrada.Pregunta);
+        return ActivadorPrelectura.Activa(contexto, palabras, programas)
+            ? await herramientas.LeerProgramaAsync(contexto, sesion.Registro, cancellationToken)
+            : null;
     }
 
     private sealed record Turno(SesionPregunta Sesion, ContextoUsuario Contexto, EntradaConversacion Entrada, ConversacionLlm Conversacion, ResultadoConversacion Resultado);

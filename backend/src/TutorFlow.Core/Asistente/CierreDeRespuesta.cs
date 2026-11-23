@@ -46,7 +46,8 @@ internal sealed class CierreDeRespuesta
     {
         if (texto.Trim() == Textos.SinInformacion)
         {
-            return CierreEvaluado.Entregable(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, usoDatos: false);
+            IReadOnlyList<Cita> delPrograma = [.. sesion.Registro.Citas.Where(cita => cita.Documento == Textos.DocumentoDatosPrograma)];
+            return CierreEvaluado.Entregable(Textos.SinInformacion, delPrograma, ResultadoAuditoria.SinInformacion);
         }
 
         foreach (var seccion in entrada.Secciones)

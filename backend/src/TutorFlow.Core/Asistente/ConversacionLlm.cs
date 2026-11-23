@@ -23,6 +23,7 @@ internal sealed record EntradaConversacion(
     string Pregunta,
     IReadOnlyList<SeccionDocumento> Secciones,
     ResumenEntregado? Resumen,
+    string? Prelectura,
     string PromptSistema);
 
 internal sealed class ConversacionLlm
@@ -56,7 +57,7 @@ internal sealed class ConversacionLlm
         var estado = new Turnos(
             contexto,
             registro,
-            [ConstructorPrompts.MensajeInicial(entrada.Pregunta, entrada.Secciones, entrada.Resumen)],
+            [ConstructorPrompts.MensajeInicial(entrada.Pregunta, entrada.Secciones, entrada.Resumen, entrada.Prelectura)],
             entrada.PromptSistema);
         return await CorrerAsync(estado, cancellationToken);
     }
