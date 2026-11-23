@@ -40,6 +40,17 @@ jobs:
           fi
           bash .github/scripts/validar-commits.sh "$BASE..HEAD"
 
+  limites-specs:
+    name: "INT-023 limites de tamano de la documentacion"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Verificar limites de specs, planes, decisiones y SPEC.md
+        run: sh .github/scripts/verificar-limites-specs.sh
+
   build:
     runs-on: ubuntu-latest
     defaults:
