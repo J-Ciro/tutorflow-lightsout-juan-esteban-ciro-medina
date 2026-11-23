@@ -62,7 +62,8 @@ public sealed class PresupuestoConcurrenteApiTests
     {
         var llm = new ClienteLlmRetenido(new UsoTokens(TokensDeEntrada, 0));
         using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: Configuracion());
-        var peticiones = Enumerable.Range(0, PeticionesSimultaneas)
+        _ = fabrica.Services;
+        var peticiones =Enumerable.Range(0, PeticionesSimultaneas)
             .Select(_ => Task.Run(() => fabrica.PreguntarEstudianteAsync("EST-001", Pregunta)))
             .ToList();
 

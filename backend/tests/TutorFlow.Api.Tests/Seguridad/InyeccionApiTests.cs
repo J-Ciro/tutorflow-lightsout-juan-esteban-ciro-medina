@@ -36,7 +36,7 @@ public sealed class InyeccionApiTests
     [Trait("ESC", "ESC-074")]
     public async Task Intento_de_fuga_no_expone_la_llave_en_respuesta_logs_auditoria_ni_prompt(string pregunta)
     {
-        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.Texto(Textos.SinInformacion), configuracion: ConLlaveCanaria());
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.Texto(Textos.SinInformacion), variablesEntorno: ConLlaveCanaria());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", pregunta);
 

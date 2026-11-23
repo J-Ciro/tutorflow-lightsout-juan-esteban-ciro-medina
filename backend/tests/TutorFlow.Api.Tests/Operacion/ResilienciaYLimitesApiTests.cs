@@ -49,8 +49,8 @@ public sealed class ResilienciaApiTests
         Exception excepcion = falla == "http"
             ? new HttpRequestException("fallo en https://api.anthropic.com con sk-ant-SECRETO modelo claude-haiku-5-5")
             : new TaskCanceledException("timeout https://api.anthropic.com sk-ant-SECRETO");
-        var configuracion = new Dictionary<string, string?> { ["LLM_API_KEY"] = "sk-ant-SECRETO" };
-        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.Falla(excepcion), configuracion: configuracion);
+        var entorno = new Dictionary<string, string?> { ["LLM_API_KEY"] = "sk-ant-SECRETO" };
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.Falla(excepcion), variablesEntorno: entorno);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar?");
 

@@ -124,19 +124,11 @@ public sealed class ProveedoresHttpTests
 
     public static TheoryData<string?> Llaves => new() { "sk-ant-LLAVE-ABC123", "sk-LLAVE-ABC123-openai", "gsk_LLAVEABC123", "sk-or-LLAVE-ABC123", "AIzaLLAVEABC123", null };
 
-    private static Dictionary<string, string?> Configuracion(string? llave)
-    {
-        var configuracion = FabricaApi.Precios("1.0", "5.0");
-        if (llave is not null)
-        {
-            configuracion["LLM_API_KEY"] = llave;
-        }
-
-        return configuracion;
-    }
+    private static Dictionary<string, string?> Llave(string? llave) =>
+        llave is null ? [] : new Dictionary<string, string?> { ["LLM_API_KEY"] = llave };
 
     private static FabricaApi Fabrica(string? llave, ManejadorLlmFalso manejador) =>
-        new(configuracion: Configuracion(llave), reemplazarLlm: false, manejadorHttp: manejador);
+        new(configuracion: FabricaApi.Precios("1.0", "5.0"), variablesEntorno: Llave(llave), reemplazarLlm: false, manejadorHttp: manejador);
 
     private static string? EncabezadoDeAutenticacion(PeticionLlm peticion) =>
         peticion.Encabezados.TryGetValue("x-api-key", out var anthropic)
