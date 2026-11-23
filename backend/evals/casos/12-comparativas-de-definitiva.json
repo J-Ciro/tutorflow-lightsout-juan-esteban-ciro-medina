@@ -1,0 +1,199 @@
+[
+  {
+    "id": "ESC-179m",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Puedo habilitar Microeconomía?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Microeconomía no es habilitable porque tu definitiva es menor a 2.0.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Microeconomía no es habilitable porque tu definitiva es menor a 2.0."
+    }
+  },
+  {
+    "id": "ESC-179n",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Qué necesito para aprobar Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Para aprobar Estadística necesitas una definitiva de al menos 3.0; hoy tienes 2.3.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Para aprobar Estadística necesitas una definitiva de al menos 3.0; hoy tienes 2.3."
+    }
+  },
+  {
+    "id": "ESC-179o",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Qué necesito para aprobar Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Para aprobar Estadística necesitas una definitiva de 3.0.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Para aprobar Estadística necesitas una definitiva de 3.0."
+    }
+  },
+  {
+    "id": "ESC-179p",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Qué necesito para aprobar Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Estadística se aprueba con definitiva ≥ 3.0 y la tuya es 2.3.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Estadística se aprueba con definitiva ≥ 3.0 y la tuya es 2.3."
+    }
+  },
+  {
+    "id": "ESC-179q",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-006"
+    },
+    "pregunta": "¿Cuál es mi nota definitiva en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu definitiva en Estadística es 4.0, mayor a 3.0."
+    }
+  },
+  {
+    "id": "ESC-179r",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Puedo habilitar Microeconomía?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Microeconomía no es habilitable porque tu definitiva es menor a 2.5."
+    }
+  },
+  {
+    "id": "ESC-179s",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "¿Qué nota definitiva tengo en Contabilidad?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu definitiva en Contabilidad, que no necesita habilitación, es 3.3."
+    }
+  }
+]
