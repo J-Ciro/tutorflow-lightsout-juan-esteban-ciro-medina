@@ -9,7 +9,23 @@ internal sealed partial class DefinitivaPorAsignatura
 {
     private const int PalabrasDeNegacion = 3;
     private const int PalabrasHastaLaCifra = 8;
+    private const int PalabrasDeRequisito = 2;
     private const string Definitiva = "definitiva";
+
+    private static readonly HashSet<string> Comparadores = new(StringComparer.Ordinal)
+    {
+        "menor", "mayor", "inferior", "superior", "minimo", "minima", "maximo", "maxima", "supera", "superar", "entre",
+        "<", ">", "<=", ">="
+    };
+
+    private static readonly HashSet<(string, string)> ComparadoresDeDosPalabras = new()
+    {
+        ("o", "igual"), ("al", "menos"), ("menos", "de"), ("mas", "de")
+    };
+
+    private static readonly HashSet<string> Enlaces = new(StringComparer.Ordinal) { "a", "de", "que" };
+
+    private static readonly HashSet<string> Requisitos = new(StringComparer.Ordinal) { "necesitas", "necesita", "requiere" };
 
     private static readonly HashSet<string> Negaciones = new(StringComparer.Ordinal) { "no", "ni", "sin", "aun" };
 
@@ -41,8 +57,9 @@ internal sealed partial class DefinitivaPorAsignatura
         var apariciones = CatalogoAsignaturas.Apariciones(tokens, _catalogo);
         return Enumerable.Range(0, tokens.Count)
             .Where(indice => tokens[indice].Valor == Definitiva && !EstaNegada(tokens, indice))
-            .Select(indice => CifraAsociada(tokens, indice))
-            .OfType<int>()
+            .Select(indice => (Definitiva: indice, Cifra: CifraAsociada(tokens, indice)))
+            .Where(par => par.Cifra is { } cifra && !EsUmbral(tokens, par.Definitiva, cifra))
+            .Select(par => par.Cifra!.Value)
             .SelectMany(cifra => Atribuir(oracion, usuario, tokens, apariciones, cifra));
     }
 
@@ -67,6 +84,22 @@ internal sealed partial class DefinitivaPorAsignatura
         usuario.Rol == Rol.Coordinador
             ? oracion.Tramos.Where(tramo => tramo.Tokens.Any(token => token.Inicio == posicion)).Select(tramo => tramo.PersonaId)
             : [usuario.Id];
+
+    private static bool EsUmbral(IReadOnlyList<TokenTexto> tokens, int definitiva, int cifra) =>
+        PrecedidaDeComparador(tokens, cifra) || HayVerboDeRequisito(tokens, definitiva, cifra);
+
+    private static bool PrecedidaDeComparador(IReadOnlyList<TokenTexto> tokens, int cifra) =>
+        TerminaComparador(tokens, cifra - 1) || (cifra > 0 && Enlaces.Contains(tokens[cifra - 1].Valor) && TerminaComparador(tokens, cifra - 2));
+
+    private static bool TerminaComparador(IReadOnlyList<TokenTexto> tokens, int indice) =>
+        indice >= 0
+        && (Comparadores.Contains(tokens[indice].Valor)
+            || (indice > 0 && ComparadoresDeDosPalabras.Contains((tokens[indice - 1].Valor, tokens[indice].Valor))));
+
+    private static bool HayVerboDeRequisito(IReadOnlyList<TokenTexto> tokens, int definitiva, int cifra) =>
+        (cifra > 0 && Requisitos.Contains(tokens[cifra - 1].Valor))
+        || Enumerable.Range(Math.Max(0, definitiva - PalabrasDeRequisito), Math.Min(PalabrasDeRequisito, definitiva))
+            .Any(anterior => Requisitos.Contains(tokens[anterior].Valor));
 
     private static bool EstaNegada(IReadOnlyList<TokenTexto> tokens, int indice) =>
         Enumerable.Range(Math.Max(0, indice - PalabrasDeNegacion), Math.Min(PalabrasDeNegacion, indice))

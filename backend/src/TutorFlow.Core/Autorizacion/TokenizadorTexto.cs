@@ -1,15 +1,18 @@
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace TutorFlow.Core.Autorizacion;
 
 internal readonly record struct TokenTexto(string Valor, int Inicio, int Fin);
 
-internal static class TokenizadorTexto
+internal static partial class TokenizadorTexto
 {
     private const int UnDigito = 1;
     private const int HastaDosDigitos = 2;
     private const int SinLimite = int.MaxValue;
+    private static readonly Dictionary<string, string> NombreDelSimbolo = new() { ["≤"] = "<=", ["≥"] = ">=" };
+
     private const string CaracteresIgnorables = "​‌‍⁠﻿­";
 
     private static readonly IReadOnlyDictionary<char, char> SinAcento = ConstruirTablaSinAcento(
@@ -50,7 +53,7 @@ internal static class TokenizadorTexto
             indice += esCifra ? 1 : 0;
         }
 
-        return resultado;
+        return [.. resultado.Concat(Simbolos(texto)).OrderBy(token => token.Inicio)];
     }
 
     public static int BuscarSecuencia(IReadOnlyList<TokenTexto> tokens, IReadOnlyList<string> secuencia) =>
@@ -68,6 +71,10 @@ internal static class TokenizadorTexto
 
     public static IReadOnlyList<string> Valores(string texto) =>
         Tokenizar(texto).Select(token => token.Valor).ToList();
+
+    private static IEnumerable<TokenTexto> Simbolos(string texto) =>
+        SimboloDeComparacion().Matches(texto)
+            .Select(coincidencia => new TokenTexto(NombreDelSimbolo.GetValueOrDefault(coincidencia.Value, coincidencia.Value), coincidencia.Index, coincidencia.Index + coincidencia.Length));
 
     private static bool EsCifraDeNota(string texto, IReadOnlyList<TokenTexto> tokens, int indice) =>
         indice + 1 < tokens.Count
@@ -173,4 +180,7 @@ internal static class TokenizadorTexto
             _valor.Clear();
         }
     }
+
+    [GeneratedRegex("<=|>=|[<>≤≥]", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
+    private static partial Regex SimboloDeComparacion();
 }
