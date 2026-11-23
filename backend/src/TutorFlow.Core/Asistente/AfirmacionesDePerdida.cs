@@ -37,11 +37,11 @@ internal sealed class AfirmacionesDePerdida
     {
         if (personas.Ambiguo)
         {
-            return Exigencias(bloque, TokenizadorTexto.Tokenizar(bloque.Texto), catalogo).Count > 0 ? MotivoSinPersonaNiAsignatura : null;
+            return Exigencias(bloque, TokenizadorTexto.Tokenizar(bloque.Texto), catalogo, _ => false).Count > 0 ? MotivoSinPersonaNiAsignatura : null;
         }
 
         return personas.Tramos
-            .SelectMany(tramo => Exigencias(bloque, tramo.Tokens, catalogo).Where(exigencia => !Cumple(exigencia, tramo.PersonaId, resumenesLeidos)).Select(exigencia => MotivoDe(exigencia, tramo.PersonaId, usuario, directorio)))
+            .SelectMany(tramo => Exigencias(bloque, tramo.Tokens, catalogo, new OracionGenerica(bloque, tramo.Tokens, usuario, directorio).Es).Where(exigencia => !Cumple(exigencia, tramo.PersonaId, resumenesLeidos)).Select(exigencia => MotivoDe(exigencia, tramo.PersonaId, usuario, directorio)))
             .FirstOrDefault();
     }
 
@@ -60,7 +60,7 @@ internal sealed class AfirmacionesDePerdida
             .Concat(directorio.Coordinadores.Select(coordinador => (coordinador.Id, coordinador.Nombre)))
             .FirstOrDefault(persona => persona.Id == personaId).Nombre ?? personaId;
 
-    private static List<ExigenciaDePerdida> Exigencias(BloqueDeTexto bloque, IReadOnlyList<TokenTexto> tokens, IReadOnlyList<AsignaturaCatalogo> catalogo)
+    private static List<ExigenciaDePerdida> Exigencias(BloqueDeTexto bloque, IReadOnlyList<TokenTexto> tokens, IReadOnlyList<AsignaturaCatalogo> catalogo, Func<FormaDePerdida, bool> esGenerica)
     {
         var formas = FormasDePerdida.En([.. tokens.Select(token => token.Valor)]);
         if (formas.Count == 0)
@@ -74,7 +74,7 @@ internal sealed class AfirmacionesDePerdida
             .Where(asociada => !asociada.Forma.Negada)
             .Select(asociada => new ExigenciaDePerdida(asociada.Nombrada.Clave, PorInasistencia(tokens, nombradas, asociada.Nombrada), Escrita(bloque, tokens, asociada.Nombrada)));
         var sinAsignatura = formas
-            .Where(forma => forma.Nominal && !forma.Negada && asociadas.All(asociada => asociada.Forma != forma))
+            .Where(forma => forma.Nominal && !forma.Negada && !esGenerica(forma) && asociadas.All(asociada => asociada.Forma != forma))
             .Select(forma => new ExigenciaDePerdida(null, forma.PorInasistencia, null));
         return [.. porAsignatura.Concat(sinAsignatura)];
     }
