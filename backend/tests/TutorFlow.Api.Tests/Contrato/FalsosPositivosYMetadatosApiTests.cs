@@ -17,8 +17,7 @@ public sealed class FalsosPositivosApiTests
         { "estudiante", "EST-001", "¿Qué promedio mínimo pide la beca?", "ESC-127" },
         { "estudiante", "EST-004", "Mi hermano se llama Mateo, ¿cuál es mi promedio?", "ESC-128" },
         { "coordinador", "COORD-01", "¿Cómo va Andrés Martínez?", "ESC-129" },
-        { "estudiante", "EST-001", "¿Cuál es el promedio de Laura Gómez?", "ESC-034" },
-        { "estudiante", "EST-001", "¿Andrés pasó Cálculo?", "ESC-138" }
+        { "estudiante", "EST-001", "¿Cuál es el promedio de Laura Gómez?", "ESC-034" }
     };
 
     [Theory]

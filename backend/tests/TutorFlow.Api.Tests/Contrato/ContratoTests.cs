@@ -248,14 +248,14 @@ public sealed class ContratoSalidaTests
     [Trait("ESC", "ESC-101")]
     public async Task ESC_101_Respuesta_200_cumple_la_forma_exacta_y_el_tipo_de_contenido()
     {
-        using var fabrica = new FabricaApi();
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.Texto("Una asignatura se aprueba con 3.0."));
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar una asignatura?");
 
         Assert.Equal(200, respuesta.Estado);
         Afirmaciones.SalidaDelContrato(respuesta);
         Assert.Equal("application/json; charset=utf-8", respuesta.TipoContenido);
-        Assert.Equal("Respuesta de prueba.", respuesta.Respuesta);
+        Assert.Equal("Una asignatura se aprueba con 3.0.", respuesta.Respuesta);
     }
 
     [Fact]
