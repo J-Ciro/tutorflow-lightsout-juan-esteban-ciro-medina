@@ -134,36 +134,27 @@ public sealed class PreguntarAsistente
             return Responder(sesion, Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, usoDatos: false);
         }
 
-        var fundamentos = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(texto), _limites.MaximoSeccionesRecuperadas);
-        foreach (var seccion in secciones.Concat(fundamentos))
+        foreach (var seccion in secciones)
         {
             sesion.Registro.AgregarFuente($"{seccion.Titulo}. {seccion.Texto}");
         }
 
         var directorio = sesion.Directorio!;
         var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, directorio);
-        var candidatas = ElegirCitasNormativas(texto, fundamentos, secciones);
+        var candidatas = CitasEntregadasYCitadas(texto, secciones);
         var verificada = _verificadorSalida.Verificar(sesion.Entrada.Usuario, texto, candidatas, autorizados, sesion.Registro.Fuentes, _baseConocimiento, directorio);
         return Responder(sesion, verificada.Respuesta, CitasFinales(sesion, verificada), verificada.Resultado);
     }
 
-    private IReadOnlyList<Cita> CitasFinales(SesionPregunta sesion, SalidaVerificada verificada)
-    {
-        if (verificada.Resultado != ResultadoAuditoria.Respondida)
-        {
-            return verificada.Citas;
-        }
+    private static IReadOnlyList<Cita> CitasFinales(SesionPregunta sesion, SalidaVerificada verificada) =>
+        verificada.Resultado == ResultadoAuditoria.Respondida
+            ? [.. verificada.Citas.Concat(sesion.Registro.Citas).Distinct()]
+            : verificada.Citas;
 
-        var reglas = _verificadorSalida.DescartarCitasInexistentes(sesion.Registro.Reglas, _baseConocimiento);
-        return [.. verificada.Citas.Concat(reglas).Concat(sesion.Registro.Citas).Distinct()];
-    }
-
-    private IReadOnlyList<Cita> ElegirCitasNormativas(string texto, IReadOnlyList<SeccionDocumento> fundamentos, IReadOnlyList<SeccionDocumento> secciones)
+    private static IReadOnlyList<Cita> CitasEntregadasYCitadas(string texto, IReadOnlyList<SeccionDocumento> secciones)
     {
-        var explicitas = _verificadorSalida.DescartarCitasInexistentes(ExtractorCitas.De(texto), _baseConocimiento);
-        return explicitas.Count > 0
-            ? explicitas
-            : [.. fundamentos.Concat(secciones).Select(s => new Cita(s.Documento, s.Seccion)).Distinct()];
+        var entregadas = secciones.Select(s => new Cita(s.Documento, s.Seccion)).ToHashSet();
+        return [.. ExtractorCitas.De(texto).Where(entregadas.Contains)];
     }
 
     private ResultadoPregunta Responder(

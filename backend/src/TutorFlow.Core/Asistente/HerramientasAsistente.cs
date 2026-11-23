@@ -100,7 +100,6 @@ public sealed class HerramientasAsistente
     {
         var id = solicitud.Contexto.Usuario.Id;
         var resumen = await ResumirAsync(id, solicitud.CancellationToken);
-        solicitud.Registro.RegistrarReglas(ReglasAplicadas.DeNotas([resumen]));
         solicitud.Registro.RegistrarDatos(DatosLeidos.PorAsignatura(resumen, ProgramaDe(solicitud, id), RecursoConsultado.Notas, RecursoConsultado.Asistencia));
         return Responder(solicitud, FormateadorDatos.Notas(resumen), id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], Textos.SeccionNotas);
     }
@@ -124,7 +123,6 @@ public sealed class HerramientasAsistente
     {
         var id = solicitud.Contexto.Usuario.Id;
         var resumen = await ResumirAsync(id, solicitud.CancellationToken);
-        solicitud.Registro.RegistrarReglas(ReglasAplicadas.DeAsistencia([resumen]));
         solicitud.Registro.RegistrarDatos(DatosLeidos.PorAsignatura(resumen, ProgramaDe(solicitud, id), RecursoConsultado.Notas, RecursoConsultado.Asistencia));
         return Responder(solicitud, FormateadorDatos.Asistencia(resumen), id, [RecursoConsultado.Notas, RecursoConsultado.Asistencia], Textos.SeccionAsistencia);
     }
@@ -141,7 +139,6 @@ public sealed class HerramientasAsistente
         var resumen = await ResumirAsync(estudiante.Id, solicitud.CancellationToken);
         var contenido = string.Join("\n", FormateadorDatos.DatosBasicos(estudiante, directorio), FormateadorDatos.Notas(resumen), FormateadorDatos.Asistencia(resumen));
         var recursos = new[] { RecursoConsultado.DatosBasicos, RecursoConsultado.Notas, RecursoConsultado.Asistencia };
-        solicitud.Registro.RegistrarReglas([.. ReglasAplicadas.DeNotas([resumen]), .. ReglasAplicadas.DeAsistencia([resumen])]);
         solicitud.Registro.Registrar(estudiante.Id, recursos, new Cita(Textos.DocumentoDatosEstudiante, Textos.SeccionAsistencia));
         solicitud.Registro.RegistrarDatos(DatosDeEstudiante(estudiante, resumen, RecursoConsultado.DatosBasicos));
         return Responder(solicitud, contenido, estudiante.Id, recursos, Textos.SeccionNotas);
@@ -156,24 +153,21 @@ public sealed class HerramientasAsistente
         }
 
         var bloques = new List<string>();
-        var resumenes = new List<ResumenEstudiante>();
         foreach (var programa in solicitud.Contexto.Directorio.Programas.Where(p => programas.Contains(p.Id)))
         {
-            bloques.Add(await DescribirProgramaAsync(solicitud, programa, resumenes));
+            bloques.Add(await DescribirProgramaAsync(solicitud, programa));
         }
 
-        solicitud.Registro.RegistrarReglas(ReglasAplicadas.DePrograma(resumenes));
         return ResultadoHerramienta.Texto(string.Join("\n\n", bloques));
     }
 
-    private async Task<string> DescribirProgramaAsync(SolicitudHerramienta solicitud, Programa programa, List<ResumenEstudiante> resumenes)
+    private async Task<string> DescribirProgramaAsync(SolicitudHerramienta solicitud, Programa programa)
     {
         var estudiantes = solicitud.Contexto.Directorio.Estudiantes.Where(e => e.ProgramaId == programa.Id).ToList();
         var lineas = new List<string> { FormateadorDatos.EncabezadoPrograma(programa, estudiantes.Count) };
         foreach (var estudiante in estudiantes)
         {
             var resumen = await ResumirAsync(estudiante.Id, solicitud.CancellationToken);
-            resumenes.Add(resumen);
             lineas.Add(FormateadorDatos.LineaDePrograma(estudiante, resumen));
             solicitud.Registro.Registrar(estudiante.Id, [RecursoConsultado.Programa, RecursoConsultado.Notas, RecursoConsultado.Asistencia], null);
             solicitud.Registro.RegistrarDatos(DatosDeEstudiante(estudiante, resumen, RecursoConsultado.Programa));
