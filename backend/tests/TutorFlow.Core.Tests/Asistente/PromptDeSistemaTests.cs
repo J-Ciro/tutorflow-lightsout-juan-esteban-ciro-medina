@@ -82,6 +82,25 @@ public sealed partial class PromptDeSistemaTests
     [MemberData(nameof(Roles))]
     [Trait("CA", "CA-20")]
     [Trait("ESC", "ESC-191")]
+    [Trait("D", "D-63")]
+    public void ESC_191_El_primer_paso_con_todos_los_terminos_de_cada_una_de_las_7_reglas_es_un_paso_distinto(Rol rol)
+    {
+        var pasos = Pasos(rol);
+        var reglas = ReglasDelPrompt.Where(fila => (Rol)fila[0] == rol).Select(fila => (string[])fila[2]).ToArray();
+
+        var elegidos = reglas
+            .Select(terminos => Array.FindIndex(pasos, paso => terminos.All(t => paso.Contains(t, StringComparison.OrdinalIgnoreCase))))
+            .ToArray();
+
+        Assert.Equal(7, elegidos.Length);
+        Assert.DoesNotContain(-1, elegidos);
+        Assert.Equal(7, elegidos.Distinct().Count());
+    }
+
+    [Theory]
+    [MemberData(nameof(Roles))]
+    [Trait("CA", "CA-20")]
+    [Trait("ESC", "ESC-191")]
     [Trait("RF", "P-04")]
     public void ESC_191_Ninguna_parte_del_prompt_contiene_documento_md(Rol rol)
     {

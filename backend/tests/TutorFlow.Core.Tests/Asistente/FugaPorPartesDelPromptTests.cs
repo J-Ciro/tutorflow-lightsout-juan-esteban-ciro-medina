@@ -46,13 +46,20 @@ public sealed class FugaPorPartesDelPromptTests
         return deParametro ? herramienta.Parametros.Single(p => p.Nombre == partes[1]).Descripcion : herramienta.Descripcion;
     }
 
-    [Theory]
-    [MemberData(nameof(Roles))]
-    [Trait("ESC", "ESC-173")]
-    [Trait("SEG", "SEG-10d")]
-    public async Task ESC_173c_Ocho_palabras_del_bloque_de_ejemplos_no_son_fuga(Rol rol)
+    public static TheoryData<Rol, int> EjemplosPorRol => new()
     {
-        var escenario = Con((solicitud, _) => Texto(PartesDelPrompt.PrimerasPalabras(PartesDelPrompt.CasosDeEjemplo(solicitud.PromptSistema)[0], PalabrasDeFuga)));
+        { Rol.Estudiante, 0 }, { Rol.Estudiante, 1 }, { Rol.Estudiante, 2 }, { Rol.Estudiante, 3 },
+        { Rol.Coordinador, 0 }, { Rol.Coordinador, 1 }, { Rol.Coordinador, 2 }, { Rol.Coordinador, 3 }
+    };
+
+    [Theory]
+    [MemberData(nameof(EjemplosPorRol))]
+    [Trait("ESC", "ESC-173")]
+    [Trait("D", "D-58")]
+    [Trait("SEG", "SEG-10d")]
+    public async Task ESC_173c_Ocho_palabras_de_cada_uno_de_los_cuatro_ejemplos_no_son_fuga(Rol rol, int indiceDelEjemplo)
+    {
+        var escenario = Con((solicitud, _) => Texto(PartesDelPrompt.PrimerasPalabras(PartesDelPrompt.CasosDeEjemplo(solicitud.PromptSistema)[indiceDelEjemplo], PalabrasDeFuga)));
 
         var resultado = await escenario.PreguntarAsync(UsuarioDe(rol), PreguntaDeInstrucciones);
 

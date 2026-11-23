@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using TutorFlow.Core.Academico;
 using TutorFlow.Core.Asistente;
 using TutorFlow.Core.Autorizacion;
 using TutorFlow.Pruebas.Soporte;
@@ -89,13 +91,60 @@ public sealed partial class EjemplosDelPromptTests
         Assert.Empty(presentes);
     }
 
+    private static IReadOnlyList<string> RespuestasDeEjemplo(Rol rol) =>
+        [.. PartesDelPrompt.CasosDeEjemplo(ConstructorPrompts.PromptSistema(rol, null))
+            .Select(caso => caso[(caso.IndexOf("Respuesta:", StringComparison.Ordinal) + "Respuesta:".Length)..])];
+
+    private static decimal Valor(string cifra) => decimal.Parse(cifra, CultureInfo.InvariantCulture);
+
+    private static IEnumerable<decimal> CifrasDe(string texto) =>
+        CifraDeNotaOPorcentaje().Matches(texto).Select(m => Valor(m.Groups["valor"].Value));
+
+    private static IEnumerable<decimal> CifrasDeLosDatosDeReferencia() =>
+        Datos.Estudiantes
+            .Select(e => CalculosAcademicos.ResumirEstudiante(e.Id, Datos.AsignaturasDe(e.Id)))
+            .SelectMany(resumen => resumen.Asignaturas.SelectMany(CifrasDeLaAsignatura).Concat(resumen.Promedio.HasValue ? [resumen.Promedio.Value] : []));
+
+    private static IEnumerable<decimal> CifrasDeLaAsignatura(ResultadoAsignatura resultado)
+    {
+        var cortes = new[] { resultado.Asignatura.Cortes.Corte1, resultado.Asignatura.Cortes.Corte2, resultado.Asignatura.Cortes.Corte3 };
+        var acumulada = resultado.Acumulada is null ? [] : new[] { resultado.Acumulada.Valor, resultado.Acumulada.PorcentajeEvaluado, resultado.Acumulada.EquivalenteSobreEvaluado };
+        return cortes.Where(c => c.HasValue).Select(c => c!.Value)
+            .Concat(resultado.Definitiva.HasValue ? [resultado.Definitiva.Value] : [])
+            .Concat(acumulada);
+    }
+
     [Theory]
     [MemberData(nameof(Roles))]
-    [Trait("ESC", "ESC-173")]
-    [Trait("SEG", "SEG-10d")]
-    public void El_bloque_de_ejemplos_no_contiene_cifras_con_forma_de_nota_ni_de_porcentaje(Rol rol)
+    [Trait("CA", "CA-23")]
+    [Trait("ESC", "ESC-198")]
+    [Trait("D", "D-58")]
+    public void ESC_198i_El_bloque_tiene_exactamente_4_ejemplos_con_las_marcas_de_EJ_1_a_EJ_4(Rol rol)
     {
-        Assert.DoesNotMatch(CifraDeNotaOPorcentaje(), Ejemplos(rol));
+        var respuestas = RespuestasDeEjemplo(rol);
+
+        Assert.Equal(4, respuestas.Count);
+        Assert.Single(respuestas, r => r.Contains("(documento_ejemplo.md · Sección 1)", StringComparison.Ordinal));
+        Assert.Single(respuestas, r => r.Contains("Definitivas:", StringComparison.Ordinal) && PromedioConDosDecimales().IsMatch(r) && ParDeAsignaturaYCifra().Count(r) >= 2);
+        Assert.Single(respuestas, r => r.Contains("Requisitos:", StringComparison.Ordinal) && PorcentajeDeDescuento().IsMatch(r) && r.Contains("edificio", StringComparison.OrdinalIgnoreCase));
+        Assert.Single(respuestas, r => FaltasDeClasesProgramadas().IsMatch(r));
+    }
+
+    [Theory]
+    [MemberData(nameof(Roles))]
+    [Trait("CA", "CA-23")]
+    [Trait("ESC", "ESC-198")]
+    [Trait("D", "D-58")]
+    public void ESC_198i_Ninguna_cifra_del_bloque_es_igual_como_decimal_a_una_cifra_del_indice_de_los_datos_o_de_las_preguntas_de_ejemplo(Rol rol)
+    {
+        var delBloque = CifrasDe(Ejemplos(rol)).Distinct().ToArray();
+        var fuentes = Base.Secciones.SelectMany(s => CifrasDe($"{s.Titulo} {s.Texto}"))
+            .Concat(CifrasDe(TextoDeLasPreguntasDeEjemplo()))
+            .Concat(CifrasDeLosDatosDeReferencia())
+            .ToHashSet();
+
+        Assert.NotEmpty(delBloque);
+        Assert.All(delBloque, cifra => Assert.DoesNotContain(cifra, fuentes));
     }
 
     [Theory]
@@ -129,6 +178,18 @@ public sealed partial class EjemplosDelPromptTests
     [GeneratedRegex(@"[A-Za-z0-9_\-]+\.md", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
     private static partial Regex DocumentosCitados();
 
-    [GeneratedRegex(@"(?<![0-9.])[0-9]\.[0-9]{1,2}(?![0-9])|[0-9]+(\.[0-9]{1,2})?\s*%", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+    [GeneratedRegex(@"(?<![0-9.])(?<valor>[0-9]\.[0-9]{1,2})(?![0-9])|(?<valor>[0-9]+(\.[0-9]{1,2})?)\s*%", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
     private static partial Regex CifraDeNotaOPorcentaje();
+
+    [GeneratedRegex(@"(?<![0-9.])[0-9]\.[0-9]{2}(?![0-9])", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex PromedioConDosDecimales();
+
+    [GeneratedRegex(@"\p{L}+ [0-9]\.[0-9]\b", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex ParDeAsignaturaYCifra();
+
+    [GeneratedRegex(@"[0-9]+\s*%\s*de descuento", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex PorcentajeDeDescuento();
+
+    [GeneratedRegex(@"[0-9]+ faltas de [0-9]+ clases programadas", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex FaltasDeClasesProgramadas();
 }

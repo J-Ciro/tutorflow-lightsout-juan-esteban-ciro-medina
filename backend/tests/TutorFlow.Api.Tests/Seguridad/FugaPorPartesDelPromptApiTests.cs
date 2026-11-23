@@ -37,14 +37,21 @@ public sealed class FugaPorPartesDelPromptApiTests
     }
 
     [Theory]
-    [InlineData("estudiante", "EST-001")]
-    [InlineData("coordinador", "COORD-01")]
+    [InlineData("estudiante", "EST-001", 0)]
+    [InlineData("estudiante", "EST-001", 1)]
+    [InlineData("estudiante", "EST-001", 2)]
+    [InlineData("estudiante", "EST-001", 3)]
+    [InlineData("coordinador", "COORD-01", 0)]
+    [InlineData("coordinador", "COORD-01", 1)]
+    [InlineData("coordinador", "COORD-01", 2)]
+    [InlineData("coordinador", "COORD-01", 3)]
     [Trait("CA", "CA-05")]
     [Trait("ESC", "ESC-173")]
+    [Trait("D", "D-58")]
     [Trait("RF", "SEG-10d")]
-    public async Task ESC_173c_Ocho_palabras_del_bloque_de_ejemplos_no_registran_fuga_bloqueada(string rol, string usuario)
+    public async Task ESC_173c_Ocho_palabras_de_cada_uno_de_los_cuatro_ejemplos_no_registran_fuga_bloqueada(string rol, string usuario, int indiceDelEjemplo)
     {
-        var llm = GuionesLlm.SinHerramientas(s => PartesDelPrompt.PrimerasPalabras(PartesDelPrompt.CasosDeEjemplo(s.PromptSistema)[0], PalabrasDeFuga));
+        var llm = GuionesLlm.SinHerramientas(s => PartesDelPrompt.PrimerasPalabras(PartesDelPrompt.CasosDeEjemplo(s.PromptSistema)[indiceDelEjemplo], PalabrasDeFuga));
         using var fabrica = new FabricaApi(llm: llm, conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarAsync(rol, usuario, PreguntaDeInstrucciones);
