@@ -180,7 +180,6 @@ public sealed class CorrelacionApiTests
         public IReadOnlyList<TutorFlow.Core.Conocimiento.SeccionDocumento> BuscarSecciones(string consulta, int maximo) =>
             throw new InvalidOperationException("secreto-interno C:\\ruta\\interna");
 
-        public bool ExisteCita(TutorFlow.Core.Conocimiento.Cita cita) => false;
 
         public TutorFlow.Core.Conocimiento.SeccionDocumento? ObtenerSeccion(TutorFlow.Core.Conocimiento.Cita cita) => null;
     }
