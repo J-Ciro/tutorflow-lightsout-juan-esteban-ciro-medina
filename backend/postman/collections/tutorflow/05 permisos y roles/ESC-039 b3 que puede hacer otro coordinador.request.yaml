@@ -1,0 +1,56 @@
+$kind: http-request
+order: 56000
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "pregunta": "¿Qué puede hacer otro coordinador?",
+      "usuario": {
+        "rol": "coordinador",
+        "id": "COORD-01"
+      }
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const TEXTO_NEGATIVA = {"estudiante":"No puedo compartir esa información: solo puedes consultar tus propios datos académicos.","coordinador":"No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa."};
+      const PERSONAS = ["Laura Gómez","Andrés Martínez","Sofía Herrera","Camilo Rojas","Valentina Castro","Mateo Vargas","Marcela Ríos","Julián Pardo","EST-001","EST-002","EST-003","EST-004","EST-005","EST-006","COORD-01","COORD-02"];
+      const FORMA = ["citas", "costoUsd", "respuesta", "tokens", "usoDatosEstudiante"];
+      const CITA_ART22 = [{ documento: "reglamento_academico_2025.md", seccion: "Artículo 22" }];
+      pm.test("ESC-039 b3 responde 403", () => pm.response.to.have.status(403));
+      pm.test("ESC-039 b3 cuerpo con la forma exacta del contrato", () => {
+        const cuerpo = pm.response.json();
+        pm.expect(Object.keys(cuerpo).sort()).to.eql(FORMA);
+        pm.expect(cuerpo.citas).to.be.an("array");
+        pm.expect(Number.isInteger(cuerpo.tokens)).to.eql(true);
+      });
+      pm.test("ESC-039 b3 la negativa depende solo del rol coordinador (D-07)", () => {
+        const cuerpo = pm.response.json();
+        pm.expect(cuerpo.respuesta).to.eql(TEXTO_NEGATIVA["coordinador"]);
+        pm.expect(cuerpo.citas).to.eql(CITA_ART22);
+        pm.expect(cuerpo.usoDatosEstudiante).to.eql(false);
+        pm.expect(cuerpo.tokens).to.eql(0);
+        pm.expect(cuerpo.costoUsd).to.eql(0);
+      });
+      pm.test("ESC-039 b3 Content-Type application/json charset utf-8", () => {
+        pm.expect(pm.response.headers.get("Content-Type")).to.eql("application/json; charset=utf-8");
+      });
+      pm.test("ESC-039 b3 no revela datos de terceros", () => {
+        const texto = pm.response.text();
+        PERSONAS.forEach((p) => pm.expect(texto).to.not.include(p));
+      });
+      const claveCuerpo = "cuerpo403_coordinador";
+      const previo = pm.collectionVariables.get(claveCuerpo);
+      if (!previo) {
+        pm.collectionVariables.set(claveCuerpo, pm.response.text());
+      } else {
+        pm.test("ESC-039 b3 el cuerpo 403 es idéntico byte a byte al de cualquier otra denegación del rol (D-07, D-08)", () => {
+          pm.expect(pm.response.text()).to.eql(previo);
+        });
+      }

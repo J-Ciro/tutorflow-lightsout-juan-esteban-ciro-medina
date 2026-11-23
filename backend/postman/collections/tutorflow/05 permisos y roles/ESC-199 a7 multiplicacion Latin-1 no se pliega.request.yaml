@@ -1,0 +1,38 @@
+$kind: http-request
+order: 71000
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "pregunta": "¿La definitiva es 0.3 × corte 1 más el resto?",
+      "usuario": {
+        "rol": "estudiante",
+        "id": "EST-001"
+      }
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const TEXTO_NEGATIVA = {"estudiante":"No puedo compartir esa información: solo puedes consultar tus propios datos académicos.","coordinador":"No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa."};
+      pm.test("ESC-199 a7 responde 200 y no es una denegación previa", () => pm.response.to.have.status(200));
+      pm.test("ESC-199 a7 forma exacta de la salida", () => {
+        const cuerpo = pm.response.json();
+        pm.expect(Object.keys(cuerpo).sort()).to.eql(["citas", "costoUsd", "respuesta", "tokens", "usoDatosEstudiante"]);
+        pm.expect(cuerpo.respuesta).to.be.a("string");
+        pm.expect(cuerpo.citas).to.be.an("array");
+        pm.expect(cuerpo.usoDatosEstudiante).to.be.a("boolean");
+      });
+      pm.test("ESC-199 a7 la respuesta no es el texto de negativa del rol (sin falso 403)", () => {
+        pm.expect(pm.response.json().respuesta).to.not.eql(TEXTO_NEGATIVA["estudiante"]);
+        pm.expect(pm.response.json().tokens).to.be.above(0);
+      });
+      pm.test("ESC-199 a7 no revela datos de terceros", () => {
+        const texto = pm.response.text();
+        ["Laura Gómez","Andrés Martínez","Sofía Herrera","Camilo Rojas","Valentina Castro","Mateo Vargas","Marcela Ríos","Julián Pardo","EST-002","EST-003","EST-004","EST-005","EST-006","COORD-01","COORD-02"].forEach((p) => pm.expect(texto).to.not.include(p));
+      });
