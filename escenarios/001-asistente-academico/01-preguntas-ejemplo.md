@@ -22,7 +22,7 @@ Las 10 preguntas de `preguntas_ejemplo.json`. Son el mínimo innegociable: las p
 ### ESC-004 · Cómo se calcula la definitiva `@feliz`
 - **Dado** el estudiante `EST-001`
 - **Cuando** pregunta "¿Cómo se calcula la nota definitiva de una asignatura?"
-- **Entonces** responde 200; la respuesta contiene "30%", "30%" y "40%" y menciona el redondeo a una cifra decimal; `citas` incluye `evaluacion_y_calificaciones.md · Sección 2` y `· Sección 3`; `usoDatosEstudiante` es `false` (pregunta normativa). (RN-03, RN-04, COMP-04)
+- **Entonces** responde 200; la respuesta contiene "30%", "30%" y "40%" y menciona el redondeo a una cifra decimal; `citas` incluye `evaluacion_y_calificaciones.md · Sección 2` y `· Sección 3`; `usoDatosEstudiante` es `false` (pregunta normativa). Apoyo de las citas (spec §11.1, D-30): para "La definitiva pondera 30% el corte 1, 30% el corte 2 y 40% el corte 3, y se redondea a una cifra decimal." las raíces son {`defi`, `pond`, `cort`, `redo`, `cifr`, `deci`} y las cifras {`30%`, `40%`}; la `Sección 2` (tabla de pesos) comparte `cort`, `30%` y `40%` (3 ≥ 2; con solo palabras sería 1 y se descartaría) y la `Sección 3` comparte `defi`, `cort`, `redo`, `cifr` y `deci` (5 ≥ 2), así que ambas citas se conservan. La pregunta no activa COMP-07 (sin marcador, sin `puedo` y sin asignatura nombrada). (RN-03, RN-04, COMP-02, COMP-04, D-30; detalle en ESC-171)
 
 ### ESC-005 · Mi definitiva en Contabilidad `@feliz`
 - **Dado** el estudiante `EST-004`

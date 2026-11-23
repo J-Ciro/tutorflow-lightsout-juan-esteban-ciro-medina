@@ -42,7 +42,7 @@ Valores de la spec §11.4. En todos: `usoDatosEstudiante` es `true` y no hay dat
 ### ESC-027 · Faltas restantes `@feliz`
 - **Dado** el estudiante `EST-001`
 - **Cuando** pregunta "¿Cuántas faltas más puedo tener en Bases de Datos sin perderla?"
-- **Entonces** la respuesta contiene "5" (máximo 7 de 48, lleva 2); cita `Artículo 11`. (RN-13)
+- **Entonces** la respuesta contiene "5" (máximo 7 de 48, lleva 2); cita `Artículo 11`. Desde la v1.7 recibe el resumen de COMP-07 por el activador (ii) (`puedo` + `faltas`) y por el (iii) (nombra Bases de Datos, matriculada); `usoDatosEstudiante: true`. (RN-13, COMP-07, D-30)
 
 ### ESC-028 · Elegible para la beca `@feliz`
 - **Dado** el estudiante `EST-001`
@@ -52,7 +52,7 @@ Valores de la spec §11.4. En todos: `usoDatosEstudiante` es `true` y no hay dat
 ### ESC-029 · No elegible para la beca `@alterno`
 - **Dado** el estudiante `EST-004`
 - **Cuando** pregunta "¿Puedo aplicar a la beca por rendimiento?"
-- **Entonces** responde que no cumple: promedio "3.88" < 4.3. (RN-12)
+- **Entonces** responde que no cumple: promedio "3.88" < 4.3. Desde la v1.7 recibe el resumen de COMP-07 por el activador (ii) (`puedo` + `beca`, sin genérico indefinido); `usoDatosEstudiante: true`. (RN-12, COMP-07, D-30)
 
 ### ESC-030 · Elegibilidad no determinable `@alterno`
 - **Dado** el estudiante `EST-006`
@@ -62,12 +62,12 @@ Valores de la spec §11.4. En todos: `usoDatosEstudiante` es `true` y no hay dat
 ### ESC-031 · Habilitación propia `@alterno`
 - **Dado** el estudiante `EST-005`
 - **Cuando** pregunta "¿Qué materias puedo habilitar?"
-- **Entonces** indica que puede habilitar Estadística (2.3) y no Microeconomía (1.8 < 2.0); cita `Artículo 6`. (RN-10)
+- **Entonces** indica que puede habilitar Estadística (2.3) y no Microeconomía (1.8 < 2.0); cita `Artículo 6`. Activa el resumen de COMP-07 por el activador (ii): `puedo` + `habilitar` (término específico), sin `una materia` ni otro genérico indefinido (el genérico `materias` no impide la activación; solo no activa por sí mismo). El LLM recibe en la primera llamada el resumen de `EST-005` con Estadística 2.3 (perdida, habilitable) y Microeconomía 1.8 (perdida, no habilitable); `usoDatosEstudiante: true`; `citas` incluye `Datos del estudiante · Notas`. (RN-10, COMP-07, D-30)
 
 ### ESC-032 · Habilitación con pérdida por inasistencia `@alterno`
 - **Dado** el estudiante `EST-002`
 - **Cuando** pregunta "¿Puedo habilitar Bases de Datos?"
-- **Entonces** responde que no, porque la perdió por inasistencia; cita `Artículo 6` y `Artículo 7`. Y sí puede habilitar Cálculo Integral (2.6) si lo pregunta. (RN-10)
+- **Entonces** responde que no, porque la perdió por inasistencia; cita `Artículo 6` y `Artículo 7`. Y sí puede habilitar Cálculo Integral (2.6) si lo pregunta. Activa el resumen de COMP-07 por el activador (ii) (`puedo` + `habilitar`) y por el (iii) (nombra Bases de Datos, `BD-203`, en la que está matriculado), así que está exenta del umbral: raíces {`habi`, `base`, `dato`}, `r = 3`, mínimo 2, y ninguna sección contiene 2 (el `Artículo 6` solo `habi`, el `Artículo 22` solo `dato`); hasta la v1.6 terminaba en COMP-03 sin LLM. El LLM recibe en la primera llamada el resumen de `EST-002` con Bases de Datos perdida por inasistencia (9/48, definitiva 0.0, no habilitable) y Cálculo Integral 2.6 (habilitable); `usoDatosEstudiante: true`; `citas` incluye `Datos del estudiante · Notas` y `Datos del estudiante · Asistencia`. (RN-07, RN-10, COMP-03 (1), COMP-07, D-30; ESC-172 a)
 
 ### ESC-033 · Pregunta en primera persona sin datos `@alterno`
 - **Dado** el estudiante `EST-001`
