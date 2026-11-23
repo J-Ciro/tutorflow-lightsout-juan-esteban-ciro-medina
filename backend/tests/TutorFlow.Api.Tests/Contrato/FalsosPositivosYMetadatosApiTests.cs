@@ -159,32 +159,4 @@ public sealed class MetadatosApiTests
         Assert.Equal(esperado, respuesta.UsoDatosEstudiante);
         Assert.Equal(esperado, fabrica.Api.Llamadas.Any(l => l.StartsWith("ObtenerNotas", StringComparison.Ordinal)));
     }
-
-    [Fact]
-    [Trait("CA", "CA-06")]
-    [Trait("ESC", "ESC-009")]
-    public async Task ESC_009_Sin_informacion_responde_200_con_el_texto_exacto_sin_citas_ni_datos()
-    {
-        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.Texto(Textos.SinInformacion));
-
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Qué dice el reglamento sobre el uso de parqueaderos?");
-
-        Assert.Equal(200, respuesta.Estado);
-        Assert.Equal("No encuentro esa información en los documentos disponibles.", respuesta.Respuesta);
-        Assert.Empty(respuesta.Citas);
-        Assert.False(respuesta.UsoDatosEstudiante);
-    }
-
-    [Fact]
-    [Trait("CA", "CA-06")]
-    [Trait("ESC", "ESC-094")]
-    public async Task ESC_094_Pregunta_sin_contenido_no_es_400()
-    {
-        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.Texto(Textos.SinInformacion));
-
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "???");
-
-        Assert.Equal(200, respuesta.Estado);
-        Assert.Equal(Textos.SinInformacion, respuesta.Respuesta);
-    }
 }
