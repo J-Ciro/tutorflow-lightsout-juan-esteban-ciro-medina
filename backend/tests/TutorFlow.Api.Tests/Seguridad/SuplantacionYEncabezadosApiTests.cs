@@ -95,34 +95,6 @@ public sealed class SuplantacionApiTests
         Assert.All(respuestas, r => Assert.Equal(200, r.Estado));
         Assert.Empty(fabrica.Auditoria.MultiplesIdentidades);
     }
-
-    [Fact]
-    [Trait("CA", "CA-13")]
-    [Trait("ESC", "ESC-141")]
-    [Trait("SEG", "SEG-16")]
-    public async Task ESC_141_Con_el_bloqueo_activado_la_cuarta_identidad_recibe_429()
-    {
-        var configuracion = new Dictionary<string, string?> { ["Limites:BloquearMultiplesIdentidades"] = "true" };
-        using var fabrica = new FabricaApi(configuracion: configuracion);
-
-        var respuestas = await PreguntarConCadaId(fabrica, CuatroIds);
-
-        Assert.All(respuestas.Take(3), r => Assert.Equal(200, r.Estado));
-        Assert.Equal(429, respuestas[3].Estado);
-    }
-
-    [Fact]
-    [Trait("CA", "CA-13")]
-    [Trait("ESC", "ESC-141")]
-    public async Task ESC_141_Con_el_bloqueo_activado_una_ip_con_pocas_identidades_no_se_bloquea()
-    {
-        var configuracion = new Dictionary<string, string?> { ["Limites:BloquearMultiplesIdentidades"] = "true" };
-        using var fabrica = new FabricaApi(configuracion: configuracion);
-
-        var respuestas = await PreguntarConCadaId(fabrica, CuatroIds.Take(3));
-
-        Assert.All(respuestas, r => Assert.Equal(200, r.Estado));
-    }
 }
 
 public sealed class EncabezadosDeSeguridadApiTests

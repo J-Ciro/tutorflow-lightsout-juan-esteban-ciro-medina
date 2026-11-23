@@ -22,7 +22,7 @@ public sealed class ConfiguracionDeBordesApiTests
     {
         { "Conocimiento:RelevanciaMinima", " 5 ", " 5 ", "entero de 1 a 10" },
         { "Limites:PresupuestoDiarioUsd", "5 ", "5 ", "decimal mayor que 0 y hasta 1000" },
-        { "Limites:BloquearMultiplesIdentidades", " true", " true", "true o false" },
+        { "Limites:PreguntasPorMinutoPorIp", " 600", " 600", "entero de 1 a 10000" },
         { "Conocimiento:RelevanciaMinima", "5\n", "5\\n", "entero de 1 a 10" },
         { "Limites:MaximoSeccionesRecuperadas", "\t3", "\\t3", "entero de 1 a 6" }
     };
