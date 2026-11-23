@@ -167,6 +167,108 @@ public sealed class VerificadorSalidaTests
         Assert.Equal([existente], salida.Citas.ToArray());
     }
 
+    [Theory]
+    [InlineData("EST007 tiene Estadística perdida.")]
+    [InlineData("EST 099 tiene un promedio de 4.39.")]
+    [InlineData("Según COORD-07, tu promedio es 4.39.")]
+    [InlineData("est-099 va bien")]
+    [InlineData("COORD 07 lo confirma")]
+    [InlineData("Tu coordinador es COORD-02")]
+    [Trait("CA", "CA-05")]
+    [Trait("ESC", "ESC-176")]
+    [Trait("SEG", "SEG-10b")]
+    public void Un_token_con_forma_de_id_de_persona_no_autorizado_se_bloquea_exista_o_no(string respuesta)
+    {
+        var salida = Verificar(Estudiante, respuesta, Est001YSuCoordinador, SinFuentes);
+
+        Assert.Equal(Textos.NegativaEstudiante, salida.Respuesta);
+        Assert.Equal([Textos.CitaNegativa()], salida.Citas.ToArray());
+        Assert.Equal(ResultadoAuditoria.FugaBloqueada, salida.Resultado);
+    }
+
+    [Theory]
+    [InlineData("EST-004 tiene todas sus asignaturas aprobadas.")]
+    [InlineData("EST007 tiene Estadística perdida.")]
+    [InlineData("COORD-02 coordina Administración.")]
+    [Trait("CA", "CA-05")]
+    [Trait("ESC", "ESC-176")]
+    [Trait("SEG", "SEG-10b")]
+    public void Un_id_ajeno_o_inventado_en_la_respuesta_a_un_coordinador_usa_la_negativa_del_coordinador(string respuesta)
+    {
+        var salida = Verificar(Coordinador, respuesta, ProgramaIngSis, SinFuentes);
+
+        Assert.Equal(Textos.NegativaCoordinador, salida.Respuesta);
+        Assert.Equal([Textos.CitaNegativa()], salida.Citas.ToArray());
+        Assert.Equal(ResultadoAuditoria.FugaBloqueada, salida.Resultado);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-05")]
+    [Trait("ESC", "ESC-176")]
+    [Trait("SEG", "SEG-10b")]
+    public void La_salida_es_la_misma_si_el_id_ajeno_existe_o_no()
+    {
+        var inexistente = Verificar(Estudiante, "EST007 tiene Estadística perdida.", SoloEst001, SinFuentes);
+        var existente = Verificar(Estudiante, "EST-002 tiene Estadística perdida.", SoloEst001, SinFuentes);
+
+        Assert.Equal(existente.Respuesta, inexistente.Respuesta);
+        Assert.Equal(existente.Citas.ToArray(), inexistente.Citas.ToArray());
+        Assert.Equal(existente.Resultado, inexistente.Resultado);
+    }
+
+    [Theory]
+    [InlineData("EST-005 tiene dos asignaturas perdidas.")]
+    [InlineData("EST005 tiene dos asignaturas perdidas.")]
+    [InlineData("Mateo Vargas tiene Estadística (EST-103) sin definitiva.")]
+    [InlineData("Valentina Castro (EST-005) está en prueba académica.")]
+    [Trait("ESC", "ESC-176")]
+    [Trait("SEG", "SEG-10b")]
+    public void El_id_de_una_persona_autorizada_y_los_codigos_de_asignatura_no_se_bloquean(string respuesta)
+    {
+        string[] autorizados = ["COORD-02", "EST-004", "EST-005", "EST-006"];
+
+        var salida = Verificar(new Usuario(Rol.Coordinador, "COORD-02"), respuesta, autorizados, SinFuentes);
+
+        Assert.Equal(respuesta, salida.Respuesta);
+        Assert.Equal(ResultadoAuditoria.Respondida, salida.Resultado);
+    }
+
+    [Theory]
+    [InlineData("Promedio de 4.3 o más (Sección 3.1)", "Promedio igual o superior a 4.3", true)]
+    [InlineData("Se aprueba con un promedio de 4.3 y 12 créditos (bienestar_y_becas.md · Sección 3.1).", "Promedio igual o superior a 4.3", true)]
+    [InlineData("Estos requisitos se respaldan en bienestar_y_becas.md · Sección 3.1.", "", true)]
+    [InlineData("Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).", "Promedio 4.39", true)]
+    [InlineData("Se respalda en las Secciones 3.1 y 3.2.", "", true)]
+    [InlineData("Consulta el Artículo 5 y el Art. 11.", "", true)]
+    [InlineData("Consulta los artículos 5, 6 y 7.", "", true)]
+    [InlineData("Consulta el § 3.1.", "", true)]
+    [InlineData("Tu promedio es 4.40 (Sección 4).", "Promedio 4.39", false)]
+    [InlineData("Una asignatura se aprueba con 3.7 según el Artículo 5.", "Se aprueba con 3.0 en una escala de 0.0 a 5.0", false)]
+    [InlineData("La Sección 3.1 exige 4.4.", "Promedio igual o superior a 4.3", false)]
+    [InlineData("Un promedio de 3.1 en la sección 2.", "", false)]
+    [InlineData("El Artículo 11 exige 15%.", "", false)]
+    [Trait("CA", "CA-01")]
+    [Trait("ESC", "ESC-174")]
+    [Trait("SEG", "SEG-10c")]
+    public void Los_numeros_de_una_referencia_a_seccion_no_se_verifican_pero_las_demas_cifras_si(string respuesta, string fuente, bool esperado)
+    {
+        Assert.Equal(esperado, Verificador.TodosLosNumerosSonVerificables(respuesta, [fuente]));
+    }
+
+    [Theory]
+    [InlineData("Tu promedio es 4.40 (Sección 4).")]
+    [InlineData("Una asignatura se aprueba con 3.7 según el Artículo 5.")]
+    [Trait("ESC", "ESC-174")]
+    [Trait("SEG", "SEG-10c")]
+    public void Una_cifra_no_respaldada_junto_a_una_referencia_reemplaza_la_respuesta_por_texto_no_verificable(string respuesta)
+    {
+        var salida = Verificar(Estudiante, respuesta, SoloEst001, FuentePromedio);
+
+        Assert.Equal(Textos.NoVerificable, salida.Respuesta);
+        Assert.Empty(salida.Citas);
+        Assert.Equal(ResultadoAuditoria.NumeroNoVerificado, salida.Resultado);
+    }
+
     [Fact]
     [Trait("SEG", "SEG-10")]
     public void Contiene_persona_no_autorizada_respeta_la_lista_de_autorizados()
