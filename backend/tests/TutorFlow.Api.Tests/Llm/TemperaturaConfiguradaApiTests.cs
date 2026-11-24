@@ -26,14 +26,15 @@ public sealed class TemperaturaConfiguradaApiTests
         new((p, _) => RespuestasProveedor.Texto(p, "Una asignatura se aprueba con 3.0.", 5));
 
     [Theory]
-    [InlineData(null, "0.3", true, "e")]
-    [InlineData(LlaveDeAnthropic, "0.1", false, "f")]
-    [InlineData(LlaveDeOpenAi, "0.2", true, "g")]
+    [InlineData(null, "0.3", "e")]
+    [InlineData(LlaveDeAnthropic, "0.1", "f")]
+    [InlineData(LlaveDeOpenAi, "0.2", "g")]
     [Trait("CA", "CA-20")]
     [Trait("CA", "CA-23")]
     [Trait("ESC", "ESC-192")]
     [Trait("D", "D-59")]
-    public async Task ESC_192efg_La_temperatura_configurada_llega_al_proveedor_y_la_semilla_solo_a_los_compatibles_con_OpenAI(string? llave, string temperatura, bool llevaSemilla, string caso)
+    [Trait("D", "D-85")]
+    public async Task ESC_192efg_La_temperatura_configurada_llega_al_proveedor_y_ninguna_peticion_lleva_semilla(string? llave, string temperatura, string caso)
     {
         Assert.NotEmpty(caso);
         var manejador = ConUnaRespuesta();
@@ -44,18 +45,15 @@ public sealed class TemperaturaConfiguradaApiTests
         Assert.Equal(200, respuesta.Estado);
         var cuerpo = Cuerpo(Assert.Single(manejador.Peticiones));
         Assert.Equal(double.Parse(temperatura, System.Globalization.CultureInfo.InvariantCulture), cuerpo.GetProperty(PropiedadTemperatura).GetDouble());
-        Assert.Equal(llevaSemilla, cuerpo.TryGetProperty(PropiedadSemilla, out var semilla));
-        if (llevaSemilla)
-        {
-            Assert.Equal(1, semilla.GetInt64());
-        }
+        Assert.False(cuerpo.TryGetProperty(PropiedadSemilla, out _));
     }
 
     [Fact]
     [Trait("CA", "CA-23")]
     [Trait("ESC", "ESC-199")]
     [Trait("D", "D-59")]
-    public async Task ESC_199f_Con_ollama_y_temperatura_0_2_el_log_de_arranque_la_registra_y_toda_peticion_incluida_la_del_reintento_la_lleva_con_semilla_1()
+    [Trait("D", "D-85")]
+    public async Task ESC_199f_Con_ollama_y_temperatura_0_2_el_log_de_arranque_la_registra_y_toda_peticion_incluida_la_del_reintento_la_lleva_sin_semilla()
     {
         var manejador = new ManejadorLlmFalso((p, _) => RespuestasProveedor.Texto(p, "Tu promedio es 4.40.", 5));
         using var fabrica = Fabrica(null, manejador, "0.2");
@@ -67,7 +65,7 @@ public sealed class TemperaturaConfiguradaApiTests
         {
             var cuerpo = Cuerpo(peticion);
             Assert.Equal(0.2, cuerpo.GetProperty(PropiedadTemperatura).GetDouble());
-            Assert.Equal(1, cuerpo.GetProperty(PropiedadSemilla).GetInt64());
+            Assert.False(cuerpo.TryGetProperty(PropiedadSemilla, out _));
         });
         Assert.Contains(fabrica.Logs.Mensajes, m => m.Contains("0.2", StringComparison.Ordinal) && (m.Contains("emperatura", StringComparison.Ordinal) || m.Contains("emperature", StringComparison.Ordinal)));
     }

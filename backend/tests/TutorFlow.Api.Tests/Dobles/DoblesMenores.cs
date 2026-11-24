@@ -189,19 +189,24 @@ public sealed class TiempoDeRelojControlado(RelojControlado reloj) : TimeProvide
         reloj.Crear(callback, state, dueTime, period);
 }
 
+public sealed record EntradaDeLog(LogLevel Nivel, string Mensaje, string? Excepcion);
+
 public sealed class CapturaLogs : ILoggerProvider
 {
     private readonly ConcurrentQueue<string> _mensajes = new();
+    private readonly ConcurrentQueue<EntradaDeLog> _entradas = new();
 
     public IReadOnlyList<string> Mensajes => [.. _mensajes];
 
-    public ILogger CreateLogger(string categoryName) => new Registro(_mensajes);
+    public IReadOnlyList<EntradaDeLog> Entradas => [.. _entradas];
+
+    public ILogger CreateLogger(string categoryName) => new Registro(_mensajes, _entradas);
 
     public void Dispose()
     {
     }
 
-    private sealed class Registro(ConcurrentQueue<string> destino) : ILogger
+    private sealed class Registro(ConcurrentQueue<string> destino, ConcurrentQueue<EntradaDeLog> entradas) : ILogger
     {
         public IDisposable? BeginScope<TState>(TState state)
             where TState : notnull => null;
@@ -211,6 +216,7 @@ public sealed class CapturaLogs : ILoggerProvider
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             destino.Enqueue(formatter(state, exception) + exception);
+            entradas.Enqueue(new EntradaDeLog(logLevel, formatter(state, exception), exception?.ToString()));
         }
     }
 }

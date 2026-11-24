@@ -64,8 +64,8 @@ public sealed partial class PresentacionDeSeccionYEjemplosApiTests
     [Fact]
     [Trait("CA", "CA-23")]
     [Trait("ESC", "ESC-198")]
-    [Trait("D", "D-73")]
-    public async Task ESC_198h3_El_bloque_de_la_Seccion_2_trae_la_prosa_con_porcentajes_y_sin_tabla_y_el_de_la_Seccion_3_el_texto_original()
+    [Trait("D", "D-90")]
+    public async Task ESC_198h3_El_bloque_de_la_Seccion_2_trae_la_prosa_con_porcentajes_y_el_de_la_Seccion_3_la_formula_en_30_y_40_por_ciento_sin_0_3_ni_0_4()
     {
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Revisa el detalle."), conocimientoReal: true);
 
@@ -76,19 +76,22 @@ public sealed partial class PresentacionDeSeccionYEjemplosApiTests
         var seccion3 = Assert.Single(bloques, b => b.Fuente == FuenteSec3).Cuerpo;
         Assert.Contains(ProsaDeLaSeccion2, seccion2, StringComparison.Ordinal);
         Assert.DoesNotContain("|", seccion2, StringComparison.Ordinal);
-        Assert.Contains("definitiva = 0.3 × corte 1 + 0.3 × corte 2 + 0.4 × corte 3", seccion3, StringComparison.Ordinal);
+        Assert.Contains("definitiva = 30% × corte 1 + 30% × corte 2 + 40% × corte 3", seccion3, StringComparison.Ordinal);
+        Assert.DoesNotContain("0.3", seccion3, StringComparison.Ordinal);
+        Assert.DoesNotContain("0.4", seccion3, StringComparison.Ordinal);
         Assert.Contains("La definitiva se redondea a una cifra decimal", seccion3, StringComparison.Ordinal);
     }
 
     [Fact]
     [Trait("CA", "CA-23")]
     [Trait("ESC", "ESC-198")]
-    [Trait("D", "D-58")]
-    public async Task ESC_198h2_El_bloque_de_la_Seccion_1_de_Bienestar_conserva_el_titulo_y_el_texto_originales()
+    [Trait("D", "D-89")]
+    public async Task ESC_198h2_El_bloque_de_la_Seccion_1_de_Bienestar_trae_la_presentacion_con_lugar_y_horario_en_una_oracion()
     {
         var bloque = await BloqueEntregadoAsync("EST-001", PreguntaP7, FuenteBienestar1);
 
-        Assert.Contains("La oficina de Bienestar atiende en el edificio B, piso 2:", bloque.Cuerpo, StringComparison.Ordinal);
+        Assert.Contains("Atención de Bienestar en el edificio B, piso 2: lunes a viernes de 8:00 a 17:00; sábados de 8:00 a 12:00. Correo: bienestar@horizonte.edu.co (ficticio).", bloque.Cuerpo, StringComparison.Ordinal);
+        Assert.DoesNotContain("La oficina de Bienestar atiende", bloque.Cuerpo, StringComparison.Ordinal);
         Assert.Contains("8:00 a 17:00", bloque.Cuerpo, StringComparison.Ordinal);
         Assert.Contains("8:00 a 12:00", bloque.Cuerpo, StringComparison.Ordinal);
     }

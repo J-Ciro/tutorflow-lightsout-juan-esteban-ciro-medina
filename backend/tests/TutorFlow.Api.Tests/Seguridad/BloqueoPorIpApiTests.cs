@@ -29,11 +29,16 @@ public sealed class BloqueoPorIpApiTests
 
     private sealed class Sesion(FabricaApi fabrica)
     {
-        private readonly DateTimeOffset _origen = fabrica.Reloj.AhoraUtc;
+        private TimeSpan _transcurrido = TimeSpan.Zero;
 
         public FabricaApi Fabrica { get; } = fabrica;
 
-        public void EnSegundo(double segundos) => Fabrica.Reloj.Fijar(_origen + TimeSpan.FromSeconds(segundos));
+        public void EnSegundo(double segundos)
+        {
+            var destino = TimeSpan.FromSeconds(segundos);
+            Fabrica.Reloj.Avanzar(destino - _transcurrido);
+            _transcurrido = destino;
+        }
 
         public async Task<RespuestaApi> Preguntar(double segundos, string ip = Conexion, IReadOnlyDictionary<string, string>? encabezados = null)
         {

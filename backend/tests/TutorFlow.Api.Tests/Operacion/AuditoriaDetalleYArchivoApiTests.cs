@@ -69,6 +69,23 @@ public sealed class AuditoriaDetalleYArchivoApiTests : IDisposable
 
     [Fact]
     [Trait("CA", "CA-08")]
+    [Trait("ESC", "ESC-083")]
+    [Trait("D", "S-11")]
+    public async Task ESC_083b_Los_caracteres_Cf_incluidos_los_astrales_se_escapan_por_punto_de_codigo_en_la_consola_y_el_archivo()
+    {
+        var pregunta = "a\U000E0041b c​d‮e";
+        using var fabrica = FabricaConArchivo();
+
+        var consola = await CapturarConsolaAsync(() => fabrica.PreguntarEstudianteAsync("EST-001", pregunta));
+
+        var linea = Assert.Single(consola);
+        Assert.Equal("a\\uDB40\\uDC41b c\\u200Bd\\u202Ee", JsonElement.Parse(linea).GetProperty("pregunta").GetString());
+        Assert.Equal(linea, Assert.Single(File.ReadAllLines(ArchivoDelDia)));
+        Assert.All(new[] { linea }.Concat(File.ReadAllLines(ArchivoDelDia)), texto => Assert.DoesNotContain(texto.EnumerateRunes(), r => System.Text.Rune.GetUnicodeCategory(r) == System.Globalization.UnicodeCategory.Format));
+    }
+
+    [Fact]
+    [Trait("CA", "CA-08")]
     [Trait("ESC", "ESC-143")]
     public async Task ESC_143_Las_faltas_en_bases_de_datos_dejan_una_entrada_de_asistencia_con_el_codigo_de_la_asignatura()
     {

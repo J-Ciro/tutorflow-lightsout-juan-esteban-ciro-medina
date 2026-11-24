@@ -31,6 +31,37 @@ public sealed class ResolutorProveedorLlmTests
         { "zzz-123", "openai-compatible", "http://x:1/v1", ProveedorLlm.OpenAiCompatible, AdaptadorLlm.CompatibleOpenAi }
     };
 
+    public static TheoryData<string?, string?, string?, string?, ProveedorLlm, AdaptadorLlm> ResolucionesConModelo => new()
+    {
+        { "zzz-123", null, null, "gemini-2.5-flash", ProveedorLlm.Gemini, AdaptadorLlm.CompatibleOpenAi },
+        { "zzz-123", null, null, "claude-haiku-5-5", ProveedorLlm.Anthropic, AdaptadorLlm.Anthropic },
+        { "zzz-123", null, null, "gpt-5-mini", ProveedorLlm.OpenAi, AdaptadorLlm.CompatibleOpenAi },
+        { "zzz-123", null, null, "o1-mini", ProveedorLlm.OpenAi, AdaptadorLlm.CompatibleOpenAi },
+        { "zzz-123", null, null, "o3-mini", ProveedorLlm.OpenAi, AdaptadorLlm.CompatibleOpenAi },
+        { "zzz-123", null, null, "o4-mini", ProveedorLlm.OpenAi, AdaptadorLlm.CompatibleOpenAi },
+        { "zzz-123", null, null, "meta/llama-4", ProveedorLlm.OpenRouter, AdaptadorLlm.CompatibleOpenAi },
+        { "sk-abc", null, null, "gemini-2.5-flash", ProveedorLlm.Gemini, AdaptadorLlm.CompatibleOpenAi },
+        { "sk-abc", null, null, "claude-haiku-5-5", ProveedorLlm.Anthropic, AdaptadorLlm.Anthropic },
+        { "sk-ant-abc", null, null, "claude-haiku-5-5", ProveedorLlm.Anthropic, AdaptadorLlm.Anthropic },
+        { "AIzaSyAbc", null, null, "gemini-3-flash", ProveedorLlm.Gemini, AdaptadorLlm.CompatibleOpenAi },
+        { "sk-ant-abc", "groq", null, "claude-haiku-5-5", ProveedorLlm.Groq, AdaptadorLlm.CompatibleOpenAi },
+        { "zzz-123", null, "http://mi-proxy:8000/v1", "meta/llama-4", ProveedorLlm.OpenRouter, AdaptadorLlm.CompatibleOpenAi },
+        { null, null, null, "claude-haiku-5-5", ProveedorLlm.Ollama, AdaptadorLlm.CompatibleOpenAi },
+        { "zzz-123", null, "http://mi-proxy:8000/v1", "qwen2.5:7b", ProveedorLlm.OpenAiCompatible, AdaptadorLlm.CompatibleOpenAi }
+    };
+
+    public static TheoryData<string, string?, string, AdaptadorLlm> SinProveedorDeterminable => new()
+    {
+        { "zzz-123", null, "qwen2.5:7b", AdaptadorLlm.NoConfigurado },
+        { "zzz-123", null, "llama-3.1-8b-instant", AdaptadorLlm.NoConfigurado },
+        { "zzz-123", null, "mixtral-8x7b", AdaptadorLlm.NoConfigurado },
+        { "zzz-123", null, "gemma-2", AdaptadorLlm.NoConfigurado },
+        { "AIzaSyAbc", null, "claude-haiku-5-5", AdaptadorLlm.NoConfigurado },
+        { "sk-ant-abc", null, "gemini-2.5-flash", AdaptadorLlm.NoConfigurado },
+        { "sk-or-abc", null, "gpt-5-mini", AdaptadorLlm.NoConfigurado },
+        { "gsk_abc", null, "claude-haiku-5-5", AdaptadorLlm.NoConfigurado }
+    };
+
     private static OpcionesLlm CargarOpciones()
     {
         var ruta = Path.Combine(DatosReferencia.RutaRepositorio(), "backend", "src", "TutorFlow.Api", "appsettings.json");
@@ -59,6 +90,46 @@ public sealed class ResolutorProveedorLlmTests
 
         Assert.Equal(esperado, resuelto.Proveedor);
         Assert.Equal(adaptador, resuelto.Adaptador);
+    }
+
+    [Theory]
+    [MemberData(nameof(ResolucionesConModelo))]
+    [Trait("CA", "CA-07")]
+    [Trait("ESC", "ESC-119")]
+    [Trait("D", "D-84")]
+    public void ESC_119cde_El_prefijo_inequivoco_del_modelo_decide_y_la_llave_solo_es_una_pista(string? llave, string? proveedor, string? urlBase, string? modelo, ProveedorLlm esperado, AdaptadorLlm adaptador)
+    {
+        var resuelto = Resolver(llave, proveedor, urlBase, modelo);
+
+        Assert.Equal(esperado, resuelto.Proveedor);
+        Assert.Equal(adaptador, resuelto.Adaptador);
+    }
+
+    [Theory]
+    [MemberData(nameof(SinProveedorDeterminable))]
+    [Trait("CA", "CA-07")]
+    [Trait("ESC", "ESC-119")]
+    [Trait("D", "D-84")]
+    public void ESC_119df_Sin_prefijo_inequivoco_o_con_conflicto_entre_modelo_y_llave_queda_NoConfigurado(string llave, string? urlBase, string modelo, AdaptadorLlm adaptador)
+    {
+        var resuelto = Resolver(llave, null, urlBase, modelo);
+
+        Assert.Equal(adaptador, resuelto.Adaptador);
+    }
+
+    [Theory]
+    [InlineData("claude-haiku-5-5")]
+    [InlineData("zzz-modelo-cualquiera")]
+    [Trait("CA", "CA-07")]
+    [Trait("ESC", "ESC-119")]
+    [Trait("D", "D-84")]
+    public void ESC_119_Una_llave_de_cualquier_forma_nunca_se_rechaza_y_la_resolucion_no_la_expone(string modelo)
+    {
+        const string llave = "llave rara con espacios y ñ-€-123";
+
+        var resuelto = Resolver(llave, modelo: modelo);
+
+        Assert.DoesNotContain(llave, resuelto.ToString(), StringComparison.Ordinal);
     }
 
     [Fact]
