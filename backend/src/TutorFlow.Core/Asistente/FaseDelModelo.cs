@@ -16,6 +16,12 @@ internal sealed class FaseDelModelo
     private readonly CierreDeRespuesta _cierre;
     private readonly LectorResumenPropio _lectorResumen;
 
+    public static FaseDelModelo Ensamblar(DependenciasDeAsistente d, EmisorDeResultados emisor)
+    {
+        var cierre = new CierreDeRespuesta(d.BaseConocimiento, d.PoliticaAcceso, d.VerificadorSalida, d.Configuracion);
+        return new FaseDelModelo(d.ClienteLlm, d.PoliticaAcceso, d.Limites, d.Configuracion, d.Presupuesto, emisor, cierre);
+    }
+
     public FaseDelModelo(
         IClienteLlm clienteLlm,
         PoliticaAcceso politicaAcceso,

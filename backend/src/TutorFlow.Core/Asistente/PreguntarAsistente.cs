@@ -30,19 +30,12 @@ public sealed record ResultadoPregunta(
 
 public sealed class PreguntarAsistente
 {
-    private readonly IApiAcademica _apiAcademica;
-    private readonly IClienteLlm _clienteLlm;
-    private readonly IBaseConocimiento _baseConocimiento;
-    private readonly AuditorPeticiones _auditor;
-    private readonly PoliticaAcceso _politicaAcceso;
-    private readonly LimitesAsistente _limites;
-    private readonly ConfiguracionAsistente _configuracion;
-    private readonly PresupuestoDiario _presupuesto;
+    private readonly DependenciasDeAsistente _dependencias;
+    private readonly LimitadorIdentidades? _limitadorIdentidades;
     private readonly LectorResumenPropio _lectorResumen;
     private readonly RelevanciaPrevia _relevancia;
     private readonly EmisorDeResultados _emisor;
     private readonly FaseDelModelo _fase;
-    private readonly LimitadorIdentidades? _limitadorIdentidades;
 
     public PreguntarAsistente(
         IApiAcademica apiAcademica,
@@ -55,20 +48,20 @@ public sealed class PreguntarAsistente
         ConfiguracionAsistente configuracion,
         PresupuestoDiario presupuesto,
         LimitadorIdentidades? limitadorIdentidades = null)
+        : this(
+            new DependenciasDeAsistente(apiAcademica, clienteLlm, baseConocimiento, auditor, politicaAcceso, verificadorSalida, limites, configuracion, presupuesto),
+            limitadorIdentidades)
     {
+    }
+
+    private PreguntarAsistente(DependenciasDeAsistente dependencias, LimitadorIdentidades? limitadorIdentidades)
+    {
+        _dependencias = dependencias;
         _limitadorIdentidades = limitadorIdentidades;
-        _apiAcademica = apiAcademica;
-        _clienteLlm = clienteLlm;
-        _baseConocimiento = baseConocimiento;
-        _auditor = auditor;
-        _politicaAcceso = politicaAcceso;
-        _limites = limites;
-        _configuracion = configuracion;
-        _presupuesto = presupuesto;
-        _lectorResumen = new LectorResumenPropio(politicaAcceso);
-        _relevancia = new RelevanciaPrevia(politicaAcceso, configuracion.RelevanciaMinima);
-        _emisor = new EmisorDeResultados(auditor, politicaAcceso, configuracion);
-        _fase = new FaseDelModelo(clienteLlm, politicaAcceso, limites, configuracion, presupuesto, _emisor, new CierreDeRespuesta(baseConocimiento, politicaAcceso, verificadorSalida, configuracion));
+        _lectorResumen = new LectorResumenPropio(dependencias.PoliticaAcceso);
+        _relevancia = new RelevanciaPrevia(dependencias.PoliticaAcceso, dependencias.Configuracion.RelevanciaMinima);
+        _emisor = new EmisorDeResultados(dependencias.Auditor, dependencias.PoliticaAcceso, dependencias.Configuracion);
+        _fase = FaseDelModelo.Ensamblar(dependencias, _emisor);
     }
 
     public async Task<ResultadoPregunta> EjecutarAsync(
@@ -77,8 +70,8 @@ public sealed class PreguntarAsistente
         string correlationId,
         CancellationToken cancellationToken)
     {
-        var presupuestoApi = TimeSpan.FromSeconds(_limites.PresupuestoApiAcademicaSegundos);
-        var api = new ApiAcademicaConPresupuesto(_apiAcademica, presupuestoApi);
+        var presupuestoApi = TimeSpan.FromSeconds(_dependencias.Limites.PresupuestoApiAcademicaSegundos);
+        var api = new ApiAcademicaConPresupuesto(_dependencias.ApiAcademica, presupuestoApi);
         var sesion = new SesionPregunta(entrada, ipOrigen, correlationId, api);
         try
         {
@@ -93,14 +86,14 @@ public sealed class PreguntarAsistente
 
     private async Task<ResultadoPregunta> ResponderSesionAsync(SesionPregunta sesion, CancellationToken cancellationToken)
     {
-        var directorio = await ConstructorDirectorio.ConstruirAsync(sesion.Entrada.Usuario, sesion.Api, _configuracion.CodigosAsignatura, cancellationToken);
+        var directorio = await ConstructorDirectorio.ConstruirAsync(sesion.Entrada.Usuario, sesion.Api, _dependencias.Configuracion.CodigosAsignatura, cancellationToken);
         if (directorio is not null)
         {
-            _auditor.RecordarPersonas(directorio);
+            _dependencias.Auditor.RecordarPersonas(directorio);
             sesion.Directorio = ExcluirCodigosDePersonas(directorio);
         }
 
-        var identidad = _politicaAcceso.EvaluarIdentidad(sesion.Entrada.Usuario, sesion.Directorio);
+        var identidad = _dependencias.PoliticaAcceso.EvaluarIdentidad(sesion.Entrada.Usuario, sesion.Directorio);
         if (!identidad.Permitido)
         {
             return _emisor.Denegar(sesion, identidad.Motivo, 0);
@@ -112,7 +105,7 @@ public sealed class PreguntarAsistente
 
     private async Task<ResultadoPregunta> ResponderSiEstaAutorizadoAsync(SesionPregunta sesion, CancellationToken cancellationToken)
     {
-        var decision = _politicaAcceso.EvaluarPregunta(sesion.Entrada.Usuario, sesion.Entrada.Pregunta, sesion.Directorio);
+        var decision = _dependencias.PoliticaAcceso.EvaluarPregunta(sesion.Entrada.Usuario, sesion.Entrada.Pregunta, sesion.Directorio);
         return decision.Permitido
             ? await ResponderSiEsRelevanteAsync(sesion, cancellationToken)
             : _emisor.Denegar(sesion, decision.Motivo, 0);
@@ -123,18 +116,18 @@ public sealed class PreguntarAsistente
         var identidades = _limitadorIdentidades?.Registrar(sesion.IpOrigen, sesion.Entrada.Usuario.Id);
         if (identidades is { SuperacionNueva: true })
         {
-            _auditor.RegistrarMultiplesIdentidades(sesion.IpOrigen, identidades.Ids);
+            _dependencias.Auditor.RegistrarMultiplesIdentidades(sesion.IpOrigen, identidades.Ids);
         }
     }
 
     private DirectorioAcademico ExcluirCodigosDePersonas(DirectorioAcademico directorio)
     {
-        var catalogo = _configuracion.Catalogo;
+        var catalogo = _dependencias.Configuracion.Catalogo;
         for (var indice = 0; indice < catalogo.Count; indice++)
         {
             if (CatalogoAsignaturas.EsIdDePersona(catalogo[indice].Codigo, directorio))
             {
-                _configuracion.AdvertirUnaVez($"{Textos.PrefijoConfiguracionIgnorada}: Autorizacion:Asignaturas:{indice}:Codigo = \"{catalogo[indice].Codigo}\" (coincide con el ID de una persona del registro); se excluye del catálogo");
+                _dependencias.Configuracion.AdvertirUnaVez($"{Textos.PrefijoConfiguracionIgnorada}: Autorizacion:Asignaturas:{indice}:Codigo = \"{catalogo[indice].Codigo}\" (coincide con el ID de una persona del registro); se excluye del catálogo");
             }
         }
 
@@ -145,9 +138,9 @@ public sealed class PreguntarAsistente
     {
         var pregunta = sesion.Entrada.Pregunta;
         var contexto = new ContextoUsuario(sesion.Entrada.Usuario, sesion.Directorio);
-        var recuperadas = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(pregunta), _limites.MaximoSeccionesRecuperadas);
-        sesion.Secciones = SeccionDeDerogacion.Agregar(recuperadas, pregunta, _baseConocimiento);
-        var activacion = ActivadorResumenPropio.Evaluar(contexto, pregunta, CatalogoAsignaturas.Vigente(_configuracion.Catalogo, sesion.Directorio));
+        var recuperadas = _dependencias.BaseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(pregunta), _dependencias.Limites.MaximoSeccionesRecuperadas);
+        sesion.Secciones = SeccionDeDerogacion.Agregar(recuperadas, pregunta, _dependencias.BaseConocimiento);
+        var activacion = ActivadorResumenPropio.Evaluar(contexto, pregunta, CatalogoAsignaturas.Vigente(_dependencias.Configuracion.Catalogo, sesion.Directorio));
         if (_relevancia.PeriodoNoDisponible(contexto, pregunta, activacion))
         {
             return _emisor.SinInformacion(sesion);
@@ -161,10 +154,10 @@ public sealed class PreguntarAsistente
 
     private async Task<ResultadoPregunta> ResponderConReservaAsync(SesionPregunta sesion, CancellationToken cancellationToken)
     {
-        var reserva = _configuracion.ReservaPorPeticionUsd;
-        if (!_presupuesto.TryReservar(reserva))
+        var reserva = _dependencias.Configuracion.ReservaPorPeticionUsd;
+        if (!_dependencias.Presupuesto.TryReservar(reserva))
         {
-            return _emisor.NoDisponible(sesion, ResultadoAuditoria.Error) with { SegundosParaReintentar = _presupuesto.SegundosHastaElReinicio() };
+            return _emisor.NoDisponible(sesion, ResultadoAuditoria.Error) with { SegundosParaReintentar = _dependencias.Presupuesto.SegundosHastaElReinicio() };
         }
 
         sesion.ReservaHecha = true;
@@ -180,17 +173,17 @@ public sealed class PreguntarAsistente
 
     private void Sustituir(SesionPregunta sesion, decimal reserva)
     {
-        _presupuesto.Sustituir(reserva, _configuracion.GastoDe(sesion.Uso.Valor, 1 + sesion.ReservasExtra));
+        _dependencias.Presupuesto.Sustituir(reserva, _dependencias.Configuracion.GastoDe(sesion.Uso.Valor, 1 + sesion.ReservasExtra));
         for (var extra = 0; extra < sesion.ReservasExtra; extra++)
         {
-            _presupuesto.Sustituir(reserva, 0m);
+            _dependencias.Presupuesto.Sustituir(reserva, 0m);
         }
     }
 
     private async Task<ResultadoPregunta> ResponderConTimeoutAsync(SesionPregunta sesion, CancellationToken cancellationToken)
     {
         using var limite = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        limite.CancelAfter(TimeSpan.FromSeconds(_limites.TimeoutLlmSegundos));
+        limite.CancelAfter(TimeSpan.FromSeconds(_dependencias.Limites.TimeoutLlmSegundos));
         try
         {
             return await _fase.ResponderAsync(sesion, limite.Token, cancellationToken);
@@ -200,5 +193,15 @@ public sealed class PreguntarAsistente
             throw new DependenciaNoDisponibleException("El tiempo total de la petición se agotó.");
         }
     }
-
 }
+
+internal sealed record DependenciasDeAsistente(
+    IApiAcademica ApiAcademica,
+    IClienteLlm ClienteLlm,
+    IBaseConocimiento BaseConocimiento,
+    AuditorPeticiones Auditor,
+    PoliticaAcceso PoliticaAcceso,
+    VerificadorSalida VerificadorSalida,
+    LimitesAsistente Limites,
+    ConfiguracionAsistente Configuracion,
+    PresupuestoDiario Presupuesto);
