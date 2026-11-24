@@ -91,11 +91,7 @@ public static class FormateadorDatos
 
     private static IEnumerable<string> LineasDeEstadoDeLaAsignatura(ResultadoAsignatura resultado) => resultado.Estado switch
     {
-        EstadoAsignatura.Perdida =>
-        [
-            $"Perdida por nota: {resultado.Asignatura.Nombre} (definitiva {Nota(resultado.Definitiva)})",
-            resultado.Habilitable ? $"Habilitable: {resultado.Asignatura.Nombre}" : $"No habilitable: {resultado.Asignatura.Nombre}"
-        ],
+        EstadoAsignatura.Perdida => LineasDePerdidaPorNota(resultado),
         EstadoAsignatura.PerdidaPorInasistencia =>
         [
             $"Perdida por inasistencia: {resultado.Asignatura.Nombre} (definitiva {Nota(0m)})",
@@ -104,6 +100,12 @@ public static class FormateadorDatos
         EstadoAsignatura.SinDefinitiva => [LineaSinDefinitiva(resultado), .. LineaDeEquivalente(resultado)],
         _ => []
     };
+
+    private static string[] LineasDePerdidaPorNota(ResultadoAsignatura resultado) =>
+    [
+        $"Perdida por nota: {resultado.Asignatura.Nombre} (definitiva {Nota(resultado.Definitiva)})",
+        resultado.Habilitable ? $"Habilitable: {resultado.Asignatura.Nombre}" : $"No habilitable: {resultado.Asignatura.Nombre}"
+    ];
 
     private static IEnumerable<string> LineaDeEquivalente(ResultadoAsignatura resultado) =>
         resultado.Acumulada is { } acumulada

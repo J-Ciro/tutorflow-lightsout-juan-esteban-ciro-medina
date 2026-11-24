@@ -64,12 +64,12 @@ internal sealed partial record ReglaDeConfiguracion(
     public static ReglaDeConfiguracion Precio(string clave) =>
         new(clave, TipoDeValor.Decimal, new RangoNumerico(0m, MaximoDecimal), $"decimal de 0 a {MaximoDecimalEnTexto}");
 
-    public bool Cumple(string valor) => Tipo switch
-    {
-        TipoDeValor.Booleano => bool.TryParse(valor, out _) && valor.Trim() == valor,
-        TipoDeValor.Entero => FormatoEntero().IsMatch(valor) && EnRango(valor),
-        _ => FormatoDecimal().IsMatch(valor) && EnRango(valor)
-    };
+    public bool Cumple(string valor) =>
+        Tipo == TipoDeValor.Booleano ? EsBooleanoExacto(valor) : FormatoNumerico().IsMatch(valor) && EnRango(valor);
+
+    private static bool EsBooleanoExacto(string valor) => bool.TryParse(valor, out _) && valor.Trim() == valor;
+
+    private Regex FormatoNumerico() => Tipo == TipoDeValor.Entero ? FormatoEntero() : FormatoDecimal();
 
     public decimal? LeerValido(string? valor) =>
         valor is not null && Tipo != TipoDeValor.Booleano && Cumple(valor) ? Convertir(valor) : null;

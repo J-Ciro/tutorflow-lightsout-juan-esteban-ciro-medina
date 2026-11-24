@@ -7,6 +7,15 @@ internal static class ValorDeMensaje
     private const int LongitudMaxima = 64;
     private const string PuntosSuspensivos = "…";
 
+    private static readonly Dictionary<char, string> SecuenciasDeEscape = new()
+    {
+        ['"'] = "\\\"",
+        ['\\'] = "\\\\",
+        ['\n'] = "\\n",
+        ['\r'] = "\\r",
+        ['\t'] = "\\t"
+    };
+
     public static string De(string? valor)
     {
         var escapado = string.Concat((valor ?? string.Empty).Select(Escapar));
@@ -19,14 +28,8 @@ internal static class ValorDeMensaje
     private static bool EsInvisible(char caracter) =>
         char.IsControl(caracter) || char.GetUnicodeCategory(caracter) is UnicodeCategory.LineSeparator or UnicodeCategory.ParagraphSeparator or UnicodeCategory.Format;
 
-    private static string Escapar(char caracter) => caracter switch
-    {
-        '"' => "\\\"",
-        '\\' => "\\\\",
-        '\n' => "\\n",
-        '\r' => "\\r",
-        '\t' => "\\t",
-        _ when EsInvisible(caracter) =>$"\\u{(int)caracter:X4}",
-        _ => caracter.ToString()
-    };
+    private static string Escapar(char caracter) =>
+        SecuenciasDeEscape.TryGetValue(caracter, out var secuencia) ? secuencia
+        : EsInvisible(caracter) ? $"\\u{(int)caracter:X4}"
+        : caracter.ToString();
 }

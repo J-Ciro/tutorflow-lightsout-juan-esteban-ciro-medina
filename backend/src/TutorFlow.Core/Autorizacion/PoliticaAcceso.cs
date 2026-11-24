@@ -42,10 +42,16 @@ public sealed class PoliticaAcceso
 
     private static bool ExisteIdentidad(Usuario usuario, DirectorioAcademico directorio) => usuario.Rol switch
     {
-        Rol.Estudiante => Identificadores.EsIdEstudiante(usuario.Id) && directorio.Estudiantes.Any(e => e.Id == usuario.Id),
-        Rol.Coordinador => Identificadores.EsIdCoordinador(usuario.Id) && directorio.Coordinadores.Any(c => c.Id == usuario.Id),
+        Rol.Estudiante => ExisteEstudiante(usuario.Id, directorio),
+        Rol.Coordinador => ExisteCoordinador(usuario.Id, directorio),
         _ => false
     };
+
+    private static bool ExisteEstudiante(string id, DirectorioAcademico directorio) =>
+        Identificadores.EsIdEstudiante(id) && directorio.Estudiantes.Any(e => e.Id == id);
+
+    private static bool ExisteCoordinador(string id, DirectorioAcademico directorio) =>
+        Identificadores.EsIdCoordinador(id) && directorio.Coordinadores.Any(c => c.Id == id);
 
     private bool PuedeLeerEstudiante(Usuario usuario, string estudianteId, DirectorioAcademico directorio)
     {

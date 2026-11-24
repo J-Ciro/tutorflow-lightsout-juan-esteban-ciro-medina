@@ -17,6 +17,13 @@ public sealed record EntornoFaseV(string FechaUtc, string Commit, string Proveed
     private const int LongitudMinimaDelHash = 7;
     private const int LongitudMaximaDelHash = 40;
 
+    private static readonly Dictionary<string, string> ModelosPorProveedor = new()
+    {
+        [ProveedorOffline] = ModeloOffline,
+        [ProveedorLocal] = ModeloLocal,
+        ["anthropic"] = ModeloAnthropic
+    };
+
     private static readonly (string Prefijo, string Proveedor)[] PrefijosDeLlave =
     [
         ("sk-ant-", "anthropic"),
@@ -61,13 +68,7 @@ public sealed record EntornoFaseV(string FechaUtc, string Commit, string Proveed
             : PrefijosDeLlave.FirstOrDefault(p => llave.StartsWith(p.Prefijo, StringComparison.Ordinal)).Proveedor ?? ProveedorLocal;
 
     private static string ModeloDe(string proveedor) =>
-        Variable("LLM_MODELO") ?? proveedor switch
-        {
-            ProveedorOffline => ModeloOffline,
-            ProveedorLocal => ModeloLocal,
-            "anthropic" => ModeloAnthropic,
-            _ => ModeloDelProveedor
-        };
+        Variable("LLM_MODELO") ?? ModelosPorProveedor.GetValueOrDefault(proveedor, ModeloDelProveedor);
 
     private static string CommitActual(string raiz)
     {
