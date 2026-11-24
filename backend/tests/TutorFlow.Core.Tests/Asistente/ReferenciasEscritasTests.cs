@@ -226,17 +226,49 @@ public sealed class ReferenciasEscritasTests
     [Trait("CA", "CA-06")]
     [Trait("ESC", "ESC-178")]
     [Trait("COMP", "COMP-03")]
-    public async Task ESC_178h_Si_el_texto_queda_sin_palabras_la_respuesta_es_comp_03_con_el_uso_de_datos_leido()
+    public async Task ESC_178h_Fuera_del_modo_bloque_un_texto_sin_palabras_da_comp_03_con_el_uso_de_datos_leido()
     {
-        var escenario = Con(Fijo("Documento.md · Sección 11."), IndiceConLasReglas());
+        var escenario = Con(SalidasVerificadas.LeeLasNotasYResponde("Documento.md · Sección 11."), IndiceConLasReglas(Articulo6));
 
-        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es mi promedio?");
+        var resultado = await escenario.PreguntarAsync(Est001, "¿Qué dice el reglamento sobre la habilitación?");
 
         Assert.Equal(Textos.SinInformacion, resultado.Respuesta!.Respuesta);
         Assert.Empty(resultado.Respuesta.Citas);
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
         Assert.Equal(ResultadoAuditoria.SinInformacion, resultado.Auditoria);
         Assert.Equal(ResultadoAuditoria.SinInformacion, Assert.Single(escenario.Auditoria.Eventos).Resultado);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-06")]
+    [Trait("ESC", "ESC-178")]
+    [Trait("D", "D-98")]
+    public async Task ESC_178h_En_modo_bloque_un_texto_sin_palabras_deja_solo_el_bloque()
+    {
+        var escenario = Con(Fijo("Documento.md · Sección 11."), IndiceConLasReglas());
+
+        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es mi promedio?");
+
+        Assert.StartsWith("Datos de Laura Gómez (EST-001)", resultado.Respuesta!.Respuesta, StringComparison.Ordinal);
+        Assert.True(resultado.Respuesta.UsoDatosEstudiante);
+        Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-123")]
+    [Trait("COMP", "COMP-02")]
+    public async Task ESC_123_La_respuesta_a_quien_es_mi_coordinador_conserva_el_nombre_del_coordinador()
+    {
+        var escenario = Con(
+            (_, llamada) => llamada == 0 ? Herramienta(HerramientasAsistente.DatosBasicos) : EscenarioAsistente.Texto("Tu coordinador es Marcela Ríos."),
+            IndiceConLasReglas(Articulo22));
+
+        var resultado = await escenario.PreguntarAsync(Est001, "¿Quién es mi coordinador?");
+
+        Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
+        Assert.Contains("Marcela Ríos", resultado.Respuesta!.Respuesta, StringComparison.Ordinal);
+        Assert.Contains(new Cita(Textos.DocumentoDatosEstudiante, "Datos básicos"), resultado.Respuesta.Citas);
     }
 
     [Fact]
