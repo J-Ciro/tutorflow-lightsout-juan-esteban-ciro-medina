@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using TutorFlow.Core.Academico;
 
 namespace TutorFlow.Core.Asistente;
@@ -6,10 +5,12 @@ namespace TutorFlow.Core.Asistente;
 public sealed class ApiAcademicaConPresupuesto : IApiAcademica
 {
     private readonly IApiAcademica _interna;
+    private readonly TimeProvider _tiempo;
     private TimeSpan _restante;
 
-    public ApiAcademicaConPresupuesto(IApiAcademica interna, TimeSpan presupuesto)
+    public ApiAcademicaConPresupuesto(IApiAcademica interna, TimeSpan presupuesto, TimeProvider? tiempo = null)
     {
+        _tiempo = tiempo ?? TimeProvider.System;
         _interna = interna;
         _restante = presupuesto;
     }
@@ -34,9 +35,9 @@ public sealed class ApiAcademicaConPresupuesto : IApiAcademica
 
     private async Task<T> Medir<T>(Func<CancellationToken, Task<T>> operacion, CancellationToken cancellationToken)
     {
-        using var limite = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        limite.CancelAfter(_restante);
-        var cronometro = Stopwatch.StartNew();
+        using var temporizador = new CancellationTokenSource(_restante, _tiempo);
+        using var limite = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, temporizador.Token);
+        var inicio = _tiempo.GetTimestamp();
         try
         {
             return await operacion(limite.Token);
@@ -47,7 +48,7 @@ public sealed class ApiAcademicaConPresupuesto : IApiAcademica
         }
         finally
         {
-            var restante = _restante - cronometro.Elapsed;
+            var restante = _restante - _tiempo.GetElapsedTime(inicio);
             _restante = restante > TimeSpan.Zero ? restante : TimeSpan.Zero;
         }
     }

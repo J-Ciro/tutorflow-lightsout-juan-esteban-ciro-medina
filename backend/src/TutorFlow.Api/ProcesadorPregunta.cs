@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Net.Http.Headers;
 using TutorFlow.Core.Asistente;
@@ -19,6 +18,7 @@ public sealed partial class ProcesadorPregunta
     private readonly LimitesAsistente _limites;
     private readonly LimitadorTasaPorIp _limitadorTasa;
     private readonly IReloj _reloj;
+    private readonly TimeProvider _tiempo;
     private readonly AuditorPeticiones _auditor;
     private readonly PreguntarAsistente _preguntarAsistente;
     private readonly ILogger<ProcesadorPregunta> _logger;
@@ -27,6 +27,7 @@ public sealed partial class ProcesadorPregunta
         LimitesAsistente limites,
         LimitadorTasaPorIp limitadorTasa,
         IReloj reloj,
+        TimeProvider tiempo,
         AuditorPeticiones auditor,
         PreguntarAsistente preguntarAsistente,
         ILogger<ProcesadorPregunta> logger)
@@ -34,6 +35,7 @@ public sealed partial class ProcesadorPregunta
         _limites = limites;
         _limitadorTasa = limitadorTasa;
         _reloj = reloj;
+        _tiempo = tiempo;
         _auditor = auditor;
         _preguntarAsistente = preguntarAsistente;
         _logger = logger;
@@ -41,7 +43,7 @@ public sealed partial class ProcesadorPregunta
 
     public async Task<IResult> ProcesarAsync(HttpContext contexto, CancellationToken cancellationToken)
     {
-        var peticion = new DatosPeticion(IpDe(contexto), contexto.TraceIdentifier, Stopwatch.StartNew());
+        var peticion = new DatosPeticion(IpDe(contexto), contexto.TraceIdentifier, _tiempo.GetTimestamp());
         var tasa = _limitadorTasa.Intentar(peticion.Ip);
         return tasa.Permitido
             ? await ProcesarEntradaAsync(contexto, peticion, cancellationToken)
@@ -154,7 +156,7 @@ public sealed partial class ProcesadorPregunta
             null,
             pregunta,
             ResultadoAuditoria.Invalida,
-            peticion.Cronometro.ElapsedMilliseconds));
+            Milisegundos(peticion)));
         return Results.Problem(statusCode: estado, title: titulo);
     }
 
@@ -167,7 +169,7 @@ public sealed partial class ProcesadorPregunta
             solicitud?.UsuarioId,
             solicitud?.Pregunta,
             ResultadoAuditoria.Denegada,
-            peticion.Cronometro.ElapsedMilliseconds));
+            Milisegundos(peticion)));
         return Responder429(contexto, segundosParaReintentar);
     }
 
@@ -190,5 +192,8 @@ public sealed partial class ProcesadorPregunta
     [LoggerMessage(Level = LogLevel.Warning, Message = "Una dependencia no respondió ({TipoDeError}).")]
     private static partial void RegistrarDependenciaCaida(ILogger logger, string tipoDeError);
 
-    private sealed record DatosPeticion(string Ip, string CorrelationId, Stopwatch Cronometro);
+    private long Milisegundos(DatosPeticion peticion) =>
+        (long)_tiempo.GetElapsedTime(peticion.InicioTimestamp).TotalMilliseconds;
+
+    private sealed record DatosPeticion(string Ip, string CorrelationId, long InicioTimestamp);
 }
