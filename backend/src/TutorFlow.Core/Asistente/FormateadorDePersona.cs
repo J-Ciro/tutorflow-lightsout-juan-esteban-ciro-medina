@@ -8,6 +8,7 @@ internal sealed record SeleccionDelBloque(
     IReadOnlyList<CampoDePersona> Campos,
     IReadOnlyCollection<string> ClavesNombradas,
     IReadOnlyList<string> NombresNombrados,
+    bool Habilitacion,
     bool TerceraPersona);
 
 internal static class FormateadorDePersona
@@ -18,7 +19,7 @@ internal static class FormateadorDePersona
             .Where(resultado => seleccion.ClavesNombradas.Count == 0 || seleccion.ClavesNombradas.Contains(AmbitoPersonal.Clave(resultado.Asignatura.Codigo)))
             .ToList();
         var lineas = new List<string> { $"Datos de {estudiante.Nombre} ({estudiante.Id})" };
-        lineas.AddRange(seleccion.Campos.SelectMany(campo => LineasDe(campo, resumen, elegidas, seleccion.TerceraPersona)).Distinct());
+        lineas.AddRange(seleccion.Campos.SelectMany(campo => LineasDe(campo, resumen, elegidas, seleccion)).Distinct());
         lineas.AddRange(SinMatricula(seleccion, elegidas));
         return string.Join("\n", lineas);
     }
@@ -28,16 +29,21 @@ internal static class FormateadorDePersona
             ? [$"Sin matrícula en el periodo {Textos.Periodo}: {string.Join(", ", seleccion.NombresNombrados)}"]
             : [];
 
-    private static IEnumerable<string> LineasDe(CampoDePersona campo, ResumenEstudiante resumen, List<ResultadoAsignatura> elegidas, bool terceraPersona) => campo switch
+    private static IEnumerable<string> LineasDe(CampoDePersona campo, ResumenEstudiante resumen, List<ResultadoAsignatura> elegidas, SeleccionDelBloque seleccion) => campo switch
     {
         CampoDePersona.Definitiva => LineasDeDefinitiva(elegidas),
         CampoDePersona.Notas => elegidas.Select(LineaDeCortes).Concat(LineasDeDefinitiva(elegidas)),
-        CampoDePersona.Estado => elegidas.Select(resultado => $"Estado de {resultado.Asignatura.Nombre}: {Estado(resultado)}"),
+        CampoDePersona.Estado => ParaEstado(resumen, elegidas, seleccion).Select(resultado => $"Estado de {resultado.Asignatura.Nombre}: {Estado(resultado)}"),
         CampoDePersona.Promedio => LineaDePromedio(resumen).Concat(LineasDeDefinitiva(resumen.Asignaturas)),
         CampoDePersona.PruebaAcademica => LineaDePromedio(resumen).Append($"Prueba académica: {(resumen.PruebaAcademica ? "sí" : "no")}"),
         CampoDePersona.Beca => LineaDePromedio(resumen).Append($"Beca por rendimiento académico: {Beca(resumen)}"),
-        _ => TextoDelDesglose.Lineas(elegidas, terceraPersona)
+        _ => TextoDelDesglose.Lineas(elegidas, seleccion.TerceraPersona)
     };
+
+    private static IEnumerable<ResultadoAsignatura> ParaEstado(ResumenEstudiante resumen, List<ResultadoAsignatura> elegidas, SeleccionDelBloque seleccion) =>
+        seleccion.Habilitacion && elegidas.Exists(resultado => resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia)
+            ? resumen.Asignaturas.Where(resultado => elegidas.Contains(resultado) || resultado.Estado == EstadoAsignatura.Perdida)
+            : elegidas;
 
     private static IEnumerable<string> LineaDePromedio(ResumenEstudiante resumen) =>
         resumen.Promedio is null ? [] : [$"Promedio ponderado del periodo: {FormateadorDatos.Promedio(resumen.Promedio)}"];
@@ -45,7 +51,9 @@ internal static class FormateadorDePersona
     private static IEnumerable<string> LineasDeDefinitiva(IReadOnlyList<ResultadoAsignatura> resultados)
     {
         var conDefinitiva = resultados.Where(resultado => resultado.Estado != EstadoAsignatura.SinDefinitiva).ToList();
-        var sinDefinitiva = resultados.Where(resultado => resultado.Estado == EstadoAsignatura.SinDefinitiva).Select(FormateadorDatos.LineaSinDefinitiva);
+        var sinDefinitiva = resultados
+            .Where(resultado => resultado.Estado == EstadoAsignatura.SinDefinitiva)
+            .Select(FormateadorDatos.LineaSinDefinitiva);
         var definitivas = conDefinitiva.Count == 0 ? [] : new[] { $"Definitivas: {string.Join(", ", conDefinitiva.Select(FormateadorDatos.DefinitivaEnLinea))}" };
         return definitivas.Concat(sinDefinitiva);
     }
@@ -68,7 +76,7 @@ internal static class FormateadorDePersona
     {
         ElegibilidadBeca.Elegible => "elegible",
         ElegibilidadBeca.NoElegible => $"no elegible ({MotivoDeNoElegibilidad(resumen)})",
-        _ => "no determinable aún (asignatura sin definitiva)"
+        _ => $"no determinable aún (asignatura sin definitiva: {string.Join(", ", resumen.Asignaturas.Where(r => r.Estado == EstadoAsignatura.SinDefinitiva).Select(r => r.Asignatura.Nombre))})"
     };
 
     private static string MotivoDeNoElegibilidad(ResumenEstudiante resumen)
