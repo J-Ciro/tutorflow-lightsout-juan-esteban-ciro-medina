@@ -24,7 +24,12 @@ internal sealed partial class DefinitivaPorAsignatura
         ("o", "igual"), ("al", "menos"), ("menos", "de"), ("mas", "de")
     };
 
-    private static readonly HashSet<string> Enlaces = new(StringComparer.Ordinal) { "a", "de", "que" };
+    private static readonly HashSet<string> PalabrasDeEnlace = new(StringComparer.Ordinal)
+    {
+        "definitiva", "definitivas", "nota", "final", "calificacion", "con", "de", "en", "cuya", "es"
+    };
+
+    private static readonly HashSet<string> Enlaces =new(StringComparer.Ordinal) { "a", "de", "que" };
 
     private static readonly HashSet<string> Determinantes = new(StringComparer.Ordinal) { "una", "la" };
 
@@ -123,8 +128,20 @@ internal sealed partial class DefinitivaPorAsignatura
         IReadOnlyList<AparicionDeAsignatura> apariciones,
         int cifra)
     {
-        var asignatura = apariciones.MinBy(aparicion => (Distancia(aparicion, cifra), aparicion.Inicio > cifra));
+        var asignatura = AnteriorEnlazada(tokens, apariciones, cifra)
+            ?? apariciones.MinBy(aparicion => (Distancia(aparicion, cifra), aparicion.Inicio > cifra));
         return asignatura is null ? [] : [Construir(bloque, tokens, asignatura, cifra, conDefinitiva: true)];
+    }
+
+    private static AparicionDeAsignatura? AnteriorEnlazada(
+        IReadOnlyList<TokenTexto> tokens,
+        IReadOnlyList<AparicionDeAsignatura> apariciones,
+        int cifra)
+    {
+        var anterior = apariciones.Where(aparicion => aparicion.Fin < cifra).MaxBy(aparicion => aparicion.Fin);
+        return anterior is not null && Enumerable.Range(anterior.Fin + 1, cifra - anterior.Fin - 1).All(posicion => PalabrasDeEnlace.Contains(tokens[posicion].Valor))
+            ? anterior
+            : null;
     }
 
     private static IEnumerable<AtribucionDeDefinitiva> Pares(
