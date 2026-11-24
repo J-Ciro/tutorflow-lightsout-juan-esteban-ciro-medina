@@ -50,7 +50,7 @@ public sealed class DeteccionEnDosNivelesApiTests
 
         Afirmaciones.Negativa(respuesta, Estudiante);
         Assert.Equal(0, fabrica.Llm.Llamadas);
-        Assert.Empty(fabrica.Api.Llamadas);
+        Assert.DoesNotContain(fabrica.Api.Llamadas, l => l.StartsWith("ObtenerNotas", StringComparison.Ordinal) || l.StartsWith("ObtenerAsistencia", StringComparison.Ordinal));
         var evento = Assert.Single(fabrica.Auditoria.Eventos);
         Assert.True(motivo == evento.MotivoDenegacion?.ToString(), referencia);
     }

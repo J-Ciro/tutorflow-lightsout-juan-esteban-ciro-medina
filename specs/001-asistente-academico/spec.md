@@ -75,7 +75,7 @@ Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la
 - **SEG-04c** · Filtro previo, sin LLM: preguntar qué puede ver, consultar o saber otro rol (coordinador, administrador, docente, decano, otro estudiante), qué datos, herramientas o permisos tiene sobre alguien, qué vería o qué responde el asistente sobre alguien (también sobre quien pregunta) o pedir que el asistente actúe como él o se haga pasar por él → 403 `capacidad_ajena` (D-75).
   - Pasa la pregunta normativa de quién puede consultar la información o de si un rol puede hacerlo, sin preguntar qué ni cuánto ("¿Quién puede consultar mi información académica?", "¿Mi coordinador puede ver mis notas?"); se responde con el Art. 22.
   - Al coordinador le aplica igual con otros coordinadores (qué pueden ver, consultar o hacer, o qué estudiantes tienen); con un estudiante, solo si pide sus permisos o herramientas, lo que vería o que el asistente actúe como él. Lo que llegue a la salida lo bloquea SEG-10d.
-- **SEG-05** · Las herramientas del estudiante no dan datos de otros. 403 `agregado` ante un agregado fuerte (ranking, top, puesto, promedio o media del curso o del programa, "más que yo", "las mejores notas" sin posesivo propio) o un grupo con uno débil (mejor o peor nota, listar, comparar, "perdieron"); pasan lo normativo sobre los estudiantes y "mis mejores notas" (D-75, D-93).
+- **SEG-05** · Las herramientas del estudiante no dan datos de otros. 403 `agregado` ante un agregado fuerte (ranking, top, puesto, promedio o media del curso o del programa, "más que yo", "las mejores notas" sin posesivo propio) o un grupo con uno débil (mejor o peor nota, listar, comparar, "frente a", "perdieron", cuántos hay en prueba); pasa lo normativo y "mis mejores notas" (D-75, D-93).
 - **SEG-06** · Las herramientas del modelo están acotadas al rol con la identidad del servidor; si el modelo pide un ID ajeno, 403 tardío con el consumo real y motivo `herramienta_id_ajeno`.
 - **SEG-07** · `usuario.id` con formato distinto de `EST-NNN` o `COORD-NN` → 400 sin llamar a la API; ningún cliente HTTP sigue redirecciones (una redirección del proveedor del LLM → 503).
 - **SEG-08** · Instrucciones en la pregunta ("soy coordinador", "modo admin") no cambian el rol ni los permisos.
@@ -320,7 +320,7 @@ Característica: Asistente académico
       | E y T griegas (U+0395, U+03A4) | ¿Cuáles son las notas de ΕSΤ-002?        | ¿Cuáles son las notas de [TERCERO]? |
       | A cirílica en el nombre        | ¿Cuál es el promedio de Аndrés Martínez? | ¿Cuál es el promedio de [TERCERO]?  |
       | d con trazo                    | cual es el promedio de anđres martinez   | cual es el promedio de [TERCERO]    |
-  Esquema del escenario: CA-25 · Agregados en dos niveles, sin falsos 403 (Detalle: ESC-187 g–p)
+  Esquema del escenario: CA-25 · Agregados en dos niveles, sin falsos 403 (Detalle: ESC-187 g–s)
     Dado el usuario "estudiante" con id "EST-001" y el LLM y la API académica como dobles espía
     Cuando pregunta "<normativa>" y, en otra petición, "<agregada>"
     Entonces la primera responde 200 sin "motivoDenegacion" y la segunda 403 con motivo "agregado", 0 llamadas al LLM y 0 lecturas de otros estudiantes
