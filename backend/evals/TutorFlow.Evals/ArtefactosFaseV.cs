@@ -57,6 +57,9 @@ public static class ArtefactosFaseV
 
     private static readonly JsonSerializerOptions OpcionesDeEscritura = new(Json.Opciones) { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
+    public static string Registrar(string carpeta, CasoEval caso, int corrida, GrabadorLlm? grabador, string cuerpo, string? correlationId, string? llave) =>
+        Guardar(carpeta, $"{TablaFaseV.Pregunta(caso)}-{caso.Id}-corrida-{corrida}", Armar(caso, corrida, grabador, Json.LeerSalida(cuerpo), correlationId), llave);
+
     public static string Guardar(string carpeta, string nombre, ArtefactoCorrida artefacto, string? llave)
     {
         Directory.CreateDirectory(carpeta);

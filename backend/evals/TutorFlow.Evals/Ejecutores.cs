@@ -15,6 +15,7 @@ public interface IEjecutor
 public static class Cuerpos
 {
     public const string Ruta = "/api/asistente/preguntar";
+    public const string EncabezadoCorrelacion = "X-Correlation-Id";
 
     public static string De(CasoEval caso) =>
         JsonSerializer.Serialize(new { pregunta = caso.Pregunta, usuario = new { rol = caso.Usuario.Rol, id = caso.Usuario.Id } });
@@ -22,8 +23,6 @@ public static class Cuerpos
 
 public sealed class EjecutorHttp : IEjecutor
 {
-    private const string EncabezadoCorrelacion = "X-Correlation-Id";
-
     private readonly HttpClient _cliente;
     private readonly int _pausaMs;
 
@@ -50,7 +49,7 @@ public sealed class EjecutorHttp : IEjecutor
     }
 
     private static string? CorrelacionDe(HttpResponseMessage respuesta) =>
-        respuesta.Headers.TryGetValues(EncabezadoCorrelacion, out var valores) ? valores.FirstOrDefault() : null;
+        respuesta.Headers.TryGetValues(Cuerpos.EncabezadoCorrelacion, out var valores) ? valores.FirstOrDefault() : null;
 }
 
 public sealed class EjecutorConArtefactos(IEjecutor interno, string carpeta, string? llave) : IEjecutor
@@ -71,8 +70,7 @@ public sealed class EjecutorConArtefactos(IEjecutor interno, string carpeta, str
     private void Guardar(CasoEval caso, Ejecucion ejecucion)
     {
         var corrida = _corridas[caso.Id] = _corridas.GetValueOrDefault(caso.Id) + 1;
-        var artefacto = ArtefactosFaseV.Armar(caso, corrida, null, Json.LeerSalida(ejecucion.Cuerpo), ejecucion.CorrelationId);
-        ArtefactosFaseV.Guardar(carpeta, $"{TablaFaseV.Pregunta(caso)}-{caso.Id}-corrida-{corrida}", artefacto, llave);
+        ArtefactosFaseV.Registrar(carpeta, caso, corrida, null, ejecucion.Cuerpo, ejecucion.CorrelationId, llave);
     }
 }
 
