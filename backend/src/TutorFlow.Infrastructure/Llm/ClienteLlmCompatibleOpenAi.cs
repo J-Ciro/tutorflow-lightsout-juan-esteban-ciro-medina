@@ -99,7 +99,7 @@ public sealed class ClienteLlmCompatibleOpenAi : IClienteLlm
 
         contenidos.AddRange(mensaje.Llamadas.Select(llamada =>
             new FunctionCallContent(llamada.Id, llamada.Nombre, ArgumentosDe(llamada.ArgumentosJson))));
-        return new ChatMessage(ChatRole.Assistant, contenidos);
+        return LlamadasConDatoOpaco.ConDatoOpaco(new ChatMessage(ChatRole.Assistant, contenidos), mensaje);
     }
 
     private static Dictionary<string, object?> ArgumentosDe(string argumentosJson)
@@ -143,7 +143,7 @@ public sealed class ClienteLlmCompatibleOpenAi : IClienteLlm
         [.. respuesta.Messages
             .SelectMany(mensaje => mensaje.Contents)
             .OfType<FunctionCallContent>()
-            .Select(llamada => new LlamadaHerramienta(llamada.CallId, llamada.Name, JsonSerializer.Serialize(llamada.Arguments ?? new Dictionary<string, object?>())))];
+            .Select(LlamadasConDatoOpaco.Traducir)];
 
     private static UsoTokens UsoDe(UsageDetails? uso) =>
         new((int)(uso?.InputTokenCount ?? 0), (int)(uso?.OutputTokenCount ?? 0));
