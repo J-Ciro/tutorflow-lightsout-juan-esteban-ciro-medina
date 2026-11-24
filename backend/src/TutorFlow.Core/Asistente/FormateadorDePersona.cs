@@ -53,7 +53,7 @@ internal static class FormateadorDePersona
         var conDefinitiva = resultados.Where(resultado => resultado.Estado != EstadoAsignatura.SinDefinitiva).ToList();
         var sinDefinitiva = resultados
             .Where(resultado => resultado.Estado == EstadoAsignatura.SinDefinitiva)
-            .Select(FormateadorDatos.LineaSinDefinitiva);
+            .SelectMany(resultado => FormateadorDatos.LineaDeEquivalente(resultado).Prepend(FormateadorDatos.LineaSinDefinitiva(resultado)));
         var definitivas = conDefinitiva.Count == 0 ? [] : new[] { $"Definitivas: {string.Join(", ", conDefinitiva.Select(FormateadorDatos.DefinitivaEnLinea))}" };
         return definitivas.Concat(sinDefinitiva);
     }
