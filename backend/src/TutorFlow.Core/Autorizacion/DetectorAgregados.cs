@@ -1,18 +1,71 @@
-using System.Text.RegularExpressions;
-
 namespace TutorFlow.Core.Autorizacion;
 
-public static partial class DetectorAgregados
+public static class DetectorAgregados
 {
-    public static bool PideAgregados(string textoNormalizado) =>
-        PatronesAgregados().IsMatch(textoNormalizado);
+    private const int MaximoEntreSuperlativoYNota = 2;
+    private const int MaximoEntrePosicionYVerbo = 3;
+    private const int MaximoDeRellenoDelPromedio = 2;
+    private const int MaximoDeRellenoDelListado = 3;
 
-    [GeneratedRegex(
-        @"\b(mejor promedio|peor promedio|ranking|que puesto|en que lugar quede|por encima de la media"
-        + @"|promedio (del curso|del programa|de la carrera)|que estudiantes|todos los estudiantes"
-        + @"|otros estudiantes|cuantos estudiantes|top|(mejores|peores) (notas|promedios))\b"
-        + @"|\bcompar\w*\b.*\bcompaner\w*\b|\blist\w*\b.*\bestudiantes\b"
-        + @"|\bquien\b.*\b(mejor|peor|mas (alto|alta|bajo|baja)s?)\b",
-        RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]
-    private static partial Regex PatronesAgregados();
+    public static bool PideAgregados(string textoNormalizado)
+    {
+        var frases = new FrasesDelTexto(textoNormalizado);
+        return NivelUno(frases) || NivelDos(frases);
+    }
+
+    private static bool NivelUno(FrasesDelTexto frases) =>
+        frases.Contiene(VocabularioAgregados.FuertesSueltas)
+        || PosicionPropia(frases)
+        || PromedioDeColectivo(frases)
+        || PluralSinPosesivo(frases);
+
+    private static bool NivelDos(FrasesDelTexto frases) =>
+        frases.Contiene(VocabularioAgregados.Grupo)
+        && (SuperlativoSobreNota(frases)
+            || Listado(frases)
+            || frases.Contiene(VocabularioAgregados.VerbosDeListadoYResultado)
+            || frases.ContieneRaiz(VocabularioAgregados.RaizDeComparar));
+
+    private static bool PosicionPropia(FrasesDelTexto frases) =>
+        ProximidadDeFrases.Hay(
+            frases.Ocurrencias(VocabularioAgregados.Posiciones),
+            frases.Ocurrencias(VocabularioAgregados.VerbosDePosicion),
+            MaximoEntrePosicionYVerbo);
+
+    private static bool PromedioDeColectivo(FrasesDelTexto frases) =>
+        frases.SeguidaDeRellenoY(
+            VocabularioAgregados.PromediosDeGrupo,
+            VocabularioAgregados.RellenosDelPromedio,
+            MaximoDeRellenoDelPromedio,
+            VocabularioAgregados.Colectivos);
+
+    private static bool PluralSinPosesivo(FrasesDelTexto frases) =>
+        !PreguntaPropia(frases)
+        && ProximidadDeFrases.Hay(
+            SinPosesivoAntes(frases, VocabularioAgregados.PluralesSuperlativos, VocabularioAgregados.PosesivoPlural),
+            frases.Ocurrencias(VocabularioAgregados.NotasPlurales),
+            MaximoEntreSuperlativoYNota);
+
+    private static bool PreguntaPropia(FrasesDelTexto frases) =>
+        frases.Contiene(VocabularioAgregados.Posesivos)
+        && !frases.ContieneSeguidaDe(["mi"], VocabularioAgregados.Colectivos);
+
+    private static bool SuperlativoSobreNota(FrasesDelTexto frases) =>
+        ProximidadDeFrases.Hay(
+            SinPosesivoAntes(frases, VocabularioAgregados.Superlativos, VocabularioAgregados.Posesivos),
+            SinPosesivoAntes(frases, VocabularioAgregados.Notas, VocabularioAgregados.Posesivos),
+            MaximoEntreSuperlativoYNota);
+
+    private static bool Listado(FrasesDelTexto frases) =>
+        frases.SeguidaDeRellenoY(
+            VocabularioAgregados.Listadores,
+            VocabularioAgregados.RellenosDelListado,
+            MaximoDeRellenoDelListado,
+            VocabularioAgregados.Grupo);
+
+    private static IReadOnlyList<OcurrenciaDeFrase> SinPosesivoAntes(
+        FrasesDelTexto frases,
+        IEnumerable<string> vocabulario,
+        IReadOnlyCollection<string> posesivos) =>
+        [.. frases.Ocurrencias(vocabulario).Where(ocurrencia => !posesivos.Contains(frases.PalabraAntesDe(ocurrencia)))];
 }
