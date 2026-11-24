@@ -9,6 +9,9 @@ internal static class SalidasVerificadas
     public static Func<SolicitudLlm, int, RespuestaLlm> LeeElProgramaYResponde(string texto) =>
         (_, llamada) => llamada == 0 ? Herramienta(HerramientasAsistente.Programa) : Texto(texto);
 
+    public static Func<SolicitudLlm, int, RespuestaLlm> LeeLasNotasYResponde(string texto) =>
+        (_, llamada) => llamada == 0 ? Herramienta(HerramientasAsistente.Notas) : Texto(texto);
+
     public static Func<SolicitudLlm, int, RespuestaLlm> LeeElProgramaYElDetalleYResponde(string texto, string estudianteId) =>
         (_, llamada) => llamada == 0
             ? new RespuestaLlm(
