@@ -47,14 +47,41 @@ internal static partial class PodaDeOraciones
         Podar(texto, oracion => EsIntroduccion(oracion, contexto) || EsNormaCitada(oracion, contexto));
 
     public static string FueraDelBloque(string texto, ContextoDePoda contexto) =>
-        Podar(texto, oracion => !MencionaNombreOId(oracion, contexto));
+        PodarConListasDependientes(texto, oracion => !MencionaNombreOId(oracion, contexto));
 
     public static string SinCitasEntreParentesis(string texto) => CitaEntreParentesis().Replace(texto, string.Empty);
 
     private static string Podar(string texto, Func<string, bool> conservar) =>
-        string.Join("\n", SaltoDeLinea().Split(texto)
-            .Select(linea => string.Concat(CorteDeOracion().Split(linea).Where(oracion => oracion.Trim().Length == 0 || conservar(oracion.Trim()))).Trim())
-            .Where(linea => linea.Length > 0)).Trim();
+        string.Join("\n", SaltoDeLinea().Split(texto).Select(linea => PodarLinea(linea, conservar)).Where(linea => linea.Length > 0)).Trim();
+
+    private static string PodarLinea(string linea, Func<string, bool> conservar) =>
+        string.Concat(CorteDeOracion().Split(linea).Where(oracion => oracion.Trim().Length == 0 || conservar(oracion.Trim()))).Trim();
+
+    private static string PodarConListasDependientes(string texto, Func<string, bool> conservar)
+    {
+        var lineas = SaltoDeLinea().Split(texto);
+        var resultado = new List<string>();
+        var podandoLista = false;
+        for (var indice = 0; indice < lineas.Length; indice++)
+        {
+            var dependiente = podandoLista && EsLineaDeLista(lineas[indice]);
+            var salida = dependiente ? string.Empty : PodarLinea(lineas[indice], conservar);
+            resultado.Add(salida);
+            podandoLista = ContinuaPoda(dependiente, salida, lineas, indice);
+        }
+
+        return string.Join("\n", resultado.Where(linea => linea.Length > 0)).Trim();
+    }
+
+    private static bool ContinuaPoda(bool dependiente, string salida, string[] lineas, int indice) =>
+        dependiente || (salida != lineas[indice].Trim() && EncabezaLista(lineas, indice));
+
+    private static bool EncabezaLista(string[] lineas, int indice) =>
+        lineas[indice].TrimEnd().EndsWith(':')
+        || (!EsLineaDeLista(lineas[indice]) && indice + 1 < lineas.Length && EsLineaDeLista(lineas[indice + 1]));
+
+    private static bool EsLineaDeLista(string linea) =>
+        linea.Trim().Length > 0 && (char.IsWhiteSpace(linea[0]) || ElementoDeLista().IsMatch(linea));
 
     private static bool EsIntroduccion(string oracion, ContextoDePoda contexto)
     {
@@ -105,6 +132,9 @@ internal static partial class PodaDeOraciones
 
     [GeneratedRegex(@"\s*\(\s*[\p{L}\p{N}_-]+\.md\s*·[^)]*\)", RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
     private static partial Regex CitaEntreParentesis();
+
+    [GeneratedRegex(@"^\s*(?:[-*+•]|\d+[.)])\s", RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
+    private static partial Regex ElementoDeLista();
 
     [GeneratedRegex(@"\r?\n", RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
     private static partial Regex SaltoDeLinea();
