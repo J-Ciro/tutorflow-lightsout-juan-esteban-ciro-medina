@@ -27,6 +27,7 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
     private readonly bool _auditoriaReal;
     private readonly IClienteLlm? _clienteLlm;
     private readonly IReadOnlyDictionary<string, string?>? _variablesEntorno;
+    private readonly Func<IClienteLlm, IClienteLlm>? _envolverLlm;
 
     public FabricaApi(
         ApiAcademicaDoble? api = null,
@@ -38,9 +39,11 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
         bool conocimientoReal = false,
         bool auditoriaReal = false,
         IClienteLlm? clienteLlm = null,
-        IReadOnlyDictionary<string, string?>? variablesEntorno = null)
+        IReadOnlyDictionary<string, string?>? variablesEntorno = null,
+        Func<IClienteLlm, IClienteLlm>? envolverLlm = null)
     {
         _variablesEntorno = variablesEntorno;
+        _envolverLlm = envolverLlm;
         _clienteLlm = clienteLlm;
         Api = api ?? new ApiAcademicaDoble();
         Llm = llm ?? ClienteLlmDoble.Texto("Respuesta de prueba.");
@@ -196,14 +199,29 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
 
     private void ReemplazarLlm(IServiceCollection servicios)
     {
-        if (!_reemplazarLlm)
+        if (_reemplazarLlm)
         {
-            return;
+            servicios.RemoveAll<IClienteLlm>();
+            servicios.AddSingleton(_clienteLlm ?? Llm);
         }
 
-        servicios.RemoveAll<IClienteLlm>();
-        servicios.AddSingleton(_clienteLlm ?? Llm);
+        if (_envolverLlm is not null)
+        {
+            EnvolverLlm(servicios, _envolverLlm);
+        }
     }
+
+    private static void EnvolverLlm(IServiceCollection servicios, Func<IClienteLlm, IClienteLlm> envolver)
+    {
+        var original = servicios.Last(d => d.ServiceType == typeof(IClienteLlm));
+        servicios.Remove(original);
+        servicios.Add(ServiceDescriptor.Describe(typeof(IClienteLlm), proveedor => envolver(ResolverLlm(proveedor, original)), original.Lifetime));
+    }
+
+    private static IClienteLlm ResolverLlm(IServiceProvider proveedor, ServiceDescriptor descriptor) =>
+        descriptor.ImplementationInstance as IClienteLlm
+        ?? descriptor.ImplementationFactory?.Invoke(proveedor) as IClienteLlm
+        ?? (IClienteLlm)ActivatorUtilities.CreateInstance(proveedor, descriptor.ImplementationType!);
 }
 
 public sealed record RespuestaApi(HttpStatusCode Codigo, byte[] Bytes, HttpResponseHeaders Encabezados, HttpContentHeaders EncabezadosContenido)

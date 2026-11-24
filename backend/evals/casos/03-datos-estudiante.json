@@ -235,7 +235,7 @@
     "offline": {
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "Puedes faltar 5 clases más en Bases de Datos: el máximo es 7 de 48 y llevas 2. (reglamento_academico_2025.md · Artículo 11)"
+      "texto": "Puedes tener 5 faltas más en Bases de Datos: el máximo es 7 de 48 y llevas 2. (reglamento_academico_2025.md · Artículo 11)"
     }
   },
   {
@@ -385,7 +385,7 @@
     "offline": {
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "No puedes habilitar Bases de Datos porque la perdiste por inasistencia (9 de 48 clases). Sí puedes habilitar Cálculo Integral (2.6). (reglamento_academico_2025.md · Artículo 6) (reglamento_academico_2025.md · Artículo 7)"
+      "texto": "Bases de Datos no es habilitable porque la perdiste por inasistencia (9 de 48 clases). Sí puedes habilitar Cálculo Integral (2.6). (reglamento_academico_2025.md · Artículo 6) (reglamento_academico_2025.md · Artículo 7)"
     }
   },
   {

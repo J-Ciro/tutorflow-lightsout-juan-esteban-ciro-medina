@@ -7,6 +7,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/TutorFlow.Core.Tests/TutorFlow.Core.Tests.csproj" />
     <Project Path="tests/TutorFlow.Api.Tests/TutorFlow.Api.Tests.csproj" />
+    <Project Path="tests/TutorFlow.Evals.Tests/TutorFlow.Evals.Tests.csproj" />
   </Folder>
   <Folder Name="/evals/">
     <Project Path="evals/TutorFlow.Evals/TutorFlow.Evals.csproj" />

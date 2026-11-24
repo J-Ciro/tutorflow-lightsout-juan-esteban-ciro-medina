@@ -383,8 +383,6 @@
     "requiereLlm": true,
     "citasExactas": [
       "reglamento_academico_2025.md · Artículo 5",
-      "reglamento_academico_2025.md · Artículo 6",
-      "evaluacion_y_calificaciones.md · Sección 3",
       "Datos del programa · ADM"
     ],
     "soloOffline": true,
@@ -417,8 +415,6 @@
     "filtroPrevio": false,
     "requiereLlm": true,
     "citasExactas": [
-      "reglamento_academico_2025.md · Artículo 6",
-      "evaluacion_y_calificaciones.md · Sección 3",
       "reglamento_academico_2025.md · Artículo 5",
       "Datos del programa · ADM"
     ],
@@ -1789,8 +1785,6 @@
     "citasProhibidas": [],
     "citasVacias": false,
     "citasExactas": [
-      "reglamento_academico_2025.md · Artículo 6",
-      "evaluacion_y_calificaciones.md · Sección 3",
       "reglamento_academico_2025.md · Artículo 5",
       "Datos del programa · ADM"
     ],
@@ -2573,14 +2567,15 @@
     "contiene": [],
     "noContiene": [],
     "citasIncluye": [
-      "evaluacion_y_calificaciones.md · Sección 3",
       "evaluacion_y_calificaciones.md · Sección 4"
     ],
-    "citasProhibidas": [],
+    "citasProhibidas": [
+      "evaluacion_y_calificaciones.md · Sección 3"
+    ],
     "citasVacias": false,
     "citasExactas": null,
     "usoDatosEstudiante": true,
-    "respuestaExacta": "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).",
+    "respuestaExacta": "Tu promedio es 4.39.",
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,
@@ -2589,7 +2584,10 @@
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
       "texto": "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4)."
-    }
+    },
+    "citasDocumentoExactas": [
+      "evaluacion_y_calificaciones.md · Sección 4"
+    ]
   },
   {
     "id": "ESC-178f",
@@ -2983,6 +2981,102 @@
       "herramientas": "todas",
       "estudianteIdCoordinador": "EST-005",
       "texto": "Valentina Castro:\n- Definitiva en Estadística: 2.3"
+    }
+  },
+  {
+    "id": "ESC-177j",
+    "fuente": "COMP-02, D-73",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuántas faltas tengo en Bases de Datos?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "evaluacion_y_calificaciones.md · Sección 4"
+    ],
+    "citasVacias": false,
+    "citasExactas": [
+      "reglamento_academico_2025.md · Artículo 11",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Bases de Datos: 2 faltas de 48 clases.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Bases de Datos: 2 faltas de 48 clases (evaluacion_y_calificaciones.md · Sección 3; evaluacion_y_calificaciones.md · Sección 4)."
+    }
+  },
+  {
+    "id": "ESC-177k",
+    "fuente": "COMP-02, D-73",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-01"
+    },
+    "pregunta": "¿Cuántos estudiantes tiene mi programa?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": [
+      "Datos del programa · ING-SIS"
+    ],
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Tu programa tiene 3 estudiantes.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu programa tiene 3 estudiantes."
+    }
+  },
+  {
+    "id": "ESC-194g",
+    "fuente": "D-53, D-73",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [
+      "bienestar_y_becas.md · Sección 3.1",
+      "bienestar_y_becas.md · Sección 3.2"
+    ],
+    "citasVacias": false,
+    "citasExactas": [
+      "reglamento_academico_2025.md · Artículo 5",
+      "Datos del programa · ADM"
+    ],
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Valentina Castro: Microeconomía (1.8) y Estadística (2.3); para la beca revisa con Bienestar.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro: Microeconomía (1.8) y Estadística (2.3); para la beca revisa con Bienestar."
     }
   }
 ]

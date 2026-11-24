@@ -66,7 +66,7 @@ public sealed class EjecutorEnProceso : IEjecutor
         return new Ejecucion(respuesta.Estado, respuesta.Texto, reloj.Elapsed.TotalMilliseconds);
     }
 
-    private static ClienteLlmDoble LlmPara(GuionOffline? guion)
+    internal static ClienteLlmDoble LlmPara(GuionOffline? guion)
     {
         if (guion is null)
         {
