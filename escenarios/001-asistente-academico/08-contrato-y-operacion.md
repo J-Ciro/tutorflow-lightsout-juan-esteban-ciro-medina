@@ -35,6 +35,7 @@ Notación en [`README.md`](../README.md#notación).
 | ESC-110 e `@alterno` | Igual con `Retry-After: 3600` y luego `1` | Igual | 503 con `Retry-After: 3600` y `1` (límites del rango) | plan §4.1, D-70 |
 | ESC-110 f `@operacion` `@abuso` | EST-001; llave canaria; proveedor doble que responde el 400 de la nota ESC-110 f | "¿Cuál es mi promedio?" | 503 genérico; 1 línea `warn` con `400` e `INVALID_ARGUMENT` y nada más del cuerpo (0 `Unknown name`); 0 apariciones de la llave, de encabezados y del cuerpo de la petición | plan §4.1, D-85 |
 | ESC-110 g `@abuso` | Igual; una corrida por respuesta del doble: 400 con `status` `INVALID_ARGUMENT` y `message` "nota de prueba 4.39\r\nERROR falso"; 401 con `message` que contiene `sk-ant-canaria` | Igual | 503 genérico en ambas; el log tiene `400`/`INVALID_ARGUMENT` y `401`, y 0 apariciones de "nota de prueba", `sk-ant-canaria` o una línea que empiece por "ERROR falso" | D-85 |
+| ESC-110 h `@operacion` `@alterno` | Igual que (f); una corrida por cuerpo del doble: 400 de Anthropic (nota ESC-110 h); 500 con `{"error":{"message":"x"}}`; 502 con cuerpo no JSON | Igual | 503 genérico en las 3; `warn` con `400 invalid_request_error`, con solo `500` y con solo `502`; 0 apariciones de `message` | D-85 |
 | ESC-119 a `@operacion` | `LLM_API_KEY` con `sk-ant-`, `sk-or-`, `gsk_`, `AIza`, `sk-proj-` y sin llave; sin `LLM_PROVEEDOR` ni `LLM_MODELO` | — | Proveedor, en orden: Anthropic, OpenRouter, Groq, Gemini, OpenAI y Ollama (pista de la llave); el log muestra proveedor y modelo, nunca la llave | D-16, D-84 |
 | ESC-119 b | `LLM_PROVEEDOR` = `groq` con una llave `sk-ant-` | — | Groq: gana la variable | D-84 |
 | ESC-119 c | Llave sin prefijo conocido y `LLM_MODELO` = `gemini-2.5-flash`, `claude-haiku-5-5`, `gpt-5-mini` o `meta/llama-4` (una corrida por valor) | — | Gemini, Anthropic, OpenAI y OpenRouter; la llave nunca se rechaza por su formato | D-84 |
@@ -51,7 +52,8 @@ Notación en [`README.md`](../README.md#notación).
 | ESC-180 b | Igual con `Llm:ReservaSinPrecioUsd` 0 (se usa 0.01 con advertencia al arrancar) | Igual | Igual que (a) | SEG-13, D-39, D-40 |
 | ESC-180 c `@operacion` | Igual con `ollama` a precio 0 / 0 | Igual | Las 4 responden 200 con costo 0; ningún `precioDesconocido`; 4 llamadas | D-39 |
 
-- **ESC-110 f:** cuerpo `{"error":{"code":400,"status":"INVALID_ARGUMENT","message":"Unknown name \"seed\": Cannot find field."}}` (medido con Gemini antes de D-85). Un código con CR/LF o de más de 64 caracteres se registra saneado.
+- **ESC-110 f:** cuerpo `{"error":{"code":400,"status":"INVALID_ARGUMENT","message":"Unknown name \"seed\": Cannot find field."}}` (medido con Gemini antes de D-85). Un código con CR/LF o de más de 64 caracteres se registra saneado. Se registra `INVALID_ARGUMENT` (`error.status` va antes que `error.code`).
+- **ESC-110 h:** cuerpo de Anthropic `{"type":"error","error":{"type":"invalid_request_error","message":"seed: Extra inputs are not permitted"}}`.
 
 ## Tasa por IP y bloqueo escalonado (CA-13)
 
