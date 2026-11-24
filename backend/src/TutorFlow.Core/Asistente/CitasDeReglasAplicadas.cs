@@ -18,15 +18,19 @@ internal sealed partial class CitasDeReglasAplicadas
     {
         [Definitiva] = ["definitiva", "definitivas"],
         [Promedio] = ["promedio", "promedios"],
-        [new Cita(Reglamento, Textos.SeccionPerdidaPorInasistencia)] = ["inasistencia", "inasistencias", "faltas"],
+        [new Cita(Reglamento, Textos.SeccionPerdidaPorInasistencia)] = ["inasistencia", "inasistencias", "faltas", "faltar", "faltaste", "faltado"],
         [new Cita(ReglasAplicadas.DocumentoBienestar, Textos.SeccionBecaPorRendimiento)] = ["beca", "becas"],
         [new Cita(Reglamento, Textos.SeccionNotaMinima)] =
         [
             "aprobada", "aprobadas", "aprobado", "aprobados", "aprobar", "aprueba", "apruebas", "aprobo", "aprobaste", "perdida", "perdidas",
             "perdido", "perdidos", "perdio", "perdiste", "perdieron", "reprobada", "reprobadas", "reprobo", "reprobaron"
         ],
-        [new Cita(Reglamento, Textos.SeccionHabilitacion)] = ["habilitacion", "habilitar", "habilitas", "habilitable", "habilitables"],
-        [new Cita(Reglamento, Textos.SeccionNoHabilitables)] = ["no habilitable", "no habilitables", "no es habilitable", "no son habilitables"],
+        [new Cita(Reglamento, Textos.SeccionHabilitacion)] = ["habilitacion", "habilitar", "habilitas", "habilitable", "habilitables", "habilitarla", "habilitarlas"],
+        [new Cita(Reglamento, Textos.SeccionNoHabilitables)] =
+        [
+            "no habilitable", "no habilitables", "no es habilitable", "no son habilitables",
+            "no puedes habilitar", "no puedes habilitarla", "no se puede habilitar"
+        ],
         [new Cita(Reglamento, Textos.SeccionPruebaAcademica)] = ["prueba academica"],
         [new Cita(Reglamento, Textos.SeccionAsistenciaSinRegistro)] = ["sin registro", "revision"]
     };
