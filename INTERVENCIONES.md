@@ -272,4 +272,4 @@ Intervenir no descalifica; esconderlo sí.
 - **Qué hizo el humano:** *"No deberia de poder tener la capacidad de que si trengo 9 faltas decirme de que clases son no solo solar 9 faltas de 4 clases en 1 sola clase deberia decirme todas  ya si pregunto cuantas faltas tengo en Bases de datos deberian de ser el valor exacto de esa clase o de esas clases"*.
 - **Por qué:** un total sin desglose no le sirve al estudiante, y un número por asignatura que no es el de esa asignatura es un dato falso aunque pertenezca a la persona.
 - **Costo:** ~2 min humanos.
-- **Prevención:** propuesta pendiente de aprobación: en `arquitecto-spec`, ante un defecto de exactitud, definir primero el comportamiento observable para el usuario (qué dato, con qué desglose) y solo después la verificación que lo garantiza.
+- **Prevención:** aprobada por el humano y aplicada en `arquitecto-spec`: ante un defecto de exactitud, definir primero el comportamiento observable para el usuario (qué dato, con qué desglose) y solo después la verificación que lo garantiza.
