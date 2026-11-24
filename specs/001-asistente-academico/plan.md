@@ -123,21 +123,23 @@
 - Según el estado: 5) alguna perdida → `Artículo 5`; 6) alguna perdida → `Artículo 6`; 7) alguna perdida por inasistencia → `Artículo 7`; 8) igual → `Artículo 11`; 9) prueba académica → `Artículo 20`; 10) asistencia sin registro → `Artículo 12`; 11) alguna sin definitiva → `Sección 3`.
 - La herramienta de programa no aporta las entradas 1 a 4. El bloque de la petición aplica el orden a la unión de lo leído. El LLM recibe el orden fijo; solo la elección de citas lo reordena.
 - Con `ADM`: `Reglas aplicadas a estos datos: reglamento_academico_2025.md · Artículo 5; reglamento_academico_2025.md · Artículo 6; reglamento_academico_2025.md · Artículo 20; evaluacion_y_calificaciones.md · Sección 3.`
-### 6.5 (2) Citas de las reglas aplicadas (D-31, D-49, D-53, D-56)
+### 6.5 (2) Citas de las reglas aplicadas (D-31, D-49, D-53, D-56, D-74)
 - Aplica si se leyeron datos y la respuesta no es negativa ni texto fijo; se evalúa sobre la **respuesta final verificada**, normalizada con SEG-04a, con términos como palabras o secuencias completas.
-- **Campo usado (primero):** si alguna sección del bloque tiene su campo usado, se citan solo esas, en orden de relevancia (sin exigir > 0), máximo 3, omitiendo las de (1). Un término cuya sección no está en el bloque no agrega nada; `falta` en singular no es término.
+- **Campo usado (primero):** si alguna sección del bloque tiene su campo usado, se citan solo esas, en orden de relevancia (sin exigir > 0), máximo 3, omitiendo las de (1). Un término cuya sección no está en el bloque no agrega nada; `falta`, `faltan` y `faltaba` no son términos ("le falta calificar el corte 3").
 
 | Sección del bloque | Entradas | Campo | Términos (lista cerrada) |
 | --- | --- | --- | --- |
 | `evaluacion_y_calificaciones.md · Sección 3` | 1, 11 | Definitiva | `definitiva`, `definitivas`; o un par por valor (abajo) |
 | `evaluacion_y_calificaciones.md · Sección 4` | 2 | Promedio | `promedio`, `promedios`, o una cifra por valor (abajo) |
-| `reglamento_academico_2025.md · Artículo 11` | 3, 8 | Inasistencia | `inasistencia`, `inasistencias`, `faltas` |
+| `reglamento_academico_2025.md · Artículo 11` | 3, 8 | Inasistencia | `inasistencia`, `inasistencias`, `faltas`, `faltar`, `faltaste`, `faltado` |
 | `bienestar_y_becas.md · Sección 3.1` | 4 | Beca | `beca`, `becas` |
 | `reglamento_academico_2025.md · Artículo 5` | 5 | Aprobación o pérdida | `aprobada(s)`, `aprobado(s)`, `aprobar`, `aprueba`, `apruebas`, `aprobo`, `aprobaste`, `perdida(s)`, `perdido(s)`, `perdio`, `perdiste`, `perdieron`, `reprobada(s)`, `reprobo`, `reprobaron` |
-| `reglamento_academico_2025.md · Artículo 6` | 6 | Habilitación | `habilitacion`, `habilitar`, `habilitas`, `habilitable`, `habilitables` |
-| `reglamento_academico_2025.md · Artículo 7` | 7 | No habilitable | `no habilitable`, `no habilitables`, `no es habilitable`, `no son habilitables` |
+| `reglamento_academico_2025.md · Artículo 6` | 6 | Habilitación | `habilitacion`, `habilitar`, `habilitarla`, `habilitarlas`, `habilitas`, `habilitable`, `habilitables` |
+| `reglamento_academico_2025.md · Artículo 7` | 7 | No habilitable | `no habilitable`, `no habilitables`, `no es habilitable`, `no son habilitables`, `no puedes habilitar`, `no puedes habilitarla`, `no se puede habilitar` |
 | `reglamento_academico_2025.md · Artículo 20` | 9 | Prueba académica | `prueba academica` |
 | `reglamento_academico_2025.md · Artículo 12` | 10 | Sin registro | `sin registro`, `revision` |
+
+- **Formas verbales (D-74):** "Puedes faltar 5 clases más" usa Inasistencia (ESC-027); "No puedes habilitar Bases de Datos" usa No habilitable y Habilitación (ESC-032); "le falta calificar el corte 3" no usa ninguno.
 
 - **Definitiva por valor (D-56):** solo si el bloque tiene la entrada 1, un par asignatura + cifra (§11.4, Definitiva 2) igual a la definitiva calculada de esa asignatura para una persona cuyas notas se leyeron.
 - **Pérdida por valor (D-73, aprobada por el humano):** solo si el bloque tiene la entrada 5, un par asignatura + cifra (§11.4) igual a la definitiva calculada de una asignatura perdida de una persona cuyos datos se leyeron usa el campo Aprobación o pérdida (Q10 #6 → `Artículo 5`).
@@ -570,6 +572,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
   - En las 50: 0 oraciones huérfanas (§10 (7), también en el hueco), 0 referencias o atribuciones a un documento sin cita, 0 LaTeX (`\[`, `\(`, `\frac`, `\times`, `$`) y 0 respuestas 503 (`limite_herramientas`, tiempo o presupuesto) con los valores por defecto (D-70).
   - Por HTTP, `respondida` = 200 con una respuesta distinta de los 3 textos fijos.
   - **Artefactos (M-4, D-73, INT-020):** el runner guarda por corrida un JSON fuera del repositorio con la pregunta, el usuario, el texto crudo de cada llamada al modelo (antes de la limpieza), las secciones entregadas (`documento · sección`), si hubo resumen o prelectura, `usage`, la respuesta y las citas finales; sin la llave.
+  - **Dónde corre (M-4, D-74):** el texto crudo del modelo no viaja por HTTP, así que la fase V corre en proceso con el LLM real, la API académica doble (datos de `mock-api/datos.json`) y un artefacto por corrida; Docker Compose se verifica aparte con la prueba de humo (CA-09) y la colección de Postman (CA-12).
   - Integración: 100% de los textos reales de ESC-173 a, b, ESC-174 a–c y ESC-175 f1 entregados sin cambios con `respondida`, y ESC-175 a con `TEXTO_NO_VERIFICABLE`.
 - **CA-04:** 100% → 403 con 0 llamadas y 0 lecturas del tercero; 100% de variantes sueltas, `Nd`, `Mn` y homoglifos con `tercero_mencionado` y `[TERCERO]`; 100% de agregados con `agregado`; consistencia de plegado y confusables al 100% (ESC-196, ESC-199 b).
   - SEG-04c (D-67): 100% de ESC-037 a–h, 038 a, c–g y 039 b–d con `capacidad_ajena`, 0 llamadas y 0 lecturas; ESC-038 b y 039 a con `tercero_mencionado`; ESC-038 h sin texto del turno 1 en la petición al LLM; ESC-038 h y j con COMP-03 y `fuga_bloqueada`; ESC-038 i con COMP-03 sin LLM.
@@ -622,7 +625,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - Activadores: asignatura por nombre y por código con `r = 0`, nombre parcial, no matriculada (1 lectura de notas), genérico indefinido con `puedo`, periodo con asignatura, tercero antes de verificar; prelectura con y sin activador, sin programas y tras un 403.
 - Pérdidas: formas de palabra y nominales, oración genérica frente a marcador personal o fragmento nominal (ESC-035), asignatura después de la forma, negación gobernante frente a "sin duda" y "aun así", sujeto coordinado, verbo hipotético; tabla, lista, línea vacía, `>`, negrita, contexto con dos personas.
 - Definitivas: umbral seguido de la cifra afirmada, `necesitas una definitiva de` frente a `necesita revisión`, lista correcta y cruzada, pares sin `definitiva` (definitiva, corte, acumulada frente a otra asignatura), programa solo frente a programa y detalle.
-- Citas: bloque de 4 y de 8 entradas (`EST-002` con `r = 0` conserva el orden fijo), `r > 0` sin raíces compartidas, respaldo con empate, tema con 2 raíces frente a 1; relevante solo en 6.º lugar (entra).
+- Citas: bloque de 4 y de 8 entradas (`EST-002` con `r = 0` conserva el orden fijo), `r > 0` sin raíces compartidas, respaldo con empate, tema con 2 raíces frente a 1; relevante solo en 6.º lugar (entra); `faltar` y `no puedes habilitar` (campo usado) frente a "le falta calificar el corte 3" con el Art. 11 en el bloque (no lo cita; D-74).
 - Puntaje relativo (D-65 G6): el puerto de recuperación no expone puntajes; el límite se prueba por sensibilidad con el índice real, umbral = ⌊P⌋ entra y ⌊P⌋ + 1 no: regla (3) con el Art. 5 de Q10 #4 (51.1%: 51/52) y el Art. 16 de Q10 #1 (49.6%: 49/50); regla (4) con la Sec. 3 de Q10 #1 (46.5%, 2 raíces: 46/47).
   - Con 1 raíz no entra por la (4): Art. 16 de Q10 #1 (49.6%) con el defecto 40, conjunto de ESC-198 a. La igualdad P = umbral no se prueba aparte: con umbrales enteros solo es posible con P entero, y los 13 conjuntos de ESC-198 a fijan todo resultado observable.
 - Limpieza: `.md` entre dígitos, dentro de un ID o nombre y entre `definitiva` y su cifra; nombre con tilde, genérico o con espacios; `Secciones 3 y 5`; 2023 sin sección; oración con ≤ 2 palabras; respuesta vacía; "3.9." frente a "(·)"; "…créditos; da 50%…" sin mayúscula; hueco tras `están` (se elimina la oración) frente a hueco tras `académica` (ESC-178 d, se conserva).

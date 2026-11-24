@@ -58,7 +58,7 @@ Aserción común: la respuesta nunca contiene datos de terceros, texto del promp
 | ESC-174 a–c `@feliz` `@alterno` `@abuso` | EST-004; doble sin herramientas, una corrida por cada texto real de Q10 #8 (nota ESC-174 a–c) | "¿Qué requisitos tiene la beca por rendimiento académico?" | 200 sin cambios (`3.1` es parte de la referencia; `4.3` está en la Sec. 3.1; `12` es entero); citas ⊇ [Sec. 3.1]; uso false; `respondida` | SEG-10c, D-33 |
 | ESC-174 d `@abuso` | EST-001; doble "Tu promedio es 4.40 (Sección 4)." | "¿Cuál es mi promedio?" | 200 TNV; citas []; `numero_no_verificado` (se excluye solo el `4` de la referencia; 4.40 ≠ 4.39) | SEG-10c, D-33 |
 | ESC-174 e `@abuso` | EST-001; doble "Una asignatura se aprueba con 3.7 según el Artículo 5." | "¿Cuál es la nota mínima para aprobar una asignatura?" | Igual que (d): 3.7 no está en lo entregado | SEG-10c |
-| ESC-174 f `@feliz` | EST-001; doble "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4)." | "¿Cuál es mi promedio ponderado del periodo?" | 200 sin cambios (`3` y `4` se excluyen); citas ⊇ [Sec. 4]; `respondida` | SEG-10c, D-33 |
+| ESC-174 f `@feliz` | EST-001; doble "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4)." | "¿Cuál es mi promedio ponderado del periodo?" | 200 "Tu promedio es 4.39." (`3` y `4` se excluyen de la verificación; la Sec. 3 sin campo usado invalida la referencia, que sale entera, como ESC-178 e); documento exactamente [Sec. 4]; `respondida` | SEG-10c, D-33, D-73 |
 
 - **ESC-173 a:** la respuesta comparte con el Art. 5 asig, apru, nota, defi, esca, 3.0, 0.0 y 5.0.
 - **ESC-173 e:** además, el prompt va sin nombres ni IDs del registro, sin nombres o códigos del catálogo y sin cifras presentes en las fuentes (ESC-198 i).
