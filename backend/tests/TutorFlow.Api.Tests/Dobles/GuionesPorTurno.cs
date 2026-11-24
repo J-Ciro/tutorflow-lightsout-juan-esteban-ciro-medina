@@ -34,14 +34,16 @@ public static class GuionesPorTurno
 
 public sealed class ClienteLlmConDemoraPorTurno : IClienteLlm
 {
+    private readonly RelojControlado _reloj;
     private readonly TimeSpan _primerTurno;
     private readonly TimeSpan _reintento;
     private readonly string _textoPrimerTurno;
     private readonly string _textoReintento;
     private int _llamadas;
 
-    public ClienteLlmConDemoraPorTurno(TimeSpan primerTurno, TimeSpan reintento, string textoPrimerTurno, string textoReintento)
+    public ClienteLlmConDemoraPorTurno(RelojControlado reloj, TimeSpan primerTurno, TimeSpan reintento, string textoPrimerTurno, string textoReintento)
     {
+        _reloj = reloj;
         _primerTurno = primerTurno;
         _reintento = reintento;
         _textoPrimerTurno = textoPrimerTurno;
@@ -54,7 +56,7 @@ public sealed class ClienteLlmConDemoraPorTurno : IClienteLlm
     {
         Interlocked.Increment(ref _llamadas);
         var esReintento = GuionesPorTurno.EsReintento(solicitud);
-        await Task.Delay(esReintento ? _reintento : _primerTurno, cancellationToken);
+        await _reloj.Pausar(esReintento ? _reintento : _primerTurno, cancellationToken);
         return new RespuestaLlm(esReintento ? _textoReintento : _textoPrimerTurno, [], ConsumoRealista.UsoDe(solicitud, ClienteLlmDoble.UsoPorDefecto.Salida), false);
     }
 }

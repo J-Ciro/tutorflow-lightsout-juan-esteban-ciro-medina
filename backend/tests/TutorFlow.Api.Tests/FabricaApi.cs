@@ -40,8 +40,10 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
         bool auditoriaReal = false,
         IClienteLlm? clienteLlm = null,
         IReadOnlyDictionary<string, string?>? variablesEntorno = null,
-        Func<IClienteLlm, IClienteLlm>? envolverLlm = null)
+        Func<IClienteLlm, IClienteLlm>? envolverLlm = null,
+        RelojControlado? reloj = null)
     {
+        Reloj = reloj ?? new RelojControlado();
         _variablesEntorno = variablesEntorno;
         _envolverLlm = envolverLlm;
         _clienteLlm = clienteLlm;
@@ -81,7 +83,7 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
 
     public AuditoriaEnMemoria Auditoria { get; } = new();
 
-    public RelojControlado Reloj { get; } = new();
+    public RelojControlado Reloj { get; }
 
     public CapturaLogs Logs { get; } = new();
 
@@ -167,7 +169,7 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
         servicios.RemoveAll<IApiAcademica>();
         servicios.RemoveAll<IReloj>();
         servicios.RemoveAll<TimeProvider>();
-        servicios.AddSingleton<TimeProvider>(new TiempoDeRelojControlado(Reloj));
+        servicios.AddSingleton<TimeProvider>(Reloj.Tiempo);
         if (_variablesEntorno is not null)
         {
             servicios.RemoveAll<IVariablesEntorno>();

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using TutorFlow.Api.Tests.Dobles;
 using TutorFlow.Core.Asistente;
 
@@ -29,15 +28,14 @@ public sealed class ResilienciaApiTests
     [Trait("SEG", "SEG-13")]
     public async Task ESC_108_Api_academica_que_no_responde_produce_503_en_menos_de_7_segundos()
     {
-        using var fabrica = new FabricaApi(api: ApiAcademicaDoble.QueNuncaResponde());
+        var reloj = new RelojControlado();
+        using var fabrica = new FabricaApi(api: ApiAcademicaDoble.QueNuncaResponde(reloj), reloj: reloj);
         _ = fabrica.Services;
-        var reloj = Stopwatch.StartNew();
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);
+        var respuesta = await reloj.AvanzarHastaQueTermine(fabrica.PreguntarEstudianteAsync("EST-001", Pregunta));
 
-        reloj.Stop();
         Afirmaciones.ProblemDetails(respuesta, 503);
-        Assert.True(reloj.Elapsed < TimeSpan.FromSeconds(7), $"tardó {reloj.Elapsed}");
+        Assert.True(reloj.Transcurrido < TimeSpan.FromSeconds(7), $"transcurrió {reloj.Transcurrido}");
     }
 
     [Theory]
