@@ -14,7 +14,7 @@ public sealed class ReservaDeConfiguracionTests
     public static TheoryData<decimal> ReservasPorPeticionNoPositivas => new() { 0m, -1m, -0.0001m };
 
     private static ConfiguracionAsistente Configurar(PrecioModelo? precio, decimal? reservaPorPeticion = null, decimal reservaSinPrecio = ReservaSinPrecio) =>
-        new(precio, null, null, reservaPorPeticion, catalogo: CatalogoDePrueba.Asignaturas, reservaSinPrecioUsd: reservaSinPrecio);
+        new(precio: precio, marcadorCanarioConfigurado: null, reservaPorPeticionUsd: reservaPorPeticion, catalogo: CatalogoDePrueba.Asignaturas, reservaSinPrecioUsd: reservaSinPrecio);
 
     [Theory]
     [MemberData(nameof(ReservasSinPrecioNoPositivas))]
