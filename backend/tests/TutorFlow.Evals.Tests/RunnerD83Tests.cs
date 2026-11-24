@@ -203,6 +203,27 @@ public sealed class RunnerD83Tests : IDisposable
     [Trait("CA", "CA-01")]
     [Trait("ESC", "ESC-197")]
     [Trait("D", "D-83")]
+    public async Task ESC_197h_Con_fase_V_y_url_cada_artefacto_lleva_el_x_correlation_id_no_vacio_y_ningun_evento_de_auditoria()
+    {
+        using var servidor = new ServidorHttpFalso(RespuestaSinInformacion);
+
+        await Principal.Main(["--fase-v", "--url", servidor.Url, "--filtro", "ESC-009", "--artefactos", _carpeta]);
+
+        var artefactos = Artefactos();
+        Assert.Equal(CorridasDeLaFaseV, artefactos.Count);
+        Assert.All(artefactos, a =>
+        {
+            var correlacion = Assert.Single(a.EnumerateObject(), p => p.Name.Contains("correlation", StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(JsonValueKind.String, correlacion.Value.ValueKind);
+            Assert.False(string.IsNullOrWhiteSpace(correlacion.Value.GetString()));
+            Assert.DoesNotContain(a.EnumerateObject(), p => p.Name.Contains("auditoria", StringComparison.OrdinalIgnoreCase));
+        });
+    }
+
+    [Fact]
+    [Trait("CA", "CA-01")]
+    [Trait("ESC", "ESC-197")]
+    [Trait("D", "D-83")]
     public async Task ESC_197h_Con_fase_V_y_url_el_resultado_se_juzga_con_la_respuesta_del_servidor()
     {
         using var servidor = new ServidorHttpFalso("""{"respuesta":"Texto inventado por el servidor.","citas":[],"usoDatosEstudiante":false,"tokens":0,"costoUsd":0}""");
