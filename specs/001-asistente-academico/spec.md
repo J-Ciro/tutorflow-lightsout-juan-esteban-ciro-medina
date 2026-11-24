@@ -99,7 +99,7 @@ Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la
 - **RNF-02** · 503 al superar 20 s desde que empieza la fase del LLM o 6 s acumulados en la API académica; con esos valores por defecto, ninguna petición tarda 27 s o más (D-71).
 - **RNF-03** · `REPORTE.md` publica los tokens y el costo por 1.000 preguntas por proveedor.
 - **RNF-04** · Con la configuración por defecto, un cliente automático desde una sola IP, con las 8 identidades de prueba e IDs inexistentes, por debajo de 600 preguntas por minuto y en varias corridas al día, con cualquier proveedor y con o sin precio conocido, no recibe 429 ni 503 por tasa, identidades ni presupuesto (D-70, D-72).
-- **RNF-05** · La configuración se valida al arrancar: un valor inválido impide arrancar o, en las reservas, usa su defecto con advertencia; nunca se corrige en silencio. Sin configurar, la tasa por IP vale 600 por minuto y el presupuesto no tiene tope, y el log de arranque lo registra (plan.md §13).
+- **RNF-05** · La configuración se valida al arrancar: un valor inválido impide arrancar o, en las reservas, usa su defecto con advertencia; nunca se corrige en silencio. Sin configurar, la tasa por IP vale 600 por minuto y el presupuesto no tiene tope, y el log de arranque lo registra (plan.md §13). Un modelo de pago sin precio arranca con advertencia, nunca con un precio inventado (D-105).
 - **RNF-06** · Logs JSON estructurados con el `correlationId` de la petición.
 - **RNF-07** · Arranca con `docker compose up` sin dependencias en el host salvo Docker.
 - **RNF-08** · Mantenibilidad: reglas de [`AGENTS.md`](../../AGENTS.md).
@@ -200,7 +200,7 @@ Característica: Asistente académico
       | elimina la verificación de SEG-01                   | evals-offline |
       | tiene un commit con asunto de 61 caracteres         | commits       |
       | agrega un paquete NuGet con vulnerabilidad conocida | security      |
-  Esquema del escenario: CA-11 · Metadatos coherentes (Detalle: ESC-004, ESC-008, ESC-079, ESC-106, ESC-180)
+  Esquema del escenario: CA-11 · Metadatos coherentes (Detalle: ESC-004, ESC-008, ESC-079, ESC-106, ESC-180, ESC-181 aj–as)
     Dado un LLM doble que reporta en cada llamada E' = ⌈1.04 × E⌉ tokens de entrada (E, la estimación de plan.md §4.4 de esa llamada) y 200 de salida, con precios de 1.0 y 5.0 USD por millón
     Cuando "<usuario>" pregunta "<pregunta>"
     Entonces "tokens" es Σ(E' + 200), "costoUsd" es Σ(E' × 1.0 / 10⁶ + 200 × 5.0 / 10⁶) con tolerancia 1e-6 y "usoDatosEstudiante" es <uso>
@@ -240,12 +240,12 @@ Característica: Asistente académico
     Cuando se inicia la API
     Entonces <efecto>, la consola o el error de arranque contienen exactamente la línea del caso y ninguno contiene la llave
     Ejemplos:
-      | caso         | efecto                                                     |
-      | ESC-181 a    | el arranque falla antes de aceptar peticiones              |
-      | ESC-181 n    | el arranque falla con una línea por cada valor inválido    |
-      | ESC-181 o    | arranca, usa la reserva por defecto y advierte             |
-      | ESC-181 r    | arranca sin advertencia con el valor configurado           |
-      | ESC-199 c1   | el arranque falla con una temperatura fuera de su rango    |
+      | caso         | efecto                                                                               |
+      | ESC-181 n    | el arranque falla antes de aceptar peticiones, con una línea por cada valor inválido |
+      | ESC-181 o    | arranca, usa la reserva por defecto y advierte                                       |
+      | ESC-181 am   | arranca y advierte que el modelo no tiene precio                                     |
+      | ESC-181 r    | arranca sin advertencia con el valor configurado                                     |
+      | ESC-199 c1   | el arranque falla con una temperatura fuera de su rango                              |
   Esquema del escenario: CA-16 · Lo entregado es lo verificado (Detalle: ESC-183)
     Dado el usuario "EST-001" y un LLM doble que responde "<texto>"
     Cuando pregunta "<pregunta>"

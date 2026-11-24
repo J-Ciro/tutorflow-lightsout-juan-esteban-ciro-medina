@@ -50,7 +50,7 @@ Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitutio
 - **D-37** · Las referencias a documentos escritas en el texto que no corresponden a una cita devuelta se eliminan. · Por qué: una referencia inventada parece una fuente. · Ajustada por D-41 (antes de SEG-10, con separador) y D-50.
 - **D-38** · La definitiva afirmada para una asignatura debe ser la calculada para ella (SEG-10g), con exclusión de umbrales comparativos. · Por qué: presentar la acumulada como definitiva es falso.
   Estado: negación por cercanía y verbo de requisito → sustituidos por D-42; el resto vigente.
-- **D-39** · Modelo sin precio: reserva y gasto fijos `Llm:ReservaSinPrecioUsd` (0.01 USD), `costoUsd` 0 y `precioDesconocido: true`; Ollama tiene precio 0. · Por qué: sin precio el presupuesto no frenaba. · Vigente.
+- **D-39** · Modelo sin precio: reserva y gasto fijos `Llm:ReservaSinPrecioUsd` (0.01 USD), `costoUsd` 0 y `precioDesconocido: true`; Ollama tiene precio 0. · Por qué: sin precio el presupuesto no frenaba. · Vigente; D-105 añade la advertencia al arrancar.
 - **D-40** · La configuración se valida al arrancar: falla rápida con una línea por valor inválido o defecto seguro con advertencia; catálogo validado. · Por qué: un control desactivado en silencio es invisible. · Ajustada por D-43 y D-63 F6.
 - **D-41** · Lo entregado es lo verificado: citas → limpieza → SEG-10 sobre el texto final; lo eliminado deja un espacio; cifra partida verificada. · Por qué: verificar un texto y entregar otro abre un canal.
   Estado: vigente; sustituye la verificación del texto original de la v1.10.
@@ -151,6 +151,8 @@ Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitutio
   Por qué: hallazgos S-05…S-07 (INT-020). `seccion` sola, `semestre` como grupo ("las mejores notas de mi semestre", ESC-187 o), la adyacencia libre de `primeros` y el término sin datos darían falsos 403 ("la sección 4", "los primeros pasos del semestre", "la oficina de administración"). · Vigente; CA-25 sin cambios (ESC-187 u).
 - **D-104** · (S-09) El limitador por IP y el registro de SEG-16 tienen un tope duro de 50.000 IPs; lleno tras la purga, la IP nueva se atiende sin registrarse, nunca con 429, y el log advierte una vez por minuto (plan §13.1). · Por qué: S-09 con memoria acotada sin bloquear al evaluador (INT-027).
   Descartados el 429 al llenarse (bloquearía a un cliente legítimo) y desalojar la más antigua (O(n) bajo el `lock` en cada petición). · Vigente.
+- **D-105** · (Humano, INT-035) Precio del modelo en uso: `LLM_PRECIO_ENTRADA` y `LLM_PRECIO_SALIDA` (USD por millón, en par, decimal de 0 a 1000) para cualquier modelo; si no, la tabla de `appsettings.json` (con `gemini-3.5-flash-lite` 0.30 / 2.50); Ollama 0; sin precio, advertencia exacta al arrancar y D-39 (plan §4.2, §13.2).
+  Por qué: un modelo fuera de la tabla daba `costoUsd` 0 sin aviso (principio 7). Descartados inventar o descargar precios en ejecución (dependencia externa, datos no verificables) y renombrar las variables (incompatibilidad sin beneficio; INT-030). · Vigente; pedida por el humano; comparación exacta del nombre aprobada por el orquestador.
 
 ## Riesgos y su decisión
 
@@ -238,6 +240,8 @@ Con la spec 2.2 el humano acepta además la introducción podada y la doble defe
 | "consultar notas" legítimo bloqueado como fuga | Mitigado: un reintento de (d) con su motivo; "consultar tus notas" no coincide | ESC-146 b | D-102 | CA-05 |
 | Agregados por `definitiva`, salón, cohorte, "en total" o "los primeros" (S-05) | Mitigado: listas cerradas; residual cubierto por SEG-06 y SEG-10b | ESC-187 t con 403; ESC-187 u y CA-25 con 200 | D-103 | CA-25 |
 | Capacidad ajena con otro verbo, dígitos en nombres y nombre corto del programa (S-06, S-07) | Eliminado con listas cerradas; el término del programa solo con datos | ESC-037 n, ESC-130 b, ESC-060 b (con "la oficina de administración" en 200) | D-103 | CA-04, CA-12 |
+| Modelo en uso fuera de la tabla de precios: `costoUsd` 0 sin aviso (INT-035) | Eliminado: variables de precio para cualquier modelo y advertencia exacta al arrancar si falta | ESC-181 aj–al, ap (costo exacto); am, ar (1 advertencia); an, ao (no arranca); aq (Ollama sin advertencia) | D-105 | CA-11, CA-15 |
+| Precio de la tabla desactualizado frente a la tarifa real del proveedor | Mitigado: las variables mandan sobre la tabla; `REPORTE.md` registra el modelo y el precio usados (RNF-03) | ESC-181 al (variables sobre la tabla) | D-105 | CA-11 |
 | Memoria del limitador con IPv6 rotadas (S-09); IP nueva sin tasa con el almacén lleno | Mitigado: tope de 50.000 IPs, purga a los 10 min y advertencia en el log; nunca 429 por el tope | ESC-142 h | D-104 | CA-13 |
 | Resto suelto de una línea copiada ("máximo sin perder: 7).") o cita borrada por el año del archivo | Eliminado: sin corte en `;` en D-92; enteros de nombres de archivo excluidos | ESC-154, ESC-189 o, ESC-179 ab | D-94 | CA-26, CA-27 |
 | Entero de faltas pegado a `_` que evade §11.3 (3) | Mitigado: solo excluye enteros pegados a `_` o seguidos de `.` + letra; "2025 faltas" suelto falla | ESC-179 ab | D-94 | CA-26 |

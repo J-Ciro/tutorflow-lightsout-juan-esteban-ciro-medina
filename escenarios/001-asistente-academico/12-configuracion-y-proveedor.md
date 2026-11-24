@@ -1,6 +1,6 @@
 # 12 · Configuración, prompt y proveedor del LLM
 
-> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §4, §5, §13 · CA-15, CA-20, CA-23
+> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §4, §5, §13 · CA-11, CA-15, CA-20, CA-23
 
 Salvo que se indique otra cosa:
 
@@ -23,7 +23,7 @@ Notación en [`README.md`](../README.md#notación).
 | g | `Limites:MaximoSeccionesRecuperadas` | `7` | No arranca | `Configuración inválida: Limites:MaximoSeccionesRecuperadas = "7" (entero de 1 a 6)` |
 | h | `Limites:PresupuestoDiarioUsd` | `0` | No arranca | `Configuración inválida: Limites:PresupuestoDiarioUsd = "0" (decimal mayor que 0 y hasta 1000)` |
 | i | `Limites:PresupuestoDiarioUsd` | `0,5` | No arranca | `Configuración inválida: Limites:PresupuestoDiarioUsd = "0,5" (decimal mayor que 0 y hasta 1000)` |
-| j | `LLM_PRECIO_ENTRADA` | `-1` | No arranca | `Configuración inválida: LLM_PRECIO_ENTRADA = "-1" (decimal de 0 a 1000)` |
+| j | `LLM_PRECIO_ENTRADA` (salida `2.50`) | `-1` | No arranca | `Configuración inválida: LLM_PRECIO_ENTRADA = "-1" (decimal de 0 a 1000)` |
 | k | `Autorizacion:Asignaturas:2:Codigo` | `bd203` | No arranca | `Configuración inválida: Autorizacion:Asignaturas:2:Codigo = "bd203" (formato ^[A-Z]{2,4}-[0-9]{3}\z)` |
 | l | `Autorizacion:Asignaturas:7:Codigo` | `BD-203` | No arranca | `Configuración inválida: Autorizacion:Asignaturas:7:Codigo = "BD-203" (código duplicado de Autorizacion:Asignaturas:2:Codigo)` |
 | m | `Autorizacion:Asignaturas:6:Nombre` | vacío | No arranca | `Configuración inválida: Autorizacion:Asignaturas:6:Nombre = "" (nombre vacío)` |
@@ -56,6 +56,27 @@ Notación en [`README.md`](../README.md#notación).
   - Con la reserva en 0, las 3 darían 200 (control desactivado).
 - **(r)–(w), (ag)–(ai):** salud 200, sin `Configuración inválida` ni `Configuración ignorada`, valor efectivo indicado; en (v), (ag) y (ah), la línea esperada está en el log de arranque.
 - Reglas: RNF-05, SEG-11, SEG-13, D-39, D-40, D-70, D-72. CA-15.
+
+## Precio del modelo en uso (ESC-181 aj–as)
+
+Doble del LLM con 1 llamada que reporta E' = ⌈1.04 × E⌉ tokens de entrada y 200 de salida (plan §4.4); EST-001 pregunta "¿Cuál es la nota mínima para aprobar una asignatura?". "Advertencia de precio" = `Configuración ignorada: el modelo <nombre> no tiene precio configurado; costoUsd será 0. Define LLM_PRECIO_ENTRADA y LLM_PRECIO_SALIDA.`
+
+| ID | Actor | Entrada | Resultado esperado | Regla |
+| --- | --- | --- | --- | --- |
+| ESC-181 aj `@feliz` | `gemini`, `LLM_MODELO=gemini-3.5-flash-lite`, sin variables de precio | La pregunta | Arranca sin advertencia de precio; 200; `costoUsd` = E' × 0.30 / 10⁶ + 200 × 2.50 / 10⁶ > 0 (tolerancia 1e-6); sin `precioDesconocido` | D-105 |
+| ESC-181 ak | `openai-compatible`, `LLM_MODELO=deepseek-chat` (fuera de la tabla), variables `1.25` y `10.00` | La pregunta | Arranca sin advertencia; `costoUsd` = E' × 1.25 / 10⁶ + 200 × 10.00 / 10⁶; sin `precioDesconocido` | D-105 |
+| ESC-181 al `@alterno` | Igual que (aj) con variables `1.0` y `5.0` | La pregunta | `costoUsd` = E' × 1.0 / 10⁶ + 200 × 5.0 / 10⁶: las variables mandan sobre la tabla | D-105 |
+| ESC-181 am `@alterno` `@operacion` | `openai-compatible`, `LLM_MODELO=deepseek-chat`, sin variables | La pregunta, 3 veces | Arranca; exactamente 1 advertencia de precio con `<nombre>` = `deepseek-chat`; 3 × 200 con `tokens` > 0, `costoUsd` 0 y `precioDesconocido: true` | D-39, D-105 |
+| ESC-181 an `@abuso` | `LLM_PRECIO_SALIDA` (entrada `0.30`), uno por corrida | `abc`, `-1`, `1000.01`, `0,3`, ` 2.50` | No arranca con `Configuración inválida: LLM_PRECIO_SALIDA = "<valor>" (decimal de 0 a 1000)` | RNF-05, D-105 |
+| ESC-181 ao `@alterno` | Una sola del par, una por corrida | (1) solo entrada `0.30`; (2) solo salida `2.50`; (3) `Llm:Proveedores:gemini:Modelos:1:PrecioSalidaPorMillon` ausente | No arranca, con la línea de la nota ESC-181 ao | D-105 |
+| ESC-181 ap `@alterno` | Igual que (ak) con variables `0` y `1000` (límites exactos) | La pregunta | Arranca sin advertencia; `costoUsd` = 200 × 1000 / 10⁶ = 0.2 | D-105 |
+| ESC-181 aq `@operacion` | `ollama` con `qwen2.5:7b` y, en otra corrida, con `llama3.1:8b` (fuera de la tabla), sin variables | La pregunta | Arranca sin advertencia de precio; `costoUsd` 0; sin `precioDesconocido` | D-39, D-105 |
+| ESC-181 ar `@abuso` | `openai-compatible`, `LLM_MODELO` = `deepseek-chat`, un salto de línea real y `Arranque correcto` | Arranque | 1 advertencia de precio con `<nombre>` = `deepseek-chat\nArranque correcto` (`\n` como 2 caracteres); ninguna línea empieza por `Arranque correcto`; 0 apariciones de la llave | SEG-11, D-105 |
+| ESC-181 as `@permisos` | Igual que (aj) | EST-001: "¿Cuáles son las notas de EST-002?" | 403 NEG; `tokens` y `costoUsd` 0; 0 llamadas; `denegada` `tercero_mencionado`: el precio no cambia el 403 previo | D-07, D-105 |
+
+- **Cálculo con E' = 1.000:** (aj) 1.000 × 0.30 / 10⁶ + 200 × 2.50 / 10⁶ = 0.0003 + 0.0005 = 0.0008; (ak) 0.00125 + 0.002 = 0.00325; (al) 0.001 + 0.001 = 0.002 (no 0.0008); (ap) 0 + 0.2 = 0.2. La prueba usa el E' que reporta el doble.
+- **ESC-181 ao:** (1) `Configuración inválida: LLM_PRECIO_SALIDA = "" (se requiere junto con LLM_PRECIO_ENTRADA)`; (2) la simétrica con `LLM_PRECIO_ENTRADA`; (3) `Configuración inválida: Llm:Proveedores:gemini:Modelos:1:PrecioSalidaPorMillon = "" (se requiere junto con Llm:Proveedores:gemini:Modelos:1:PrecioEntradaPorMillon)`.
+- CA-11, CA-15.
 
 ## Catálogo, avisos y claves nuevas
 
