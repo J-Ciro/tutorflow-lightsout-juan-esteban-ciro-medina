@@ -119,16 +119,17 @@ public sealed partial class FormatoDeDatosCalculadosTests
 
     private static async Task<string> ResultadoDeProgramaAsync(Usuario coordinador, string pregunta = PreguntaDePerdidas)
     {
-        var escenario = Con((_, llamada) => llamada == 0 ? Herramienta(HerramientasAsistente.Programa) : Texto(Textos.SinInformacion));
+        var escenario = Con(Fijo(Textos.SinInformacion));
         await escenario.PreguntarAsync(coordinador, pregunta);
-        return ContenidoDeHerramienta(escenario.Llm, 1);
+        return DatosDelPrimerTurno(escenario.Llm);
     }
 
-    private static string ContenidoDeHerramienta(LlmDoble llm, int indice)
+    private static string DatosDelPrimerTurno(LlmDoble llm)
     {
-        var mensaje = llm.Solicitudes[indice].Mensajes.First(m => m.Rol == RolMensaje.Herramienta).Contenido;
-        var lineas = Lineas(mensaje);
-        return string.Join("\n", lineas.Skip(1).Take(lineas.Length - 2));
+        var lineas = Lineas(llm.TextoDeLlamada(0));
+        var inicio = Array.FindIndex(lineas, l => l.Contains("<<<DATOS_NO_CONFIABLES", StringComparison.Ordinal));
+        var fin = Array.FindIndex(lineas, inicio + 1, l => l.Contains("FIN_DATOS_NO_CONFIABLES", StringComparison.Ordinal));
+        return string.Join("\n", lineas.Skip(inicio + 1).Take(fin - inicio - 1));
     }
 
     private static string[] ReglasDe(string resultado)
@@ -219,13 +220,11 @@ public sealed partial class FormatoDeDatosCalculadosTests
     [Trait("RN", "RN-13")]
     public async Task ESC_189_El_detalle_del_coordinador_pasa_las_frases_a_tercera_persona(string coordinador, string estudianteId, string linea)
     {
-        var escenario = Con((_, llamada) => llamada == 0
-            ? Herramienta(HerramientasAsistente.Estudiante, $$"""{"estudianteId":"{{estudianteId}}"}""")
-            : Texto(Textos.SinInformacion));
+        var escenario = Con(Fijo("Estos son los datos solicitados."));
 
-        await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, coordinador), $"¿Cómo va {estudianteId} en asistencia?");
+        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, coordinador), $"¿Cómo va {estudianteId} en asistencia?");
 
-        Assert.Contains(linea, Lineas(ContenidoDeHerramienta(escenario.Llm, 1)));
+        Assert.Contains(linea, Lineas(resultado.Respuesta!.Respuesta));
     }
 
     [Fact]
