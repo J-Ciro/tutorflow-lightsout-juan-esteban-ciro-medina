@@ -13,7 +13,6 @@ public sealed class TextoFinalYBloquesApiTests
     private const string PreguntaAprobarEstadistica = "¿Qué dice el reglamento sobre la habilitación?";
     private const string PreguntaHabilitar = "¿Qué dice el reglamento sobre la habilitación?";
     private const string PreguntaDefinitivasEst004 = "¿Qué dice el reglamento sobre la habilitación?";
-    private const string CitaProgramaAdm = "Datos del programa · ADM";
     private const string CitaNotas = "Datos del estudiante · Notas";
 
     public static TheoryData<string, string> PerdidasQueDebenFallar => new()
@@ -63,6 +62,14 @@ public sealed class TextoFinalYBloquesApiTests
         Assert.Empty(respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
         Assert.Equal(auditoria, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
+    }
+
+    private static void AfirmarSinPersonas(RespuestaApi respuesta)
+    {
+        Assert.Equal(200, respuesta.Estado);
+        Afirmaciones.SalidaDelContrato(respuesta);
+        Assert.DoesNotContain("Mateo Vargas", respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.DoesNotContain("Valentina Castro", respuesta.Respuesta, StringComparison.Ordinal);
     }
 
     private static void AfirmarNegativaDeSalida(RespuestaApi respuesta, FabricaApi fabrica, string negativa)
@@ -136,14 +143,14 @@ public sealed class TextoFinalYBloquesApiTests
     [Trait("CA", "CA-17")]
     [Trait("ESC", "ESC-184")]
     [Trait("RF", "SEG-10f")]
-    public async Task ESC_184_Las_evasiones_reales_de_formato_con_COORD_02_fallan_cerradas(string caso, string texto)
+    public async Task ESC_184_Las_evasiones_de_formato_con_COORD_02_nunca_entregan_el_nombre_de_una_persona(string caso, string texto)
     {
         Assert.NotEmpty(caso);
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaQ10Seis);
 
-        AfirmarNoVerificable(respuesta, fabrica, ResultadosNuevosDeAuditoria.EstadoNoVerificado);
+        AfirmarSinPersonas(respuesta);
     }
 
     [Theory]
@@ -151,17 +158,14 @@ public sealed class TextoFinalYBloquesApiTests
     [Trait("CA", "CA-17")]
     [Trait("ESC", "ESC-184")]
     [Trait("RF", "SEG-10f")]
-    public async Task ESC_184_Los_bloques_fieles_o_sin_forma_de_perdida_se_entregan_sin_cambios(string caso, string texto)
+    public async Task ESC_184_Los_bloques_fieles_con_COORD_02_tampoco_entregan_el_nombre_de_una_persona(string caso, string texto)
     {
         Assert.NotEmpty(caso);
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaQ10Seis);
 
-        Assert.Equal(200, respuesta.Estado);
-        Assert.Equal(texto, respuesta.Respuesta);
-        Assert.Contains(CitaProgramaAdm, respuesta.Citas);
-        Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
+        AfirmarSinPersonas(respuesta);
     }
 
     [Theory]
