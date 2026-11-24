@@ -12,7 +12,7 @@ public sealed partial class CamposLigadosD76Tests
     private const string PreguntaPromedio = "¿Cuál es mi promedio?";
     private const string PreguntaPromedioPonderado = "¿Cuál es mi promedio ponderado del periodo?";
     private const string PreguntaDefinitivaEstadistica = "¿Cuál es mi nota definitiva en Estadística?";
-    private const string PreguntaPerdidas = "¿Qué dice el reglamento sobre la habilitación?";
+    private static readonly string[] Adm = ["EST-004", "EST-005", "EST-006"];
 
     public static TheoryData<string, string, string, ResultadoAuditoria> EstudianteConCifraOEstadoFalso => new()
     {
@@ -110,11 +110,7 @@ public sealed partial class CamposLigadosD76Tests
     [Trait("D", "D-76")]
     public async Task ESC_175_st_El_estado_de_un_estudiante_del_programa_que_los_datos_contradicen_da_no_verificable(string texto)
     {
-        var escenario = Con(SalidasVerificadas.LeeElProgramaYResponde(texto), IndiceDeNormas());
-
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), PreguntaPerdidas);
-
-        AfirmarNoVerificado(resultado, escenario, ResultadoAuditoria.EstadoNoVerificado);
+        await ClasesVerificadoras.AfirmarFallaAsync("COORD-02", texto, Adm);
     }
 
     [Theory]
@@ -124,11 +120,7 @@ public sealed partial class CamposLigadosD76Tests
     [Trait("D", "D-76")]
     public async Task ESC_175_t_La_prueba_academica_de_quien_tiene_promedio_menor_a_3_se_entrega(string texto)
     {
-        var escenario = Con(SalidasVerificadas.LeeElProgramaYResponde(texto), IndiceDeNormas());
-
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), PreguntaPerdidas);
-
-        SalidasVerificadas.AfirmarRespondida(resultado, escenario, texto);
+        await ClasesVerificadoras.AfirmarPasaAsync("COORD-02", texto, Adm);
     }
 
     [Fact]
@@ -137,12 +129,7 @@ public sealed partial class CamposLigadosD76Tests
     [Trait("D", "D-76")]
     public async Task ESC_179_x_La_voz_en_segunda_persona_sobre_datos_de_un_estudiante_nombrado_por_el_coordinador_falla()
     {
-        const string texto = "Tu promedio es 2.65. Definitivas: Microeconomía 1.8, Estadística 2.3.";
-        var escenario = Con(SalidasVerificadas.LeeElProgramaYElDetalleYResponde(texto, "EST-005"), IndiceDeNormas());
-
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), PreguntaPerdidas);
-
-        AfirmarNoVerificado(resultado, escenario, ResultadoAuditoria.EstadoNoVerificado);
+        await ClasesVerificadoras.AfirmarFallaAsync("COORD-02", "Tu promedio es 2.65. Definitivas: Microeconomía 1.8, Estadística 2.3.", Adm);
     }
 
     [Theory]
@@ -153,11 +140,7 @@ public sealed partial class CamposLigadosD76Tests
     [Trait("D", "D-76")]
     public async Task ESC_179_x_La_voz_correcta_o_la_referencia_al_programa_se_entrega(string texto)
     {
-        var escenario = Con(SalidasVerificadas.LeeElProgramaYElDetalleYResponde(texto, "EST-005"), IndiceDeNormas());
-
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), PreguntaPerdidas);
-
-        SalidasVerificadas.AfirmarRespondida(resultado, escenario, texto);
+        await ClasesVerificadoras.AfirmarPasaAsync("COORD-02", texto, Adm);
     }
 
     [Fact]
