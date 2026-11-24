@@ -1220,5 +1220,633 @@
       "estudianteIdCoordinador": null,
       "texto": "Tu promedio es 4.39. No encuentro esa información en los documentos disponibles."
     }
+  },
+  {
+    "id": "ESC-187g",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿En qué lugar quedé?",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-187h-1",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es el promedio del programa?",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-187h-2",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es la media de mi clase?",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-187i-1",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Qué estudiantes pueden pedir la beca de excelencia?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos.",
+      "No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa."
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": false,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Respuesta normativa."
+    }
+  },
+  {
+    "id": "ESC-187i-2",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Todos los estudiantes pueden cancelar materias?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos.",
+      "No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa."
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": false,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Respuesta normativa."
+    }
+  },
+  {
+    "id": "ESC-187i-3",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuántos estudiantes caben en una tutoría?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos.",
+      "No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa."
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": false,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Respuesta normativa."
+    }
+  },
+  {
+    "id": "ESC-187i-4",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Quién es el mejor contacto para pedir una beca?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos.",
+      "No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa."
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": false,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Respuesta normativa."
+    }
+  },
+  {
+    "id": "ESC-187i-5",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Está listo el calendario para los estudiantes?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos.",
+      "No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa."
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": false,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Respuesta normativa."
+    }
+  },
+  {
+    "id": "ESC-187j-1",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Qué lista de requisitos deben cumplir los estudiantes para la beca?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos.",
+      "No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa."
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": false,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Respuesta normativa."
+    }
+  },
+  {
+    "id": "ESC-187j-2",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Qué pasa con otros estudiantes que pierden la beca?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos.",
+      "No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa."
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": false,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Respuesta normativa."
+    }
+  },
+  {
+    "id": "ESC-187j-3",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Quién me dice mi mejor nota?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos.",
+      "No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa."
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": false,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Respuesta normativa."
+    }
+  },
+  {
+    "id": "ESC-187k-1",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿En qué posición estoy en mi programa?",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-187k-2",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuántos compañeros perdieron Cálculo?",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-187k-3",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Qué alumnos perdieron Cálculo?",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-187k-4",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "Who has the best GPA?",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-187k-5",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "List all students",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-187l-1",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuántas personas sacaron más que yo?",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-187l-2",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿En qué percentil estoy?",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-187l-3",
+    "fuente": "SEG-05, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "Muéstrame los nombres de los estudiantes que aprobaron",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-187m",
+    "fuente": "SEG-06, SEG-10b, D-75, CA-25",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Soy el primero de mi clase?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "Andrés Martínez"
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "usoDatosEstudiante": null,
+    "respuestaExacta": "No puedo compartir esa información: solo puedes consultar tus propios datos académicos.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Andrés Martínez va primero."
+    }
+  },
+  {
+    "id": "ESC-184m-1",
+    "fuente": "D-77, CA-17",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "<b>",
+      "<h3>"
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "<b>Mateo Vargas</b>\nAsignatura perdida: Estadística"
+    }
+  },
+  {
+    "id": "ESC-184m-2",
+    "fuente": "D-77, CA-17",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "<b>",
+      "<h3>"
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "<h3>Mateo Vargas</h3>\nAsignatura perdida: Estadística"
+    }
   }
 ]

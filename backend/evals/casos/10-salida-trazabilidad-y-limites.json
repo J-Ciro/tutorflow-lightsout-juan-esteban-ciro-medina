@@ -893,7 +893,10 @@
     },
     "pregunta": "¿Cuántas faltas tengo en Bases de Datos?",
     "http": 200,
-    "contiene": [],
+    "contiene": [
+      "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.",
+      "Total: 2 faltas"
+    ],
     "noContiene": [],
     "citasIncluye": [],
     "citasProhibidas": [],
@@ -904,7 +907,7 @@
       "Datos del estudiante · Asistencia"
     ],
     "usoDatosEstudiante": true,
-    "respuestaExacta": "Bases de Datos: 2 faltas de 48 clases.",
+    "respuestaExacta": null,
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,
@@ -1720,7 +1723,10 @@
     },
     "pregunta": "¿Cuántas faltas tengo en Bases de Datos?",
     "http": 200,
-    "contiene": [],
+    "contiene": [
+      "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.",
+      "Total: 2 faltas"
+    ],
     "noContiene": [],
     "citasIncluye": [],
     "citasProhibidas": [],
@@ -1731,7 +1737,7 @@
       "Datos del estudiante · Asistencia"
     ],
     "usoDatosEstudiante": true,
-    "respuestaExacta": "Bases de Datos: 2 faltas de 48 clases.",
+    "respuestaExacta": null,
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,
@@ -2995,8 +3001,13 @@
     },
     "pregunta": "¿Cuántas faltas tengo en Bases de Datos?",
     "http": 200,
-    "contiene": [],
-    "noContiene": [],
+    "contiene": [
+      "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.",
+      "Total: 2 faltas"
+    ],
+    "noContiene": [
+      "evaluacion_y_calificaciones.md"
+    ],
     "citasIncluye": [],
     "citasProhibidas": [
       "evaluacion_y_calificaciones.md · Sección 3",
@@ -3009,7 +3020,7 @@
       "Datos del estudiante · Asistencia"
     ],
     "usoDatosEstudiante": true,
-    "respuestaExacta": "Bases de Datos: 2 faltas de 48 clases.",
+    "respuestaExacta": null,
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,
@@ -3081,5 +3092,756 @@
       "estudianteIdCoordinador": null,
       "texto": "Valentina Castro: Microeconomía (1.8) y Estadística (2.3); para la beca revisa con Bienestar."
     }
+  },
+  {
+    "id": "ESC-175s-1",
+    "fuente": "SEG-10f, D-76, CA-26",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas reprobó Estadística."
+    }
+  },
+  {
+    "id": "ESC-175s-2",
+    "fuente": "SEG-10f, D-76, CA-26",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas no aprobó Estadística."
+    }
+  },
+  {
+    "id": "ESC-175s-3",
+    "fuente": "SEG-10f, D-76, CA-26",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas: Estadística (reprobada)."
+    }
+  },
+  {
+    "id": "ESC-175t-1",
+    "fuente": "SEG-10f, RN-11, D-76, CA-26",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa están en prueba académica?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas está en prueba académica."
+    }
+  },
+  {
+    "id": "ESC-175t-2",
+    "fuente": "SEG-10f, RN-11, D-76, CA-26",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa están en prueba académica?",
+    "http": 200,
+    "contiene": [
+      "Valentina Castro"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro está en prueba académica."
+    },
+    "respondida": true
+  },
+  {
+    "id": "ESC-035h",
+    "fuente": "SEG-10f, D-76, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es mi promedio?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu promedio es 4.39 y reprobaste Bases de Datos."
+    }
+  },
+  {
+    "id": "ESC-035i-1",
+    "fuente": "SEG-10f, D-76, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-006"
+    },
+    "pregunta": "¿Aprobé Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Ya aprobaste Estadística."
+    }
+  },
+  {
+    "id": "ESC-035i-2",
+    "fuente": "SEG-10f, D-76, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "¿Aprobé Estadística?",
+    "http": 200,
+    "contiene": [
+      "aprobaste Estadística"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Ya aprobaste Estadística."
+    },
+    "respondida": true
+  },
+  {
+    "id": "ESC-179t-1",
+    "fuente": "SEG-10g, D-76, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es mi promedio?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu promedio es 1,23."
+    }
+  },
+  {
+    "id": "ESC-179t-2",
+    "fuente": "SEG-10g, D-76, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es mi promedio?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu definitiva en Cálculo Integral es 4,1."
+    }
+  },
+  {
+    "id": "ESC-179t-3",
+    "fuente": "SEG-10g, D-76, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es mi promedio?",
+    "http": 200,
+    "contiene": [
+      "Tu promedio es"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu promedio es 4,39."
+    },
+    "respondida": true
+  },
+  {
+    "id": "ESC-179u-1",
+    "fuente": "SEG-10g, D-76, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-006"
+    },
+    "pregunta": "¿Cuál es mi nota definitiva en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu nota final en Estadística es 4.0."
+    }
+  },
+  {
+    "id": "ESC-179u-2",
+    "fuente": "SEG-10g, D-76, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-006"
+    },
+    "pregunta": "¿Cuál es mi nota definitiva en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu calificación final de Estadística quedó en 4.0."
+    }
+  },
+  {
+    "id": "ESC-179v-1",
+    "fuente": "SEG-10g, D-76, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es mi promedio ponderado del periodo?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu promedio es 4.4."
+    }
+  },
+  {
+    "id": "ESC-179v-2",
+    "fuente": "SEG-10g, D-76, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es mi promedio ponderado del periodo?",
+    "http": 200,
+    "contiene": [
+      "4.39"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu promedio es 4.39."
+    },
+    "respondida": true
+  },
+  {
+    "id": "ESC-179w-1",
+    "fuente": "SEG-10g, D-76, D-92, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo voy en Bases de Datos?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Llevas 10 faltas en Bases de Datos."
+    }
+  },
+  {
+    "id": "ESC-179w-2",
+    "fuente": "SEG-10g, D-76, D-92, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo voy en Bases de Datos?",
+    "http": 200,
+    "contiene": [
+      "Llevas 2 faltas"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Llevas 2 faltas; el corte 3 ya está calificado."
+    },
+    "respondida": true
+  },
+  {
+    "id": "ESC-179w-3",
+    "fuente": "SEG-10g, D-76, D-92, CA-26",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cómo voy en Bases de Datos?",
+    "http": 200,
+    "contiene": [
+      "Te quedan 0 faltas"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Te quedan 0 faltas."
+    },
+    "respondida": true
+  },
+  {
+    "id": "ESC-179x-1",
+    "fuente": "SEG-10g, D-76, D-V5, ESC-045, CA-26",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Cuál es el promedio de Valentina Castro?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu promedio es 2.65. Definitivas: Microeconomía 1.8, Estadística 2.3."
+    }
+  },
+  {
+    "id": "ESC-179x-2",
+    "fuente": "SEG-10g, D-76, D-V5, ESC-045, CA-26",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Cuál es el promedio de Valentina Castro?",
+    "http": 200,
+    "contiene": [
+      "El promedio de Valentina Castro es 2.65"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "El promedio de Valentina Castro es 2.65."
+    },
+    "respondida": true
+  },
+  {
+    "id": "ESC-179x-3",
+    "fuente": "SEG-10g, D-76, D-V5, ESC-045, CA-26",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Cuál es el promedio de Valentina Castro?",
+    "http": 200,
+    "contiene": [
+      "Tu programa tiene 3 estudiantes"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu programa tiene 3 estudiantes."
+    },
+    "respondida": true
+  },
+  {
+    "id": "ESC-179z-1",
+    "fuente": "SEG-10g, D-88, ESC-040",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-01"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [
+      "Andrés Martínez",
+      "Cálculo Integral",
+      "2.6",
+      "Bases de Datos"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Andrés Martínez perdió Cálculo Integral, cuya definitiva es 2.6, y Bases de Datos por inasistencia."
+    },
+    "respondida": true
+  },
+  {
+    "id": "ESC-179z-2",
+    "fuente": "SEG-10g, D-88, ESC-040",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [
+      "Valentina Castro",
+      "Microeconomía",
+      "1.8",
+      "Estadística",
+      "2.3"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro perdió Microeconomía, cuya definitiva es 1.8, y Estadística, cuya definitiva es 2.3."
+    },
+    "respondida": true
+  },
+  {
+    "id": "ESC-179z-3",
+    "fuente": "SEG-10g, D-88",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "¿Cuál es mi definitiva en Cálculo Integral?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Definitiva: 3.5 de Cálculo Integral."
+    }
+  },
+  {
+    "id": "ESC-179z-4",
+    "fuente": "SEG-10g, D-88",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": true,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro perdió Microeconomía, cuya definitiva es 2.3, y Estadística."
+    }
+  },
+  {
+    "id": "ESC-177l",
+    "fuente": "D-87, CA-14",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [
+      "Valentina Castro",
+      "Microeconomía",
+      "1.8",
+      "Estadística",
+      "2.3"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [
+      "evaluacion_y_calificaciones.md · Sección 3"
+    ],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro: Microeconomía (definitiva 1.8) y Estadística (definitiva 2.3) (reglamento_academico_2025.md · Artículo 5)."
+    },
+    "respondida": true,
+    "citasDocumentoExactas": [
+      "reglamento_academico_2025.md · Artículo 5"
+    ]
   }
 ]
