@@ -39,7 +39,7 @@ public sealed class FugaCompactaD79Tests
     [Trait("CA", "CA-05")]
     [Trait("ESC", "ESC-146")]
     [Trait("D", "D-79")]
-    public async Task ESC_146_b_El_identificador_de_herramienta_ofuscado_se_bloquea_en_forma_compacta(string texto)
+    public async Task ESC_146_b1_El_identificador_de_herramienta_ofuscado_se_bloquea_en_forma_compacta(string texto)
     {
         var escenario = Con(Fijo(texto));
 
@@ -51,10 +51,27 @@ public sealed class FugaCompactaD79Tests
     [Fact]
     [Trait("CA", "CA-05")]
     [Trait("ESC", "ESC-146")]
-    [Trait("D", "D-79")]
-    public async Task ESC_146_b_Consultar_notas_con_espacio_intacto_no_es_fuga()
+    [Trait("D", "D-102")]
+    public async Task ESC_146_b2_Consultar_notas_con_espacio_se_bloquea_tras_un_reintento_de_d()
     {
         var escenario = Con(Fijo("Puedes consultar notas en el portal."));
+
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedio);
+
+        Assert.Equal(Textos.SinInformacion, resultado.Respuesta!.Respuesta);
+        Assert.Empty(resultado.Respuesta.Citas);
+        Assert.Equal(ResultadoAuditoria.FugaBloqueada, resultado.Auditoria);
+        Assert.Equal(2, escenario.Llm.Solicitudes.Count);
+        Assert.True(ReintentoDeLlm.ReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos)));
+    }
+
+    [Fact]
+    [Trait("CA", "CA-05")]
+    [Trait("ESC", "ESC-146")]
+    [Trait("D", "D-102")]
+    public async Task ESC_146_b2_Consultar_tus_notas_con_tus_en_medio_no_es_fuga()
+    {
+        var escenario = Con(Fijo("Puedes consultar tus notas en el portal."));
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedio);
 

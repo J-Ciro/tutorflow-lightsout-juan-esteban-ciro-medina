@@ -81,11 +81,14 @@ public sealed class TextoFinalYBloquesApiTests
     [Trait("RF", "SEG-10c")]
     public async Task ESC_183a_La_cifra_partida_que_deja_la_limpieza_no_se_entrega_como_1_2()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Tu promedio es 1 x.md .2"), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Se aprueba con 1 x.md .2"), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPromedio);
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar una asignatura?");
 
-        AfirmarNoVerificable(respuesta, fabrica, ResultadoAuditoria.NumeroNoVerificado);
+        Assert.Equal(Textos.NoVerificable, respuesta.Respuesta);
+        Assert.Empty(respuesta.Citas);
+        Assert.False(respuesta.UsoDatosEstudiante);
+        Assert.Equal(ResultadoAuditoria.NumeroNoVerificado, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 
     [Fact]

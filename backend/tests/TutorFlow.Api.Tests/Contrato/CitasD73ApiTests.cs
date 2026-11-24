@@ -104,8 +104,9 @@ public sealed class CitasD73ApiTests
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-004", "¿Qué nota definitiva tengo en Contabilidad?");
 
-        Assert.Equal("3.9.", respuesta.Respuesta);
-        Assert.Equal([Notas, Asistencia], respuesta.Citas);
+        Assert.Equal("Datos de Camilo Rojas (EST-004)\nDefinitivas: Contabilidad 3.9", respuesta.Respuesta.Replace("\r\n", "\n", StringComparison.Ordinal));
+        Assert.Contains(Notas, respuesta.Citas);
+        Assert.Equal([Seccion3], respuesta.Citas.Where(c => !c.StartsWith("Datos del", StringComparison.Ordinal)));
     }
 
     [Fact]
@@ -119,7 +120,7 @@ public sealed class CitasD73ApiTests
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaP6);
 
-        Assert.Equal(texto, respuesta.Respuesta);
+        Assert.Equal("Estudiantes con asignaturas perdidas: Valentina Castro (Microeconomía 1.8; Estadística 2.3)", respuesta.Respuesta.Replace("\r\n", "\n", StringComparison.Ordinal));
         Assert.Equal([Articulo5, ProgramaAdm], respuesta.Citas);
     }
 

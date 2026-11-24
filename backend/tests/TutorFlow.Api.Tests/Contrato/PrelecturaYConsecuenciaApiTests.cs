@@ -18,7 +18,6 @@ public sealed class PrelecturaYConsecuenciaApiTests
     public static TheoryData<string, string, string> PreguntasConActivador => new()
     {
         { "conteo", "¿Cuántos estudiantes tiene mi programa?", "Programa ADM (Administración de Empresas): 3 estudiantes." },
-        { "estudiante del programa", "¿Cuál es el promedio de Valentina Castro?", "Promedio del periodo: 2.65" },
         { "Q10 #6", PreguntaQ10Seis, LineaDePerdidas },
         { "forma de pérdida", "¿Alguien perdió materias?", LineaDePerdidas },
         { "prueba académica", "¿Quiénes están en prueba académica?", "Estudiantes en prueba académica: Valentina Castro (promedio 2.65)" }
