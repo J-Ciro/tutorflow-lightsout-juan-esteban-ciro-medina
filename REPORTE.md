@@ -34,16 +34,16 @@ Los tokens salen de las transcripciones de `~/.claude/projects/` (sesión princi
 
 ## 3. Costo del producto por pregunta
 
-Mezcla: las 10 preguntas de ejemplo de Q10 con el mismo peso (P1, P4, P7 y P8 de reglamento; P2, P3 y P5 de datos propios; P6 del coordinador; P9 y P10 sin LLM). Tokens: promedio por respuesta medido con Gemini `gemini-3.5-flash-lite` por HTTP (fase V, 5 corridas por pregunta, más ESC-040…046 en el coordinador). Precio: USD 0,30 / 1 M de entrada y 2,50 / 1 M de salida (lista oficial de Google). El USD por respuesta lo calcula la API con los tokens de entrada y salida separados; se completa con la medición final tras D-98.
+Cálculo con precios, sin llamadas nuevas a la API: tokens medidos con Gemini `gemini-3.5-flash-lite` por HTTP (fase V, 5 corridas por pregunta) × precio de lista USD 0,30 / 1 M de entrada y 2,50 / 1 M de salida ([AI Studio](https://aistudio.google.com/docs/models/gemini-3.5-flash-lite)). La medición por HTTP solo da el total de tokens; la salida se estima con la longitud de la respuesta entregada (≈ 3,5 caracteres por token) y el resto se cuenta como entrada. Mezcla: las 10 preguntas de ejemplo de Q10 con el mismo peso.
 
-| Tipo de pregunta | % (mezcla Q10) | Tokens prom. | USD prom. |
-| --- | --- | --- | --- |
-| Reglamento (RAG) | 40 % | 1.198 | pendiente (medición final) |
-| Datos propios (herramientas) | 30 % | 2.136 | pendiente (medición final) |
-| Coordinador (programa) | 10 % | 2.145 | pendiente (medición final) |
-| Sin información o denegada en el filtro previo | 20 % | 0 | 0 |
+| Tipo de pregunta | % (mezcla Q10) | Tokens prom. | Salida estimada | USD prom. |
+| --- | --- | --- | --- | --- |
+| Reglamento (RAG): P1, P4, P7, P8 | 40 % | 1.198 | 38–106 | 0,000517 |
+| Datos propios (herramientas): P2, P3, P5 | 30 % | 2.136 | 25–56 | 0,000738 |
+| Coordinador (programa): P6 y ESC-040…046 | 10 % | 2.145 | 17–56 | 0,000736 |
+| Sin información o denegada en el filtro previo: P9, P10 | 20 % | 0 | 0 | 0 |
 
-**Costo estimado por 1.000 preguntas:** pendiente de la medición final (= Σ % × USD prom. × 1.000), con `gemini-3.5-flash-lite` y sus precios en `appsettings.json`.
+**Costo estimado por 1.000 preguntas:** ≈ USD 0,50 (= 0,4 × 0,000517 + 0,3 × 0,000738 + 0,1 × 0,000736) × 1.000. Cotas con los mismos tokens: USD 0,40 si todo fuera entrada y USD 3,34 si todo fuera salida (por ejemplo, con tokens de razonamiento facturados como salida). El precio de lista puede diferir de la factura (riesgo aceptado por el humano, D-105). Las cifras se midieron antes de D-98; el modo bloque quita las herramientas en las preguntas de datos, así que se espera igual o menos.
 
 ## 4. Incidentes de la fábrica
 Agentes que reportaron éxito falso, bucles que no convergieron o fallos de CI.
