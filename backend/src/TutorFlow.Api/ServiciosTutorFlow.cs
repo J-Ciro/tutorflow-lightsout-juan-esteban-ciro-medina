@@ -144,7 +144,6 @@ public static class ServiciosTutorFlow
         return new ConfiguracionAsistente(
             precio,
             configuracion[ClaveMarcadorCanario],
-            null,
             ValidadorDeConfiguracion.Efectivo(configuracion, ClaveReservaPorPeticion),
             Entero(configuracion, ClaveRelevanciaMinima, ConfiguracionAsistente.RelevanciaMinimaPorDefecto),
             Entero(configuracion, ClaveApoyoMinimoRespaldo, ConfiguracionAsistente.ApoyoMinimoPorDefecto),
