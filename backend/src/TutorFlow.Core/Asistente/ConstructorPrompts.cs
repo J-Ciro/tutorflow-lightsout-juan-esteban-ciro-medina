@@ -41,6 +41,9 @@ public static partial class ConstructorPrompts
 
     private static readonly Dictionary<string, string> PresentacionesDeSeccion = new(StringComparer.Ordinal)
     {
+        ["evaluacion_y_calificaciones.md · Sección 2"] =
+            "Cada asignatura se evalúa en tres cortes: Corte 1 (semanas 1 a 5), peso 30%; "
+            + "Corte 2 (semanas 6 a 10), peso 30%; Corte 3 (semanas 11 a 16), peso 40%.",
         ["bienestar_y_becas.md · Sección 3.1"] =
             "Requisitos de la beca por rendimiento académico (50% de descuento en la matrícula del periodo siguiente):\n\n"
             + "1. Promedio ponderado del periodo igual o superior a 4.3.\n"
