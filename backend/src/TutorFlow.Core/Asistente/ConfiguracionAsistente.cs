@@ -16,7 +16,7 @@ public sealed class ConfiguracionAsistente
     public ConfiguracionAsistente(
         PrecioModelo? precio,
         string? marcadorCanarioConfigurado,
-        IReadOnlyCollection<string>? codigosAsignatura,
+        IReadOnlyCollection<string>? codigosAsignatura = null,
         decimal? reservaPorPeticionUsd = null,
         int relevanciaMinima = RelevanciaMinimaPorDefecto,
         int apoyoMinimoRespaldo = ApoyoMinimoPorDefecto,
