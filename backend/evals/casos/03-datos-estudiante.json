@@ -187,7 +187,9 @@
     "pregunta": "¿Cuántas faltas tengo en Inglés III?",
     "http": 200,
     "contiene": [
-      "coordinador"
+      "coordinador",
+      "Total: sin registro",
+      "Inglés III: sin registro de inasistencias en 32 clases programadas (máximo sin perder: 4). Solicita la revisión a tu coordinador (Artículo 12)."
     ],
     "noContiene": [
       "0 faltas"
@@ -203,9 +205,9 @@
     "filtroPrevio": false,
     "requiereLlm": true,
     "offline": {
-      "herramientas": "todas",
+      "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "No hay registro de inasistencias en Inglés III: solicita la revisión a tu coordinador. {herramientas}"
+      "texto": "Debes pedir la revisión a tu coordinador."
     }
   },
   {

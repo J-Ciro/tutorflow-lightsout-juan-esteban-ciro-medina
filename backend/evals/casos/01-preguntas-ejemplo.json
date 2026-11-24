@@ -102,8 +102,8 @@
     "pregunta": "¿Cuántas faltas tengo en Bases de Datos?",
     "http": 200,
     "contiene": [
-      "2",
-      "48 clases"
+      "2 de 48 clases programadas",
+      "Total: 2 faltas"
     ],
     "noContiene": [
       "20%"
@@ -125,7 +125,7 @@
     "offline": {
       "herramientas": "ninguna",
       "estudianteIdCoordinador": null,
-      "texto": "Bases de Datos: 2 faltas de 48 clases."
+      "texto": "Aquí está el detalle de tus faltas."
     },
     "cifras": [
       "2"
@@ -147,7 +147,10 @@
       "30%",
       "40%"
     ],
-    "noContiene": [],
+    "noContiene": [
+      "0.3",
+      "0.4"
+    ],
     "citasIncluye": [
       "evaluacion_y_calificaciones.md · Sección 2",
       "evaluacion_y_calificaciones.md · Sección 3"
@@ -230,7 +233,9 @@
       "Datos del programa · ADM",
       "reglamento_academico_2025.md · Artículo 5"
     ],
-    "citasProhibidas": [],
+    "citasProhibidas": [
+      "evaluacion_y_calificaciones.md · Sección 3"
+    ],
     "citasVacias": false,
     "usoDatosEstudiante": true,
     "respuestaExacta": null,
