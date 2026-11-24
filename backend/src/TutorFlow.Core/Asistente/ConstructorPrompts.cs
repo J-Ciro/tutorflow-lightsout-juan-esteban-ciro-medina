@@ -45,6 +45,9 @@ public static partial class ConstructorPrompts
 
     private static readonly Dictionary<string, string> PresentacionesDeSeccion = new(StringComparer.Ordinal)
     {
+        ["bienestar_y_becas.md · Sección 1"] =
+            "Atención de Bienestar en el edificio B, piso 2: lunes a viernes de 8:00 a 17:00; sábados de 8:00 a 12:00. "
+            + "Correo: bienestar@horizonte.edu.co (ficticio).",
         ["evaluacion_y_calificaciones.md · Sección 2"] =
             "Cada asignatura se evalúa en tres cortes: Corte 1 (semanas 1 a 5), peso 30%; "
             + "Corte 2 (semanas 6 a 10), peso 30%; Corte 3 (semanas 11 a 16), peso 40%.",
