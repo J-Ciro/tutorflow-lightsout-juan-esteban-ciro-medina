@@ -169,7 +169,7 @@ internal sealed class CierreDeRespuesta
         }
 
         IReadOnlyList<Cita> citas = [.. documentos.Concat(sesion.Registro.Citas).Distinct()];
-        return CierreEvaluado.Entregable(completo, citas, ResultadoAuditoria.Respondida);
+        return CierreEvaluado.Entregable(DatosObligatorios.Anexar(completo, citas), citas, ResultadoAuditoria.Respondida);
     }
 
     private static string ConBloque(SesionPregunta sesion, string introduccion)
