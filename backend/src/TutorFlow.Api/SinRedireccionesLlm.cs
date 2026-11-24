@@ -20,9 +20,11 @@ public sealed class SinRedireccionesLlm(string nombreCliente) : IHttpMessageHand
         {
             case SocketsHttpHandler sockets:
                 sockets.AllowAutoRedirect = false;
+                sockets.UseCookies = false;
                 break;
             case HttpClientHandler cliente:
                 cliente.AllowAutoRedirect = false;
+                cliente.UseCookies = false;
                 break;
         }
     }
