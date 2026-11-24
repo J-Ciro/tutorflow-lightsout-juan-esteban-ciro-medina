@@ -24,7 +24,7 @@ public sealed class DefinitivaSoloConLecturaDelProgramaTests
     [Trait("SEG", "SEG-10g")]
     public async Task ESC_179k_La_definitiva_que_no_esta_en_el_resultado_del_programa_da_numero_no_verificado()
     {
-        var escenario = ConSoloElPrograma("La definitiva de Valentina Castro en Estadística es 3.2.");
+        var escenario = ConSoloElPrograma("La definitiva en Estadística es 3.2.");
 
         var resultado = await escenario.PreguntarAsync(Coord02, PreguntaDefinitiva);
 
@@ -42,7 +42,7 @@ public sealed class DefinitivaSoloConLecturaDelProgramaTests
     [Trait("SEG", "SEG-10g")]
     public async Task ESC_179l_La_definitiva_que_lista_el_resultado_del_programa_se_entrega_con_la_cita_del_programa()
     {
-        const string texto = "La definitiva de Valentina Castro en Estadística es 2.3.";
+        const string texto = "La definitiva en Estadística es 2.3.";
         var escenario = ConSoloElPrograma(texto);
 
         var resultado = await escenario.PreguntarAsync(Coord02, PreguntaDefinitiva);

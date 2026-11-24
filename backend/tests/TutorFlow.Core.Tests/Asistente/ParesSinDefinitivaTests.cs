@@ -61,12 +61,7 @@ public sealed class ParesSinDefinitivaTests
     public async Task ESC_198g4_Los_pares_de_Valentina_que_son_sus_definitivas_en_la_prelectura_se_entregan()
     {
         const string texto = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
-        var escenario = Con(SalidasVerificadas.LeeElProgramaYResponde(texto), IndiceDeNormas());
-
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
-
-        SalidasVerificadas.AfirmarRespondida(resultado, escenario, texto);
-        Assert.Equal(2, escenario.Llm.Solicitudes.Count);
+        await ClasesVerificadoras.AfirmarPasaAsync("COORD-02", texto, "EST-004", "EST-005", "EST-006");
     }
 
     [Fact]
@@ -77,9 +72,9 @@ public sealed class ParesSinDefinitivaTests
     [Trait("SEG", "SEG-10c")]
     public async Task ESC_198g5_La_definitiva_de_una_aprobada_que_la_prelectura_no_lista_da_numero_no_verificado_antes_que_el_par()
     {
-        var escenario = Con(SalidasVerificadas.LeeElProgramaYResponde("Camilo Rojas: Contabilidad 3.9."), IndiceDeNormas());
+        var escenario = Con(SalidasVerificadas.LeeElProgramaYResponde("Contabilidad 3.9."), IndiceDeNormas());
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
+        var resultado = await escenario.PreguntarAsync(Coord02, "¿Qué dice el reglamento sobre la habilitación?");
 
         Assert.Equal(Textos.NoVerificable, resultado.Respuesta!.Respuesta);
         Assert.Empty(resultado.Respuesta.Citas);
