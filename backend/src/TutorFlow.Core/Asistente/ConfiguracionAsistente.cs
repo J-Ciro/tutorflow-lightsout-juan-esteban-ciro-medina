@@ -18,19 +18,15 @@ public sealed class ConfiguracionAsistente
         string? marcadorCanarioConfigurado,
         IReadOnlyCollection<string>? codigosAsignatura = null,
         decimal? reservaPorPeticionUsd = null,
-        int relevanciaMinima = RelevanciaMinimaPorDefecto,
-        int apoyoMinimoRespaldo = ApoyoMinimoPorDefecto,
+        int relevanciaMinima = RelevanciaMinimaPorDefecto, int apoyoMinimoRespaldo = ApoyoMinimoPorDefecto,
         IReadOnlyList<AsignaturaCatalogo>? catalogo = null,
         decimal reservaSinPrecioUsd = ReservaSinPrecioPorDefectoUsd,
-        Action<string>? advertir = null,
-        AjustesDelModelo? ajustes = null)
+        Action<string>? advertir = null, AjustesDelModelo? ajustes = null)
     {
         Catalogo = catalogo ?? throw new ArgumentNullException(nameof(catalogo));
         Advertir = AdvertenciaOSilencio(advertir);
         Precio = precio;
-        MarcadorCanario = string.IsNullOrWhiteSpace(marcadorCanarioConfigurado)
-            ? Convert.ToHexString(RandomNumberGenerator.GetBytes(BytesDelMarcadorAleatorio))
-            : marcadorCanarioConfigurado;
+        MarcadorCanario = MarcadorOAleatorio(marcadorCanarioConfigurado);
         CodigosAsignatura = CodigosOCatalogo(codigosAsignatura, Catalogo);
         Ajustes = ajustes ?? new AjustesDelModelo();
         ReservaPorPeticionUsd = reservaPorPeticionUsd is > 0m ? reservaPorPeticionUsd.Value : ReservaPorDefecto(precio, reservaSinPrecioUsd);
@@ -68,6 +64,9 @@ public sealed class ConfiguracionAsistente
     public int RelevanciaMinima { get; }
 
     public int ApoyoMinimoRespaldo { get; }
+
+    private static string MarcadorOAleatorio(string? configurado) =>
+        string.IsNullOrWhiteSpace(configurado) ? Convert.ToHexString(RandomNumberGenerator.GetBytes(BytesDelMarcadorAleatorio)) : configurado;
 
     private static Action<string> AdvertenciaOSilencio(Action<string>? advertir) => advertir ?? (_ => { });
 

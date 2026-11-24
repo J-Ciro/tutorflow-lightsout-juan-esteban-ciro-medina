@@ -67,15 +67,7 @@ internal sealed class CierreDeRespuesta
     private CierreEvaluado Verificar(SesionPregunta sesion, string limpio, IReadOnlyList<Cita> escritas, EntradaConversacion entrada)
     {
         var autorizados = _politicaAcceso.IdsPersonasAutorizadas(sesion.Entrada.Usuario, sesion.Directorio);
-        var verificada = _verificadorSalida.Verificar(
-            sesion.Entrada.Usuario,
-            limpio,
-            escritas,
-            autorizados,
-            sesion.Registro.Fuentes,
-            _baseConocimiento,
-            sesion.Directorio,
-            Confidencial(sesion, entrada));
+        var verificada = VerificarSalida(sesion, limpio, escritas, autorizados, entrada);
         if (verificada.Resultado != ResultadoAuditoria.Respondida)
         {
             return new CierreEvaluado(verificada.Respuesta, verificada.Citas, verificada.Resultado, null, true, verificada.MotivoDeReintento);
@@ -86,6 +78,17 @@ internal sealed class CierreDeRespuesta
             ? Completar(sesion, limpio, escritas, entrada)
             : new CierreEvaluado(Textos.NoVerificable, [], ResultadoAuditoria.EstadoNoVerificado, null, true, motivo);
     }
+
+    private SalidaVerificada VerificarSalida(SesionPregunta sesion, string limpio, IReadOnlyList<Cita> escritas, IReadOnlyCollection<string> autorizados, EntradaConversacion entrada) =>
+        _verificadorSalida.Verificar(
+            sesion.Entrada.Usuario,
+            limpio,
+            escritas,
+            autorizados,
+            sesion.Registro.Fuentes,
+            _baseConocimiento,
+            sesion.Directorio,
+            Confidencial(sesion, entrada));
 
     private string? MotivoDeAfirmacionNoVerificable(SesionPregunta sesion, string respuesta, IReadOnlyCollection<string> autorizados)
     {

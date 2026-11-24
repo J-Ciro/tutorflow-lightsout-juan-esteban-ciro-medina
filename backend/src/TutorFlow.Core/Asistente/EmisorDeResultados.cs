@@ -58,11 +58,16 @@ internal sealed class EmisorDeResultados
         IReadOnlyList<Cita> citas,
         string? idSolicitado = null)
     {
+        _auditor.Registrar(ConstruirEvento(sesion, resultado, motivo, citas, idSolicitado));
+    }
+
+    private EventoAuditoria ConstruirEvento(SesionPregunta sesion, ResultadoAuditoria resultado, MotivoDenegacion? motivo, IReadOnlyList<Cita> citas, string? idSolicitado)
+    {
         var usuario = sesion.Entrada.Usuario;
         var pregunta = PreguntaAuditable(sesion);
         var costo = CalculadoraCosto.Calcular(sesion.Uso.Valor, _configuracion.Precio);
         var registro = sesion.Registro;
-        _auditor.Registrar(new EventoAuditoria(
+        return new EventoAuditoria(
             _auditor.AhoraUtc, sesion.CorrelationId, sesion.IpOrigen, usuario.Rol, usuario.Id, pregunta, resultado, motivo,
             registro.Estudiantes, registro.Recursos, citas, sesion.Uso.Valor.Total, costo,
             sesion.Cronometro.ElapsedMilliseconds, sesion.ReservaHecha && _configuracion.Precio is null)
@@ -71,7 +76,7 @@ internal sealed class EmisorDeResultados
             IdSolicitado = idSolicitado,
             Reintento = sesion.Reintento,
             ContextoTruncado = sesion.ContextoTruncado
-        });
+        };
     }
 
     private string PreguntaAuditable(SesionPregunta sesion)

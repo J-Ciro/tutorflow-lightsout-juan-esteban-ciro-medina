@@ -67,24 +67,25 @@ public static partial class ConstructorPrompts
     internal static MensajeLlm MensajeInicial(string pregunta, IReadOnlyList<SeccionDocumento> secciones, ResumenEntregado? resumen, string? prelectura = null)
     {
         var constructor = new StringBuilder();
-        if (resumen is not null)
-        {
-            constructor.AppendLine(EncabezadoResumen);
-            constructor.AppendLine(FormateadorDatos.Delimitar(Textos.FuenteResumenPropio, resumen.Texto));
-            constructor.AppendLine();
-        }
-
-        if (prelectura is not null)
-        {
-            constructor.AppendLine(EncabezadoPrelectura);
-            constructor.AppendLine(prelectura);
-            constructor.AppendLine();
-        }
+        AgregarBloque(constructor, resumen is null ? null : EncabezadoResumen, resumen is null ? null : FormateadorDatos.Delimitar(Textos.FuenteResumenPropio, resumen.Texto));
+        AgregarBloque(constructor, prelectura is null ? null : EncabezadoPrelectura, prelectura);
 
         AgregarSecciones(constructor, secciones);
         constructor.AppendLine();
         constructor.Append($"Pregunta: {pregunta}");
         return new MensajeLlm(RolMensaje.Usuario, constructor.ToString(), null, []);
+    }
+
+    private static void AgregarBloque(StringBuilder constructor, string? encabezado, string? contenido)
+    {
+        if (encabezado is null || contenido is null)
+        {
+            return;
+        }
+
+        constructor.AppendLine(encabezado);
+        constructor.AppendLine(contenido);
+        constructor.AppendLine();
     }
 
     private static string Pasos(Rol rol)
