@@ -6,6 +6,8 @@ namespace TutorFlow.Evals;
 
 public sealed class EjecutorFaseV(bool offline, string carpeta, string? llave) : IEjecutor
 {
+    private const string CorrelacionEncabezado = "X-Correlation-Id";
+
     private readonly Dictionary<string, int> _corridas = [];
 
     public async Task<Ejecucion?> EjecutarAsync(CasoEval caso, CancellationToken cancellationToken)
@@ -21,9 +23,9 @@ public sealed class EjecutorFaseV(bool offline, string carpeta, string? llave) :
         var reloj = Stopwatch.StartNew();
         var respuesta = await fabrica.EnviarAsync(HttpMethod.Post, Cuerpos.Ruta, Cuerpos.De(caso));
         reloj.Stop();
-        var artefacto = ArtefactosFaseV.Armar(caso, corrida, grabador, Json.LeerSalida(respuesta.Texto));
+        var artefacto = ArtefactosFaseV.Armar(caso, corrida, grabador, Json.LeerSalida(respuesta.Texto), respuesta.Encabezado(CorrelacionEncabezado));
         ArtefactosFaseV.Guardar(carpeta, $"{TablaFaseV.Pregunta(caso)}-{caso.Id}-corrida-{corrida}", artefacto, llave);
-        return new Ejecucion(respuesta.Estado, respuesta.Texto, reloj.Elapsed.TotalMilliseconds);
+        return new Ejecucion(respuesta.Estado, respuesta.Texto, reloj.Elapsed.TotalMilliseconds, respuesta.Encabezado(CorrelacionEncabezado));
     }
 
     private FabricaApi Fabricar(CasoEval caso, Action<GrabadorLlm> registrar)

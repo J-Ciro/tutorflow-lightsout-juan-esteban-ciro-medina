@@ -46,9 +46,9 @@ public sealed record CasoEval(
     private static string Resumen(string texto) => texto.Length <= 48 ? texto : texto[..48] + "...";
 }
 
-public sealed record OpcionesEvals(string Url, bool Offline, string RutaCasos, int Corridas, int PausaMs, int UmbralP95Ms, string? Filtro, bool FaseV, string? Artefactos = null);
+public sealed record OpcionesEvals(string Url, bool Offline, string RutaCasos, int Corridas, int PausaMs, int UmbralP95Ms, string? Filtro, bool FaseV, string? Artefactos = null, bool UrlExplicita = false);
 
-public sealed record Ejecucion(int Estado, string Cuerpo, double Milisegundos);
+public sealed record Ejecucion(int Estado, string Cuerpo, double Milisegundos, string? CorrelationId = null);
 
 public sealed record ResultadoCaso(CasoEval Caso, int Corrida, IReadOnlyList<string> Fallos, Ejecucion? Ejecucion)
 {
