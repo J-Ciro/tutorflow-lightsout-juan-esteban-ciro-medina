@@ -1,0 +1,29 @@
+$kind: http-request
+order: 11100
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: 'application/xml'
+body:
+  type: text
+  content: |-
+    {"pregunta":"¿Cuál es mi promedio?","usuario":{"rol":"estudiante","id":"EST-001"}}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("ESC-150b responde 415", () => pm.response.to.have.status(415));
+      pm.test("ESC-150b es un ProblemDetails (RFC 9457)", () => {
+        pm.expect(pm.response.headers.get("Content-Type")).to.include("application/problem+json");
+        const cuerpo = pm.response.json();
+        pm.expect(cuerpo.status).to.eql(415);
+        pm.expect(cuerpo.title).to.be.a("string");
+      });
+      pm.test("ESC-150b sin detalles internos ni stack trace", () => {
+        const texto = pm.response.text();
+        ["StackTrace", "   at ", "Exception", "System.", "Microsoft.", "TutorFlow.", "localhost:4000", ".cs:line"].forEach((f) => pm.expect(texto).to.not.include(f));
+      });
+      pm.test("ESC-150b no es una salida del contrato del asistente", () => {
+        pm.expect(pm.response.json()).to.not.have.property("respuesta");
+      });

@@ -1,0 +1,63 @@
+[
+  {
+    "id": "ESC-179k",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué definitiva tiene Valentina Castro en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": [
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "reglamento_academico_2025.md · Artículo 5",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Datos de Valentina Castro (EST-005)\nDefinitivas: Estadística 2.3",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "La definitiva de Valentina Castro en Estadística es 3.2."
+    }
+  },
+  {
+    "id": "ESC-179l",
+    "fuente": "SEG-10g, D-38",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Qué definitiva tiene Valentina Castro en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [
+      "Datos del programa"
+    ],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Datos de Valentina Castro (EST-005)\nDefinitivas: Estadística 2.3",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "La definitiva de Valentina Castro en Estadística es 2.3."
+    }
+  }
+]

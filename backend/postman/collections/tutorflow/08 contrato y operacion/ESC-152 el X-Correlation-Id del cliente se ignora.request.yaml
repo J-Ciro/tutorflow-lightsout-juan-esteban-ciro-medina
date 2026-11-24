@@ -1,0 +1,32 @@
+$kind: http-request
+order: 11300
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: X-Correlation-Id
+    value: '00000000-0000-7000-8000-000000000001'
+body:
+  type: json
+  content: |-
+    {
+      "pregunta": "¿Cuáles son las notas de EST-002?",
+      "usuario": {
+        "rol": "estudiante",
+        "id": "EST-001"
+      }
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+      const CLIENTE = "00000000-0000-7000-8000-000000000001";
+      pm.test("ESC-152 responde 403", () => pm.response.to.have.status(403));
+      pm.test("ESC-152 el identificador del cliente no se refleja", () => {
+        const correlacion = pm.response.headers.get("X-Correlation-Id");
+        pm.expect(correlacion).to.match(UUID_V7);
+        pm.expect(correlacion).to.not.eql(CLIENTE);
+        pm.expect(pm.response.text()).to.not.include(CLIENTE);
+      });

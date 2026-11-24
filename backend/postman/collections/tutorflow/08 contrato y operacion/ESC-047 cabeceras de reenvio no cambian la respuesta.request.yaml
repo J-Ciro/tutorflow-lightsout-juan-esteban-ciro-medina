@@ -1,0 +1,49 @@
+$kind: http-request
+order: 6000
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: X-Forwarded-For
+    value: 'EST-002, 203.0.113.7, abc'
+  - key: Forwarded
+    value: 'for=203.0.113.9'
+  - key: X-Real-IP
+    value: '203.0.113.9'
+  - key: X-Forwarded-Host
+    value: 'evil.example'
+body:
+  type: json
+  content: |-
+    {
+      "pregunta": "¿Cuáles son las notas de EST-002?",
+      "usuario": {
+        "rol": "estudiante",
+        "id": "EST-001"
+      }
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const TEXTO_NEGATIVA = "No puedo compartir esa información: solo puedes consultar tus propios datos académicos.";
+      pm.test("ESC-047 responde 403 y no 400 ni 500 pese a las cabeceras de reenvío", () => pm.response.to.have.status(403));
+      pm.test("ESC-047 la negativa del rol estudiante no cambia (D-07)", () => {
+        pm.expect(pm.response.json().respuesta).to.eql(TEXTO_NEGATIVA);
+      });
+      pm.test("ESC-047 la respuesta no refleja las cabeceras de reenvío", () => {
+        const texto = pm.response.text();
+        ["203.0.113", "evil.example", "EST-002", "abc"].forEach((f) => pm.expect(texto).to.not.include(f));
+      });
+      pm.test("ESC-047 sin detalles internos ni stack trace", () => {
+        const texto = pm.response.text();
+        ["StackTrace", "   at ", "Exception", "System.", "Microsoft.", "TutorFlow."].forEach((f) => pm.expect(texto).to.not.include(f));
+      });
+      const claveCuerpo = "cuerpo403_estudiante";
+      const previo = pm.collectionVariables.get(claveCuerpo);
+      if (previo) {
+        pm.test("ESC-047 el cuerpo 403 es idéntico al de cualquier otra denegación del rol (D-07, D-08)", () => {
+          pm.expect(pm.response.text()).to.eql(previo);
+        });
+      }

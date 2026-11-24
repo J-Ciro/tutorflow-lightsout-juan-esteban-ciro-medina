@@ -1,0 +1,34 @@
+$kind: http-request
+order: 51000
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "pregunta": "¿Qué puede ver mi c00rdinador?",
+      "usuario": {
+        "rol": "estudiante",
+        "id": "EST-001"
+      }
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("ESC-038 i responde 200", () => pm.response.to.have.status(200));
+      pm.test("ESC-038 i COMP-03 exacto con citas [] y sin consumo de LLM (D-66 C4)", () => {
+        const cuerpo = pm.response.json();
+        pm.expect(Object.keys(cuerpo).sort()).to.eql(["citas", "costoUsd", "respuesta", "tokens", "usoDatosEstudiante"]);
+        pm.expect(cuerpo.respuesta).to.eql("No encuentro esa información en los documentos disponibles.");
+        pm.expect(cuerpo.citas).to.eql([]);
+        pm.expect(cuerpo.usoDatosEstudiante).to.eql(false);
+        pm.expect(cuerpo.tokens).to.eql(0);
+        pm.expect(cuerpo.costoUsd).to.eql(0);
+      });
+      pm.test("ESC-038 i Content-Type application/json charset utf-8", () => {
+        pm.expect(pm.response.headers.get("Content-Type")).to.eql("application/json; charset=utf-8");
+      });

@@ -1,104 +1,32 @@
-# SPEC.md · TutorFlow, especificación del sistema
+# SPEC.md · TutorFlow
 
 | Campo | Valor |
 | --- | --- |
-| Versión | 1.3 · 2026-11-22 |
-| Estado | **Aprobada** por el humano (2026-11-22); D-16 confirmada; backend en .NET 11 (INT-008) |
-| Contenido | Lo transversal del sistema: objetivo, prioridades, actores, contrato, matriz de acceso y decisiones |
-| Features | `specs/<feature-id>/spec.md` (§5) |
-| Escenarios | `escenarios/<feature-id>/` |
+| Versión | 2.0 · 2026-11-23 (reestructuración INT-023; reglas sin cambios respecto de la 1.12) |
+| Reglas globales | [`constitution.md`](constitution.md): principios, contrato de la API, matriz de acceso y arquitectura |
+| Reglas de los agentes | [`AGENTS.md`](AGENTS.md) y [`FABRICA.md`](FABRICA.md) |
 
-Cada feature tiene su propia spec, que **extiende** este documento y no repite su contenido.
+## Objetivo
 
-## 1. Objetivo y prioridades
+**Qué:** TutorFlow es un asistente académico que responde preguntas de estudiantes y coordinadores de la Corporación Educativa Horizonte (ficticia) con el reglamento vigente y los datos académicos del periodo 2026-2.
 
-**Qué:** TutorFlow es un asistente académico que responde preguntas de estudiantes y coordinadores de la Corporación Educativa Horizonte (ficticia) usando el reglamento vigente y los datos académicos del periodo 2026-2.
+**Por qué:** hoy un estudiante lee cuatro documentos y hace sus propios cálculos para saber su promedio, si perdió una asignatura por faltas o si puede aplicar a una beca. TutorFlow lo resuelve en una pregunta, con la regla citada y sin exponer datos de otras personas (Ley 1581, Art. 22 del reglamento).
 
-**Por qué:** hoy un estudiante tiene que leer cuatro documentos y hacer sus propios cálculos para saber su promedio, si perdió una asignatura por faltas o si puede aplicar a una beca. TutorFlow lo resuelve en una pregunta, con la regla citada y sin exponer datos de otras personas (Ley 1581, Art. 22 del reglamento).
+**Cómo:** el código calcula y autoriza de forma determinista; un LLM solo redacta a partir de las secciones del reglamento y de los datos ya autorizados y calculados.
 
-**Cómo:** el código calcula y autoriza de forma determinista; un LLM solo redacta la respuesta a partir de las secciones del reglamento y de los datos ya autorizados y calculados.
-
-Prioridades, en orden: **1) que nadie vea datos ajenos**, 2) que los cálculos sean exactos, 3) que las respuestas citen y no inventen, 4) costo bajo por pregunta.
-
-## 2. Actores y roles
+## Actores
 
 | Rol | Identificador | Puede ver |
 | --- | --- | --- |
-| `estudiante` | `EST-NNN`, debe existir en la API | Sus propios datos académicos y el reglamento |
-| `coordinador` | `COORD-NN`, debe existir en la API | Los datos de los estudiantes de los programas a su cargo (`/coordinadores/{id}.programas`) y el reglamento |
+| `estudiante` | `EST-NNN` | Sus propios datos académicos y el reglamento |
+| `coordinador` | `COORD-NN` | Los datos de los estudiantes de sus programas y el reglamento |
 
-## 3. Contrato de la API (fijo, no se modifica)
+La matriz de acceso completa está en [`constitution.md`](constitution.md) §3.
 
-```
-POST /api/asistente/preguntar
-  Entrada: { "pregunta": string,
-             "usuario": { "rol": "estudiante" | "coordinador", "id": string } }
-  Salida:  { "respuesta": string,
-             "citas": [ { "documento": string, "seccion": string } ],
-             "usoDatosEstudiante": boolean,
-             "tokens": number, "costoUsd": number }
-  403 si el usuario pide datos que no le corresponden.
+## Features
 
-GET /api/salud  ->  200 { "estado": "ok" }
+| ID | Feature | Estado | Spec | Plan | Decisiones | Escenarios |
+| --- | --- | --- | --- | --- | --- | --- |
+| 001 | Asistente académico (PDF Q10) | Aprobada (spec 2.2) | [spec.md](specs/001-asistente-academico/spec.md) | [plan.md](specs/001-asistente-academico/plan.md) | [decisiones.md](specs/001-asistente-academico/decisiones.md) | [escenarios/001-asistente-academico/](escenarios/001-asistente-academico/) |
 
-Arranque: docker compose up   (puerto 8080, variable LLM_API_KEY)
-```
-
-### 3.1 Códigos de respuesta
-
-| Código | Cuándo | Cuerpo |
-| --- | --- | --- |
-| 200 | Pregunta respondida, incluida la respuesta "no encuentro esa información" | Salida del contrato |
-| 400 | JSON inválido, campos faltantes, `rol` fuera de la lista, `id` con formato inválido, `pregunta` vacía o de más de 1.000 caracteres | `ProblemDetails` (RFC 9457) sin detalles internos |
-| 403 | Ver SEG-01 a SEG-06 | **Salida del contrato** con la negativa (D-07) |
-| 405 | Método distinto al definido | Vacío o `ProblemDetails` |
-| 413 | Cuerpo de más de 16 KB | `ProblemDetails` |
-| 429 | Se supera el límite de tasa por IP de SEG-13 | `ProblemDetails` con `Retry-After` |
-| 503 | El LLM o la API académica no responden a tiempo, se supera el límite de herramientas o el presupuesto diario (SEG-13) | `ProblemDetails` genérico |
-| 500 | Error no controlado | `ProblemDetails` con `traceId`, sin stack trace (SEG-12) |
-
-Las reglas `SEG-xx` y `D-xx` citadas se definen en [`specs/001-asistente-academico/spec.md` §7](specs/001-asistente-academico/spec.md) y en §6 de este documento.
-
-Reglas del JSON: propiedades en camelCase exactamente como el contrato; `citas` es `[]` cuando no hay citas, nunca `null`; `tokens` es un entero ≥ 0; `costoUsd` es un decimal ≥ 0 con hasta 6 decimales; `Content-Type: application/json; charset=utf-8`.
-
-## 4. Matriz de acceso global
-
-La autorización es **código determinista**, se evalúa **antes** de leer datos y **antes** de llamar al LLM, y vive en un único componente (`PoliticaAcceso`). Cada feature detalla sus reglas SEG y no puede ampliar esta matriz sin aprobación humana.
-
-| Recurso ↓ / quién → | EST propio | EST ajeno | COORD, estudiante de su programa | COORD, estudiante de otro programa |
-| --- | --- | --- | --- | --- |
-| Reglamento | ✔ | — | ✔ | — |
-| Datos básicos, notas, asistencia | ✔ | ✘ 403 | ✔ | ✘ 403 |
-| Lista y agregados del programa | ✘ 403 | ✘ 403 | ✔ (solo su programa) | ✘ 403 |
-
-## 5. Features
-
-| ID | Feature | Spec | Escenarios | Estado |
-| --- | --- | --- | --- | --- |
-| 001 | Asistente académico (PDF Q10) | [specs/001-asistente-academico/spec.md](specs/001-asistente-academico/spec.md) | [escenarios/001-asistente-academico/](escenarios/001-asistente-academico/) | Aprobada |
-
-## 6. Decisiones
-
-Decisiones del sistema y de la feature 001. Las features nuevas registran las suyas en su spec (`D-NNN-xx`).
-
-| ID | Ambigüedad | Decisión | Por qué |
-| --- | --- | --- | --- |
-| D-01 | El contrato envía la identidad en el cuerpo, sin autenticación | Se acepta tal cual (contrato fijo), se valida contra la API (SEG-03) y se detecta la rotación de identidades (SEG-16). **Riesgo residual crítico, aceptado y documentado (A07):** cualquiera que conozca un ID puede hacerse pasar por esa persona. En producción la identidad vendría de un token firmado (JWT/OIDC) y `usuario` se ignoraría | No se puede cambiar el contrato; se mitiga y se hace visible |
-| D-02 | Hay dos reglamentos con reglas distintas | Solo se usa el 2025; el 2023 está derogado (Art. 3) | Usar el 2023 cambia resultados (15% frente a 20%, habilitación 2.0 frente a 1.5, cancelación semana 8 frente a 10) |
-| D-03 | "Más del 15%" | Estrictamente mayor, con aritmética entera: 7/48 no pierde y 8/48 pierde | Literal del Art. 11 y sin errores de flotante |
-| D-04 | `inasistencias: null` | Sin registro: no se presume pérdida y se remite al coordinador (Art. 12) | No inventar datos |
-| D-05 | Qué es la "nota acumulada" con cortes pendientes | Σ(peso × corte calificado), 1 decimal, junto con el porcentaje evaluado y su equivalente sobre lo evaluado (EST-006: 2.4 sobre el 60% ≈ 4.0) | Da ambas lecturas sin ambigüedad |
-| D-06 | Asignatura perdida por inasistencia en el promedio | 0.0 (Evaluación §4) | Literal |
-| D-07 | Cuerpo del 403 | Salida del contrato con `respuesta` = `TEXTO_NEGATIVA`, elegido **solo por el `rol` declarado**: estudiante → "No puedo compartir esa información: solo puedes consultar tus propios datos académicos."; coordinador → "No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa.". `citas`: [`reglamento_academico_2025.md` · `Artículo 22`], `usoDatosEstudiante: false`, `tokens: 0` y `costoUsd: 0` (salvo el 403 tardío, D-22) | Cumple a la vez "403" y "negativa"; textos constantes y comprobables |
-| D-08 | ID inexistente o rol incoherente | 403 con el mismo cuerpo que un acceso ajeno. **Limitación reconocida:** con una pregunta normativa, un ID válido responde 200 y uno inexistente 403, así que la existencia de un ID se puede descubrir. Se mitiga con el límite por IP (SEG-13) y la detección de SEG-16 | Denegar también lo normativo a los IDs válidos rompería el uso legítimo |
-| D-09 | Mención de terceros | Se aplica solo SEG-04 y SEG-04a: nombre completo o ID con forma de persona. Un nombre o apellido suelto no deniega; esa brecha la cubren SEG-06 y SEG-10. El estudiante sí puede mencionar al coordinador de su programa | Equilibrio entre privacidad y falsos 403 en preguntas legítimas |
-| D-10 | `rol` con mayúsculas o espacios | 400: lista cerrada exacta | El contrato fija los valores |
-| D-13 | "Registrar los datos del estudiante consultados" frente a la Ley 1581 | Se registran IDs y recursos consultados, no valores | Auditoría suficiente sin duplicar datos personales |
-| D-14 | Formato de citas | §11.1. Riesgo: la cita esperada "Secciones 3 y 4" se devuelve como dos entradas, y "Datos del estudiante" como `documento`, con la sección en `seccion`. Si las pruebas ocultas comparan la cadena literal, podrían fallar; se elige el formato estructurado del contrato | El contrato define `{documento, seccion}` por cita |
-| D-15 | Separador decimal | Punto | Así lo usan el reglamento y las preguntas de ejemplo |
-| D-16 | Proveedor de LLM | **Independiente del proveedor:** cualquier persona usa la app con su propia `LLM_API_KEY`. El proveedor se detecta por el prefijo de la llave (tabla en la spec 001 §9.4) y se puede forzar con `LLM_PROVEEDOR`, `LLM_URL_BASE` y `LLM_MODELO`. Sin llave, la app usa Ollama local (`qwen2.5:7b`), que es el entorno de pruebas del humano. Cada proveedor usa un modelo pequeño por defecto, porque el LLM solo redacta: los cálculos y permisos son código. Confirmada por el humano | Cualquier evaluador puede usar su propia llave; el costo es el 15% de la evaluación |
-| D-17 | El anexo de `bienestar_y_becas.md` contiene instrucciones dirigidas al asistente | Se excluye del índice (no es contenido normativo) **y** además se prueba la resistencia a la inyección indirecta con documentos sintéticos (defensa en profundidad) | Material no confiable |
-| D-20 | Beca con asignaturas sin definitiva | "No determinable aún" | El promedio del periodo no está completo |
-| D-21 | Bloquear o solo detectar la suplantación (SEG-16) | Solo detectar y auditar por defecto; el bloqueo es configurable | Las pruebas ocultas de Q10 probablemente usan varias identidades desde una misma IP; bloquear las haría fallar |
-| D-22 | 403 cuando el modelo pide un ID ajeno (SEG-06) | 403 tardío con el consumo real de tokens y costo, y `motivoDenegacion: herramienta_id_ajeno`. Se acepta que una inyección indirecta convierta una pregunta legítima en 403: fallar cerrado es preferible a filtrar datos | No ocultar costos reales; ante la duda, denegar |
-| D-23 | Texto exacto en casos de abuso | Las inyecciones con terceros o agregados detectables → 403 (SEG-04/05). Las que no se detectan antes del LLM → se verifica la ausencia de datos de terceros, el código y `usoDatosEstudiante`, no el texto libre | Las aserciones deben ser deterministas |
+Una feature nueva agrega su fila con los cuatro enlaces. Sus decisiones van en su `decisiones.md` (`D-NNN-xx`); una regla que afecte a todo el sistema se propone para `constitution.md` con aprobación humana.

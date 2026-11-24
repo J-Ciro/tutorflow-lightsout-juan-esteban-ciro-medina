@@ -5,7 +5,7 @@ description: Guía para redactar criterios de aceptación en Gherkin (BDD) en es
 
 # Criterios de aceptación en Gherkin + SMART
 
-La spec contiene **solo** los CA y la matriz de verificación. Esta guía (el *cómo* escribirlos) vive aquí y no se copia en la spec.
+La spec contiene **solo** los CA; la matriz de verificación va en el plan de QA de `plan.md`. Esta guía (el *cómo* escribirlos) vive aquí y no se copia en la spec.
 
 ## SMART aplicado a un CA
 

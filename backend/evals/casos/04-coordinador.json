@@ -1,0 +1,208 @@
+[
+  {
+    "id": "ESC-040",
+    "fuente": "SEG-02",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-01"
+    },
+    "pregunta": "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?",
+    "http": 200,
+    "contiene": [
+      "Andrés Martínez",
+      "Cálculo Integral",
+      "2.6",
+      "Bases de Datos"
+    ],
+    "noContiene": [
+      "Camilo Rojas",
+      "Valentina Castro",
+      "Mateo Vargas"
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-041",
+    "fuente": "SEG-02",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Cuál es el promedio de Valentina Castro?",
+    "http": 200,
+    "contiene": [
+      "2.65"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [
+      "Datos del programa"
+    ],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": "EST-005",
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-042",
+    "fuente": "SEG-02",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-01"
+    },
+    "pregunta": "¿Cuál es el promedio de EST-003?",
+    "http": 200,
+    "contiene": [
+      "4.11"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": "EST-003",
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-043",
+    "fuente": "RN-11",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Quiénes de mi programa están en prueba académica?",
+    "http": 200,
+    "contiene": [
+      "Valentina Castro"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 20"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Valentina Castro está en prueba académica con promedio 2.65."
+    }
+  },
+  {
+    "id": "ESC-044",
+    "fuente": "RN-05",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Hay estudiantes sin nota definitiva en alguna materia?",
+    "http": 200,
+    "contiene": [
+      "Mateo Vargas",
+      "Estadística"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Mateo Vargas no tiene definitiva en Estadística. {herramientas}"
+    }
+  },
+  {
+    "id": "ESC-045",
+    "fuente": "alterno",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-01"
+    },
+    "pregunta": "¿Cuál es mi promedio?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "Laura Gómez",
+      "Andrés Martínez",
+      "Sofía Herrera"
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Como coordinador no tienes notas propias en el sistema."
+    }
+  },
+  {
+    "id": "ESC-046",
+    "fuente": "RN-09",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-01"
+    },
+    "pregunta": "¿Qué estudiantes tienen inasistencias sin registrar?",
+    "http": 200,
+    "contiene": [
+      "Sofía Herrera",
+      "Inglés III"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Sofía Herrera no tiene registro de inasistencias en Inglés III. {herramientas}"
+    }
+  }
+]

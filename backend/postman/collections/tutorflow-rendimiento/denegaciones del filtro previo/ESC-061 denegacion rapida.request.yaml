@@ -1,0 +1,23 @@
+$kind: http-request
+order: 6000
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "pregunta": "¿Cuál es mi promedio?",
+      "usuario": {
+        "rol": "estudiante",
+        "id": "EST-999"
+      }
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("ESC-061 responde 403 sin pasar por el LLM", () => pm.response.to.have.status(403));
+      pm.test("ESC-061 responde en menos de 500 ms", () => pm.expect(pm.response.responseTime).to.be.below(500));

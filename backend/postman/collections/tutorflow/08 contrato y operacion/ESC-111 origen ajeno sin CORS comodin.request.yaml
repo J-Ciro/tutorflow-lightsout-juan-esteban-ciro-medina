@@ -1,0 +1,27 @@
+$kind: http-request
+order: 15000
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: 'application/json'
+  - key: Origin
+    value: 'https://evil.example'
+body:
+  type: json
+  content: |-
+    {
+      "pregunta": "¿Cuáles son las notas de EST-002?",
+      "usuario": {
+        "rol": "estudiante",
+        "id": "EST-001"
+      }
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("ESC-111 no hay Access-Control-Allow-Origin comodin ni del origen ajeno", () => {
+        const valor = pm.response.headers.get("Access-Control-Allow-Origin");
+        pm.expect(valor === undefined || (valor !== "*" && !valor.includes("evil.example"))).to.eql(true);
+      });

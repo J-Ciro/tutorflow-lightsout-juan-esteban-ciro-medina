@@ -1,0 +1,13 @@
+$kind: http-request
+order: 1000
+method: GET
+url: '{{baseUrl}}/api/salud'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("ESC-100 responde 200", () => pm.response.to.have.status(200));
+      pm.test("ESC-100 cuerpo exacto", () => pm.expect(pm.response.text()).to.eql('{"estado":"ok"}'));
+      pm.test("ESC-100 Content-Type application/json charset utf-8", () => {
+        pm.expect(pm.response.headers.get("Content-Type")).to.eql("application/json; charset=utf-8");
+      });
