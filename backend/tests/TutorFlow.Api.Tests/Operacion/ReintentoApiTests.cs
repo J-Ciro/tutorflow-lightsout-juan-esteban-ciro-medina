@@ -7,8 +7,8 @@ namespace TutorFlow.Api.Tests.Operacion;
 
 public sealed class ReintentoApiTests
 {
-    private const string PreguntaPromedio = "¿Cuál es mi promedio?";
-    private const string PreguntaQ10Seis = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
+    private const string PreguntaPromedio = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaQ10Seis = "¿Qué dice el reglamento sobre la habilitación?";
     private const string PerdidaDeMateo = "Mateo Vargas perdió Estadística.";
     private const string PerdidasDeValentina = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
     private const int SalidaPorLlamada = 20;

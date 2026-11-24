@@ -6,7 +6,7 @@ namespace TutorFlow.Api.Tests.Operacion;
 
 public sealed class Auditoria503ApiTests
 {
-    private const string Pregunta = "¿Cuál es mi promedio?";
+    private const string Pregunta = "¿Qué dice el reglamento sobre la habilitación?";
     private const int SalidaPorLlamada = 20;
     private const int PeticionesQueConsumenElPresupuesto = 3;
     private const decimal CostoDeseadoPorPeticionUsd = 0.0029m;
@@ -110,7 +110,7 @@ public sealed class Auditoria503ApiTests
             await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);
         }
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cómo voy en Bases de Datos?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Qué dice el reglamento sobre la habilitación?");
 
         Afirmaciones.ProblemDetails(respuesta, 503);
         Assert.Equal(PeticionesQueConsumenElPresupuesto, llm.Llamadas);

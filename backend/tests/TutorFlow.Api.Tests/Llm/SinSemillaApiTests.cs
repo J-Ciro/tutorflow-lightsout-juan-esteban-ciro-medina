@@ -7,8 +7,8 @@ public sealed class SinSemillaApiTests
 {
     private const string Normativa = "¿Cuál es la nota mínima para aprobar una asignatura?";
     private const string RespuestaNormativa = "Una asignatura se aprueba con 3.0.";
-    private const string PreguntaConHerramienta = "¿Cuál es mi promedio ponderado del periodo?";
-    private const string PreguntaConReintento = "¿Cuál es mi promedio?";
+    private const string PreguntaConHerramienta = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaConReintento = "¿Qué dice el reglamento sobre la habilitación?";
     private const string RespuestaQueFuerzaElReintento = "Tu promedio es 4.40.";
     private const string PropiedadTemperatura = "temperature";
     private const string PropiedadSemilla = "seed";

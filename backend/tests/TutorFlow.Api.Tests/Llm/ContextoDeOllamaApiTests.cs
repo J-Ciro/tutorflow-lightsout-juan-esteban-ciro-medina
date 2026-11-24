@@ -11,7 +11,7 @@ public sealed class ContextoDeOllamaApiTests
     private const decimal ProporcionMinimaDelContexto = 0.75m;
     private const decimal ProporcionRealMaxima = 1.04m;
     private const int TopeDeTokensEstimados = 3000;
-    private const string Pregunta = "¿Cuál es mi promedio ponderado del periodo?";
+    private const string Pregunta = "¿Qué dice el reglamento sobre la habilitación?";
     private const string Respuesta = "Tu promedio es 4.39.";
     private const string LlaveDeOpenAi = "sk-LLAVE-ABC123-openai";
 

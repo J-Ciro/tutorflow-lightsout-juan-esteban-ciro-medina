@@ -192,7 +192,7 @@ public sealed class ProveedoresHttpTests
             : RespuestasProveedor.Texto(p, "Datos revisados.", SalidaPorLlamada));
         using var fabrica = Fabrica(llave, manejador);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio ponderado del periodo?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Qué dice el reglamento sobre la habilitación?");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.True(respuesta.UsoDatosEstudiante);
@@ -264,7 +264,7 @@ public sealed class ProveedoresHttpTests
         var manejador = new ManejadorLlmFalso((p, _) => RespuestasProveedor.Texto(p, "Listo.", 5));
         using var fabrica = Fabrica(llave, manejador);
 
-        await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
+        await fabrica.PreguntarEstudianteAsync("EST-001", "¿Qué dice el reglamento sobre la habilitación?");
 
         var cuerpo = manejador.Peticiones[0].Cuerpo;
         Assert.DoesNotContain("estudianteId", cuerpo, StringComparison.OrdinalIgnoreCase);

@@ -6,7 +6,7 @@ namespace TutorFlow.Api.Tests.Llm;
 public sealed class TemperaturaConfiguradaApiTests
 {
     private const string Normativa = "¿Cuál es la nota mínima para aprobar una asignatura?";
-    private const string PreguntaPromedio = "¿Cuál es mi promedio?";
+    private const string PreguntaPromedio = "¿Qué dice el reglamento sobre la habilitación?";
     private const string PropiedadTemperatura = "temperature";
     private const string PropiedadSemilla = "seed";
     private const string LlaveDeOpenAi = "sk-LLAVE-ABC123-openai";
