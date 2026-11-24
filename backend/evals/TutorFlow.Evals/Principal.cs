@@ -41,7 +41,8 @@ public static class Principal
             int.Parse(valores.GetValueOrDefault("--umbral-p95-ms", UmbralP95PorDefectoMs.ToString(System.Globalization.CultureInfo.InvariantCulture)), System.Globalization.CultureInfo.InvariantCulture),
             valores.GetValueOrDefault("--filtro"),
             faseV,
-            valores.GetValueOrDefault("--artefactos"));
+            valores.GetValueOrDefault("--artefactos"),
+            valores.ContainsKey("--url"));
     }
 
     private static Dictionary<string, string> ParesDeArgumentos(string[] args) =>
@@ -78,12 +79,25 @@ public static class Principal
     {
         if (opciones.FaseV)
         {
-            var carpeta = opciones.Artefactos ?? Path.Combine(Path.GetTempPath(), "tutorflow-fase-v", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture));
-            Console.WriteLine($"Artefactos de la fase V (fuera del repositorio): {carpeta}");
-            return new EjecutorFaseV(opciones.Offline, carpeta, llave);
+            return EjecutorDeLaFaseV(opciones, cliente, llave);
         }
 
-        return opciones.Offline ? new EjecutorEnProceso() : new EjecutorHttp(cliente, opciones.PausaMs);
+        return opciones.Offline ? new EjecutorEnProceso() : EjecutorPorCaso(opciones, cliente, llave);
+    }
+
+    private static IEjecutor EjecutorDeLaFaseV(OpcionesEvals opciones, HttpClient cliente, string? llave)
+    {
+        var carpeta = opciones.Artefactos ?? Path.Combine(Path.GetTempPath(), "tutorflow-fase-v", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture));
+        Console.WriteLine($"Artefactos de la fase V (fuera del repositorio): {carpeta}");
+        return opciones.UrlExplicita && !opciones.Offline
+            ? new EjecutorConArtefactos(new EjecutorHttp(cliente, opciones.PausaMs), carpeta, llave)
+            : new EjecutorFaseV(opciones.Offline, carpeta, llave);
+    }
+
+    private static IEjecutor EjecutorPorCaso(OpcionesEvals opciones, HttpClient cliente, string? llave)
+    {
+        var http = new EjecutorHttp(cliente, opciones.PausaMs);
+        return opciones.Artefactos is { } carpeta ? new EjecutorConArtefactos(http, carpeta, llave) : http;
     }
 
     private static async Task<ResultadoCaso> EjecutarCaso(IEjecutor ejecutor, CasoEval caso, int corrida, string? llave)

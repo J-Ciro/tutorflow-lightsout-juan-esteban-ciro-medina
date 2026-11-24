@@ -17,7 +17,10 @@ public sealed record ArtefactoCorrida(
     bool ConPrelectura,
     IReadOnlyList<UsoEval> Usage,
     string? Respuesta,
-    IReadOnlyList<string> Citas);
+    IReadOnlyList<string> Citas,
+    string TextoResumen = "",
+    string TextoPrelectura = "",
+    string? CorrelationId = null);
 
 public sealed class GrabadorLlm(IClienteLlm interno) : IClienteLlm
 {
@@ -63,7 +66,7 @@ public static class ArtefactosFaseV
         return ruta;
     }
 
-    public static ArtefactoCorrida Armar(CasoEval caso, int corrida, GrabadorLlm? grabador, SalidaEval? salida)
+    public static ArtefactoCorrida Armar(CasoEval caso, int corrida, GrabadorLlm? grabador, SalidaEval? salida, string? correlationId = null)
     {
         var llamadas = grabador?.Llamadas ?? [];
         var bloques = BloquesDeLaPrimeraLlamada(llamadas);
@@ -77,11 +80,17 @@ public static class ArtefactosFaseV
             bloques.Any(b => b.Fuente.StartsWith(Textos.DocumentoDatosPrograma, StringComparison.Ordinal)),
             [.. llamadas.Select(l => new UsoEval(l.Respuesta.Uso.Entrada, l.Respuesta.Uso.Salida))],
             salida?.Respuesta,
-            CitasDe(salida));
+            CitasDe(salida),
+            CuerpoDe(bloques, b => b.Fuente == FuenteDelResumen),
+            CuerpoDe(bloques, b => b.Fuente.StartsWith(Textos.DocumentoDatosPrograma, StringComparison.Ordinal)),
+            correlationId);
     }
 
     private static IReadOnlyList<BloqueDelimitado> BloquesDeLaPrimeraLlamada(IReadOnlyList<(SolicitudLlm Solicitud, RespuestaLlm Respuesta)> llamadas) =>
         llamadas.Count == 0 ? [] : GuionesLlm.Bloques(llamadas[0].Solicitud);
+
+    private static string CuerpoDe(IReadOnlyList<BloqueDelimitado> bloques, Func<BloqueDelimitado, bool> criterio) =>
+        bloques.FirstOrDefault(criterio)?.Cuerpo ?? string.Empty;
 
     private static string[] CitasDe(SalidaEval? salida) =>
         [.. (salida?.Citas ?? []).Select(c => c.Texto)];

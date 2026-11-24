@@ -22,6 +22,8 @@ public static class Cuerpos
 
 public sealed class EjecutorHttp : IEjecutor
 {
+    private const string EncabezadoCorrelacion = "X-Correlation-Id";
+
     private readonly HttpClient _cliente;
     private readonly int _pausaMs;
 
@@ -44,7 +46,33 @@ public sealed class EjecutorHttp : IEjecutor
         using var respuesta = await _cliente.PostAsync(Cuerpos.Ruta, contenido, cancellationToken);
         var texto = await respuesta.Content.ReadAsStringAsync(cancellationToken);
         reloj.Stop();
-        return new Ejecucion((int)respuesta.StatusCode, texto, reloj.Elapsed.TotalMilliseconds);
+        return new Ejecucion((int)respuesta.StatusCode, texto, reloj.Elapsed.TotalMilliseconds, CorrelacionDe(respuesta));
+    }
+
+    private static string? CorrelacionDe(HttpResponseMessage respuesta) =>
+        respuesta.Headers.TryGetValues(EncabezadoCorrelacion, out var valores) ? valores.FirstOrDefault() : null;
+}
+
+public sealed class EjecutorConArtefactos(IEjecutor interno, string carpeta, string? llave) : IEjecutor
+{
+    private readonly Dictionary<string, int> _corridas = [];
+
+    public async Task<Ejecucion?> EjecutarAsync(CasoEval caso, CancellationToken cancellationToken)
+    {
+        var ejecucion = await interno.EjecutarAsync(caso, cancellationToken);
+        if (ejecucion is not null)
+        {
+            Guardar(caso, ejecucion);
+        }
+
+        return ejecucion;
+    }
+
+    private void Guardar(CasoEval caso, Ejecucion ejecucion)
+    {
+        var corrida = _corridas[caso.Id] = _corridas.GetValueOrDefault(caso.Id) + 1;
+        var artefacto = ArtefactosFaseV.Armar(caso, corrida, null, Json.LeerSalida(ejecucion.Cuerpo), ejecucion.CorrelationId);
+        ArtefactosFaseV.Guardar(carpeta, $"{TablaFaseV.Pregunta(caso)}-{caso.Id}-corrida-{corrida}", artefacto, llave);
     }
 }
 

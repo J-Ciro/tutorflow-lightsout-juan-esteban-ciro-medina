@@ -28,7 +28,6 @@ internal sealed partial record ReglaDeConfiguracion(
     private const string MaximoDecimalEnTexto = "1000";
     private const string TextoDecimalPositivo = "decimal mayor que 0";
     private const decimal MaximaTemperatura = 0.3m;
-    private const int SemillaMaxima = int.MaxValue;
     private const int PuntajeMaximo = 100;
 
     public static IReadOnlyList<ReglaDeConfiguracion> Todas { get; } =
@@ -37,7 +36,6 @@ internal sealed partial record ReglaDeConfiguracion(
         Entero("Conocimiento:ApoyoMinimoRespaldo", 1, 10),
         Entero("Conocimiento:PuntajeRelativoMinimo", 1, PuntajeMaximo),
         Entero("Conocimiento:PuntajeRelativoRelevante", 1, PuntajeMaximo),
-        Entero("Llm:Semilla", 0, SemillaMaxima),
         new("Llm:Temperatura", TipoDeValor.Decimal, new RangoNumerico(0m, MaximaTemperatura), "decimal de 0 a 0.3"),
         Entero("Limites:MaximoCaracteresPregunta", 1, 1000),
         Entero("Limites:MaximoBytesCuerpo", 1024, 16384),

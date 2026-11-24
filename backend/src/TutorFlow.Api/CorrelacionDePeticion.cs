@@ -7,7 +7,8 @@ public static class CorrelacionDePeticion
     public static IApplicationBuilder UsarCorrelacion(this IApplicationBuilder aplicacion) =>
         aplicacion.Use(async (contexto, siguiente) =>
         {
-            var correlationId = Guid.CreateVersion7().ToString();
+            var reloj = contexto.RequestServices.GetRequiredService<TimeProvider>();
+            var correlationId = Guid.CreateVersion7(reloj.GetUtcNow()).ToString();
             contexto.TraceIdentifier = correlationId;
             contexto.Response.OnStarting(() =>
             {

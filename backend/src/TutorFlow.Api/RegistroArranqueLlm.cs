@@ -21,7 +21,7 @@ public sealed partial class RegistroArranqueLlm : IHostedService
         var proveedor = _servicios.GetRequiredService<ProveedorResuelto>();
         if (proveedor.Adaptador == AdaptadorLlm.NoConfigurado)
         {
-            RegistrarConfiguracionIncompleta(_logger);
+            RegistrarSinProveedor(proveedor.Conflicto);
             return Task.CompletedTask;
         }
 
@@ -32,8 +32,22 @@ public sealed partial class RegistroArranqueLlm : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "Configuración del LLM incompleta: la llave tiene un prefijo desconocido y falta LLM_URL_BASE. Las preguntas que necesitan el LLM responderán 503.")]
-    private static partial void RegistrarConfiguracionIncompleta(ILogger logger);
+    private void RegistrarSinProveedor(ConflictoDeProveedor? conflicto)
+    {
+        if (conflicto is null)
+        {
+            RegistrarProveedorNoDeterminable(_logger);
+            return;
+        }
+
+        RegistrarConflictoDeProveedor(_logger, conflicto.PorModelo, conflicto.PorLlave);
+    }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "No se pudo determinar el proveedor: define LLM_PROVEEDOR, LLM_MODELO o LLM_URL_BASE")]
+    private static partial void RegistrarProveedorNoDeterminable(ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Conflicto de proveedor: el modelo indica {PorModelo} y la llave indica {PorLlave}; define LLM_PROVEEDOR. Las preguntas que necesitan el LLM responderán 503.")]
+    private static partial void RegistrarConflictoDeProveedor(ILogger logger, ProveedorLlm porModelo, ProveedorLlm porLlave);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Proveedor del LLM: {Proveedor}, adaptador {Adaptador}, modelo {Modelo}, precio desconocido: {PrecioDesconocido}, temperatura {Temperatura}.")]
     private static partial void RegistrarProveedor(ILogger logger, ProveedorLlm proveedor, AdaptadorLlm adaptador, string modelo, bool precioDesconocido, string temperatura);

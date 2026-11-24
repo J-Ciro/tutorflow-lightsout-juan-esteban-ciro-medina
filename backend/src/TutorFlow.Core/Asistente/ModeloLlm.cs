@@ -11,7 +11,30 @@ public sealed record ParametroHerramienta(string Nombre, string Descripcion, boo
 
 public sealed record HerramientaLlm(string Nombre, string Descripcion, IReadOnlyList<ParametroHerramienta> Parametros);
 
-public sealed record LlamadaHerramienta(string Id, string Nombre, string ArgumentosJson);
+public sealed class DatoOpacoDelProveedor(object valor)
+{
+    public object Valor { get; } = valor;
+
+    public override string ToString() => nameof(DatoOpacoDelProveedor);
+
+    public override bool Equals(object? obj) => obj is DatoOpacoDelProveedor;
+
+    public override int GetHashCode() => 0;
+}
+
+public sealed record LlamadaHerramienta(string Id, string Nombre, string ArgumentosJson, DatoOpacoDelProveedor? DatoOpaco = null)
+{
+    public bool Equals(LlamadaHerramienta? otra) =>
+        otra is not null && Id == otra.Id && Nombre == otra.Nombre && ArgumentosJson == otra.ArgumentosJson;
+
+    public override int GetHashCode() => HashCode.Combine(Id, Nombre, ArgumentosJson);
+
+    private bool PrintMembers(System.Text.StringBuilder constructor)
+    {
+        constructor.Append($"Id = {Id}, Nombre = {Nombre}, ArgumentosJson = {ArgumentosJson}");
+        return true;
+    }
+}
 
 public sealed record MensajeLlm(
     RolMensaje Rol,
@@ -24,10 +47,9 @@ public sealed record SolicitudLlm(
     IReadOnlyList<MensajeLlm> Mensajes,
     IReadOnlyList<HerramientaLlm> Herramientas,
     int MaximoTokensSalida,
-    decimal Temperatura = 0m,
-    int Semilla = 1);
+    decimal Temperatura = 0m);
 
-public sealed record AjustesDelModelo(decimal Temperatura = 0m, int Semilla = 1);
+public sealed record AjustesDelModelo(decimal Temperatura = 0m);
 
 public sealed record ContextoTruncadoDetectado(int TokensEstimados, int TokensReportados);
 

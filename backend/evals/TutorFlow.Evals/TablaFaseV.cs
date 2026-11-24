@@ -29,9 +29,9 @@ public static partial class TablaFaseV
 
     private static void ImprimirRegistro(EntornoFaseV entorno, TextWriter salida)
     {
-        salida.WriteLine("| Fecha UTC | Commit | Proveedor | Modelo | Llm:Temperatura | Llm:Semilla | OLLAMA_CONTEXT_LENGTH |");
-        salida.WriteLine("| --- | --- | --- | --- | --- | --- | --- |");
-        salida.WriteLine($"| {entorno.FechaUtc} | {entorno.Commit} | {entorno.Proveedor} | {entorno.Modelo} | {entorno.Temperatura} | {entorno.Semilla} | {entorno.ContextoDeOllama} |");
+        salida.WriteLine("| Fecha UTC | Commit | Proveedor | Modelo | Llm:Temperatura | OLLAMA_CONTEXT_LENGTH |");
+        salida.WriteLine("| --- | --- | --- | --- | --- | --- |");
+        salida.WriteLine($"| {entorno.FechaUtc} | {entorno.Commit} | {entorno.Proveedor} | {entorno.Modelo} | {entorno.Temperatura} | {entorno.ContextoDeOllama} |");
     }
 
     private static void ImprimirAciertos(IReadOnlyList<ResultadoCaso> resultados, TextWriter salida)

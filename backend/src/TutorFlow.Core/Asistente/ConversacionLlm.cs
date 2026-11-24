@@ -130,7 +130,7 @@ internal sealed class ConversacionLlm
 
     private async Task<ResultadoConversacion?> EjecutarHerramientasAsync(Turnos estado, RespuestaLlm respuesta, CancellationToken cancellationToken)
     {
-        estado.Mensajes.Add(new MensajeLlm(RolMensaje.Asistente, respuesta.Texto ?? string.Empty, null, respuesta.Llamadas));
+        estado.Mensajes.Add(new MensajeLlm(RolMensaje.Asistente, respuesta.Texto ?? string.Empty, null, SoloLasEjecutables(respuesta.Llamadas, estado.Contexto.Usuario.Rol)));
         foreach (var llamada in respuesta.Llamadas)
         {
             var resultado = await _herramientas.EjecutarAsync(llamada, estado.Contexto, estado.Registro, cancellationToken);
@@ -146,14 +146,19 @@ internal sealed class ConversacionLlm
         return null;
     }
 
+    private static List<LlamadaHerramienta> SoloLasEjecutables(IReadOnlyList<LlamadaHerramienta> llamadas, Rol rol)
+    {
+        var disponibles = HerramientasAsistente.Definir(rol).Select(herramienta => herramienta.Nombre).ToHashSet();
+        return [.. llamadas.Select(llamada => disponibles.Contains(llamada.Nombre) ? llamada : llamada with { DatoOpaco = null })];
+    }
+
     private SolicitudLlm Solicitar(Turnos estado) =>
         new(
             estado.PromptSistema,
             [.. estado.Mensajes],
             HerramientasAsistente.Definir(estado.Contexto.Usuario.Rol),
             _limites.MaximoTokensSalida,
-            _configuracion.Ajustes.Temperatura,
-            _configuracion.Ajustes.Semilla);
+            _configuracion.Ajustes.Temperatura);
 
     private sealed class Turnos(ContextoUsuario contexto, RegistroConsultas registro, List<MensajeLlm> mensajes, string promptSistema)
     {
