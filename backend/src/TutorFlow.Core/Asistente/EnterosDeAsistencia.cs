@@ -62,7 +62,6 @@ internal static class EnterosDeAsistencia
     }
 
     private static bool TienePalabraClaveCerca(IReadOnlyList<TokenTexto> tokens, int indice) =>
-        Enumerable.Range(Math.Max(0, indice - PalabrasHastaLaPalabraClave), (2 * PalabrasHastaLaPalabraClave) + 1)
-            .Where(posicion => posicion < tokens.Count)
+        VentanaDePalabras.Posiciones(tokens.Count, indice, PalabrasHastaLaPalabraClave)
             .Any(posicion => PalabrasClave.Contains(tokens[posicion].Valor));
 }

@@ -6,6 +6,7 @@ public static class DetectorAgregados
     private const int MaximoEntrePosicionYVerbo = 3;
     private const int MaximoDeRellenoDelPromedio = 2;
     private const int MaximoDeRellenoDelListado = 3;
+    private const int MaximoDeRellenoDelPuesto = 2;
     private const int MaximoDeRellenoDelComparativo = 2;
 
     public static bool PideAgregados(string textoNormalizado)
@@ -18,7 +19,15 @@ public static class DetectorAgregados
         frases.Contiene(VocabularioAgregados.FuertesSueltas)
         || PosicionPropia(frases)
         || PromedioDeColectivo(frases)
-        || PluralSinPosesivo(frases);
+        || PluralSinPosesivo(frases)
+        || PuestoDeColectivo(frases);
+
+    private static bool PuestoDeColectivo(FrasesDelTexto frases) =>
+        frases.SeguidaDeRellenoY(
+            VocabularioAgregados.PrimerosYUltimos,
+            VocabularioAgregados.RellenosDelPuesto,
+            MaximoDeRellenoDelPuesto,
+            VocabularioAgregados.Colectivos);
 
     private static bool NivelDos(FrasesDelTexto frases) =>
         (frases.Contiene(VocabularioAgregados.Grupo) && NivelDosConGrupo(frases))
