@@ -20,20 +20,25 @@ public sealed class ConfiguracionAsistente
         int relevanciaMinima = RelevanciaMinimaPorDefecto, int apoyoMinimoRespaldo = ApoyoMinimoPorDefecto,
         IReadOnlyList<AsignaturaCatalogo>? catalogo = null,
         decimal reservaSinPrecioUsd = ReservaSinPrecioPorDefectoUsd,
-        Action<string>? advertir = null, AjustesDelModelo? ajustes = null)
+        Action<string>? advertir = null, AjustesDelModelo? ajustes = null,
+        Func<PrecioModelo?>? precioVigente = null)
     {
         Catalogo = catalogo ?? throw new ArgumentNullException(nameof(catalogo));
         Advertir = AdvertenciaOSilencio(advertir);
-        Precio = precio;
+        _precioVigente = precioVigente ?? (() => precio);
         MarcadorCanario = MarcadorOAleatorio(marcadorCanarioConfigurado);
         CodigosAsignatura = [.. Catalogo.Select(asignatura => asignatura.Codigo)];
         Ajustes = ajustes ?? new AjustesDelModelo();
-        ReservaPorPeticionUsd = reservaPorPeticionUsd is > 0m ? reservaPorPeticionUsd.Value : ReservaPorDefecto(precio, reservaSinPrecioUsd);
+        _reservaConfigurada = reservaPorPeticionUsd is > 0m ? reservaPorPeticionUsd : null;
+        _reservaSinPrecioUsd = reservaSinPrecioUsd;
         RelevanciaMinima = Math.Max(MinimoPermitido, relevanciaMinima);
         ApoyoMinimoRespaldo = Math.Max(MinimoPermitido, apoyoMinimoRespaldo);
     }
 
     private readonly HashSet<string> _advertidas = [];
+    private readonly Func<PrecioModelo?> _precioVigente;
+    private readonly decimal? _reservaConfigurada;
+    private readonly decimal _reservaSinPrecioUsd;
 
     public Action<string> Advertir { get; }
 
@@ -50,7 +55,7 @@ public sealed class ConfiguracionAsistente
 
     public AjustesDelModelo Ajustes { get; }
 
-    public PrecioModelo? Precio { get; }
+    public PrecioModelo? Precio => _precioVigente();
 
     public string MarcadorCanario { get; }
 
@@ -58,7 +63,7 @@ public sealed class ConfiguracionAsistente
 
     public IReadOnlyList<AsignaturaCatalogo> Catalogo { get; }
 
-    public decimal ReservaPorPeticionUsd { get; }
+    public decimal ReservaPorPeticionUsd => _reservaConfigurada ?? ReservaPorDefecto(Precio, _reservaSinPrecioUsd);
 
     public int RelevanciaMinima { get; }
 

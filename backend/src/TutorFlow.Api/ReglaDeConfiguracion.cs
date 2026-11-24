@@ -8,7 +8,8 @@ internal enum TipoDeValor
 {
     Entero,
     Decimal,
-    Booleano
+    Booleano,
+    Url
 }
 
 internal readonly record struct RangoNumerico(decimal Minimo, decimal Maximo, bool MinimoExclusivo = false)
@@ -24,6 +25,7 @@ internal sealed partial record ReglaDeConfiguracion(
     string Texto,
     string? Defecto = null)
 {
+    internal const string ClaveCatalogoPrecios = "Llm:CatalogoPrecios:Url";
     internal const decimal MaximoDecimal = 1000m;
     private const string MaximoDecimalEnTexto = "1000";
     private const string TextoDecimalPositivo = "decimal mayor que 0";
@@ -48,8 +50,7 @@ internal sealed partial record ReglaDeConfiguracion(
         new("Limites:PresupuestoDiarioUsd", TipoDeValor.Decimal, new RangoNumerico(0m, MaximoDecimal, true), $"{TextoDecimalPositivo} y hasta {MaximoDecimalEnTexto}"),
         Entero("Limites:MaximoIdentidadesPorIp", 1, 100),
         Entero("Limites:VentanaIdentidadesMinutos", 1, 1440),
-        Precio("LLM_PRECIO_ENTRADA"),
-        Precio("LLM_PRECIO_SALIDA")
+        new(ClaveCatalogoPrecios, TipoDeValor.Url, new RangoNumerico(0m, 0m), "URL absoluta http o https, o vacía")
     ];
 
     public static IReadOnlyList<ReglaDeConfiguracion> ConAdvertencia { get; } =
@@ -65,14 +66,22 @@ internal sealed partial record ReglaDeConfiguracion(
         new(clave, TipoDeValor.Decimal, new RangoNumerico(0m, MaximoDecimal), $"decimal de 0 a {MaximoDecimalEnTexto}");
 
     public bool Cumple(string valor) =>
-        Tipo == TipoDeValor.Booleano ? EsBooleanoExacto(valor) : FormatoNumerico().IsMatch(valor) && EnRango(valor);
+        Tipo switch
+        {
+            TipoDeValor.Booleano => EsBooleanoExacto(valor),
+            TipoDeValor.Url => EsUrlHttp(valor),
+            _ => FormatoNumerico().IsMatch(valor) && EnRango(valor)
+        };
+
+    private static bool EsUrlHttp(string valor) =>
+        Uri.TryCreate(valor, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https";
 
     private static bool EsBooleanoExacto(string valor) => bool.TryParse(valor, out _) && valor.Trim() == valor;
 
     private Regex FormatoNumerico() => Tipo == TipoDeValor.Entero ? FormatoEntero() : FormatoDecimal();
 
     public decimal? LeerValido(string? valor) =>
-        valor is not null && Tipo != TipoDeValor.Booleano && Cumple(valor) ? Convertir(valor) : null;
+        valor is not null && Tipo is TipoDeValor.Entero or TipoDeValor.Decimal && Cumple(valor) ? Convertir(valor) : null;
 
     private static ReglaDeConfiguracion Entero(string clave, int minimo, int maximo) =>
         new(clave, TipoDeValor.Entero, new RangoNumerico(minimo, maximo), $"entero de {minimo} a {maximo}");
