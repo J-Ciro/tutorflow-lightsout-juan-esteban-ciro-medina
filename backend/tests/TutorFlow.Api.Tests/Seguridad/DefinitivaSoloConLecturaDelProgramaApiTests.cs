@@ -1,47 +1,26 @@
 using TutorFlow.Api.Tests.Dobles;
-using TutorFlow.Core.Asistente;
 
 namespace TutorFlow.Api.Tests.Seguridad;
 
 public sealed class DefinitivaSoloConLecturaDelProgramaApiTests
 {
     private const string PreguntaDefinitiva = "¿Qué dice el reglamento sobre la habilitación?";
-    private const string DatosProgramaAdm = "Datos del programa · ADM";
+    private const int LlamadasDeLecturaYRespuesta = 2;
 
-    [Fact]
-    [Trait("CA", "CA-06")]
+    [Theory]
+    [InlineData("k", "La definitiva de Valentina Castro en Estadística es 3.2.")]
+    [InlineData("l", "La definitiva de Valentina Castro en Estadística es 2.3.")]
+    [Trait("CA", "CA-17")]
     [Trait("ESC", "ESC-179")]
-    [Trait("RF", "SEG-10g")]
-    public async Task ESC_179k_Una_definitiva_ajena_a_la_lectura_del_programa_da_numero_no_verificado()
+    [Trait("D", "D-98")]
+    public async Task ESC_179kl_La_definitiva_de_una_persona_escrita_por_el_modelo_se_elimina_sin_reintento(string caso, string texto)
     {
-        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => "La definitiva de Valentina Castro en Estadística es 3.2."), conocimientoReal: true);
-
-        var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaDefinitiva);
-
-        Assert.Equal(200, respuesta.Estado);
-        Afirmaciones.SalidaDelContrato(respuesta);
-        Assert.Equal(Textos.NoVerificable, respuesta.Respuesta);
-        Assert.Empty(respuesta.Citas);
-        Assert.True(respuesta.UsoDatosEstudiante);
-        Assert.Equal(ResultadoAuditoria.NumeroNoVerificado, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
-        Assert.Equal(3, fabrica.Llm.Llamadas);
-    }
-
-    [Fact]
-    [Trait("CA", "CA-06")]
-    [Trait("ESC", "ESC-179")]
-    [Trait("RF", "SEG-10g")]
-    public async Task ESC_179l_La_definitiva_que_lista_el_resultado_del_programa_se_entrega_con_su_cita()
-    {
-        const string texto = "La definitiva de Valentina Castro en Estadística es 2.3.";
+        Assert.NotEmpty(caso);
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaDefinitiva);
 
-        Assert.Equal(200, respuesta.Estado);
-        Assert.Equal(texto, respuesta.Respuesta);
-        Assert.Contains(DatosProgramaAdm, respuesta.Citas);
-        Assert.True(respuesta.UsoDatosEstudiante);
-        Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
+        Afirmaciones.OracionConPersonaPodada(respuesta, fabrica, usoDatos: true);
+        Assert.Equal(LlamadasDeLecturaYRespuesta, fabrica.Llm.Llamadas);
     }
 }

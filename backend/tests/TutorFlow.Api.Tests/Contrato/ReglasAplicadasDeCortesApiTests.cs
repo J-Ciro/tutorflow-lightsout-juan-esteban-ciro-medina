@@ -6,7 +6,7 @@ namespace TutorFlow.Api.Tests.Contrato;
 public sealed class ReglasAplicadasDeCortesApiTests
 {
     private const string EncabezadoDeReglas = "Reglas aplicadas a estos datos: ";
-    private const string PreguntaDeCorte = "¿Cuánto saqué en el corte 1 de Estadística?";
+    private const string PreguntaDeCorte = "¿Cómo se califican los cortes de una asignatura?";
 
     private static ClienteLlmDoble ConsultaCortes() =>
         new((solicitud, numero) => numero == 0

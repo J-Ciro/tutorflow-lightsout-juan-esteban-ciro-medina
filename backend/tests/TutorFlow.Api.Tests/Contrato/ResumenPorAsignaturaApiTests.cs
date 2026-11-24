@@ -193,7 +193,9 @@ public sealed class ResumenPorAsignaturaApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Contains("3.88", TextoEnviado(fabrica.Llm.Solicitudes[0]), StringComparison.Ordinal);
-        Assert.Equal("No cumples el requisito: tu promedio del periodo es 3.88.", respuesta.Respuesta);
+        Assert.StartsWith("Datos de Camilo Rojas (EST-004)", respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.Contains("Promedio ponderado del periodo: 3.88", respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.Contains("Beca por rendimiento académico: no elegible", respuesta.Respuesta, StringComparison.Ordinal);
         Assert.True(respuesta.UsoDatosEstudiante);
         Assert.Contains(CitaNotas, respuesta.Citas);
     }

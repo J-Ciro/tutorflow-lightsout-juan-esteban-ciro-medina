@@ -120,9 +120,9 @@ public sealed partial class PresentacionDeSeccionYEjemplosApiTests
     [Trait("D", "D-58")]
     public async Task ESC_198i_Si_el_modelo_copia_las_cifras_de_EJ_2_las_cifras_ajenas_a_las_fuentes_dan_TEXTO_NO_VERIFICABLE_con_numero_no_verificado()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Tu promedio es 2.77. Definitivas: Física 2.7, Química 2.9."), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.LeeNotasYAsistencia(_ => "Tu promedio es 2.77. Definitivas: Física 2.7, Química 2.9."), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio del periodo?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cómo se calcula el promedio ponderado del periodo?");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(Textos.NoVerificable, respuesta.Respuesta);

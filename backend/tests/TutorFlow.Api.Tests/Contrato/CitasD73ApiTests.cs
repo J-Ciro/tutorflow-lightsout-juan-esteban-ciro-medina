@@ -135,7 +135,7 @@ public sealed class CitasD73ApiTests
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-01", "¿Cuántos estudiantes tiene mi programa?");
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.Equal("Tu programa tiene 3 estudiantes.", respuesta.Respuesta);
+        Assert.Equal("Programa ING-SIS (Ingeniería de Sistemas): 3 estudiantes.", respuesta.Respuesta);
         Assert.Equal([ProgramaIngSis], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }

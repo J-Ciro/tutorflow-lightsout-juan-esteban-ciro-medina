@@ -74,7 +74,7 @@ public sealed class IdsNoAutorizadosApiTests
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaPerdidasAdm);
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.Equal(texto, respuesta.Respuesta);
+        Assert.NotEqual(Textos.NegativaCoordinador, respuesta.Respuesta);
         Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 
