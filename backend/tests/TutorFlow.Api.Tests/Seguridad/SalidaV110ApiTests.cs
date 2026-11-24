@@ -155,20 +155,35 @@ public sealed class SalidaV110ApiTests
     }
 
     [Theory]
-    [InlineData("i", "Valentina Castro:\n- Definitiva en Estadística: 3.2", "- Definitiva en Estadística: 3.2")]
-    [InlineData("j", "Valentina Castro:\n- Definitiva en Estadística: 2.3", "- Definitiva en Estadística: 2.3")]
+    [InlineData("i", "Valentina Castro:\n- Definitiva en Estadística: 3.2")]
+    [InlineData("j", "Valentina Castro:\n- Definitiva en Estadística: 2.3")]
     [Trait("CA", "CA-17")]
     [Trait("ESC", "ESC-179")]
     [Trait("D", "D-98")]
-    public async Task ESC_179_El_encabezado_con_el_nombre_se_elimina_y_la_linea_restante_se_entrega(string caso, string texto, string esperado)
+    public async Task ESC_179_El_encabezado_con_el_nombre_se_poda_junto_con_las_vinetas_que_lo_siguen(string caso, string texto)
     {
         Assert.NotEmpty(caso);
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos("EST-005", redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", "¿Qué dice el reglamento sobre la habilitación?");
 
+        Afirmaciones.OracionConPersonaPodada(respuesta, fabrica, usoDatos: true);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-17")]
+    [Trait("ESC", "ESC-179")]
+    [Trait("D", "D-98")]
+    public async Task ESC_179_Una_lista_normativa_sin_encabezado_de_persona_se_conserva()
+    {
+        const string texto = "Requisitos:\n- La nota mínima para aprobar es 3.0.\n- Se aplica el reglamento vigente.";
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.Texto(texto), conocimientoReal: true);
+
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaNotaMinima);
+
         Assert.Equal(200, respuesta.Estado);
-        Assert.Equal(esperado, respuesta.Respuesta);
+        Assert.Equal(texto, respuesta.Respuesta);
+        Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 
     [Fact]
