@@ -1133,8 +1133,11 @@
     "citasProhibidas": [],
     "citasVacias": false,
     "citasExactas": null,
+    "citasDocumentoExactas": [
+      "evaluacion_y_calificaciones.md · Sección 4"
+    ],
     "usoDatosEstudiante": true,
-    "respuestaExacta": "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).",
+    "respuestaExacta": "Tu promedio es 4.39.",
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,

@@ -74,8 +74,9 @@ public sealed class ReferenciasANumerosApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal("Tu promedio es 4.39.", respuesta.Respuesta);
-        Assert.Contains(CitaSeccion4, respuesta.Citas);
-        Assert.DoesNotContain("evaluacion_y_calificaciones.md · Sección 3", respuesta.Citas);
+        Assert.Equal([CitaSeccion4, "Datos del estudiante · Notas", "Datos del estudiante · Asistencia"], respuesta.Citas);
+        Assert.DoesNotContain("Secciones", respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.DoesNotContain("Sección 3", respuesta.Respuesta, StringComparison.Ordinal);
         Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 }
