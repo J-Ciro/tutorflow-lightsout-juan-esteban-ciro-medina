@@ -12,10 +12,15 @@
     "noContiene": [],
     "citasIncluye": [],
     "citasProhibidas": [],
-    "citasVacias": true,
-    "citasExactas": null,
+    "citasVacias": false,
+    "citasExactas": [
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "reglamento_academico_2025.md · Artículo 5",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
     "usoDatosEstudiante": true,
-    "respuestaExacta": "No pude verificar los datos de la respuesta. Intenta de nuevo o reformula la pregunta.",
+    "respuestaExacta": "Datos de Valentina Castro (EST-005)\nDefinitivas: Estadística 2.3",
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,
@@ -37,14 +42,14 @@
     "http": 200,
     "contiene": [],
     "noContiene": [],
-    "citasIncluye": [
-      "Datos del programa · ADM"
+    "citasIncluye": [],
+    "citasProhibidas": [
+      "Datos del programa"
     ],
-    "citasProhibidas": [],
     "citasVacias": false,
     "citasExactas": null,
     "usoDatosEstudiante": true,
-    "respuestaExacta": "La definitiva de Valentina Castro en Estadística es 2.3.",
+    "respuestaExacta": "Datos de Valentina Castro (EST-005)\nDefinitivas: Estadística 2.3",
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,

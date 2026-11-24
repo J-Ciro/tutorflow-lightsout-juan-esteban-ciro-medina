@@ -71,7 +71,7 @@ internal sealed partial class CitasDeReglasAplicadas
         UsaUnTermino(regla, texto, respuesta, directorio) || UsaElValor(regla, respuesta, registro, directorio);
 
     private bool UsaUnTermino(Cita regla, string texto, string respuesta, DirectorioAcademico directorio) =>
-        EscribeUnTermino(regla, texto) && (regla != Definitiva || _definitivas.SinCifrasNiAsignaturas(respuesta, directorio));
+        EscribeUnTermino(regla, texto) && (regla != Definitiva || _definitivas.SinCifrasNiAsignaturas(respuesta, directorio) || texto.Contains(" sin definitiva ", StringComparison.Ordinal));
 
     private static bool EscribeUnTermino(Cita regla, string texto) =>
         Terminos.TryGetValue(regla, out var palabras) && palabras.Any(palabra => texto.Contains($" {palabra} ", StringComparison.Ordinal));

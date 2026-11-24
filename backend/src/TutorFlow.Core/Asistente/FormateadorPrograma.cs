@@ -21,6 +21,15 @@ internal static class FormateadorPrograma
         _ => LineaDeNumero(programa, estudiantes)
     };
 
+    public static string? Cantidad(ListadoDePrograma listado, IReadOnlyList<EstudianteDePrograma> estudiantes) => listado switch
+    {
+        ListadoDePrograma.Perdidas => $"Cantidad de estudiantes con asignaturas perdidas: {estudiantes.Count(HayPerdidas)}",
+        ListadoDePrograma.PruebaAcademica => $"Cantidad de estudiantes en prueba académica: {estudiantes.Count(e => e.Resumen.PruebaAcademica)}",
+        ListadoDePrograma.SinDefinitiva => $"Cantidad de estudiantes con asignaturas sin definitiva: {estudiantes.Count(e => DeAsignaturas(e, EstadoAsignatura.SinDefinitiva) is not null)}",
+        ListadoDePrograma.SinRegistro => $"Cantidad de estudiantes con asistencia sin registro: {estudiantes.Count(e => DeSinRegistro(e) is not null)}",
+        _ => null
+    };
+
     private static string? DeAsignaturas(EstudianteDePrograma estudiante, EstadoAsignatura estado) =>
         Agrupar(estudiante, estudiante.Resumen.Asignaturas.Where(resultado => resultado.Estado == estado));
 
