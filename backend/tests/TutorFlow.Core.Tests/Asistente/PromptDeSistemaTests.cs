@@ -27,7 +27,9 @@ public sealed partial class PromptDeSistemaTests
         { Rol.Estudiante, "P-06", ["sin definitiva", "perdida"] },
         { Rol.Coordinador, "P-06", ["sin definitiva", "perdida"] },
         { Rol.Estudiante, "P-07", ["herramientas"] },
-        { Rol.Coordinador, "P-07", ["herramientas"] }
+        { Rol.Coordinador, "P-07", ["herramientas"] },
+        { Rol.Estudiante, "P-08", ["LaTeX", "fórmulas", "%"] },
+        { Rol.Coordinador, "P-08", ["LaTeX", "fórmulas", "%"] }
     };
 
     [GeneratedRegex(@"^[ \t]*\d+\.[ \t]+(.*?)(?=^[ \t]*\d+\.[ \t]|\n[ \t]*\r?\n|\z)", RegexOptions.CultureInvariant | RegexOptions.Multiline | RegexOptions.Singleline, matchTimeoutMilliseconds: 1000)]
@@ -83,7 +85,7 @@ public sealed partial class PromptDeSistemaTests
     [Trait("CA", "CA-20")]
     [Trait("ESC", "ESC-191")]
     [Trait("D", "D-63")]
-    public void ESC_191_El_primer_paso_con_todos_los_terminos_de_cada_una_de_las_7_reglas_es_un_paso_distinto(Rol rol)
+    public void ESC_191_El_primer_paso_con_todos_los_terminos_de_cada_una_de_las_8_reglas_es_un_paso_distinto(Rol rol)
     {
         var pasos = Pasos(rol);
         var reglas = ReglasDelPrompt.Where(fila => (Rol)fila[0] == rol).Select(fila => (string[])fila[2]).ToArray();
@@ -92,9 +94,9 @@ public sealed partial class PromptDeSistemaTests
             .Select(terminos => Array.FindIndex(pasos, paso => terminos.All(t => paso.Contains(t, StringComparison.OrdinalIgnoreCase))))
             .ToArray();
 
-        Assert.Equal(7, elegidos.Length);
+        Assert.Equal(8, elegidos.Length);
         Assert.DoesNotContain(-1, elegidos);
-        Assert.Equal(7, elegidos.Distinct().Count());
+        Assert.Equal(8, elegidos.Distinct().Count());
     }
 
     [Theory]
@@ -105,6 +107,32 @@ public sealed partial class PromptDeSistemaTests
     public void ESC_191_Ninguna_parte_del_prompt_contiene_documento_md(Rol rol)
     {
         Assert.DoesNotContain("documento.md", Prompt(rol), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [MemberData(nameof(Roles))]
+    [Trait("CA", "CA-20")]
+    [Trait("ESC", "ESC-191")]
+    [Trait("D", "D-73")]
+    public void ESC_191_Las_instrucciones_no_mencionan_el_2023_ni_la_derogacion(Rol rol)
+    {
+        var instrucciones = ConstructorPrompts.Instrucciones(Prompt(rol));
+
+        Assert.DoesNotContain("2023", instrucciones, StringComparison.Ordinal);
+        Assert.DoesNotContain("derog", instrucciones, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [MemberData(nameof(Roles))]
+    [Trait("CA", "CA-20")]
+    [Trait("ESC", "ESC-191")]
+    [Trait("D", "D-73")]
+    public void ESC_191_Las_instrucciones_no_nombran_ningun_articulo_ni_archivo_real(Rol rol)
+    {
+        var instrucciones = ConstructorPrompts.Instrucciones(Prompt(rol));
+
+        Assert.DoesNotContain(".md", instrucciones, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotMatch(@"Art[ií]culo\s+\d", instrucciones);
     }
 
     [Theory]

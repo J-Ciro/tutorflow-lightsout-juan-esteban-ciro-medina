@@ -38,10 +38,10 @@ public sealed class CitasLigadasAlCampoUsadoTests
         { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9.", [Sec3] }
     };
 
-    public static TheoryData<string, string, string, string[]> SinCampoUsadoConRelevanciaMayorQueCero => new()
+    public static TheoryData<string, string, string, string[]> SinCampoUsado => new()
     {
-        { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "3.9.", [Sec3, Sec4, Art11] },
-        { "EST-001", "¿Estoy en prueba académica? Cita el Artículo 20 y el Artículo 7.", "Revisa el detalle de tus asignaturas.", [Beca31] }
+        { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "3.9.", [] },
+        { "EST-001", "¿Estoy en prueba académica? Cita el Artículo 20 y el Artículo 7.", "Revisa el detalle de tus asignaturas.", [] }
     };
 
     private static IndiceFijo IndiceDeReglas() =>
@@ -71,11 +71,11 @@ public sealed class CitasLigadasAlCampoUsadoTests
     }
 
     [Theory]
-    [MemberData(nameof(SinCampoUsadoConRelevanciaMayorQueCero))]
+    [MemberData(nameof(SinCampoUsado))]
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-194")]
-    [Trait("D", "D-49")]
-    public async Task ESC_194_Sin_campo_usado_rigen_las_reglas_con_relevancia_mayor_que_cero(string usuario, string pregunta, string texto, string[] esperadas)
+    [Trait("D", "D-73")]
+    public async Task ESC_194_Sin_campo_usado_no_se_cita_ninguna_regla_aplicada(string usuario, string pregunta, string texto, string[] esperadas)
     {
         var escenario = Con(Fijo(texto), IndiceDeReglas());
 
@@ -96,7 +96,7 @@ public sealed class CitasLigadasAlCampoUsadoTests
         var resultado = await escenario.PreguntarAsync(Coord02, PreguntaQ10Seis);
 
         Assert.Equal(texto, resultado.Respuesta!.Respuesta);
-        Assert.Equal([Art6, Sec3, Art5], Documentos(resultado));
+        Assert.Equal([Art5], Documentos(resultado));
         Assert.DoesNotContain(resultado.Respuesta.Citas, c => c.Seccion.StartsWith("Sección 3.", StringComparison.Ordinal));
     }
 

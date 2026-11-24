@@ -30,7 +30,7 @@ public sealed class CitasPorTemaYValorApiTests
         { "d3", "EST-001", PreguntaP2, "Tu promedio es 4.39 y se calcula con los pesos y se redondea.", "Tu promedio es 4.39 y se calcula con los pesos y se redondea.", [Seccion4, Notas, Asistencia], true },
         { "e", "EST-001", PreguntaP2, $"Tu promedio es 4.39. {Definitivas}", $"Tu promedio es 4.39. {Definitivas}", [Seccion4, Seccion3, Notas, Asistencia], true },
         { "f1", "EST-004", PreguntaP5, "Contabilidad: 3.9.", "Contabilidad: 3.9.", [Seccion3, Notas, Asistencia], true },
-        { "f2", "EST-004", PreguntaP5, "3.9.", "3.9.", [Seccion3, Seccion4, Articulo11, Notas, Asistencia], true },
+        { "f2", "EST-004", PreguntaP5, "3.9.", "3.9.", [Notas, Asistencia], true },
         { "k1", "EST-004", PreguntaP5, "Tu nota definitiva en Contabilidad es 3.9 (documento_ejemplo.md · Sección 2).", "Tu nota definitiva en Contabilidad es 3.9.", [Seccion3, Notas, Asistencia], true },
         { "l1", "EST-001", PreguntaP2, "Según el reglamento evaluación y calificaciones.md · Sección 4 tu promedio es 4.39.", "Tu promedio es 4.39.", [Seccion4, Notas, Asistencia], true },
         { "l2", "EST-001", PreguntaP2, "Tu promedio es 4.39. Esta información proviene del documento de evaluación.", "Tu promedio es 4.39.", [Seccion4, Notas, Asistencia], true }

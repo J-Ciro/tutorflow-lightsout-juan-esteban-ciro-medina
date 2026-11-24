@@ -117,21 +117,21 @@ public sealed class CitasDeReglasAplicadasTests
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-177")]
     [Trait("COMP", "COMP-02")]
-    public async Task Sin_raices_en_la_pregunta_las_citas_conservan_el_orden_fijo_del_bloque_de_ocho_entradas()
+    public async Task ESC_177k_Sin_campo_usado_no_hay_citas_de_reglas_aplicadas_ni_por_el_orden_fijo()
     {
         var escenario = Con(Fijo("Revisa el detalle de tus asignaturas."), IndiceConLasReglas());
 
         var resultado = await escenario.PreguntarAsync(Est002, "¿Cómo voy en BD-203?");
 
         var documentos = resultado.Respuesta!.Citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray();
-        Assert.Equal(Esperadas(Sec3, Sec4, Art11), documentos);
+        Assert.Empty(documentos);
     }
 
     [Fact]
     [Trait("CA", "CA-01")]
     [Trait("ESC", "ESC-177")]
     [Trait("COMP", "COMP-02")]
-    public async Task ESC_177d_El_coordinador_con_la_herramienta_de_programa_cita_Articulo_6_Seccion_3_y_Articulo_5()
+    public async Task ESC_177d_El_coordinador_con_la_herramienta_de_programa_cita_solo_el_Articulo_5_por_perdida_por_valor()
     {
         var texto = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
         var escenario = Con(LeeElProgramaYResponde(texto), IndiceConLasReglas());
@@ -140,7 +140,7 @@ public sealed class CitasDeReglasAplicadasTests
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
         Assert.Equal(texto, resultado.Respuesta!.Respuesta);
-        Assert.Equal(Esperadas(Art6, Sec3, Art5, DatosProgramaAdm), resultado.Respuesta.Citas.ToArray());
+        Assert.Equal(Esperadas(Art5, DatosProgramaAdm), resultado.Respuesta.Citas.ToArray());
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
     }
 
@@ -222,7 +222,7 @@ public sealed class CitasDeReglasAplicadasTests
     [Fact]
     [Trait("ESC", "ESC-177")]
     [Trait("COMP", "COMP-02")]
-    public async Task La_union_de_las_lecturas_de_la_peticion_se_ordena_por_relevancia_y_no_por_el_orden_de_las_llamadas()
+    public async Task Sin_campo_usado_la_union_de_las_lecturas_de_la_peticion_no_agrega_citas_de_reglas()
     {
         var texto = "Camilo Rojas está al día en el periodo.";
         var escenario = Con(
@@ -237,7 +237,7 @@ public sealed class CitasDeReglasAplicadasTests
         var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
 
         var documentos = resultado.Respuesta!.Citas.Where(c => c.Documento is not (Textos.DocumentoDatosEstudiante or Textos.DocumentoDatosPrograma)).ToArray();
-        Assert.Equal(Esperadas(Art11, Art6, Sec3), documentos);
+        Assert.Empty(documentos);
     }
 
     [Theory]
@@ -270,14 +270,14 @@ public sealed class CitasDeReglasAplicadasTests
     [Fact]
     [Trait("ESC", "ESC-177")]
     [Trait("COMP", "COMP-02")]
-    public async Task El_resumen_de_andres_con_la_pregunta_del_promedio_cita_Seccion_4_Seccion_3_1_y_Articulo_20()
+    public async Task El_resumen_de_andres_con_un_texto_sin_campo_usado_no_cita_reglas_aplicadas()
     {
         var escenario = Con(Fijo("Revisa el detalle de tus asignaturas."), IndiceConLasReglas());
 
         var resultado = await escenario.PreguntarAsync(Est002, "¿Cuál es mi promedio ponderado del periodo?");
 
         var documentos = resultado.Respuesta!.Citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray();
-        Assert.Equal(Esperadas(Sec4, Beca31, Art20), documentos);
+        Assert.Empty(documentos);
     }
 
     [Fact]

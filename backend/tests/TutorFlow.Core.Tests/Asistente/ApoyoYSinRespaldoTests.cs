@@ -277,7 +277,7 @@ public sealed class ApoyoYSinRespaldoTests
     [Trait("ESC", "ESC-170")]
     [Trait("CA", "CA-14")]
     [Trait("COMP", "COMP-02")]
-    public async Task Con_lectura_de_datos_la_cita_a_una_seccion_de_reglas_aplicadas_se_conserva_aunque_no_comparta_raices()
+    public async Task Con_lectura_de_datos_la_cita_a_una_seccion_del_bloque_sin_campo_usado_se_descarta_aunque_comparta_raices()
     {
         var evaluacion = new SeccionDocumento(Evaluacion, "Sección 3", "Definitiva", "Texto sin relación alguna.");
         var texto = $"Tu promedio del periodo es 4.39 ({Evaluacion} · Sección 3).";
@@ -286,7 +286,7 @@ public sealed class ApoyoYSinRespaldoTests
         var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es mi promedio?");
 
         var citas = resultado.Respuesta!.Citas.ToArray();
-        Assert.Equal([new Cita(Evaluacion, "Sección 3"), new Cita(Evaluacion, "Sección 4")], citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray());
+        Assert.Equal([new Cita(Evaluacion, "Sección 4")], citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray());
         Assert.Contains(DatosNotas, citas);
         Assert.Contains(DatosAsistencia, citas);
     }
@@ -310,14 +310,14 @@ public sealed class ApoyoYSinRespaldoTests
     [Trait("ESC", "ESC-170")]
     [Trait("CA", "CA-14")]
     [Trait("COMP", "COMP-02")]
-    public async Task Con_la_herramienta_de_programa_la_cita_del_bloque_de_reglas_aplicadas_se_conserva()
+    public async Task ESC_170d_Con_la_herramienta_de_programa_la_cita_escrita_al_Articulo_5_se_conserva_por_el_campo_de_perdida()
     {
         var texto = $"Valentina Castro: Microeconomía (1.8) y Estadística (2.3). ({Reglamento} · Artículo 5)";
         var escenario = Con(GuionDePrograma(texto), Indice(Indexadas(Articulo5, Articulo6, Articulo20, Articulo22), [Articulo22]));
 
         var resultado = await escenario.PreguntarAsync(Coord02, "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?");
 
-        AfirmarRespondida(resultado, texto, [new Cita(Reglamento, "Artículo 5"), new Cita(Reglamento, "Artículo 6"), new Cita(Reglamento, "Artículo 20"), DatosProgramaAdm]);
+        AfirmarRespondida(resultado, texto, [new Cita(Reglamento, "Artículo 5"), DatosProgramaAdm]);
         Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
     }
 
@@ -326,14 +326,14 @@ public sealed class ApoyoYSinRespaldoTests
     [Trait("CA", "CA-14")]
     [Trait("COMP", "COMP-02")]
     [Trait("D", "D-37")]
-    public async Task Con_la_herramienta_de_programa_la_cita_fuera_del_bloque_y_sin_apoyo_se_elimina_del_texto_sin_reemplazar_la_respuesta()
+    public async Task ESC_170e_Con_la_herramienta_de_programa_la_cita_al_Articulo_22_se_elimina_y_las_reglas_son_solo_el_Articulo_5()
     {
         var texto = $"Valentina Castro: Microeconomía (1.8) y Estadística (2.3). ({Reglamento} · Artículo 22)";
         var escenario = Con(GuionDePrograma(texto), Indice(Indexadas(Articulo5, Articulo6, Articulo20, Articulo22, NotaDefinitiva), [Articulo22]));
 
         var resultado = await escenario.PreguntarAsync(Coord02, "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?");
 
-        AfirmarRespondida(resultado, "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).", [new Cita(Reglamento, "Artículo 6"), new Cita(Evaluacion, "Sección 3"), new Cita(Reglamento, "Artículo 5"), DatosProgramaAdm]);
+        AfirmarRespondida(resultado, "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).", [new Cita(Reglamento, "Artículo 5"), DatosProgramaAdm]);
         Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
     }
 
