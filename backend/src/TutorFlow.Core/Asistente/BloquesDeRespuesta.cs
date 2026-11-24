@@ -82,19 +82,28 @@ internal sealed class EstadoDeBloques
 
     public IEnumerable<BloqueDeTexto> Procesar(LineaPreparada linea)
     {
-        var bloques = linea.Tipo switch
-        {
-            TipoDeLinea.Vacia or TipoDeLinea.Separadora => [],
-            TipoDeLinea.Fila => DeFila(linea),
-            TipoDeLinea.Item => DeItem(linea),
-            TipoDeLinea.Encabezado => DeEncabezado(linea),
-            _ => DeTexto(linea)
-        };
-        _ultimaFueVacia = linea.Tipo == TipoDeLinea.Vacia || (linea.Tipo == TipoDeLinea.Separadora && _ultimaFueVacia);
-        _encabezadoDeColumnas = linea.Tipo is TipoDeLinea.Fila or TipoDeLinea.Separadora ? _encabezadoDeColumnas : null;
-        _textoPrevio = linea.Tipo == TipoDeLinea.Texto ? linea.Texto : null;
+        var bloques = DeLaLinea(linea);
+        RecordarLaLinea(linea);
         return bloques;
     }
+
+    private List<BloqueDeTexto> DeLaLinea(LineaPreparada linea) => linea.Tipo switch
+    {
+        TipoDeLinea.Vacia or TipoDeLinea.Separadora => [],
+        TipoDeLinea.Fila => DeFila(linea),
+        TipoDeLinea.Item => DeItem(linea),
+        TipoDeLinea.Encabezado => DeEncabezado(linea),
+        _ => DeTexto(linea)
+    };
+
+    private void RecordarLaLinea(LineaPreparada linea)
+    {
+        _ultimaFueVacia = linea.Tipo == TipoDeLinea.Vacia || (linea.Tipo == TipoDeLinea.Separadora && _ultimaFueVacia);
+        _encabezadoDeColumnas = EsDeTabla(linea) ? _encabezadoDeColumnas : null;
+        _textoPrevio = linea.Tipo == TipoDeLinea.Texto ? linea.Texto : null;
+    }
+
+    private static bool EsDeTabla(LineaPreparada linea) => linea.Tipo is TipoDeLinea.Fila or TipoDeLinea.Separadora;
 
     private List<BloqueDeTexto> DeFila(LineaPreparada linea)
     {

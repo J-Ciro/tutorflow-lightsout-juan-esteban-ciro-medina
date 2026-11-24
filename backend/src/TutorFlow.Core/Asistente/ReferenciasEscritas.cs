@@ -5,7 +5,7 @@ namespace TutorFlow.Core.Asistente;
 
 internal static partial class ReferenciasEscritas
 {
-    internal const char Marca = '';
+    internal const char Marca = '\uE000';
     private const string DocumentoDerogado = "reglamento_academico_2023.md";
     private const string LetrasDeNombre = @"[\p{L}\p{N}_-]";
     private const string Numero = @"\d+(?:\.\d+)*";
