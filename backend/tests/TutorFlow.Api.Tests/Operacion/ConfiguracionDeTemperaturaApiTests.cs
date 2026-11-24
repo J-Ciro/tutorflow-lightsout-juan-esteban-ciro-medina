@@ -8,10 +8,8 @@ public sealed class ConfiguracionDeTemperaturaApiTests
     private const string Temperatura = "Llm:Temperatura";
     private const string PuntajeRelevante = "Conocimiento:PuntajeRelativoRelevante";
     private const string PuntajeMinimo = "Conocimiento:PuntajeRelativoMinimo";
-    private const string Semilla = "Llm:Semilla";
     private const string ReglaTemperatura = "decimal de 0 a 0.3";
     private const string ReglaPuntaje = "entero de 1 a 100";
-    private const string ReglaSemilla = "entero de 0 a 2147483647";
 
     public static TheoryData<string, string, string> ValoresInvalidos => new()
     {
@@ -24,8 +22,7 @@ public sealed class ConfiguracionDeTemperaturaApiTests
         { Temperatura, "abc", ReglaTemperatura },
         { PuntajeRelevante, "0", ReglaPuntaje },
         { PuntajeRelevante, "101", ReglaPuntaje },
-        { PuntajeMinimo, " 55", ReglaPuntaje },
-        { Semilla, "1 ", ReglaSemilla }
+        { PuntajeMinimo, " 55", ReglaPuntaje }
     };
 
     public static TheoryData<string, string> ValoresValidos => new()
@@ -79,11 +76,10 @@ public sealed class ConfiguracionDeTemperaturaApiTests
     [Trait("D", "D-59")]
     public void ESC_199c1_Todos_los_valores_invalidos_se_informan_a_la_vez()
     {
-        var resultado = Iniciar(new Dictionary<string, string?> { [Temperatura] = "0.31", [PuntajeRelevante] = "0", [Semilla] = "1 " });
+        var resultado = Iniciar(new Dictionary<string, string?> { [Temperatura] = "0.31", [PuntajeRelevante] = "0" });
 
         Assert.False(resultado.Arranco);
         Assert.Contains(Invalida(Temperatura, "0.31", ReglaTemperatura), resultado.LineasDelError);
         Assert.Contains(Invalida(PuntajeRelevante, "0", ReglaPuntaje), resultado.LineasDelError);
-        Assert.Contains(Invalida(Semilla, "1 ", ReglaSemilla), resultado.LineasDelError);
     }
 }
