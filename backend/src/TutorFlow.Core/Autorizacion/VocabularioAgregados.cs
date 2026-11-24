@@ -40,6 +40,24 @@ internal static class VocabularioAgregados
         "mas bajo", "mas bajos", "mas baja", "mas bajas", "best", "worst", "highest", "lowest"
     ];
 
+    public static readonly string[] Comparativos = ["frente a", "versus", "vs", "compared to", "compared with"];
+
+    public static readonly string[] RellenosDelComparativo = ["los", "las", "el", "la", "de", "del", "otros", "otras", "mis", "mi"];
+
+    public static readonly string[] Contadores = ["cuantos", "cuantas"];
+
+    public static readonly string[] RellenosDelConteo = ["otros", "otras", "de", "mis", "los", "las"];
+
+    public static readonly string[] VerbosDeExistencia = ["hay", "estan", "tiene", "tienen", "van", "siguen", "quedaron"];
+
+    public static readonly string[] Derecho = ["derecho"];
+
+    public static readonly string[] Estados =
+    [
+        "prueba academica", "beca", "becas", "becado", "becados", "riesgo", "reprobado", "reprobados",
+        "reprobando", "perdiendo", "aprobado", "aprobados", "sancion", "sancionado", "sancionados"
+    ];
+
     public static readonly string[] Listadores = ["lista", "listar", "list", "nombres"];
 
     public static readonly string[] RellenosDelListado = ["de", "los", "las", "todos", "todas", "all", "the"];

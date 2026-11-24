@@ -6,6 +6,7 @@ public static class DetectorAgregados
     private const int MaximoEntrePosicionYVerbo = 3;
     private const int MaximoDeRellenoDelPromedio = 2;
     private const int MaximoDeRellenoDelListado = 3;
+    private const int MaximoDeRellenoDelComparativo = 2;
 
     public static bool PideAgregados(string textoNormalizado)
     {
@@ -20,11 +21,22 @@ public static class DetectorAgregados
         || PluralSinPosesivo(frases);
 
     private static bool NivelDos(FrasesDelTexto frases) =>
-        frases.Contiene(VocabularioAgregados.Grupo)
-        && (SuperlativoSobreNota(frases)
-            || Listado(frases)
-            || frases.Contiene(VocabularioAgregados.VerbosDeListadoYResultado)
-            || frases.ContieneRaiz(VocabularioAgregados.RaizDeComparar));
+        (frases.Contiene(VocabularioAgregados.Grupo) && NivelDosConGrupo(frases))
+        || ConteoDeExistencia.Hay(frases);
+
+    private static bool NivelDosConGrupo(FrasesDelTexto frases) =>
+        SuperlativoSobreNota(frases)
+        || Listado(frases)
+        || frases.Contiene(VocabularioAgregados.VerbosDeListadoYResultado)
+        || frases.ContieneRaiz(VocabularioAgregados.RaizDeComparar)
+        || ComparativoSeguidoDeGrupo(frases);
+
+    private static bool ComparativoSeguidoDeGrupo(FrasesDelTexto frases) =>
+        frases.SeguidaDeRellenoY(
+            VocabularioAgregados.Comparativos,
+            VocabularioAgregados.RellenosDelComparativo,
+            MaximoDeRellenoDelComparativo,
+            VocabularioAgregados.Grupo);
 
     private static bool PosicionPropia(FrasesDelTexto frases) =>
         ProximidadDeFrases.Hay(

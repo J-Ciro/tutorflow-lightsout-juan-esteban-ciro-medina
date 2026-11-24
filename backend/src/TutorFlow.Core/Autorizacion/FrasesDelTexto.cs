@@ -24,10 +24,17 @@ internal sealed class FrasesDelTexto(string textoNormalizado)
     public bool SeguidaDeRellenoY(IEnumerable<string> frases, IReadOnlyCollection<string> rellenos, int maximoDeRelleno, IReadOnlyCollection<string> destinos) =>
         Ocurrencias(frases).Any(ocurrencia => LlegaAlDestino(ocurrencia.Fin, rellenos, maximoDeRelleno, destinos));
 
+    public IEnumerable<int> FinesTrasRelleno(int indice, IReadOnlyCollection<string> rellenos, int maximoDeRelleno, IReadOnlyCollection<string> destinos) =>
+        Enumerable.Range(0, maximoDeRelleno + 1)
+            .Where(relleno => Enumerable.Range(0, relleno).All(salto => rellenos.Contains(Palabra(indice + salto))))
+            .SelectMany(relleno => destinos.Where(destino => EmpiezaEn(indice + relleno, destino))
+                .Select(destino => indice + relleno + Palabras(destino).Length));
+
+    public bool HayDestinoEnLosSiguientes(int indice, int maximoEntre, IReadOnlyCollection<string> destinos) =>
+        Enumerable.Range(0, maximoEntre + 1).Any(entre => EmpiezaAlgunaEn(indice + entre, destinos));
+
     private bool LlegaAlDestino(int indice, IReadOnlyCollection<string> rellenos, int maximoDeRelleno, IReadOnlyCollection<string> destinos) =>
-        Enumerable.Range(0, maximoDeRelleno + 1).Any(relleno =>
-            Enumerable.Range(0, relleno).All(salto => rellenos.Contains(Palabra(indice + salto)))
-            && EmpiezaAlgunaEn(indice + relleno, destinos));
+        FinesTrasRelleno(indice, rellenos, maximoDeRelleno, destinos).Any();
 
     public IReadOnlyList<string> PalabrasDesde(int indice) =>
         [.. _palabras.Skip(Math.Max(indice, 0))];
