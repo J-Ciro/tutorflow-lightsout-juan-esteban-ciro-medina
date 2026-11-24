@@ -78,7 +78,7 @@ internal static partial class LimpiezaDeOraciones
     [GeneratedRegex(@"[\p{L}\p{N}]+", RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
     private static partial Regex PalabraOCifra();
 
-    [GeneratedRegex(@"^[\s]*[\s]*(?<letra>\p{Ll})", RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
+    [GeneratedRegex(@"^[\s:,;·]*(?<letra>\p{Ll})", RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
     private static partial Regex LetraTrasLaMarca();
 
     [GeneratedRegex(
