@@ -157,7 +157,7 @@ Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitutio
 
 ## Riesgos y su decisión
 
-Ningún riesgo queda aceptado salvo D-01, por D-72 (INT-030) el umbral compartido tras el proxy de la 002 y el 429 a quien supere 600 por minuto desde una IP, por D-82 la IP compartida de Docker Desktop (decisiones del humano) y F-08 y F-09 de la fase B (humano, 2026-11-24).
+Ningún riesgo queda aceptado salvo D-01, por D-72 (INT-030) el umbral compartido tras el proxy de la 002 y el 429 a quien supere 600 por minuto desde una IP, por D-82 la IP compartida de Docker Desktop (decisiones del humano) y F-08 y F-09 de la fase B y el precio de lista del catálogo de D-105 (humano, 2026-11-24).
 Con la spec 2.2 el humano acepta además la introducción podada y la doble defensa de D-98 mientras dure su deuda. Evidencia de la ronda 4 en `diag-riesgos/`.
 
 | Riesgo | Decisión | Control verificable | D | CA / ESC |
@@ -246,7 +246,7 @@ Con la spec 2.2 el humano acepta además la introducción podada y la doble defe
 | Dependencia externa: catálogo caído, lento o sin el modelo | Mitigado: descarga en segundo plano sin bloquear, 5 s por intento y 1 reintento, respaldo en la tabla | ESC-181 al (máx. 2 GET y precio de la tabla), ap (salud y primera respuesta con el catálogo retenido) | D-105 | CA-11, CA-15 |
 | Catálogo manipulado: precio fuera de rango o de forma, respuesta gigante, redirección o fuga de la llave | Mitigado: dato no confiable; precio decimal de 0 a 0.001 USD por token, ≤ 10 MB, sin redirecciones, GET sin llave ni datos; URL inválida no arranca | ESC-181 an (se ignora y usa la tabla), ar (0 llaves, 0 peticiones a `Location`, `file://` no arranca) | D-105 | CA-11, CA-15 |
 | `LLM_PRECIO_ENTRADA`/`LLM_PRECIO_SALIDA` que un operador cree activas | Mitigado: se ignoran sin efecto ni advertencia, como toda clave desconocida (plan §13.2) | ESC-181 aq | D-105 | CA-15 |
-| Precio del catálogo de OpenRouter distinto de la tarifa directa del proveedor (Gemini, Anthropic, OpenAI) | Propuesto aceptar: **requiere aprobación humana**; `costoUsd` es una estimación y `REPORTE.md` registra la fuente del precio | — | D-105 | CA-11 |
+| Precio del catálogo de OpenRouter distinto de la tarifa directa del proveedor (Gemini, Anthropic, OpenAI) | Aceptado por el humano (2026-11-24): `costoUsd` es una estimación con el precio de lista del catálogo público, que puede diferir de la factura directa del proveedor | — | D-105 | CA-11 |
 | Memoria del limitador con IPv6 rotadas (S-09); IP nueva sin tasa con el almacén lleno | Mitigado: tope de 50.000 IPs, purga a los 10 min y advertencia en el log; nunca 429 por el tope | ESC-142 h | D-104 | CA-13 |
 | Resto suelto de una línea copiada ("máximo sin perder: 7).") o cita borrada por el año del archivo | Eliminado: sin corte en `;` en D-92; enteros de nombres de archivo excluidos | ESC-154, ESC-189 o, ESC-179 ab | D-94 | CA-26, CA-27 |
 | Entero de faltas pegado a `_` que evade §11.3 (3) | Mitigado: solo excluye enteros pegados a `_` o seguidos de `.` + letra; "2025 faltas" suelto falla | ESC-179 ab | D-94 | CA-26 |
