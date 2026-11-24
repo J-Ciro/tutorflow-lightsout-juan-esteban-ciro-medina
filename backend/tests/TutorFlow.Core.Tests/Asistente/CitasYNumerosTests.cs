@@ -30,7 +30,7 @@ public sealed class CitasYNumerosTests
         var indice = new IndiceFijo([Articulo1, Articulo2], [Articulo1]);
         var escenario = Con(Fijo($"Tu promedio es 4.40, según el {Reglamento} · Artículo 2"), indice);
 
-        var resultado = await escenario.PreguntarAsync(Estudiante, PreguntaPromedio);
+        var resultado = await escenario.PreguntarAsync(Estudiante, "¿Cuáles son los principios generales del reglamento?");
 
         Assert.Equal(Textos.NoVerificable, resultado.Respuesta!.Respuesta);
         Assert.Empty(resultado.Respuesta.Citas);
@@ -181,7 +181,7 @@ public sealed class CitasYNumerosTests
         var indice = new IndiceFijo([Articulo5, Seccion4], [Articulo5, Seccion4]);
         var escenario = Con((_, _) => Herramienta(HerramientasAsistente.Estudiante, """{"estudianteId":"EST-004"}"""), indice);
 
-        var resultado = await escenario.PreguntarAsync(Coordinador, "¿Qué estudiantes de mi programa perdieron materias?");
+        var resultado = await escenario.PreguntarAsync(Coordinador, PreguntaNotaMinima);
 
         Assert.Equal(TipoResultadoPregunta.Denegada, resultado.Tipo);
         Assert.Equal([Articulo22], resultado.Respuesta!.Citas.ToArray());
