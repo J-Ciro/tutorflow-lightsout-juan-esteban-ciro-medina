@@ -265,3 +265,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** la semilla no garantiza determinismo, no todos los proveedores la admiten y mantener una lista por proveedor es complejidad innecesaria (INT-030). La estabilidad ya la dan la temperatura 0 (INT-022) y la verificación determinista del texto final.
 - **Costo:** ~1 min humano.
 - **Prevención:** ninguna regla nueva: INT-030 ya exige empezar por la alternativa más simple. La fábrica no la aplicó porque la propuesta salió de un agente de diagnóstico sin pasar por la evaluación entre disciplinas; D-85 elimina la semilla del producto y sus pruebas.
+
+### INT-033 · 2026-11-24 · Las faltas se responden por asignatura y exactas
+- **Fase:** spec
+- **Qué pasó:** ante el residual de D-76 ("Tienes 9 faltas de 48 clases en Bases de Datos" se aceptaba porque el 9 es un valor de otra asignatura del estudiante), la fábrica ofreció tres variantes de verificación y el humano eligió "validar el par" (faltas y clases de alguna asignatura). Ninguna opción definía qué debe ver el usuario.
+- **Qué hizo el humano:** *"No deberia de poder tener la capacidad de que si trengo 9 faltas decirme de que clases son no solo solar 9 faltas de 4 clases en 1 sola clase deberia decirme todas  ya si pregunto cuantas faltas tengo en Bases de datos deberian de ser el valor exacto de esa clase o de esas clases"*.
+- **Por qué:** un total sin desglose no le sirve al estudiante, y un número por asignatura que no es el de esa asignatura es un dato falso aunque pertenezca a la persona.
+- **Costo:** ~2 min humanos.
+- **Prevención:** propuesta pendiente de aprobación: en `arquitecto-spec`, ante un defecto de exactitud, definir primero el comportamiento observable para el usuario (qué dato, con qué desglose) y solo después la verificación que lo garantiza.
