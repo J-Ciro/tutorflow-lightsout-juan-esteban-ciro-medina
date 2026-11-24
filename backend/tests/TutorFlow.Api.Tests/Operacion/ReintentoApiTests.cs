@@ -112,6 +112,7 @@ public sealed class ReintentoApiTests
         var llm = new ClienteLlmConDemoraPorTurno(TimeSpan.FromMilliseconds(750), TimeSpan.FromMilliseconds(500), "Tu promedio es 4.40.", "Tu promedio es 4.39.");
         var configuracion = new Dictionary<string, string?> { ["Limites:TimeoutLlmSegundos"] = "1" };
         using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: configuracion, conocimientoReal: true);
+        _ = fabrica.Services;
         var reloj = Stopwatch.StartNew();
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPromedio);

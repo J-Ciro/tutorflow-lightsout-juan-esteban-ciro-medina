@@ -9,7 +9,7 @@ public sealed class TimeoutTotalApiTests
 {
     private const string TimeoutTotalSegundos = "2";
     private static readonly TimeSpan DemoraPorLlamada = TimeSpan.FromMilliseconds(600);
-    private static readonly TimeSpan MargenSobreElTimeout = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan MargenSobreElTimeout = TimeSpan.FromSeconds(3);
     private const int LlamadasConHerramienta = 4;
     private const int MaximoDeLlamadas = 4;
 

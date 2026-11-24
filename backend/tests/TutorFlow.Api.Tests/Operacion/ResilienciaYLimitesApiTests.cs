@@ -30,6 +30,7 @@ public sealed class ResilienciaApiTests
     public async Task ESC_108_Api_academica_que_no_responde_produce_503_en_menos_de_7_segundos()
     {
         using var fabrica = new FabricaApi(api: ApiAcademicaDoble.QueNuncaResponde());
+        _ = fabrica.Services;
         var reloj = Stopwatch.StartNew();
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);

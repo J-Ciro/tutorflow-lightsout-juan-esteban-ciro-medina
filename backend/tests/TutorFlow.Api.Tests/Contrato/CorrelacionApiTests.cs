@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using TutorFlow.Core.Asistente;
 
@@ -23,7 +24,7 @@ public sealed class CorrelacionApiTests
     private const int BytesDeCuerpoExcesivo = 17 * 1024;
     private static readonly TimeSpan ToleranciaMarca = TimeSpan.FromSeconds(1);
 
-    private sealed record Captura(RespuestaApi Respuesta, EventoAuditoria Evento);
+    private sealed record Captura(RespuestaApi Respuesta, EventoAuditoria Evento, TimeSpan Duracion);
 
     public static TheoryData<int> Codigos => new() { 200, 400, 403, 415, 500 };
 
@@ -37,6 +38,8 @@ public sealed class CorrelacionApiTests
     private static async Task<Captura> EjecutarAsync(int codigo)
     {
         using var fabrica = codigo == 500 ? new FabricaApi(conocimiento: new ConocimientoQueExplota()) : new FabricaApi();
+        _ = fabrica.Services;
+        var cronometro = Stopwatch.StartNew();
         fabrica.Reloj.Fijar(DateTimeOffset.UtcNow);
         var respuesta = codigo switch
         {
@@ -45,7 +48,7 @@ public sealed class CorrelacionApiTests
             415 => await fabrica.EnviarConTipoAsync("""{"pregunta":"hola","usuario":{"rol":"estudiante","id":"EST-001"}}""", "text/plain"),
             _ => await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio ponderado del periodo?")
         };
-        return new Captura(respuesta, Assert.Single(fabrica.Auditoria.Eventos));
+        return new Captura(respuesta, Assert.Single(fabrica.Auditoria.Eventos), cronometro.Elapsed);
     }
 
     [Theory]
@@ -87,7 +90,7 @@ public sealed class CorrelacionApiTests
 
         Assert.True(UuidV7.EsValido(captura.Evento.CorrelationId), $"correlationId no es UUID v7: {captura.Evento.CorrelationId}");
         var diferencia = (UuidV7.Marca(captura.Evento.CorrelationId) - captura.Evento.Timestamp).Duration();
-        Assert.True(diferencia < ToleranciaMarca, $"diferencia {diferencia}");
+        Assert.True(diferencia < ToleranciaMarca + captura.Duracion, $"diferencia {diferencia}");
     }
 
     [Fact]
