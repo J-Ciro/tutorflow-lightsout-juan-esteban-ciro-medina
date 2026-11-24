@@ -175,7 +175,7 @@ public sealed partial class ProcesadorPregunta
             solicitud?.Pregunta,
             ResultadoAuditoria.Denegada,
             Milisegundos(peticion),
-            tasa.IniciaBloqueo ? tasa.SegundosParaReintentar : null));
+            tasa.SegundosParaReintentar));
         return Responder429(contexto, tasa.SegundosParaReintentar);
     }
 
