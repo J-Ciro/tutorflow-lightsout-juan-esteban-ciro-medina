@@ -127,13 +127,19 @@ public static partial class DetectorTerceros
     private sealed record IdEncontrado(MencionPersona Mencion, int UltimoToken);
 
     private static List<MencionPersona> MencionesDeNombre(IReadOnlyList<TokenTexto> tokens, DirectorioAcademico directorio) =>
+        MencionesDeNombrePlegado([.. tokens.Select(PlegarDigitos)], directorio);
+
+    private static TokenTexto PlegarDigitos(TokenTexto token) =>
+        token with { Valor = token.Valor.Replace('0', 'o').Replace('1', 'l') };
+
+    private static List<MencionPersona> MencionesDeNombrePlegado(IReadOnlyList<TokenTexto> tokens, DirectorioAcademico directorio) =>
         PersonasDelRegistro(directorio)
             .SelectMany(persona => MencionesDe(tokens, persona))
             .ToList();
 
     private static IEnumerable<MencionPersona> MencionesDe(IReadOnlyList<TokenTexto> tokens, (string Id, string Nombre) persona)
     {
-        var nombre = TokenizadorTexto.Valores(persona.Nombre);
+        IReadOnlyList<string> nombre = [.. TokenizadorTexto.Valores(persona.Nombre).Select(valor => PlegarDigitos(new TokenTexto(valor, 0, 0)).Valor)];
         if (nombre.Count < MinimoTokensNombreCompleto)
         {
             return [];
