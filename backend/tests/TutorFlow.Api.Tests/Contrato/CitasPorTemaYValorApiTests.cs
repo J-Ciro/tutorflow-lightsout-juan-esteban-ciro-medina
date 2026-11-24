@@ -12,9 +12,9 @@ public sealed class CitasPorTemaYValorApiTests
     private const string Beca31 = "bienestar_y_becas.md · Sección 3.1";
     private const string Notas = "Datos del estudiante · Notas";
     private const string Asistencia = "Datos del estudiante · Asistencia";
-    private const string PreguntaP2 = "¿Cuál es mi promedio ponderado del periodo?";
+    private const string PreguntaP2 = "¿Cómo se calcula el promedio ponderado del periodo?";
     private const string PreguntaP4 = "¿Cómo se calcula la nota definitiva de una asignatura?";
-    private const string PreguntaP5 = "¿Qué nota definitiva tengo en Contabilidad?";
+    private const string PreguntaP5 = "¿Cómo se calcula la nota definitiva de una asignatura?";
     private const string PreguntaP7 = "¿Cuál es el horario de atención de Bienestar?";
     private const string PreguntaP8 = "¿Qué requisitos tiene la beca por rendimiento académico?";
     private const string TextoRealDeP4 = "La nota definitiva de una asignatura se calcula como el promedio ponderado de los tres cortes, con los siguientes pesos: definitiva = 0.3 × corte 1 + 0.3 × corte 2 + 0.4 × corte 3 Esta nota se redondea a una cifra decimal: si la segunda cifra decimal es 5 o más, se redondea hacia arriba. Mientras un corte no esté calificado, la asignatura no tendrá una nota definitiva (evaluacion_y_calificaciones.md · Sección 3).";
@@ -52,7 +52,7 @@ public sealed class CitasPorTemaYValorApiTests
     [Trait("D", "D-60")]
     public async Task ESC_198_El_texto_verificado_y_sus_citas_son_exactamente_los_de_la_tabla(string caso, string usuario, string pregunta, string texto, string esperado, string[] citas, bool usoDatos)
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: usoDatos ? ClienteLlmDoble.LeeNotasYAsistencia(_ => texto) : GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync(usuario, pregunta);
 
@@ -71,7 +71,7 @@ public sealed class CitasPorTemaYValorApiTests
     [Trait("D", "D-63")]
     public async Task ESC_198_Un_texto_que_queda_sin_contenido_responde_COMP_03_con_el_uso_de_datos_leido(string caso, string usuario, string pregunta, string texto, bool usoDatos)
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: usoDatos ? ClienteLlmDoble.LeeNotasYAsistencia(_ => texto) : GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync(usuario, pregunta);
 

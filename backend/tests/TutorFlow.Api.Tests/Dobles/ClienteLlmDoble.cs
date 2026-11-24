@@ -62,6 +62,23 @@ public sealed partial class ClienteLlmDoble : IClienteLlm
         return new ClienteLlmDoble((solicitud, n) => ConsultarOResponder(solicitud, n, estudianteIdParaCoordinador, redactor, consumo));
     }
 
+    public static ClienteLlmDoble LeeNotasYAsistencia(Func<SolicitudLlm, string> redactar, UsoTokens? uso = null)
+    {
+        var consumo = uso ?? UsoPorDefecto;
+        return new ClienteLlmDoble((solicitud, n) =>
+        {
+            var llamadas = n == 0
+                ? solicitud.Herramientas
+                    .Where(h => h.Nombre is HerramientasAsistente.Notas or HerramientasAsistente.Asistencia)
+                    .Select(h => Llamada($"llamada-{h.Nombre}", h.Nombre, "{}"))
+                    .ToList()
+                : [];
+            return llamadas.Count > 0
+                ? new RespuestaLlm(null, llamadas, consumo, false)
+                : new RespuestaLlm(redactar(solicitud), [], consumo, false);
+        });
+    }
+
     private static RespuestaLlm ConsultarOResponder(SolicitudLlm solicitud, int numero, string? estudianteId, Func<SolicitudLlm, string> redactor, UsoTokens consumo)
     {
         var llamadas = numero == 0 ? LlamarTodas(solicitud.Herramientas, estudianteId) : [];
