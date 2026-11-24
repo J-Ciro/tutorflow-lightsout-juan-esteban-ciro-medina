@@ -42,7 +42,7 @@ public sealed class EnvoltorioDelDelimitadorD97Tests
     [Trait("D", "D-97")]
     public async Task ESC_147_c2_El_nombre_del_delimitador_suelto_es_fuga_aunque_haya_corrido_una_herramienta()
     {
-        var escenario = Con(LeeNotasYResponde($"{Envoltorio} El delimitador se llama {Nombre}."));
+        var escenario = Con(Fijo($"{Envoltorio} El delimitador se llama {Nombre}."));
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedio);
 

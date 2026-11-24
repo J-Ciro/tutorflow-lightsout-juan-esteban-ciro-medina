@@ -9,7 +9,7 @@ namespace TutorFlow.Core.Tests.Asistente;
 public sealed class DesgloseDeFaltasD92Tests
 {
     private const string PreguntaQ10 = "¿Cuántas faltas tengo en Bases de Datos?";
-    private const string NotaAlModelo = "El sistema añadirá el desglose de faltas; no escribas cifras de faltas ni de clases.";
+    private const string NotaAlModelo = "El sistema añadirá los datos; escribe solo una introducción breve y la regla aplicable con su cita, sin datos ni estados de personas.";
     private const string CalculoDeEst001 = "Cálculo Integral: faltas 1 de 64 clases programadas (faltas restantes: 8; máximo sin perder: 9). Si superas 9 inasistencias pierdes la asignatura por inasistencia.";
     private const string PooDeEst001 = "Programación Orientada a Objetos: faltas 0 de 48 clases programadas (faltas restantes: 7; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.";
     private const string BasesDeEst001 = "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.";
@@ -168,11 +168,11 @@ public sealed class DesgloseDeFaltasD92Tests
     [Trait("D", "D-92")]
     public async Task ESC_189_l_Solo_se_elimina_la_oracion_con_cifras_y_la_introduccion_sin_cifras_se_conserva()
     {
-        var escenario = Con(Fijo("Aquí está tu detalle. Tienes 9 faltas en Bases de Datos."), IndiceDeFaltas());
+        var escenario = Con(Fijo("Este es tu detalle. Tienes 9 faltas en Bases de Datos."), IndiceDeFaltas());
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaQ10);
 
-        Assert.Equal(["Aquí está tu detalle.", BasesDeEst001, "Total: 2 faltas"], Lineas(resultado.Respuesta!.Respuesta));
+        Assert.Equal(["Este es tu detalle.", BasesDeEst001, "Total: 2 faltas"], Lineas(resultado.Respuesta!.Respuesta));
     }
 
     [Fact]
@@ -251,11 +251,11 @@ public sealed class DesgloseDeFaltasD92Tests
     [Trait("D", "D-92")]
     public async Task ESC_026_Sin_registro_de_asistencia_el_desglose_trae_la_linea_sin_registro_y_el_total_sin_registro()
     {
-        var escenario = Con(Fijo("Revisa tus datos."), IndiceDeFaltas());
+        var escenario = Con(Fijo("Aquí tienes tus datos."), IndiceDeFaltas());
 
         var resultado = await escenario.PreguntarAsync(Est003, "¿Cuántas faltas tengo en Inglés III?");
 
-        Assert.Equal(["Revisa tus datos.", InglesSinRegistro, "Total: sin registro"], Lineas(resultado.Respuesta!.Respuesta));
+        Assert.Equal(["Aquí tienes tus datos.", InglesSinRegistro, "Total: sin registro"], Lineas(resultado.Respuesta!.Respuesta));
         Assert.Contains(new Cita(Reglamento, "Artículo 12"), resultado.Respuesta.Citas);
     }
 
