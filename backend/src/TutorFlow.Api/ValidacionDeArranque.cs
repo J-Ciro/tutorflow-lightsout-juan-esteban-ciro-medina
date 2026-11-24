@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
+using TutorFlow.Core.Asistente;
 using TutorFlow.Infrastructure.Configuracion;
 
 namespace TutorFlow.Api;
@@ -6,7 +7,8 @@ namespace TutorFlow.Api;
 internal sealed partial class ValidacionDeArranque : IStartupFilter
 {
     private static readonly string[] VariablesDePrecio = ["LLM_PRECIO_ENTRADA", "LLM_PRECIO_SALIDA"];
-    private static readonly string[] ClavesDeLimitesOpcionales = ["Limites:PreguntasPorMinutoPorIp", "Limites:PresupuestoDiarioUsd"];
+    private const string ClaveTasaPorIp = "Limites:PreguntasPorMinutoPorIp";
+    private const string ClavePresupuestoDiario = "Limites:PresupuestoDiarioUsd";
 
     private readonly IConfiguration _configuracion;
     private readonly IVariablesEntorno _variables;
@@ -33,15 +35,20 @@ internal sealed partial class ValidacionDeArranque : IStartupFilter
             RegistrarAdvertencia(_logger, advertencia);
         }
 
-        RegistrarLimitesSinTope(efectiva);
+        var tasa = TasaEfectiva(efectiva);
+        RegistrarTasaPorIp(_logger, tasa);
+        RegistrarPresupuestoSinTope(efectiva);
         return siguiente;
     }
 
-    private void RegistrarLimitesSinTope(IConfiguration efectiva)
+    private static int TasaEfectiva(IConfiguration efectiva) =>
+        (int?)ValidadorDeConfiguracion.Efectivo(efectiva, ClaveTasaPorIp) ?? LimitesAsistente.PreguntasPorMinutoPorIpPorDefecto;
+
+    private void RegistrarPresupuestoSinTope(IConfiguration efectiva)
     {
-        foreach (var clave in ClavesDeLimitesOpcionales.Where(clave => string.IsNullOrWhiteSpace(efectiva[clave])))
+        if (string.IsNullOrWhiteSpace(efectiva[ClavePresupuestoDiario]))
         {
-            RegistrarLimiteSinTope(_logger, clave);
+            RegistrarLimiteSinTope(_logger, ClavePresupuestoDiario);
         }
     }
 
@@ -55,6 +62,9 @@ internal sealed partial class ValidacionDeArranque : IStartupFilter
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Límite sin tope: {Clave}")]
     private static partial void RegistrarLimiteSinTope(ILogger logger, string clave);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Tasa por IP: {Preguntas} preguntas por minuto")]
+    private static partial void RegistrarTasaPorIp(ILogger logger, int preguntas);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "{Mensaje}")]
     internal static partial void RegistrarAdvertencia(ILogger logger, string mensaje);

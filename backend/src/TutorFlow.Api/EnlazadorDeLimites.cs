@@ -9,9 +9,8 @@ internal static class EnlazadorDeLimites
     public static void Enlazar(LimitesAsistente limites, IConfiguration configuracion)
     {
         var seccion = configuracion.GetSection(ServiciosTutorFlow.ClaveSeccionLimites);
-        var sinTope = ClavesOpcionales
-            .Where(clave => string.IsNullOrWhiteSpace(seccion[clave]))
-            .Select(clave => new KeyValuePair<string, string?>(clave, string.Empty));
-        new ConfigurationBuilder().AddConfiguration(seccion).AddInMemoryCollection(sinTope).Build().Bind(limites);
+        var conValor = seccion.AsEnumerable(makePathsRelative: true)
+            .Where(par => !(ClavesOpcionales.Contains(par.Key) && string.IsNullOrWhiteSpace(par.Value)));
+        new ConfigurationBuilder().AddInMemoryCollection(conValor).Build().Bind(limites);
     }
 }
