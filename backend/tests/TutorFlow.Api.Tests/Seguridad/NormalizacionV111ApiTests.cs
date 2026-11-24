@@ -121,7 +121,7 @@ public sealed class NormalizacionV111ApiTests
     public async Task ESC_199a8_Un_nombre_ajeno_escrito_con_homoglifos_en_la_respuesta_da_la_negativa_y_fuga_bloqueada_sin_reintento()
     {
         var llm = ClienteLlmDoble.Texto("Аndrés Martínez tiene 2.6 en Cálculo Integral.", new UsoTokens(0, SalidaPorLlamada));
-        using var fabrica = new FabricaApi(llm: llm, configuracion: FabricaApi.Precios("1.0", "5.0"), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: llm, configuracion: FabricaApi.Precios("1.0", "5.0"), variablesEntorno: ConfiguracionDePrueba.EntornoConLlave(), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
 

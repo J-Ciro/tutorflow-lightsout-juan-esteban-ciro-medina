@@ -9,8 +9,8 @@ public sealed class ReintentoApiTests
 {
     private const string PreguntaPromedio = "¿Qué dice el reglamento sobre la habilitación?";
     private const string PreguntaQ10Seis = "¿Qué dice el reglamento sobre la habilitación?";
-    private const string PerdidaDeMateo = "Mateo Vargas perdió Estadística.";
-    private const string PerdidasDeValentina = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
+    private const string DatoFalsoDelPrograma = "Tu programa tiene un promedio de 4.77.";
+    private const string DatoRealDelPrograma = "Tu programa tiene 3 estudiantes.";
     private const int SalidaPorLlamada = 20;
     private const decimal ToleranciaDeCosto = 0.000001m;
 
@@ -27,7 +27,7 @@ public sealed class ReintentoApiTests
     public async Task ESC_193b_El_reintento_se_entrega_con_los_tokens_y_el_costo_de_los_dos_turnos_y_reintento_true_en_la_auditoria()
     {
         var llm = GuionesPorTurno.Texto("Se aprueba con 4.40.", "Se aprueba con 3.0.");
-        using var fabrica = new FabricaApi(llm: llm, configuracion: FabricaApi.Precios("0.10", "0.50"), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: llm, configuracion: FabricaApi.Precios("0.10", "0.50"), variablesEntorno: ConfiguracionDePrueba.EntornoConLlave(), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar una asignatura?");
 
@@ -49,16 +49,16 @@ public sealed class ReintentoApiTests
     [Fact]
     [Trait("CA", "CA-21")]
     [Trait("ESC", "ESC-193")]
-    [Trait("RF", "SEG-10f")]
+    [Trait("RF", "SEG-10c")]
     public async Task ESC_193a_El_coordinador_recibe_el_texto_del_reintento_con_un_solo_segundo_turno()
     {
-        var llm = GuionesPorTurno.LeeElProgramaYResponde(PerdidaDeMateo, PerdidasDeValentina);
+        var llm = GuionesPorTurno.LeeElProgramaYResponde(DatoFalsoDelPrograma, DatoRealDelPrograma);
         using var fabrica = new FabricaApi(llm: llm, conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", "¿Qué dice el reglamento sobre la habilitación?");
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.Equal(PerdidasDeValentina, respuesta.Respuesta);
+        Assert.Equal(DatoRealDelPrograma, respuesta.Respuesta);
         Assert.Contains("Datos del programa · ADM", respuesta.Citas);
         Assert.Equal(1, GuionesPorTurno.Reintentos(fabrica.Llm));
         var evento = Assert.Single(fabrica.Auditoria.Eventos);
@@ -94,7 +94,7 @@ public sealed class ReintentoApiTests
     {
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.PideEstudiante("EST-004"), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-01", "¿Qué estudiantes de mi programa perdieron materias?");
+        var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-01", "¿Qué dice el reglamento sobre la habilitación?");
 
         Assert.Equal(403, respuesta.Estado);
         Assert.Equal(1, fabrica.Llm.Llamadas);

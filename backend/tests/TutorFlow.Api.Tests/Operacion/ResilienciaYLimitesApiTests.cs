@@ -100,7 +100,7 @@ public sealed class ResilienciaApiTests
         var configuracion = FabricaApi.Precios("1.0", "5.0");
         configuracion["Limites:PresupuestoDiarioUsd"] = "0.001";
         var llm = ClienteLlmDoble.Texto("Respuesta de prueba.", new UsoTokens(1000, 200));
-        using var fabrica = new FabricaApi(llm: llm, configuracion: configuracion);
+        using var fabrica = new FabricaApi(llm: llm, configuracion: configuracion, variablesEntorno: ConfiguracionDePrueba.EntornoConLlave());
 
         var primera = await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);
         var segunda = await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);
