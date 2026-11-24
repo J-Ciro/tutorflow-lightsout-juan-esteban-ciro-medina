@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using TutorFlow.Core.Asistente;
 
@@ -22,9 +21,9 @@ public sealed class CorrelacionApiTests
     private const string TraceparentDelCliente = $"00-{TraceIdDelCliente}-b7ad6b7169203331-01";
     private const string RequestIdDelCliente = "solicitud-del-cliente-7788";
     private const int BytesDeCuerpoExcesivo = 17 * 1024;
-    private static readonly TimeSpan ToleranciaMarca = TimeSpan.FromSeconds(1);
+    private static readonly DateTimeOffset InstanteDelReloj = new(2026, 11, 22, 12, 0, 0, 123, TimeSpan.Zero);
 
-    private sealed record Captura(RespuestaApi Respuesta, EventoAuditoria Evento, TimeSpan Duracion);
+    private sealed record Captura(RespuestaApi Respuesta, EventoAuditoria Evento);
 
     public static TheoryData<int> Codigos => new() { 200, 400, 403, 415, 500 };
 
@@ -39,8 +38,7 @@ public sealed class CorrelacionApiTests
     {
         using var fabrica = codigo == 500 ? new FabricaApi(conocimiento: new ConocimientoQueExplota()) : new FabricaApi();
         _ = fabrica.Services;
-        var cronometro = Stopwatch.StartNew();
-        fabrica.Reloj.Fijar(DateTimeOffset.UtcNow);
+        fabrica.Reloj.Fijar(InstanteDelReloj);
         var respuesta = codigo switch
         {
             400 => await fabrica.EnviarAsync(HttpMethod.Post, "/api/asistente/preguntar", """{"pregunta": """),
@@ -48,7 +46,7 @@ public sealed class CorrelacionApiTests
             415 => await fabrica.EnviarConTipoAsync("""{"pregunta":"hola","usuario":{"rol":"estudiante","id":"EST-001"}}""", "text/plain"),
             _ => await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio ponderado del periodo?")
         };
-        return new Captura(respuesta, Assert.Single(fabrica.Auditoria.Eventos), cronometro.Elapsed);
+        return new Captura(respuesta, Assert.Single(fabrica.Auditoria.Eventos));
     }
 
     [Theory]
@@ -84,13 +82,13 @@ public sealed class CorrelacionApiTests
     [MemberData(nameof(Codigos))]
     [Trait("CA", "CA-07")]
     [Trait("ESC", "ESC-151")]
-    public async Task ESC_151_La_marca_de_tiempo_del_uuid_difiere_menos_de_un_segundo_del_evento(int codigo)
+    public async Task ESC_151_La_marca_de_tiempo_del_uuid_es_la_del_reloj_inyectado_en_milisegundos_e_igual_a_la_del_evento(int codigo)
     {
         var captura = await EjecutarAsync(codigo);
 
         Assert.True(UuidV7.EsValido(captura.Evento.CorrelationId), $"correlationId no es UUID v7: {captura.Evento.CorrelationId}");
-        var diferencia = (UuidV7.Marca(captura.Evento.CorrelationId) - captura.Evento.Timestamp).Duration();
-        Assert.True(diferencia < ToleranciaMarca + captura.Duracion, $"diferencia {diferencia}");
+        Assert.Equal(InstanteDelReloj, UuidV7.Marca(captura.Evento.CorrelationId));
+        Assert.Equal(captura.Evento.Timestamp, UuidV7.Marca(captura.Evento.CorrelationId));
     }
 
     [Fact]
