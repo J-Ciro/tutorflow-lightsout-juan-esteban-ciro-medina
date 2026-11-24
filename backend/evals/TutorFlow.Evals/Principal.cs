@@ -5,7 +5,7 @@ namespace TutorFlow.Evals;
 public static class Principal
 {
     private const string UrlPorDefecto = "http://localhost:8080";
-    private const int PausaPorDefectoMs = 1100;
+    private const int PausaPorDefectoMs = 0;
     private const int UmbralP95PorDefectoMs = 500;
     private const int SalidaFallos = 1;
     private const int SalidaSinCasos = 2;
