@@ -65,12 +65,6 @@ public sealed class SalidaV110ApiTests
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaPerdidas);
 
-        if (caso == "q")
-        {
-            Assert.Equal("- Asignatura perdida: Estadística", respuesta.Respuesta);
-            return;
-        }
-
         Afirmaciones.OracionConPersonaPodada(respuesta, fabrica, usoDatos: true);
     }
 
@@ -85,12 +79,6 @@ public sealed class SalidaV110ApiTests
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaPerdidas);
-
-        if (caso == "r")
-        {
-            Assert.StartsWith("- Asignaturas perdidas: Microeconomía (1.8) y Estadística (2.3)", respuesta.Respuesta);
-            return;
-        }
 
         Afirmaciones.OracionConPersonaPodada(respuesta, fabrica, usoDatos: true);
     }

@@ -9,7 +9,7 @@ namespace TutorFlow.Core.Tests.Asistente;
 public sealed class LimpiezaAmpliadaTests
 {
     private const string PreguntaNormativa = "¿Qué dice el reglamento sobre la habilitación?";
-    private const string PreguntaPromedio4 ="¿Cuál es mi promedio ponderado del periodo?";
+    private const string PreguntaPromedio4 = "¿Cuál es mi promedio ponderado del periodo?";
     private static readonly Usuario Est001 = new(Rol.Estudiante, "EST-001");
     private static readonly Cita Art5 = new(Reglamento, "Artículo 5");
     private static readonly Cita Art11 = new(Reglamento, "Artículo 11");
