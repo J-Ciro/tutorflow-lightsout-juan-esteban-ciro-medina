@@ -68,9 +68,9 @@ public sealed class SinTopePorDefectoApiTests
                 : "Tu promedio es 4.39.";
         });
 
-    private static async Task<RespuestaApi[]> EnviarTandaAsync(FabricaApi fabrica, DateTimeOffset origen, int tanda)
+    private static async Task<RespuestaApi[]> EnviarTandaAsync(FabricaApi fabrica, int tanda)
     {
-        fabrica.Reloj.Fijar(origen + TimeSpan.FromSeconds(tanda * SegundosEntreTandas));
+        fabrica.Reloj.Avanzar(tanda == 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(SegundosEntreTandas));
         var respuestas = new RespuestaApi[PeticionesPorTanda];
         var opciones = new ParallelOptions { MaxDegreeOfParallelism = Concurrencia };
         await Parallel.ForEachAsync(Enumerable.Range(0, PeticionesPorTanda), opciones, async (i, _) =>
@@ -91,12 +91,11 @@ public sealed class SinTopePorDefectoApiTests
         var llm = LlmDeLaRafaga();
         using var fabrica = new FabricaApi(llm: llm, variablesEntorno: EntornoSinPrecio());
         await fabrica.EnviarAsync(HttpMethod.Get, "/api/salud", null);
-        var origen = fabrica.Reloj.AhoraUtc;
         var respuestas = new List<RespuestaApi>();
 
         for (var tanda = 0; tanda < Tandas; tanda++)
         {
-            respuestas.AddRange(await EnviarTandaAsync(fabrica, origen, tanda));
+            respuestas.AddRange(await EnviarTandaAsync(fabrica, tanda));
         }
 
         Assert.Equal(0, respuestas.Count(r => r.Estado == 429));
