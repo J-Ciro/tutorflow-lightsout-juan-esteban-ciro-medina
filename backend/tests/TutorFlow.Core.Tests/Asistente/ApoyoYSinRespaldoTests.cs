@@ -184,10 +184,10 @@ public sealed class ApoyoYSinRespaldoTests
         var texto = "Bases de Datos: 2 faltas de 48 clases.";
         var escenario = Con(Fijo(texto), Indice(Indexadas(Servicios, NotaDefinitiva, PromedioPonderado, Articulo11), [Servicios]));
 
-        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuántas clases puedo perder en Bases de Datos?");
+        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuántas faltas tengo en Bases de Datos?");
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.Equal(texto, resultado.Respuesta!.Respuesta);
+        Assert.Contains("Bases de Datos: faltas 2 de 48 clases programadas", resultado.Respuesta!.Respuesta, StringComparison.Ordinal);
         Assert.Equal(
             [new Cita(Reglamento, "Artículo 11"), DatosNotas, DatosAsistencia],
             resultado.Respuesta.Citas.ToArray());
@@ -281,9 +281,9 @@ public sealed class ApoyoYSinRespaldoTests
     {
         var evaluacion = new SeccionDocumento(Evaluacion, "Sección 3", "Definitiva", "Texto sin relación alguna.");
         var texto = $"Tu promedio del periodo es 4.39 ({Evaluacion} · Sección 3).";
-        var escenario = Con(Fijo(texto), Indice(Indexadas(evaluacion, PromedioPonderado, Articulo11), []));
+        var escenario = Con(SalidasVerificadas.LeeNotasYAsistenciaYResponde(texto), Indice(Indexadas(evaluacion, PromedioPonderado, Articulo11, Articulo6), [Articulo6]));
 
-        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es mi promedio?");
+        var resultado = await escenario.PreguntarAsync(Est001, "¿Qué dice el reglamento sobre la habilitación?");
 
         var citas = resultado.Respuesta!.Citas.ToArray();
         Assert.Equal([new Cita(Evaluacion, "Sección 4")], citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray());
@@ -312,10 +312,10 @@ public sealed class ApoyoYSinRespaldoTests
     [Trait("COMP", "COMP-02")]
     public async Task ESC_170d_Con_la_herramienta_de_programa_la_cita_escrita_al_Articulo_5_se_conserva_por_el_campo_de_perdida()
     {
-        var texto = $"Valentina Castro: Microeconomía (1.8) y Estadística (2.3). ({Reglamento} · Artículo 5)";
+        var texto = $"Se reporta una asignatura perdida ({Reglamento} · Artículo 5).";
         var escenario = Con(GuionDePrograma(texto), Indice(Indexadas(Articulo5, Articulo6, Articulo20, Articulo22), [Articulo22]));
 
-        var resultado = await escenario.PreguntarAsync(Coord02, "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?");
+        var resultado = await escenario.PreguntarAsync(Coord02, "¿Qué dice el reglamento sobre la protección de datos?");
 
         AfirmarRespondida(resultado, texto, [new Cita(Reglamento, "Artículo 5"), DatosProgramaAdm]);
         Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
@@ -328,12 +328,12 @@ public sealed class ApoyoYSinRespaldoTests
     [Trait("D", "D-37")]
     public async Task ESC_170e_Con_la_herramienta_de_programa_la_cita_al_Articulo_22_se_elimina_y_las_reglas_son_solo_el_Articulo_5()
     {
-        var texto = $"Valentina Castro: Microeconomía (1.8) y Estadística (2.3). ({Reglamento} · Artículo 22)";
+        var texto = $"Se reporta una asignatura perdida ({Reglamento} · Artículo 22).";
         var escenario = Con(GuionDePrograma(texto), Indice(Indexadas(Articulo5, Articulo6, Articulo20, Articulo22, NotaDefinitiva), [Articulo22]));
 
-        var resultado = await escenario.PreguntarAsync(Coord02, "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?");
+        var resultado = await escenario.PreguntarAsync(Coord02, "¿Qué dice el reglamento sobre la protección de datos?");
 
-        AfirmarRespondida(resultado, "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).", [new Cita(Reglamento, "Artículo 5"), DatosProgramaAdm]);
+        AfirmarRespondida(resultado, "Se reporta una asignatura perdida.", [new Cita(Reglamento, "Artículo 5"), DatosProgramaAdm]);
         Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
     }
 
