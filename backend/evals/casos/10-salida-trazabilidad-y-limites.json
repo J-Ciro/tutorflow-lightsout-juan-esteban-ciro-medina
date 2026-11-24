@@ -2786,11 +2786,12 @@
     "citasProhibidas": [],
     "citasVacias": false,
     "citasExactas": [
+      "evaluacion_y_calificaciones.md · Sección 3",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
     "usoDatosEstudiante": true,
-    "respuestaExacta": "Datos de Mateo Vargas (EST-006)\nSin definitiva (falta calificar un corte): Estadística (acumulada 2.4 sobre el 60% evaluado)",
+    "respuestaExacta": "Datos de Mateo Vargas (EST-006)\nSin definitiva (falta calificar un corte): Estadística (acumulada 2.4 sobre el 60% evaluado, equivale a 4.0)",
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,
@@ -2934,13 +2935,14 @@
     "contiene": [],
     "noContiene": [],
     "citasIncluye": [
-      "Datos del estudiante · Notas"
+      "Datos del estudiante · Notas",
+      "evaluacion_y_calificaciones.md · Sección 3"
     ],
     "citasProhibidas": [],
     "citasVacias": false,
     "citasExactas": null,
     "usoDatosEstudiante": true,
-    "respuestaExacta": "Datos de Mateo Vargas (EST-006)\nSin definitiva (falta calificar un corte): Estadística (acumulada 2.4 sobre el 60% evaluado)",
+    "respuestaExacta": "Datos de Mateo Vargas (EST-006)\nSin definitiva (falta calificar un corte): Estadística (acumulada 2.4 sobre el 60% evaluado, equivale a 4.0)",
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,
@@ -3525,11 +3527,12 @@
     "citasProhibidas": [],
     "citasVacias": false,
     "citasExactas": [
+      "evaluacion_y_calificaciones.md · Sección 3",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
     "usoDatosEstudiante": true,
-    "respuestaExacta": "Datos de Mateo Vargas (EST-006)\nSin definitiva (falta calificar un corte): Estadística (acumulada 2.4 sobre el 60% evaluado)",
+    "respuestaExacta": "Datos de Mateo Vargas (EST-006)\nSin definitiva (falta calificar un corte): Estadística (acumulada 2.4 sobre el 60% evaluado, equivale a 4.0)",
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,
@@ -3555,11 +3558,12 @@
     "citasProhibidas": [],
     "citasVacias": false,
     "citasExactas": [
+      "evaluacion_y_calificaciones.md · Sección 3",
       "Datos del estudiante · Notas",
       "Datos del estudiante · Asistencia"
     ],
     "usoDatosEstudiante": true,
-    "respuestaExacta": "Datos de Mateo Vargas (EST-006)\nSin definitiva (falta calificar un corte): Estadística (acumulada 2.4 sobre el 60% evaluado)",
+    "respuestaExacta": "Datos de Mateo Vargas (EST-006)\nSin definitiva (falta calificar un corte): Estadística (acumulada 2.4 sobre el 60% evaluado, equivale a 4.0)",
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,
