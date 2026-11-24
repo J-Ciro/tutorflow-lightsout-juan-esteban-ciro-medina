@@ -45,6 +45,18 @@ Cálculo con precios, sin llamadas nuevas a la API: tokens medidos con Gemini `g
 
 **Costo estimado por 1.000 preguntas:** ≈ USD 0,50 (= 0,4 × 0,000517 + 0,3 × 0,000738 + 0,1 × 0,000736) × 1.000. Cotas con los mismos tokens: USD 0,40 si todo fuera entrada y USD 3,34 si todo fuera salida (por ejemplo, con tokens de razonamiento facturados como salida). El precio de lista puede diferir de la factura (riesgo aceptado por el humano, D-105). Las cifras se midieron antes de D-98; el modo bloque quita las herramientas en las preguntas de datos, así que se espera igual o menos.
 
+## 3.1 Verificación de la entrega (HEAD de la rama `feat/001-asistente-academico`)
+
+| Comprobación | Resultado |
+| --- | --- |
+| `dotnet build TutorFlow.slnx -warnaserror` | 0 advertencias, 0 errores |
+| `dotnet format whitespace --verify-no-changes` | Sin cambios (código 0) |
+| Pruebas | Core 1.806/1.806 · Api 1.293/1.293 · Evals.Tests 36/36 |
+| Evals offline | 429/429, RESULTADO OK; p95 del filtro previo 12,9 ms (umbral 500 ms) |
+| Límites de la documentación | Respetados |
+| Gemini en vivo | Última medición antes de D-98 (§3); no se repitió para no gastar la API (decisión del humano). El CI la corre si existe el secreto |
+| Fuera de alcance | Frontend (spec 002 escrita en `docs/002-interfaz-web`, sin implementar por tiempo); F-08 y F-09 aceptados por el humano |
+
 ## 4. Incidentes de la fábrica
 Agentes que reportaron éxito falso, bucles que no convergieron o fallos de CI.
 
