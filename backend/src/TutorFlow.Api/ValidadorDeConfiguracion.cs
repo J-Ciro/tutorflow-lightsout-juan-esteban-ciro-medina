@@ -15,12 +15,15 @@ public static class ValidadorDeConfiguracion
             .Concat(ValidadorDeCatalogo.Validar(configuracion))];
 
     internal static string LineaInvalida(string clave, string? valor, string regla) =>
-        $"{PrefijoInvalida}: {clave} = \"{ValorDeMensaje.De(valor)}\" ({regla})";
+        Linea(PrefijoInvalida, clave, valor, regla);
+
+    private static string Linea(string prefijo, string clave, string? valor, string regla) =>
+        $"{prefijo}: {clave} = \"{ValorDeMensaje.De(valor)}\" ({regla})";
 
     internal static IReadOnlyList<string> Advertencias(IConfiguration configuracion) =>
         [.. ReglaDeConfiguracion.ConAdvertencia
             .Where(regla => EsInvalido(configuracion, regla))
-            .Select(regla => $"{PrefijoIgnorada}: {regla.Clave} = \"{ValorDeMensaje.De(configuracion[regla.Clave])}\" ({regla.Texto}); se usa {regla.Defecto}")];
+            .Select(regla => $"{Linea(PrefijoIgnorada, regla.Clave, configuracion[regla.Clave], regla.Texto)}; se usa {regla.Defecto}")];
 
     internal static decimal? Efectivo(IConfiguration configuracion, string clave) =>
         ReglaDeConfiguracion.Buscar(clave).LeerValido(configuracion[clave]);
