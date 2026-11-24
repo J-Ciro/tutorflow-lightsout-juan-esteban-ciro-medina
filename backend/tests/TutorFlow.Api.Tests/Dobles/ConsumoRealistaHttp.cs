@@ -1,8 +1,7 @@
 using TutorFlow.Pruebas.Soporte;
 using System.Text.Json;
-using TutorFlow.Api.Tests.Dobles;
 
-namespace TutorFlow.Api.Tests.Llm;
+namespace TutorFlow.Api.Tests.Dobles;
 
 public static class ConsumoRealistaHttp
 {
