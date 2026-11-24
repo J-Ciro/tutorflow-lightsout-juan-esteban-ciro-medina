@@ -114,7 +114,7 @@ internal sealed class CierreDeRespuesta
         var resumenes = sesion.Registro.Resumenes;
         var contexto = new ContextoDeAfirmaciones(usuario, autorizados, sesion.Directorio, resumenes);
         return _afirmacionesDePerdida.Motivo(bloques, usuario, autorizados, sesion.Directorio, resumenes)
-            ?? _afirmacionesDeEstado.Motivos(bloques, contexto)
+            ?? _afirmacionesDeEstado.Motivo(bloques, contexto)
             ?? _definitivaPorAsignatura.Motivo(bloques, usuario, autorizados, sesion.Directorio, resumenes)
             ?? CamposLigados.Motivo(bloques, contexto);
     }
@@ -138,10 +138,15 @@ internal sealed class CierreDeRespuesta
         return CierreEvaluado.Entregable(completo, citas, ResultadoAuditoria.Respondida);
     }
 
-    private static string ConDesglose(SesionPregunta sesion, string introduccion) =>
-        sesion.Desglose is not { } desglose
-            ? introduccion
-            : introduccion.Length == 0 ? desglose : $"{introduccion}\n\n{desglose}";
+    private static string ConDesglose(SesionPregunta sesion, string introduccion)
+    {
+        if (sesion.Desglose is not { } desglose)
+        {
+            return introduccion;
+        }
+
+        return introduccion.Length == 0 ? desglose : $"{introduccion}\n\n{desglose}";
+    }
 
     private IReadOnlyList<Cita> CitasDeDocumento(SesionPregunta sesion, string limpio, IReadOnlyList<Cita> escritas, EntradaConversacion entrada)
     {

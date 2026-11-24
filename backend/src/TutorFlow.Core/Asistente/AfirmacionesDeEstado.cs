@@ -6,10 +6,9 @@ namespace TutorFlow.Core.Asistente;
 internal sealed class AfirmacionesDeEstado
 {
     private const int PalabrasHastaElVerbo = 2;
-    private const string Motivo = "la afirmación de estado no coincide con los datos entregados";
+    private const string TextoDelMotivo = "la afirmación de estado no coincide con los datos entregados";
 
     private static readonly HashSet<string> VerbosDeEstar = new(StringComparer.Ordinal) { "esta", "estas", "estan" };
-    private static readonly HashSet<string> PalabrasQueAnulan = new(StringComparer.Ordinal) { "no", "ni", "sin" };
     private static readonly string[] EnPruebaAcademica = ["en", "prueba", "academica"];
 
     private readonly IReadOnlyList<AsignaturaCatalogo> _catalogo;
@@ -19,7 +18,7 @@ internal sealed class AfirmacionesDeEstado
         _catalogo = catalogo;
     }
 
-    public string? Motivos(IReadOnlyList<BloqueDeTexto> bloques, ContextoDeAfirmaciones contexto)
+    public string? Motivo(IReadOnlyList<BloqueDeTexto> bloques, ContextoDeAfirmaciones contexto)
     {
         var catalogo = CatalogoAsignaturas.Vigente(_catalogo, contexto.Directorio);
         return bloques.Select(bloque => MotivoDelBloque(bloque, catalogo, contexto)).FirstOrDefault(motivo => motivo is not null);
@@ -30,10 +29,10 @@ internal sealed class AfirmacionesDeEstado
         var personas = contexto.PersonasDe(bloque);
         if (personas.Ambiguo)
         {
-            return Exigencias(bloque.Texto, TokenizadorTexto.Tokenizar(bloque.Texto), catalogo).Count > 0 ? Motivo : null;
+            return Exigencias(bloque.Texto, TokenizadorTexto.Tokenizar(bloque.Texto), catalogo).Count > 0 ? TextoDelMotivo : null;
         }
 
-        return personas.Tramos.Any(tramo => Exigencias(bloque.Texto, tramo.Tokens, catalogo).Any(exigencia => !contexto.Cumple(tramo.PersonaId, exigencia))) ? Motivo : null;
+        return personas.Tramos.Any(tramo => Exigencias(bloque.Texto, tramo.Tokens, catalogo).Any(exigencia => !contexto.Cumple(tramo.PersonaId, exigencia))) ? TextoDelMotivo : null;
     }
 
     private static List<Func<ResumenEstudiante, bool>> Exigencias(string texto, IReadOnlyList<TokenTexto> tokens, IReadOnlyList<AsignaturaCatalogo> catalogo)
@@ -72,7 +71,7 @@ internal sealed class AfirmacionesDeEstado
         && EnPruebaAcademica.Select((palabra, desplazamiento) => palabras[indice + 1 + desplazamiento] == palabra).All(coincide => coincide);
 
     private static bool Anulada(string texto, IReadOnlyList<TokenTexto> tokens, int indice) =>
-        indice > 0 && (PalabrasQueAnulan.Contains(tokens[indice - 1].Valor) || SiSinTilde(texto, tokens[indice - 1]) || ConCuandoCerca(tokens, indice) || EstudianteQue(tokens, indice));
+        indice > 0 && (VocabularioDeTexto.Negaciones.Contains(tokens[indice - 1].Valor) || SiSinTilde(texto, tokens[indice - 1]) || ConCuandoCerca(tokens, indice) || EstudianteQue(tokens, indice));
 
     private static bool SiSinTilde(string texto, TokenTexto anterior) =>
         anterior.Valor == "si" && string.Equals(texto[anterior.Inicio..anterior.Fin], "si", StringComparison.OrdinalIgnoreCase);
