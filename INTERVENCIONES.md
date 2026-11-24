@@ -257,3 +257,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** los formatos de llave cambian y el evaluador usará la suya. Rechazarla por su forma bloquea la evaluación (INT-027).
 - **Costo:** ~1 min humano.
 - **Prevención:** la llave nunca se valida ni se rechaza por su formato. El proveedor se resuelve con información explícita (`LLM_PROVEEDOR`, el nombre del modelo en `LLM_MODELO`, `LLM_URL_BASE`) y el prefijo de la llave queda solo como pista. Decisión técnica por INT-030.
+
+### INT-032 · 2026-11-24 · La semilla del LLM se elimina en vez de filtrarse
+- **Fase:** spec
+- **Qué pasó:** Gemini rechazaba todas las preguntas con 400 (`Unknown name "seed": Cannot find field.`). La fábrica propuso dejar de enviar `seed` solo cuando el proveedor es Gemini, con una regla por proveedor en el adaptador.
+- **Qué hizo el humano:** *"Y para que necesitamos ese "seed" realmente no podmeos validar cada proovedor, por que no lo quitamos simplemnete?"*.
+- **Por qué:** la semilla no garantiza determinismo, no todos los proveedores la admiten y mantener una lista por proveedor es complejidad innecesaria (INT-030). La estabilidad ya la dan la temperatura 0 (INT-022) y la verificación determinista del texto final.
+- **Costo:** ~1 min humano.
+- **Prevención:** ninguna regla nueva: INT-030 ya exige empezar por la alternativa más simple. La fábrica no la aplicó porque la propuesta salió de un agente de diagnóstico sin pasar por la evaluación entre disciplinas; D-85 elimina la semilla del producto y sus pruebas.
