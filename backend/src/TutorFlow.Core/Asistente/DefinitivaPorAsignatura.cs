@@ -55,11 +55,22 @@ internal sealed partial class DefinitivaPorAsignatura
     public IEnumerable<(string Clave, string Cifra)> ParesDe(string respuesta, DirectorioAcademico directorio)
     {
         var catalogo = CatalogoAsignaturas.Vigente(_catalogo, directorio);
-        return BloquesDeRespuesta.De(respuesta).SelectMany(bloque =>
-        {
-            var tokens = TokenizadorTexto.TokenizarConCifras(bloque.Texto);
-            return Pares(bloque, tokens, CatalogoAsignaturas.Apariciones(tokens, catalogo), hayDefinitiva: true).Select(atribucion => (atribucion.Clave, atribucion.Cifra));
-        });
+        return BloquesDeRespuesta.De(respuesta)
+            .SelectMany(bloque => Atribuciones(bloque, catalogo))
+            .Select(atribucion => (atribucion.Clave, atribucion.Cifra));
+    }
+
+    public bool SinCifrasNiAsignaturas(string respuesta, DirectorioAcademico directorio)
+    {
+        var catalogo = CatalogoAsignaturas.Vigente(_catalogo, directorio);
+        return BloquesDeRespuesta.De(respuesta).All(bloque => SinCifrasNiAsignaturas(bloque, catalogo));
+    }
+
+    private static bool SinCifrasNiAsignaturas(BloqueDeTexto bloque, IReadOnlyList<AsignaturaCatalogo> catalogo)
+    {
+        var tokens = TokenizadorTexto.TokenizarConCifras(bloque.Texto);
+        return CatalogoAsignaturas.Apariciones(tokens, catalogo).Count == 0
+            && !Enumerable.Range(0, tokens.Count).Any(posicion => EsCifraDeNota(tokens, posicion));
     }
 
     private static string? MotivoDe(
