@@ -154,6 +154,8 @@ Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitutio
 - **D-105** · (Humano, INT-036) Precio del modelo en uso: al arrancar, en segundo plano y sin bloquear, se descarga el catálogo público de OpenRouter (`Llm:CatalogoPrecios:Url`; 5 s, 1 reintento, ≤ 10 MB, 0 a 0.001 USD por token) y se busca el modelo por id exacto; respaldo, la tabla de `appsettings.json`; Ollama 0; sin precio, advertencia única y D-39 (plan §4.2).
   Por qué: los precios y los modelos cambian (INT-035, INT-036). Descartados las variables `LLM_PRECIO_ENTRADA`/`LLM_PRECIO_SALIDA` (rechazadas por el humano: el precio cambia y obliga a reconfigurar), solo la tabla (envejece) y el precio devuelto por el proveedor en la respuesta (solo OpenRouter lo devuelve).
   Vigente; pedida por el humano; comparación exacta del id aprobada por el orquestador; las variables se eliminan del producto y, presentes, se ignoran.
+- **D-106** · Campos del bloque de D-98: tras "Sin definitiva", la línea "Equivalente de la acumulada…" y la Sec. 3 en `citas`; beca no determinable nombra la asignatura; "cuántos estudiantes" añade "Cantidad de estudiantes …: N" por listado; "habilitar" con la nombrada perdida por inasistencia añade las perdidas por nota (plan §8.3, §8.4).
+  Por qué: la poda de D-98 quita del texto del LLM esos datos (ESC-024, 030, 124, 032), así que los escribe el backend. Descartado conservarlos en la oración del LLM (reabre S-01). · Vigente; alineada con la implementación de D-98 (backend-dotnet).
 
 ## Riesgos y su decisión
 

@@ -239,7 +239,7 @@
 | Definitivas | `Definitivas: <Asignatura> <definitiva>, …` en el orden de los datos; perdida por inasistencia: `<Asignatura> 0.0 (por inasistencia)` | Con al menos una definitiva; las que no tienen no aparecen |
 | Sin definitiva | `Sin definitiva (falta calificar un corte): <Asignatura> (acumulada <acumulada> sobre el <porcentaje>% evaluado)`, una por asignatura | Asignatura sin definitiva (RN-05, D-05) |
 | Promedio | `Promedio ponderado del periodo: <promedio>` | Con al menos una definitiva |
-| Equivalente (D-66 C1) | `Equivalente de la acumulada de <Asignatura> sobre la nota completa: <e>`, con `e` = acumulada sin redondear / porcentaje evaluado, a 1 decimal (RN-04) | Solo resumen, por asignatura sin definitiva (D-05) |
+| Equivalente (D-66 C1) | `Equivalente de la acumulada de <Asignatura> sobre la nota completa: <e>`, con `e` = acumulada sin redondear / porcentaje evaluado, a 1 decimal (RN-04), en la línea siguiente a su `Sin definitiva` | Resumen y bloque, por asignatura sin definitiva (D-05, D-106); `evaluacion_y_calificaciones.md · Sección 3` va en `citas`, no en el texto |
 | Nota mínima (D-66 C1) | `Nota mínima para aprobar: 3.0` (RN-02) | Siempre, solo en el resumen (el orden de las líneas lo elige la implementación) |
 
 | Asistencia (`K` = máximo de RN-13, `R` = máx(K − X, 0)) | Formato exacto |
@@ -252,7 +252,7 @@
 - **Programa y prelectura**, por programa: (1) `Programa <id> (<nombre>): <n> estudiantes.`; (2) por estudiante, tras una línea vacía: `Estudiante: <nombre> (ID <id>)`, `Promedio del periodo: <promedio>` (si tiene una definitiva), `Prueba académica: sí|no`.
   - Y por asignatura: `Perdida por nota: <Asignatura> (definitiva <d>)`, `Perdida por inasistencia: <Asignatura> (definitiva 0.0)`, `Sin definitiva (falta calificar un corte): <Asignatura>`, `Asistencia sin registro: <Asignatura>`.
   - (3) Tras una línea vacía: `Estudiantes con asignaturas perdidas: <nombre> (<Asignatura> <d>; …), …` (por inasistencia `<Asignatura> 0.0 por inasistencia`; sin ninguno `… ninguno`) y `Estudiantes en prueba académica: <nombre> (promedio <p>), …` (o `… ninguno`).
-- Las definitivas de las aprobadas no se listan (minimización). Resultado para `ADM`, antes de "Reglas aplicadas":
+- Las definitivas de las aprobadas no se listan (minimización); `ING-SIS` y las líneas exactas del resumen: ESC-189 a–e. Resultado para `ADM`, antes de "Reglas aplicadas":
 
 ```text
 Programa ADM (Administración de Empresas): 3 estudiantes.
@@ -276,7 +276,6 @@ Estudiantes con asignaturas perdidas: Valentina Castro (Microeconomía 1.8; Esta
 Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 ```
 
-- `ING-SIS` y las líneas exactas del resumen: ESC-189 a–e.
 ### 8.4 Modo bloque: datos de personas escritos por el backend (RF-02, RF-03, COMP-09, D-92, D-98)
 - **Activa** solo con los activadores actuales, nunca por una palabra suelta (`beca` sola no activa: P8, ESC-189 u): (1) estudiante con resumen (§8.1 (i), (ii) o (iii)) → su bloque de persona; (3) coordinador con prelectura (§8.2) y sin estudiante nombrado → bloque del programa.
   - (2) Coordinador que nombra (nombre completo o ID) a uno o más estudiantes suyos → un bloque por estudiante, en el orden de la pregunta; se leen notas y asistencia solo de ellos, sin prelectura (citas `Datos del estudiante`, sin `Datos del programa`).
@@ -290,10 +289,11 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 | Estado | `perdi`, `perdida(s)`, `perdido`, `aprobe`, `aprobada`, `gane`, `reprobe`, `pase`, `habilitar`, `habilitable`, `estado`, `voy` | `Estado de <Asignatura>: <estado>`: `aprobada con definitiva <d>`, `perdida con definitiva <d>, habilitable`, `perdida con definitiva <d>, no habilitable`, `perdida por inasistencia, no habilitable` o `sin definitiva (falta calificar un corte)` |
 | Promedio | `promedio`, `ponderado` | `Promedio ponderado del periodo: <p>` y `Definitivas: …` de todas (COMP-07) |
 | Prueba académica | `prueba academica` | `Promedio ponderado del periodo: <p>` y `Prueba académica: sí` o `no` |
-| Beca | `beca`, `becas` | `Promedio ponderado del periodo: <p>` y `Beca por rendimiento académico: elegible`, `no elegible (<motivo>)` (el primero de `promedio menor a 4.3`, `asignatura perdida`, `menos de 12 créditos`) o `no determinable aún (asignatura sin definitiva)` |
+| Beca | `beca`, `becas` | `Promedio ponderado del periodo: <p>` y `Beca por rendimiento académico: elegible`, `no elegible (<motivo>)` (el primero de `promedio menor a 4.3`, `asignatura perdida`, `menos de 12 créditos`) o `no determinable aún (asignatura sin definitiva: <Asignatura>, …)` |
 | Faltas | `falta(s)`, `inasistencia(s)`, `asistencia` | Línea de asistencia de §8.3 por asignatura y `Total: <N> faltas` (D-92) |
 
 - **Asignaturas:** las que la pregunta nombra y la persona cursa (§8.1 (iii)) o todas; Promedio, Prueba académica y Beca son del periodo. Si solo nombra asignaturas que no cursa, el bloque lleva `Sin matrícula en el periodo 2026-2: <Asignatura>, …`.
+  - **Habilitación (D-106):** con `habilitar` o `habilitable` y la asignatura nombrada perdida por inasistencia, Estado añade cada perdida por nota con su `habilitable`/`no habilitable` (ESC-032); en los demás casos, solo la nombrada (ESC-179 m, r; ESC-185 i).
 - **Total (D-92):** N = suma de las faltas registradas; con alguna sin registro, ` (sin registro: <Asignatura>, …)`; sin ninguna con registro, `Total: sin registro`. Una línea duplicada por dos campos sale una vez.
 - **Bloque del programa:** por cada listado pedido, en este orden; sin ninguno, los 4 primeros. Con varios programas, cada grupo va tras `Programa <id> (<nombre>): <n> estudiantes.`.
 
@@ -304,7 +304,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 | Sin definitiva | `sin definitiva`, `pendiente(s)`, `falta calificar` | `Estudiantes con asignaturas sin definitiva: <nombre> (<Asignatura>, …); …` o `… ninguno` |
 | Sin registro | `sin registro`, `asistencia` | `Estudiantes con asistencia sin registro: <nombre> (<Asignatura>, …); …` o `… ninguno` |
 | Promedios | `promedio(s)` | `Promedios del periodo: <nombre> <p>; …` |
-| Número | `cuantos` o `cuantas` + `estudiantes` | `Programa <id> (<nombre>): <n> estudiantes.` |
+| Número | `cuantos` o `cuantas` + `estudiantes` | `Programa <id> (<nombre>): <n> estudiantes.` y, tras los listados, por cada uno de los 4 primeros pedido: `Cantidad de estudiantes con asignaturas perdidas: <N>`, `… en prueba académica: <N>`, `… con asignaturas sin definitiva: <N>` o `… con asistencia sin registro: <N>` (N = personas del listado, 0 si `ninguno`; D-106) |
 
 - **Poda (D-98), paso 6.3 de §2, tras SEG-10b y SEG-10d:** oraciones cortadas como D-94 (salto de línea y `.`, `!` o `?` seguidos de espacio o del final; no en `;`). Se elimina sin reintento ni segunda llamada; una oración que solo es la frase de COMP-03 cuenta como vacía.
   - **En modo bloque se conserva solo:** (A) una introducción de la lista cerrada; (B) una oración con una cita escrita válida (6.1), un marcador impersonal, ningún marcador de persona, ninguna asignatura del catálogo y ningún número escrito en letras. Lo demás se elimina.

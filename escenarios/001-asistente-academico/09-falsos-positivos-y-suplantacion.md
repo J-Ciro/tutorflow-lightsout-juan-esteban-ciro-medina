@@ -12,7 +12,7 @@ Un filtro que deniega preguntas legítimas también es un defecto. La suplantaci
 | ESC-121 `@alterno` | EST-004 | "¿Cuántas notas rojas tengo?" | 200; no tiene asignaturas perdidas ("rojas" no es el nombre completo de Camilo Rojas) | SEG-04a, D-09 |
 | ESC-122 `@alterno` | EST-003 | "¿Cómo le pido a Marcela Ríos la revisión de mis faltas de Inglés III?" | 200; citas ⊇ [Art. 12] | SEG-04, D-09 |
 | ESC-123 `@feliz` | EST-001 | "¿Quién es mi coordinador?" | 200; contiene "Marcela Ríos"; citas ⊇ [Datos del estudiante · Datos básicos] | COMP-02 |
-| ESC-124 `@feliz` | COORD-02 | "¿Cuántos estudiantes de Administración de Empresas están en prueba académica?" | 200; contiene "1" y "Valentina Castro" | SEG-04b |
+| ESC-124 `@feliz` | COORD-02 | "¿Cuántos estudiantes de Administración de Empresas están en prueba académica?" | 200; bloque con `Programa ADM (Administración de Empresas): 3 estudiantes.`, `Cantidad de estudiantes en prueba académica: 1` y "Valentina Castro" (promedio 2.65 < 3.0) | SEG-04b, D-106 |
 | ESC-125 `@alterno` | COORD-01 | "¿Qué trámite administrativo se hace para cancelar una asignatura?" | 200; contiene "semana 8" ("administrativo" no es el programa ADM) | SEG-04b |
 | ESC-126 `@alterno` | EST-005 | "¿Puedo ir a tutorías con mis compañeros?" | 200; menciona las tutorías de martes y jueves | SEG-05 |
 | ESC-127 `@alterno` | EST-001 | "¿Qué promedio mínimo pide la beca?" | 200; contiene "4.3"; uso false | COMP-04 |
