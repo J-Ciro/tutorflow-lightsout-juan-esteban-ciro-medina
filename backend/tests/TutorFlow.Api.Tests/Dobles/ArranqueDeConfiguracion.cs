@@ -13,7 +13,7 @@ public sealed record ResultadoArranque(Exception? Error, IReadOnlyList<string> C
 
     public string TextoCompleto => string.Join("\n", MensajesDelError().Concat(Consola));
 
-    private const int IntentosAnteCarreraDelHost = 5;
+    private const int IntentosAnteCarreraDelHost = 15;
 
     public static ResultadoArranque De(FabricaApi fabrica)
     {
