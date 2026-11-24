@@ -32,7 +32,7 @@ Dobles espía; la API académica doble cuenta lecturas por recurso y estudiante.
 
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
-| ESC-154 `@feliz` | EST-001; doble que nunca invoca herramientas y copia la línea de Bases de Datos del resumen | "¿Cuántas faltas tengo en Bases de Datos?" | 200; 1 llamada, con el resumen: 2 faltas, 48 clases, máximo 7 (⌊0.15 × 48⌋) y 5 restantes; la copia se elimina y la respuesta es el desglose de ESC-189 h; citas ⊇ [Asistencia] | COMP-07, D-27, RN-13, D-92 |
+| ESC-154 `@feliz` | EST-001; doble que nunca invoca herramientas y copia la línea de Bases de Datos del resumen | "¿Cuántas faltas tengo en Bases de Datos?" | 200; 1 llamada, con el resumen: 2 faltas, 48 clases, máximo 7 (⌊0.15 × 48⌋) y 5 restantes; la copia se elimina entera (nota ESC-154) y la respuesta es el desglose de ESC-189 h; citas ⊇ [Asistencia] | COMP-07, D-27, RN-13, D-92, D-94 |
 | ESC-155 a `@permisos` | EST-004; doble sin herramientas | "¿Qué requisitos tiene la beca por rendimiento académico?" | Sin resumen; 0 lecturas de notas o asistencia; uso false | COMP-04, COMP-07 |
 | ESC-155 b | EST-001 | "¿Hasta qué semana puedo cancelar una asignatura?" | Igual que (a): `puedo` solo con el genérico `asignatura` | COMP-07, D-30 |
 | ESC-155 c | COORD-01 | "¿Cuál es mi promedio?" | Igual que (a): el coordinador nunca recibe resumen | COMP-07 |
@@ -46,6 +46,8 @@ Dobles espía; la API académica doble cuenta lecturas por recurso y estudiante.
 | ESC-172 e `@permisos` | EST-001 | "¿Cómo voy en Contabilidad?" | Exactamente 1 lectura de notas de EST-001 (verificación) y 0 de asistencia; sin resumen; uso false; citas sin Datos del estudiante; auditoría con `notas` en `recursosConsultados`; vale también si termina en COMP-03 sin LLM (raíces {cont}, r = 1) | COMP-04, COMP-07 (iii) |
 | ESC-172 f `@abuso` | EST-001 | "¿Puedo habilitar Bases de Datos de Andrés Martínez?" | 403 NEG; 0 llamadas; 0 lecturas: el filtro previo va antes de la verificación de matrícula | SEG-04 |
 | ESC-172 g | EST-001 | "¿Cómo voy en Bases de Datos en el periodo 2025-1?" | 200 COMP-03; citas []; uso false; tokens 0; costo 0; 0 llamadas; 0 lecturas; `sin_informacion` (el periodo se evalúa con la coincidencia de catálogo, antes de leer) | COMP-03 (2) |
+
+- **ESC-154:** la oración copiada no se corta en `;` (D-94): la respuesta no contiene "máximo sin perder: 7)." suelto.
 
 ## Formato normativo (CA-18)
 
@@ -61,7 +63,7 @@ Dobles espía; la API académica doble cuenta lecturas por recurso y estudiante.
 
 ## Faltas con desglose y total (CA-27, D-92)
 
-LLM doble sin herramientas; sin reintento por cifras de faltas (D-92): siempre 1 llamada. "Línea" = la línea de asistencia exacta de plan §8.3 (nota ESC-189 h–n). Datos de plan §14.
+LLM doble sin herramientas; sin reintento por cifras de faltas (D-92): siempre 1 llamada. "Línea" = la línea de asistencia exacta de plan §8.3 (nota ESC-189 h–p). Datos de plan §14.
 
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
@@ -71,6 +73,9 @@ LLM doble sin herramientas; sin reintento por cifras de faltas (D-92): siempre 1
 | ESC-189 k `@alterno` | EST-002; doble "Este es tu detalle." | "¿Cuántas faltas me quedan en Bases de Datos?" | La línea de Bases de Datos con "faltas restantes: 0" y "Perdida por inasistencia: superaste 7 inasistencias." (9 × 100 = 900 > 720) y "Total: 9 faltas" | RN-07, D-92 |
 | ESC-189 l `@abuso` | EST-001; doble "Tienes 9 faltas en Bases de Datos." | Q10 #3 | 1 llamada; respuesta = solo el desglose de (h) (la oración se elimina, sin reintento); 0 "9 faltas"; `respondida` sin `reintento` | D-92 |
 | ESC-189 m `@alterno` | EST-001 | "¿Con cuántas faltas se pierde una materia?" | Sin desglose ni "Total:"; 0 lecturas de asistencia; uso false; citas ⊇ [Art. 11] (ESC-012) | D-92 |
-| ESC-189 n `@permisos` | COORD-01; doble "Este es el detalle de Andrés Martínez." | "¿Cuántas faltas tiene Andrés Martínez?" | Las 4 líneas de EST-002 en tercera persona y "Total: 15 faltas"; 0 lecturas de ADM; con COORD-02 y la misma pregunta: 403 `tercero_mencionado` | RF-03, SEG-02, D-92 |
+| ESC-189 n1 `@permisos` | COORD-01; doble "Este es el detalle de Andrés Martínez." | "¿Cuántas faltas tiene Andrés Martínez?" | Las 4 líneas de EST-002 en tercera persona y "Total: 15 faltas"; lecturas solo de EST-002 (notas y asistencia), sin prelectura ni lecturas de EST-001 y EST-003; citas sin `Datos del programa` | RF-03, D-92, D-96 |
+| ESC-189 n2 `@permisos` | COORD-02 | La pregunta de (n1) | 403 `tercero_mencionado` | SEG-02, D-92 |
+| ESC-189 o `@alterno` | EST-001; doble "Tus inasistencias se rigen por reglamento_academico_2025.md · Artículo 11." | Q10 #3 | 1 llamada; esa oración se conserva (`2025` es parte del nombre de archivo, no cifra de faltas), seguida del desglose de (h); citas ⊇ [Art. 11] | D-92, D-94 |
+| ESC-189 p `@permisos` `@alterno` | COORD-01; doble "Ambos tienen faltas registradas." | "¿Cuántas faltas tienen Andrés Martínez y Sofía Herrera?" | Sin desglose ni "Total:"; prelectura de ING-SIS (ruta normal); 0 lecturas de ADM | D-92, D-96 |
 
-- **ESC-189 h–n:** la línea de Bases de Datos de EST-001 es "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia." (⌊0.15 × 48⌋ = 7; 7 − 2 = 5).
+- **ESC-189 h–p:** la línea de Bases de Datos de EST-001 es "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia." (⌊0.15 × 48⌋ = 7; 7 − 2 = 5).

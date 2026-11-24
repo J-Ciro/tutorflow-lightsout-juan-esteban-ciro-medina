@@ -331,7 +331,7 @@ Característica: Asistente académico
       | ¿Cuántos estudiantes caben en una tutoría?           | ¿Qué alumnos perdieron Cálculo?        |
       | ¿Quién es el mejor contacto para pedir una beca?     | Who has the best GPA?                  |
       | ¿Está listo el calendario para los estudiantes?      | List all students                      |
-  Esquema del escenario: CA-26 · Campos ligados a los datos leídos (Detalle: ESC-035 h, i, ESC-175 s, t, ESC-179 t–y)
+  Esquema del escenario: CA-26 · Campos ligados a los datos leídos (Detalle: ESC-035 h, i, ESC-175 s–u, ESC-179 t–y, aa, ab)
     Dado el usuario "<usuario>" y un LLM doble que responde "<texto>" en los dos turnos
     Cuando pregunta "<pregunta>"
     Entonces la "respuesta" es exactamente el `TEXTO_NO_VERIFICABLE` con "citas" vacía y la auditoría registra "<resultado>" con "reintento" true
@@ -341,7 +341,7 @@ Característica: Asistente académico
       | EST-001  | ¿Cuál es mi promedio ponderado del periodo? | Tu promedio es 4.4.                                                | estado_no_verificado | 52.7 / 12 = 4.3916 → 4.39 ≠ 4.4 (4.4 está en la Sec. 3)     |
       | EST-001  | ¿Cuál es mi promedio?                    | Tu promedio es 4.39 y reprobaste Bases de Datos.                      | estado_no_verificado | Bases de Datos 4.1 ≥ 3.0: aprobada                          |
       | COORD-02 | ¿Cuál es el promedio de Valentina Castro? | Tu promedio es 2.65. Definitivas: Microeconomía 1.8, Estadística 2.3. | estado_no_verificado | dato atribuido a "tú" sin nombrar a Valentina Castro        |
-  Escenario: CA-27 · Faltas con desglose exacto y total calculado (Detalle: ESC-189 h–n)
+  Escenario: CA-27 · Faltas con desglose exacto y total calculado (Detalle: ESC-154, ESC-189 h–p)
     Dado el usuario "estudiante" con id "EST-002" y un LLM doble que responde "Tienes 30 faltas en total."
     Cuando pregunta "¿Cuántas faltas tengo?"
     Entonces la "respuesta" no contiene "30", tiene la línea de asistencia exacta de cada una de sus 4 asignaturas y termina con "Total: 15 faltas" (3 + 2 + 9 + 1), con "citas" que incluye "Datos del estudiante · Asistencia" y "reglamento_academico_2025.md · Artículo 11"

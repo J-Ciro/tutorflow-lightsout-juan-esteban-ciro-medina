@@ -4,7 +4,7 @@
 
 Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022; D-65, ambigüedades de QA; D-66, arbitraje de la ronda 4; D-67, INT-024 (humano).
 D-68 y D-69, INT-025 (humano), sustituidas por D-72; D-70, INT-027 (humano); D-71, decisión del orquestador; D-72, INT-030 (humano); D-73, fase V de cierre (orquestador, con INT-030); D-74, hallazgos de QA tras la fase A de D-73 (orquestador, con INT-030).
-D-75…D-85, ronda de cierre (INT-030; D-80 parcial, D-81, D-82 y D-85 del humano, D-84 de INT-031, D-85 de INT-032); D-86…D-91, medición con Gemini (qa-calidad, backend-dotnet y seguridad; INT-030); D-92, INT-033 (humano); D-93, aclaración de la fase A (orquestador).
+D-75…D-85, ronda de cierre (INT-030; D-80 parcial, D-81, D-82 y D-85 del humano, D-84 de INT-031, D-85 de INT-032); D-86…D-91, medición con Gemini (qa-calidad, backend-dotnet y seguridad; INT-030); D-92, INT-033 (humano); D-93, aclaración de la fase A (orquestador); D-94…D-97, ajustes de la implementación (backend-dotnet y arquitecto-spec; D-97 elegida por el orquestador).
 Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitution.md). D-11, D-12, D-18 y D-19 no existen.
 
 ## Decisiones
@@ -129,10 +129,17 @@ Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitutio
   Por qué: el total debe desglosarse y cuadrar. Descartados (a) total + "copia" (no garantiza) y (b) verificación por proximidad (70–100 líneas, falsos bloqueos). · Vigente; evaluada por backend-dotnet (INT-030); sustituye a D-76 en esas respuestas.
 - **D-93** · SEG-05: `mejores`/`peores` junto a `notas`/`promedios` es nivel 1 salvo con `mis` delante o en una pregunta con `mi`/`mis` sin `mi` + programa, carrera, curso, clase o grupo; `mejor(es)`/`peor(es)` son R débil (plan §9.2).
   Por qué: sin posesivo, "las mejores notas" alude al grupo (§3: el estudiante solo ve lo suyo); `AgregadosNuevosTests` queda correcta. Descartados G + R (dejaba pasar la pregunta) y deniegar todo plural (falsos 403 con "mis"). · Vigente; fase A (orquestador); no cambia contrato ni matriz.
+- **D-94** · La eliminación de D-92 corta oraciones en salto de línea, `.`, `!` y `?`, no en `;` (solo ahí; §11.2 sigue cortando en `;`); los enteros pegados a `_` o seguidos de `.` + letra (nombre de archivo) no cuentan en §11.3 (3) ni en D-92 (plan §8.4, §11.3).
+  Por qué: con `;` la copia de una línea de §8.3 dejaba "máximo sin perder: 7)." (ESC-154); el `2025` del archivo borraba o bloqueaba la oración de la cita. · Vigente; implementada por backend-dotnet.
+- **D-95** · Umbral normativo: `<campo> mínimo/máximo es <cifra>` y `se requiere(n)` + ≤ 3 palabras + cifra no se verifican contra la persona; `está(n)/estás en prueba académica` tras `si` (sin tilde) o `cuando` (≤ 2 palabras) o `estudiante(s) que` no exige nada (plan §11.2, §11.3).
+  Por qué: falsos TNV en "el promedio mínimo es 3.0" y en condicionales. Descartados `es` como enlace general ("supera el mínimo, es 4.8" pasaría) y `que` solo ("Te confirmo que estás…" pasaría). · Vigente; el código anula con `que` y con "Sí,": se corrige.
+- **D-96** · El coordinador que pregunta por las faltas de exactamente un estudiante suyo recibe el desglose leyendo solo a ese estudiante, sin prelectura; con dos o más, ruta normal (plan §8.4). · Por qué: minimización (solo lo pedido) y ESC-189 n. · Vigente; implementada por backend-dotnet.
+- **D-97** · El nombre del delimitador es siempre confidencial (se retira la excepción "no entregado" del código); la limpieza de §10 (0) quita antes de SEG-10d las marcas de apertura y cierre del envoltorio copiadas (plan §10, §11.1 (d)).
+  Por qué: con la excepción, el control se apagaba al correr cualquier herramienta o la prelectura, y el envoltorio llegaba al usuario. Descartado retirar el nombre de SEG-10d (sin limpieza). · Vigente; elegida por el orquestador (INT-030); la evalúan backend-dotnet y seguridad.
 
 ## Riesgos y su decisión
 
-Ningún riesgo queda aceptado salvo D-01, por D-72 (INT-030) el umbral compartido tras el proxy de la 002 y el 429 a quien supere 600 por minuto desde una IP, y por D-82 la IP compartida de Docker Desktop (decisiones del humano). Evidencia de la ronda 4 en `diag-riesgos/`.
+Ningún riesgo queda aceptado salvo D-01, por D-72 (INT-030) el umbral compartido tras el proxy de la 002 y el 429 a quien supere 600 por minuto desde una IP, por D-82 la IP compartida de Docker Desktop (decisiones del humano) y F-08 y F-09 de la fase B (humano, 2026-11-24). Evidencia de la ronda 4 en `diag-riesgos/`.
 
 | Riesgo | Decisión | Control verificable | D | CA / ESC |
 | --- | --- | --- | --- | --- |
@@ -200,9 +207,17 @@ Ningún riesgo queda aceptado salvo D-01, por D-72 (INT-030) el umbral compartid
 | Total de faltas sin desglose o que no cuadra; cifra de faltas o clases inventada por el LLM (INT-033) | Eliminado: desglose y total calculados; oraciones del LLM con cifras eliminadas, sin reintento | ESC-189 i, l | D-92 | CA-27 |
 | Pregunta normativa de faltas con desglose de datos propios no pedido | Eliminado: sin marcador personal ni persona, no activa | ESC-189 m | D-92 | CA-27 |
 | Introducción del LLM eliminada entera (la respuesta queda solo con el desglose) | Aceptado por el humano: el desglose ya trae los valores exactos; sin reintento, 1 llamada | ESC-189 l (1 llamada, solo el desglose) | D-92 | CA-27 |
+| Resto suelto de una línea copiada ("máximo sin perder: 7).") o cita borrada por el año del archivo | Eliminado: sin corte en `;` en D-92; enteros de nombres de archivo excluidos | ESC-154, ESC-189 o, ESC-179 ab | D-94 | CA-26, CA-27 |
+| Entero de faltas pegado a `_` que evade §11.3 (3) | Mitigado: solo excluye enteros pegados a `_` o seguidos de `.` + letra; "2025 faltas" suelto falla | ESC-179 ab | D-94 | CA-26 |
+| Falso TNV por umbral normativo o prueba académica condicional | Eliminado: listas cerradas de D-95 | ESC-179 aa (2 pasan), ESC-175 u (3 pasan) | D-95 | CA-26 |
+| Afirmación falsa que pasa como umbral o condicional ("supera el mínimo, es 4.8", "que estás", "Sí, estás") | Eliminado: sin `es` general, sin `que` solo y `si` sin tilde | ESC-179 aa, ESC-175 u (2 fallan en cada uno) | D-95 | CA-26 |
+| Prelectura del programa entero para preguntar por las faltas de un estudiante | Eliminado: solo se lee a ese estudiante | ESC-189 n (lecturas solo de EST-002); ESC-189 p (2 estudiantes: ruta normal) | D-96 | CA-27 |
+| ~50 pruebas existentes de 21 a 38 líneas, sobre el límite de 20 de AGENTS.md §3 (F-09, fase B) | Aceptado por el humano (2026-11-24) y fuera de la 001: no cambian lo que verifican | El límite sigue en producción y en pruebas nuevas | — | — |
+| Constructor público de `PreguntarAsistente` con 11 parámetros (2 opcionales) frente a ≤ 5 de AGENTS.md (F-08) | Aceptado por el humano (2026-11-24) y fuera de la 001: ya agrupa en `DependenciasDeAsistente`, sin cambio de comportamiento | El límite sigue en el código nuevo | — | — |
 | Encabezado HTML que evade el bloque (S-05) | Eliminado: HTML a Markdown y etiquetas quitadas | ESC-184 m | D-77 | CA-17 |
 | Relleno Hangul o letras separadas en nombres (S-06) | Eliminado: tipo `di` y nombre sin espacios | ESC-199 a10, a11 | D-78 | CA-24 |
 | Fuga ofuscada de herramientas, canario o delimitador (S-10) | Mitigado: forma compacta y prefijo del canario; la paráfrasis queda en (3) | ESC-146 b, ESC-147 b | D-79 | CA-05 |
+| Control del delimitador apagado al correr una herramienta o la prelectura; envoltorio copiado visible para el usuario | Eliminado: nombre siempre confidencial y marcas quitadas por §10 (0) antes de SEG-10d | ESC-147 c1 (0 marcas, `respondida`), c2 (nombre suelto → `fuga_bloqueada`) | D-97 | CA-05 |
 | `Cf` astral crudo en la auditoría (S-11) | Eliminado: escape por punto de código | ESC-083 b | — | CA-08 |
 | DoS del limitador con miles de IP o de la caché de plegado (S-09, S-15) | Mitigado: purga por intervalo sin copia y tope de 4.096 | Unitarias: purga con 20.000 IP sin `ToList`; caché ≤ 4.096 tras todos los puntos de código | D-80 | CA-13, CA-24 |
 | Salto del reloj de pared que acorta o alarga un bloqueo (S-13) | Eliminado: reloj monotónico | ESC-142 con `TimeProvider` falso | D-80 | CA-13 |
