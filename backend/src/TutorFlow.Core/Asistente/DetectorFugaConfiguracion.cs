@@ -13,11 +13,14 @@ public static class DetectorFugaConfiguracion
     public const int CaracteresMinimosDelMarcador = 8;
 
     public static bool HayFuga(string respuesta, MaterialConfidencial material, IReadOnlyCollection<string> textosEntregados) =>
-        ContieneAlgunSecreto(respuesta, Secretos(material))
+        ContieneAlgunSecreto(respuesta, Secretos(material, textosEntregados))
         || ComparteFragmentoConfidencial(respuesta, material.TextosConfidenciales, textosEntregados);
 
-    private static IEnumerable<string> Secretos(MaterialConfidencial material) =>
-        [PrefijoDelMarcador(material.Marcador), FormateadorDatos.MarcaDelimitadorOriginal, .. material.NombresDeHerramientas];
+    private static IEnumerable<string> Secretos(MaterialConfidencial material, IReadOnlyCollection<string> textosEntregados) =>
+        [PrefijoDelMarcador(material.Marcador), .. DelimitadorNoEntregado(textosEntregados), .. material.NombresDeHerramientas];
+
+    private static IEnumerable<string> DelimitadorNoEntregado(IReadOnlyCollection<string> textosEntregados) =>
+        textosEntregados.Any(texto => texto.Contains(FormateadorDatos.MarcaDelimitadorOriginal, StringComparison.Ordinal)) ? [] : [FormateadorDatos.MarcaDelimitadorOriginal];
 
     private static string PrefijoDelMarcador(string marcador)
     {
