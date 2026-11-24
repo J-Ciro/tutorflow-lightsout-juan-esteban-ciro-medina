@@ -35,7 +35,7 @@ public sealed class TextoFinalVerificadoTests
         { "Se aprueba con 1 .2", false },
         { "Se aprueba con 1 ,2", false },
         { "Se aprueba con 4 .40.", false },
-        { "Se aprueba con 3 .0 (reglamento_academico_2025.md · Artículo 5).", true }
+        { "Una asignatura se aprueba con nota definitiva igual o superior a 3 .0 (reglamento_academico_2025.md · Artículo 5).", true }
     };
 
     [Theory]

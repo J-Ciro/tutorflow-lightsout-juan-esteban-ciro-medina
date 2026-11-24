@@ -85,7 +85,10 @@ public sealed class TextoFinalYBloquesApiTests
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar una asignatura?");
 
-        AfirmarNoVerificable(respuesta, fabrica, ResultadoAuditoria.NumeroNoVerificado);
+        Assert.Equal(Textos.NoVerificable, respuesta.Respuesta);
+        Assert.Empty(respuesta.Citas);
+        Assert.False(respuesta.UsoDatosEstudiante);
+        Assert.Equal(ResultadoAuditoria.NumeroNoVerificado, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 
     [Fact]
