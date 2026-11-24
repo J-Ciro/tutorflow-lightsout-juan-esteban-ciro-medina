@@ -60,6 +60,6 @@ Los IDs son globales e inmutables: una feature nueva toma el siguiente bloque de
 | [09-falsos-positivos-y-suplantacion.md](001-asistente-academico/09-falsos-positivos-y-suplantacion.md) | Sin falsos 403 y suplantación auditada | ESC-097, ESC-120…129, ESC-140, ESC-141 (retirados: ESC-098, 099) | CA-08, CA-12 |
 | [10-verificacion-de-datos.md](001-asistente-academico/10-verificacion-de-datos.md) | Texto final verificado, pérdidas, definitivas y reintento (segunda línea de D-98) | ESC-035, ESC-175, ESC-179, ESC-183…185, ESC-193, ESC-199 g1–g4, h1, h2 | CA-06, CA-16, CA-17, CA-21, CA-26 |
 | [11-citas-y-limpieza.md](001-asistente-academico/11-citas-y-limpieza.md) | Citas, recuperación y limpieza de referencias | ESC-156, ESC-162, ESC-164, ESC-177, ESC-178, ESC-194, ESC-195, ESC-198 | CA-01, CA-14, CA-22 |
-| [12-configuracion-y-proveedor.md](001-asistente-academico/12-configuracion-y-proveedor.md) | Configuración, prompt y proveedor del LLM | ESC-181, ESC-182, ESC-188, ESC-191, ESC-192, ESC-199 c1, c2, d, e1–e5, f | CA-15, CA-20, CA-23 |
+| [12-configuracion-y-proveedor.md](001-asistente-academico/12-configuracion-y-proveedor.md) | Configuración, precio del modelo, prompt y proveedor del LLM | ESC-181, ESC-182, ESC-188, ESC-191, ESC-192, ESC-199 c1, c2, d, e1–e5, f | CA-11 (ESC-181 aj–as), CA-15, CA-20, CA-23 |
 
 `10-salida-trazabilidad-y-limites.md`, `11-ronda-4-verificacion-datos-y-determinismo.md` y `12-v1-12-riesgos-y-ambiguedades.md` quedaron retirados (organizados por ronda) y deben eliminarse con `git rm`.

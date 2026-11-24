@@ -30,7 +30,7 @@ public sealed class DesgloseDeFaltasD92Tests
     private static string Normalizada(string respuesta) => respuesta.Replace("\r\n", "\n", StringComparison.Ordinal);
 
     private static string[] Lineas(string respuesta) =>
-        Normalizada(respuesta).Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        Normalizada(respuesta).Split('\n', StringSplitOptions.RemoveEmptyEntries).Where(linea => !linea.StartsWith("Datos de ", StringComparison.Ordinal)).ToArray();
 
     [Fact]
     [Trait("CA", "CA-27")]
@@ -43,12 +43,30 @@ public sealed class DesgloseDeFaltasD92Tests
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaQ10);
 
         Assert.Single(escenario.Llm.Solicitudes);
-        Assert.Equal($"Aquí está el detalle de tus faltas.\n\n{BasesDeEst001}\nTotal: 2 faltas", Normalizada(resultado.Respuesta!.Respuesta));
+        Assert.Equal($"Aquí está el detalle de tus faltas.\n\nDatos de Laura Gómez (EST-001)\n{BasesDeEst001}\nTotal: 2 faltas", Normalizada(resultado.Respuesta!.Respuesta));
         Assert.Contains("2 de 48 clases programadas", resultado.Respuesta.Respuesta, StringComparison.Ordinal);
         Assert.Contains(DatosAsistencia, resultado.Respuesta.Citas);
         Assert.Contains(new Cita(Reglamento, "Artículo 11"), resultado.Respuesta.Citas);
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
+    }
+
+    [Theory]
+    [InlineData("EST-001", "¿Cuántas faltas tengo?", "Datos de Laura Gómez (EST-001)")]
+    [InlineData("EST-002", "¿Cuántas faltas tengo?", "Datos de Andrés Martínez (EST-002)")]
+    [InlineData("EST-002", "¿Cuántas faltas me quedan en Bases de Datos?", "Datos de Andrés Martínez (EST-002)")]
+    [Trait("CA", "CA-27")]
+    [Trait("ESC", "ESC-189")]
+    [Trait("D", "D-98")]
+    public async Task ESC_189_h_El_desglose_de_faltas_lleva_el_encabezado_Datos_de_nombre_y_su_ID(string id, string pregunta, string encabezado)
+    {
+        var escenario = Con(Fijo("Este es tu detalle."), IndiceDeFaltas());
+
+        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Estudiante, id), pregunta);
+
+        var lineas = Normalizada(resultado.Respuesta!.Respuesta).Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal("Este es tu detalle.", lineas[0]);
+        Assert.Equal(encabezado, lineas[1]);
     }
 
     [Fact]

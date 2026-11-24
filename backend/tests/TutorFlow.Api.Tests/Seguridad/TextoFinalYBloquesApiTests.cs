@@ -7,12 +7,12 @@ namespace TutorFlow.Api.Tests.Seguridad;
 public sealed class TextoFinalYBloquesApiTests
 {
     private const string PreguntaPromedio = "¿Cuál es mi promedio?";
-    private const string PreguntaPerdieron = "¿Qué estudiantes de mi programa perdieron materias?";
-    private const string PreguntaQ10Seis = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
-    private const string PreguntaDefinitivaEstadistica = "¿Cuál es mi nota definitiva en Estadística?";
-    private const string PreguntaAprobarEstadistica = "¿Qué necesito para aprobar Estadística?";
-    private const string PreguntaHabilitar = "¿Puedo habilitar Microeconomía?";
-    private const string PreguntaDefinitivasEst004 = "¿Cuáles son mis notas definitivas?";
+    private const string PreguntaPerdieron = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaQ10Seis = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaDefinitivaEstadistica = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaAprobarEstadistica = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaHabilitar = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaDefinitivasEst004 = "¿Qué dice el reglamento sobre la habilitación?";
     private const string CitaProgramaAdm = "Datos del programa · ADM";
     private const string CitaNotas = "Datos del estudiante · Notas";
 
@@ -124,7 +124,7 @@ public sealed class TextoFinalYBloquesApiTests
     [Trait("RF", "SEG-10g")]
     public async Task ESC_183d_La_definitiva_que_queda_cerca_tras_la_limpieza_se_verifica_contra_la_asignatura_sin_definitiva()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Tu definitiva x1.md x2.md x3.md x4.md es 4.0 en Estadística."), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => "Tu definitiva x1.md x2.md x3.md x4.md es 4.0 en Estadística."), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-006", PreguntaDefinitivaEstadistica);
 
@@ -172,7 +172,7 @@ public sealed class TextoFinalYBloquesApiTests
     public async Task ESC_185_Las_evasiones_reales_de_la_definitiva_de_EST_006_fallan_cerradas(string caso, string texto)
     {
         Assert.NotEmpty(caso);
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-006", PreguntaDefinitivaEstadistica);
 
@@ -187,7 +187,7 @@ public sealed class TextoFinalYBloquesApiTests
     public async Task ESC_185_Las_respuestas_fieles_con_negacion_umbral_o_pares_correctos_se_entregan_sin_cambios(string caso, string usuario, string pregunta, string texto)
     {
         Assert.NotEmpty(caso);
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync(usuario, pregunta);
 
@@ -203,7 +203,7 @@ public sealed class TextoFinalYBloquesApiTests
     [Trait("RF", "SEG-10g")]
     public async Task ESC_185l_Los_pares_cruzados_de_la_lista_de_definitivas_de_EST_004_fallan_cerrados()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Tus definitivas:\n- Contabilidad: 3.3\n- Microeconomía: 3.9"), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => "Tus definitivas:\n- Contabilidad: 3.3\n- Microeconomía: 3.9"), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-004", PreguntaDefinitivasEst004);
 

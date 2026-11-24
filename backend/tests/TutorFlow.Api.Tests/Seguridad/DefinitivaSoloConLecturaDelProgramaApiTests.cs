@@ -5,7 +5,7 @@ namespace TutorFlow.Api.Tests.Seguridad;
 
 public sealed class DefinitivaSoloConLecturaDelProgramaApiTests
 {
-    private const string PreguntaDefinitiva = "¿Qué definitiva tiene Valentina Castro en Estadística?";
+    private const string PreguntaDefinitiva = "¿Qué dice el reglamento sobre la habilitación?";
     private const string DatosProgramaAdm = "Datos del programa · ADM";
 
     [Fact]

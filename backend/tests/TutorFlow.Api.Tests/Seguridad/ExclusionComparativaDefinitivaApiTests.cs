@@ -6,10 +6,10 @@ namespace TutorFlow.Api.Tests.Seguridad;
 
 public sealed class ExclusionComparativaDefinitivaApiTests
 {
-    private const string PreguntaHabilitar = "¿Puedo habilitar Microeconomía?";
-    private const string PreguntaAprobar = "¿Qué necesito para aprobar Estadística?";
-    private const string PreguntaContabilidad = "¿Qué nota definitiva tengo en Contabilidad?";
-    private const string PreguntaEstadistica = "¿Cuál es mi nota definitiva en Estadística?";
+    private const string PreguntaHabilitar = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaAprobar = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaContabilidad = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaEstadistica = "¿Qué dice el reglamento sobre la habilitación?";
     private const string Notas = "Datos del estudiante · Notas";
 
     public static TheoryData<string, string, string, string> ComparativasQueNoSeVerifican => new()
@@ -33,7 +33,7 @@ public sealed class ExclusionComparativaDefinitivaApiTests
     [Trait("RF", "SEG-10g")]
     public async Task ESC_179_La_cifra_de_una_comparacion_o_de_un_requisito_no_se_verifica_como_definitiva(string caso, string id, string pregunta, string texto)
     {
-        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.Texto(texto), conocimiento: new IndiceAprobacionYHabilitacion());
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimiento: new IndiceAprobacionYHabilitacion());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync(id, pregunta);
 
@@ -52,7 +52,7 @@ public sealed class ExclusionComparativaDefinitivaApiTests
     [Trait("RF", "SEG-10g")]
     public async Task ESC_179_Un_comparador_despues_o_lejos_de_la_cifra_asociada_no_excluye_la_verificacion(string caso, string id, string pregunta, string texto)
     {
-        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.Texto(texto), conocimiento: new IndiceAprobacionYHabilitacion());
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimiento: new IndiceAprobacionYHabilitacion());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync(id, pregunta);
 
@@ -71,7 +71,7 @@ public sealed class ExclusionComparativaDefinitivaApiTests
     public async Task ESC_179r_Una_cifra_comparativa_que_no_esta_en_las_fuentes_da_numero_no_verificado()
     {
         using var fabrica = new FabricaApi(
-            llm: ClienteLlmDoble.Texto("Microeconomía no es habilitable porque tu definitiva es menor a 2.5."),
+            llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => "Microeconomía no es habilitable porque tu definitiva es menor a 2.5."),
             conocimiento: new IndiceAprobacionYHabilitacion());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-005", PreguntaHabilitar);

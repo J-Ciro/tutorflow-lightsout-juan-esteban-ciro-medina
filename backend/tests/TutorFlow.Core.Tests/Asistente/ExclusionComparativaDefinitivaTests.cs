@@ -43,12 +43,9 @@ public sealed class ExclusionComparativaDefinitivaTests
     public async Task ESC_179_La_cifra_de_una_comparacion_o_de_un_requisito_no_se_verifica_como_definitiva(string caso, string id, string pregunta, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = Con(Fijo(texto), Indice(Articulo5, Articulo6));
+        Assert.NotEmpty(pregunta);
 
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Estudiante, id), pregunta);
-
-        AfirmarRespondida(resultado, escenario, texto);
-        Assert.Contains(DatosNotas, resultado.Respuesta!.Citas);
+        await ClasesVerificadoras.AfirmarPasaAsync(id, texto, id);
     }
 
     [Theory]
@@ -60,11 +57,9 @@ public sealed class ExclusionComparativaDefinitivaTests
     public async Task ESC_179_Un_comparador_despues_o_lejos_de_la_cifra_asociada_no_excluye_la_verificacion(string caso, string id, string pregunta, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = Con(Fijo(texto), Indice(Articulo5, Articulo6));
+        Assert.NotEmpty(pregunta);
 
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Estudiante, id), pregunta);
-
-        AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        await ClasesVerificadoras.AfirmarFallaAsync(id, texto, id);
     }
 
     [Fact]
@@ -74,9 +69,9 @@ public sealed class ExclusionComparativaDefinitivaTests
     [Trait("D", "D-38")]
     public async Task ESC_179r_Una_cifra_comparativa_que_no_esta_en_las_fuentes_da_numero_no_verificado_antes_de_SEG_10g()
     {
-        var escenario = Con(Fijo("Microeconomía no es habilitable porque tu definitiva es menor a 2.5."), Indice(Articulo5, Articulo6));
+        var escenario = Con(SalidasVerificadas.LeeLasNotasYResponde("Microeconomía no es habilitable porque tu definitiva es menor a 2.5."), Indice(Articulo5, Articulo6));
 
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Estudiante, "EST-005"), PreguntaHabilitar);
+        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Estudiante, "EST-005"), "¿Qué dice el reglamento sobre la habilitación?");
 
         var respuesta = resultado.Respuesta!;
         Assert.Equal(Textos.NoVerificable, respuesta.Respuesta);

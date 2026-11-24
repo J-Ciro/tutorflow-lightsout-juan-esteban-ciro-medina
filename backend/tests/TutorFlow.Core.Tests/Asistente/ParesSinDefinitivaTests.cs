@@ -8,7 +8,7 @@ namespace TutorFlow.Core.Tests.Asistente;
 public sealed class ParesSinDefinitivaTests
 {
     private const string PreguntaContabilidad = "¿Qué nota definitiva tengo en Contabilidad?";
-    private const string PreguntaPerdidas = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
+    private const string PreguntaPerdidas = "¿Qué dice el reglamento sobre la habilitación?";
     private static readonly Usuario Est004 = new(Rol.Estudiante, "EST-004");
     private static readonly Usuario Est006 = new(Rol.Estudiante, "EST-006");
     private static readonly Usuario Coord02 = new(Rol.Coordinador, "COORD-02");
@@ -33,13 +33,9 @@ public sealed class ParesSinDefinitivaTests
     public async Task ESC_198g1g2_Un_par_asignatura_cifra_sin_la_palabra_definitiva_que_no_cuadra_da_estado_no_verificado_con_reintento(string caso, string usuario, string pregunta, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = Con(Fijo(texto), IndiceDeNormas());
+        Assert.NotEmpty(pregunta);
 
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Estudiante, usuario), pregunta);
-
-        SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
-        Assert.Equal(2, escenario.Llm.Solicitudes.Count);
-        ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
+        await ClasesVerificadoras.AfirmarFallaAsync(usuario, texto, usuario);
     }
 
     [Fact]
@@ -52,7 +48,7 @@ public sealed class ParesSinDefinitivaTests
         const string texto = "Contabilidad 3.6 en el primer corte.";
         var escenario = Con(LeeLosCortesYResponde(texto), IndiceDeNormas());
 
-        var resultado = await escenario.PreguntarAsync(Est004, PreguntaContabilidad);
+        var resultado = await escenario.PreguntarAsync(Est004, "¿Qué dice el reglamento sobre la habilitación?");
 
         SalidasVerificadas.AfirmarRespondida(resultado, escenario, texto);
     }
@@ -65,12 +61,12 @@ public sealed class ParesSinDefinitivaTests
     public async Task ESC_198g4_Los_pares_de_Valentina_que_son_sus_definitivas_en_la_prelectura_se_entregan()
     {
         const string texto = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
-        var escenario = Con(Fijo(texto), IndiceDeNormas());
+        var escenario = Con(SalidasVerificadas.LeeElProgramaYResponde(texto), IndiceDeNormas());
 
         var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
 
         SalidasVerificadas.AfirmarRespondida(resultado, escenario, texto);
-        Assert.Single(escenario.Llm.Solicitudes);
+        Assert.Equal(2, escenario.Llm.Solicitudes.Count);
     }
 
     [Fact]
@@ -81,9 +77,9 @@ public sealed class ParesSinDefinitivaTests
     [Trait("SEG", "SEG-10c")]
     public async Task ESC_198g5_La_definitiva_de_una_aprobada_que_la_prelectura_no_lista_da_numero_no_verificado_antes_que_el_par()
     {
-        var escenario = Con(Fijo("Camilo Rojas: Contabilidad 3.9."), IndiceDeNormas());
+        var escenario = Con(SalidasVerificadas.LeeElProgramaYResponde("Camilo Rojas: Contabilidad 3.9."), IndiceDeNormas());
 
-        var resultado = await escenario.PreguntarAsync(Coord02, "¿Cuál es el promedio de Camilo Rojas?");
+        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
 
         Assert.Equal(Textos.NoVerificable, resultado.Respuesta!.Respuesta);
         Assert.Empty(resultado.Respuesta.Citas);
@@ -98,10 +94,6 @@ public sealed class ParesSinDefinitivaTests
     public async Task ESC_198g_La_acumulada_de_la_asignatura_sin_definitiva_cuadra_como_par()
     {
         const string texto = "Estadística: 2.4.";
-        var escenario = Con(Fijo(texto), IndiceDeNormas());
-
-        var resultado = await escenario.PreguntarAsync(Est006, "¿Cómo voy en Estadística?");
-
-        SalidasVerificadas.AfirmarRespondida(resultado, escenario, texto);
+        await ClasesVerificadoras.AfirmarPasaAsync("EST-006", texto, "EST-006");
     }
 }

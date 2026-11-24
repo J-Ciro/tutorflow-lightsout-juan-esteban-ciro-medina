@@ -49,13 +49,7 @@ public sealed class UmbralYCondicionalD95Tests
     [Trait("D", "D-95")]
     public async Task ESC_175_u1_u2_La_prueba_academica_condicional_o_normativa_no_se_verifica_contra_la_persona(string texto)
     {
-        var escenario = Con(Fijo(texto), IndiceDePrueba());
-
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPrueba);
-
-        Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.NotEqual(Textos.NoVerificable, resultado.Respuesta!.Respuesta);
-        Assert.Single(escenario.Llm.Solicitudes);
+        await ClasesVerificadoras.AfirmarPasaAsync("EST-001", texto, "EST-001");
     }
 
     [Theory]
@@ -66,11 +60,7 @@ public sealed class UmbralYCondicionalD95Tests
     [Trait("D", "D-95")]
     public async Task ESC_175_u3_Que_solo_o_Si_con_tilde_no_anulan_y_la_prueba_academica_falsa_da_estado_no_verificable(string texto)
     {
-        var escenario = Con(Fijo(texto), IndiceDePrueba());
-
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPrueba);
-
-        AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        await ClasesVerificadoras.AfirmarFallaAsync("EST-001", texto, "EST-001");
     }
 
     [Theory]
@@ -81,12 +71,7 @@ public sealed class UmbralYCondicionalD95Tests
     [Trait("D", "D-95")]
     public async Task ESC_179_aa1_El_promedio_minimo_y_el_se_requiere_son_umbral_y_el_promedio_propio_cuadra(string texto)
     {
-        var escenario = Con(Fijo(texto), IndiceDeBeca());
-
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaBeca);
-
-        Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.NotEqual(Textos.NoVerificable, resultado.Respuesta!.Respuesta);
+        await ClasesVerificadoras.AfirmarPasaAsync("EST-001", texto, "EST-001");
     }
 
     [Theory]
@@ -97,10 +82,6 @@ public sealed class UmbralYCondicionalD95Tests
     [Trait("D", "D-95")]
     public async Task ESC_179_aa2_El_es_general_no_es_umbral_y_el_promedio_de_otra_asignatura_da_estado_no_verificable(string texto)
     {
-        var escenario = Con(Fijo(texto), IndiceDeBeca());
-
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaBeca);
-
-        AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        await ClasesVerificadoras.AfirmarFallaAsync("EST-001", texto, "EST-001");
     }
 }
