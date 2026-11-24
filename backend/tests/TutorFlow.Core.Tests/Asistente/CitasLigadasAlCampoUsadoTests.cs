@@ -28,7 +28,7 @@ public sealed class CitasLigadasAlCampoUsadoTests
         { "EST-001", PreguntaQ10Dos, $"Tu promedio ponderado del periodo es 4.39. {LineaDeDefinitivas}", [Sec4, Sec3] },
         { "EST-001", PreguntaQ10Dos, $"4.39. {LineaDeDefinitivas}", [Sec4, Sec3] },
         { "EST-001", PreguntaQ10Dos, "Tu resultado del periodo es 4.39.", [Sec4] },
-        { "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", [Art11] },
+        { "EST-001", "¿Cuántas clases puedo perder en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", [Art11] },
         { "EST-005", "¿Estoy en prueba académica?", "Sí, estás en prueba académica.", [Art20] },
         { "EST-005", "¿Estoy en prueba académica?", "Sí, estás en prueba académica: tu promedio es 2.65.", [Art20, Sec4] },
         { "EST-005", "¿Qué materias puedo habilitar?", "Puedes habilitar Estadística con 2.3.", [Art6] },

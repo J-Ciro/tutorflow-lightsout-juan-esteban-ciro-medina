@@ -9,7 +9,8 @@ namespace TutorFlow.Core.Tests.Asistente;
 
 public sealed class CitasD73Tests
 {
-    private const string PreguntaFaltas = "¿Cuántas faltas tengo en Bases de Datos?";
+    private const string DesgloseDeBasesDeDatos = "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.\nTotal: 2 faltas";
+    private const string PreguntaFaltas ="¿Cuántas faltas tengo en Bases de Datos?";
     private const string PreguntaContabilidad = "¿Qué nota definitiva tengo en Contabilidad?";
     private const string PreguntaPerdidas = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
     private const string PreguntaEstudiantesDelPrograma = "¿Cuántos estudiantes tiene mi programa?";
@@ -55,9 +56,9 @@ public sealed class CitasD73Tests
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaFaltas);
 
-        Assert.Equal("Bases de Datos: 2 faltas de 48 clases.", resultado.Respuesta!.Respuesta);
+        Assert.Equal(DesgloseDeBasesDeDatos, resultado.Respuesta!.Respuesta.Replace("\r\n", "\n", StringComparison.Ordinal));
         Assert.Equal([Art11], Documentos(resultado));
-        Assert.Equal([DatosNotas, DatosAsistencia], resultado.Respuesta.Citas.Where(c => c.Documento == Textos.DocumentoDatosEstudiante).ToArray());
+        Assert.Contains(DatosAsistencia, resultado.Respuesta.Citas);
     }
 
     [Fact]

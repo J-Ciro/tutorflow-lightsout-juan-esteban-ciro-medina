@@ -184,7 +184,7 @@ public sealed class ApoyoYSinRespaldoTests
         var texto = "Bases de Datos: 2 faltas de 48 clases.";
         var escenario = Con(Fijo(texto), Indice(Indexadas(Servicios, NotaDefinitiva, PromedioPonderado, Articulo11), [Servicios]));
 
-        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuántas faltas tengo en Bases de Datos?");
+        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuántas clases puedo perder en Bases de Datos?");
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
         Assert.Equal(texto, resultado.Respuesta!.Respuesta);
