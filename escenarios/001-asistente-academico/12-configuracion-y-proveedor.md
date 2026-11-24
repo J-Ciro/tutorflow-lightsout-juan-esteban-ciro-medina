@@ -23,7 +23,7 @@ Notación en [`README.md`](../README.md#notación).
 | g | `Limites:MaximoSeccionesRecuperadas` | `7` | No arranca | `Configuración inválida: Limites:MaximoSeccionesRecuperadas = "7" (entero de 1 a 6)` |
 | h | `Limites:PresupuestoDiarioUsd` | `0` | No arranca | `Configuración inválida: Limites:PresupuestoDiarioUsd = "0" (decimal mayor que 0 y hasta 1000)` |
 | i | `Limites:PresupuestoDiarioUsd` | `0,5` | No arranca | `Configuración inválida: Limites:PresupuestoDiarioUsd = "0,5" (decimal mayor que 0 y hasta 1000)` |
-| j | `LLM_PRECIO_ENTRADA` (salida `2.50`) | `-1` | No arranca | `Configuración inválida: LLM_PRECIO_ENTRADA = "-1" (decimal de 0 a 1000)` |
+| j | `Llm:Proveedores:gemini:Modelos:1:PrecioEntradaPorMillon` (salida `2.50`) | `-1` | No arranca | `Configuración inválida: Llm:Proveedores:gemini:Modelos:1:PrecioEntradaPorMillon = "-1" (decimal de 0 a 1000)`; con entrada `0.30` y salida ausente, la línea `… = "" (se requiere junto con …)` con las claves completas de salida y entrada |
 | k | `Autorizacion:Asignaturas:2:Codigo` | `bd203` | No arranca | `Configuración inválida: Autorizacion:Asignaturas:2:Codigo = "bd203" (formato ^[A-Z]{2,4}-[0-9]{3}\z)` |
 | l | `Autorizacion:Asignaturas:7:Codigo` | `BD-203` | No arranca | `Configuración inválida: Autorizacion:Asignaturas:7:Codigo = "BD-203" (código duplicado de Autorizacion:Asignaturas:2:Codigo)` |
 | m | `Autorizacion:Asignaturas:6:Nombre` | vacío | No arranca | `Configuración inválida: Autorizacion:Asignaturas:6:Nombre = "" (nombre vacío)` |
@@ -59,23 +59,31 @@ Notación en [`README.md`](../README.md#notación).
 
 ## Precio del modelo en uso (ESC-181 aj–as)
 
-Doble del LLM con 1 llamada que reporta E' = ⌈1.04 × E⌉ tokens de entrada y 200 de salida (plan §4.4); EST-001 pregunta "¿Cuál es la nota mínima para aprobar una asignatura?". "Advertencia de precio" = `Configuración ignorada: el modelo <nombre> no tiene precio configurado; costoUsd será 0. Define LLM_PRECIO_ENTRADA y LLM_PRECIO_SALIDA.`
+Salvo que se indique otra cosa:
+
+- doble del LLM con 1 llamada que reporta E' = ⌈1.04 × E⌉ tokens de entrada y 200 de salida (plan §4.4); EST-001 pregunta "¿Cuál es la nota mínima para aprobar una asignatura?" cuando la descarga ya terminó;
+- "catálogo doble" = servidor doble en `Llm:CatalogoPrecios:Url` que cuenta los GET y responde `{"data":[{"id":…,"pricing":{"prompt":…,"completion":…}}]}` con precios en USD por token; nunca hay red real;
+- "advertencia de precio" = `Configuración ignorada: no se encontró el precio del modelo <nombre> en el catálogo público ni en appsettings; costoUsd será 0.`
 
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
-| ESC-181 aj `@feliz` | `gemini`, `LLM_MODELO=gemini-3.5-flash-lite`, sin variables de precio | La pregunta | Arranca sin advertencia de precio; 200; `costoUsd` = E' × 0.30 / 10⁶ + 200 × 2.50 / 10⁶ > 0 (tolerancia 1e-6); sin `precioDesconocido` | D-105 |
-| ESC-181 ak | `openai-compatible`, `LLM_MODELO=deepseek-chat` (fuera de la tabla), variables `1.25` y `10.00` | La pregunta | Arranca sin advertencia; `costoUsd` = E' × 1.25 / 10⁶ + 200 × 10.00 / 10⁶; sin `precioDesconocido` | D-105 |
-| ESC-181 al `@alterno` | Igual que (aj) con variables `1.0` y `5.0` | La pregunta | `costoUsd` = E' × 1.0 / 10⁶ + 200 × 5.0 / 10⁶: las variables mandan sobre la tabla | D-105 |
-| ESC-181 am `@alterno` `@operacion` | `openai-compatible`, `LLM_MODELO=deepseek-chat`, sin variables | La pregunta, 3 veces | Arranca; exactamente 1 advertencia de precio con `<nombre>` = `deepseek-chat`; 3 × 200 con `tokens` > 0, `costoUsd` 0 y `precioDesconocido: true` | D-39, D-105 |
-| ESC-181 an `@abuso` | `LLM_PRECIO_SALIDA` (entrada `0.30`), uno por corrida | `abc`, `-1`, `1000.01`, `0,3`, ` 2.50` | No arranca con `Configuración inválida: LLM_PRECIO_SALIDA = "<valor>" (decimal de 0 a 1000)` | RNF-05, D-105 |
-| ESC-181 ao `@alterno` | Una sola del par, una por corrida | (1) solo entrada `0.30`; (2) solo salida `2.50`; (3) `Llm:Proveedores:gemini:Modelos:1:PrecioSalidaPorMillon` ausente | No arranca, con la línea de la nota ESC-181 ao | D-105 |
-| ESC-181 ap `@alterno` | Igual que (ak) con variables `0` y `1000` (límites exactos) | La pregunta | Arranca sin advertencia; `costoUsd` = 200 × 1000 / 10⁶ = 0.2 | D-105 |
-| ESC-181 aq `@operacion` | `ollama` con `qwen2.5:7b` y, en otra corrida, con `llama3.1:8b` (fuera de la tabla), sin variables | La pregunta | Arranca sin advertencia de precio; `costoUsd` 0; sin `precioDesconocido` | D-39, D-105 |
-| ESC-181 ar `@abuso` | `openai-compatible`, `LLM_MODELO` = `deepseek-chat`, un salto de línea real y `Arranque correcto` | Arranque | 1 advertencia de precio con `<nombre>` = `deepseek-chat\nArranque correcto` (`\n` como 2 caracteres); ninguna línea empieza por `Arranque correcto`; 0 apariciones de la llave | SEG-11, D-105 |
-| ESC-181 as `@permisos` | Igual que (aj) | EST-001: "¿Cuáles son las notas de EST-002?" | 403 NEG; `tokens` y `costoUsd` 0; 0 llamadas; `denegada` `tercero_mencionado`: el precio no cambia el 403 previo | D-07, D-105 |
+| ESC-181 aj `@feliz` | `gemini`, `gemini-3.5-flash-lite`; catálogo con `google/gemini-3.5-flash-lite` a `"0.0000003"` / `"0.0000025"` y, en otra corrida, a `"0.000001"` / `"0.000005"` | La pregunta | 200 sin advertencia de precio ni `precioDesconocido`; 1 GET; `costoUsd` = 0.0008 y, en la otra corrida, 0.002: el catálogo manda sobre la tabla | D-105 |
+| ESC-181 ak `@alterno` | Catálogo de la nota ESC-181 ak; una corrida por caso (1)–(6) | La pregunta | El `costoUsd` de la nota (tolerancia 1e-6); en (4) y (5), además, la advertencia de precio y `precioDesconocido: true` | D-105 |
+| ESC-181 al `@alterno` `@operacion` | `gemini`, `gemini-3.5-flash-lite`; catálogo que, uno por corrida: (1) tarda más de 5 s; (2) responde 500; (3) responde JSON inválido; (4) `Llm:CatalogoPrecios:Url` vacía | La pregunta tras el último intento | 200 sin advertencia de precio; `costoUsd` = 0.0008 de la tabla; exactamente 2 GET en (1)–(3) y 0 en (4) | D-105 |
+| ESC-181 am `@alterno` `@operacion` | `openai-compatible`, `LLM_MODELO=deepseek-chat`; catálogo sin ningún `id` que termine en `/deepseek-chat` | La pregunta, 3 veces | Exactamente 1 advertencia de precio con `<nombre>` = `deepseek-chat`; 3 × 200 con `tokens` > 0, `costoUsd` 0 y `precioDesconocido: true` | D-39, D-105 |
+| ESC-181 an `@abuso` | Como (aj); `pricing.prompt` de la entrada, uno por corrida: `"-0.0000003"`, `"0.0011"`, `"3e-7"`, `"0,0000003"`, `null`, `"abc"`; otra corrida con un cuerpo de 10.485.761 bytes | La pregunta | La entrada o el cuerpo se ignoran: `costoUsd` = 0.0008 de la tabla, sin advertencia; con el cuerpo grande, lectura cortada y 2 GET | D-105 |
+| ESC-181 ao `@operacion` | `ollama` con `qwen2.5:7b` y, en otra corrida, `llama3.1:8b` (fuera de la tabla); catálogo disponible | La pregunta | 0 GET; sin advertencia de precio; `costoUsd` 0; sin `precioDesconocido` | D-39, D-105 |
+| ESC-181 ap `@operacion` | Como la otra corrida de (aj), con el catálogo retenido hasta que la prueba lo libera (antes de 5 s) | Salud y la pregunta con el catálogo retenido; la pregunta otra vez tras liberarlo | Salud y primera respuesta 200 con el catálogo aún retenido y `costoUsd` = 0.0008 de la tabla; la segunda, 0.002 del catálogo; sin advertencia | D-105 |
+| ESC-181 aq `@alterno` | Como (al) (4) con `LLM_PRECIO_ENTRADA=abc` y `LLM_PRECIO_SALIDA=-1` y, en otra corrida, `1.0` y `5.0` | La pregunta | Arranca sin `Configuración inválida` ni `Configuración ignorada` sobre ellas; `costoUsd` = 0.0008 en ambas (con las variables activas, la segunda daría 0.002) | D-105 |
+| ESC-181 ar `@abuso` | (1) Como (am) con `LLM_MODELO` = `deepseek-chat`, un salto de línea real y `Arranque correcto`; (2) como (al) con un catálogo que responde 302 a otra URL; (3) `Llm:CatalogoPrecios:Url` = `file:///etc/passwd` | Arranque y la pregunta | Nota ESC-181 ar; cada GET sin `Authorization`, cookies, query ni cuerpo; 0 apariciones de la llave | SEG-07, SEG-11, D-105 |
+| ESC-181 as `@permisos` | Igual que (aj) | EST-001: "¿Cuáles son las notas de EST-002?" | 403 NEG; `tokens` y `costoUsd` 0; 0 llamadas al LLM; `denegada` `tercero_mencionado`: el precio no cambia el 403 previo | D-07, D-105 |
 
-- **Cálculo con E' = 1.000:** (aj) 1.000 × 0.30 / 10⁶ + 200 × 2.50 / 10⁶ = 0.0003 + 0.0005 = 0.0008; (ak) 0.00125 + 0.002 = 0.00325; (al) 0.001 + 0.001 = 0.002 (no 0.0008); (ap) 0 + 0.2 = 0.2. La prueba usa el E' que reporta el doble.
-- **ESC-181 ao:** (1) `Configuración inválida: LLM_PRECIO_SALIDA = "" (se requiere junto con LLM_PRECIO_ENTRADA)`; (2) la simétrica con `LLM_PRECIO_ENTRADA`; (3) `Configuración inválida: Llm:Proveedores:gemini:Modelos:1:PrecioSalidaPorMillon = "" (se requiere junto con Llm:Proveedores:gemini:Modelos:1:PrecioEntradaPorMillon)`.
+- **Cálculo con E' = 1.000** (la prueba usa el E' que reporta el doble): (aj) 1.000 × 0.0000003 + 200 × 0.0000025 = 1.000 × 0.30 / 10⁶ + 200 × 2.50 / 10⁶ = 0.0003 + 0.0005 = 0.0008; la otra corrida, 0.001 + 0.001 = 0.002. La tabla da el mismo 0.0008 para `gemini-3.5-flash-lite`.
+- **ESC-181 ak:** catálogo con `openai/gpt-4o-mini` 0.20 / 0.80, `anthropic/claude-haiku-5-5` 0.20 / 1.00 y `deepseek/deepseek-chat` 1.25 / 10.00 (USD por millón, servidos por token), distintos de la tabla.
+  - (1) `openrouter`, `openai/gpt-4o-mini`, id exacto: 0.0002 + 0.00016 = 0.00036; (2) `openai-compatible`, `deepseek-chat`, única terminación `/deepseek-chat`: 0.00125 + 0.002 = 0.00325; (3) `anthropic`, `claude-haiku-5-5` → `anthropic/claude-haiku-5-5`: 0.0002 + 0.0002 = 0.0004.
+  - (4) como (2) con otra entrada `otro/deepseek-chat`: ambigua, 0; (5) `openai-compatible`, `DeepSeek-Chat`: sin coincidencia ordinal, 0; (6) `groq`, `llama-3.1-8b-instant`, sin entrada en el catálogo: tabla, 0.00005 + 0.000016 = 0.000066.
+- **ESC-181 an, límites exactos:** `"0.001"` y `"0"` se aceptan: 1.000 × 0.001 + 200 × 0.0000025 = 1.0005 y 0 + 0.0005 = 0.0005; un cuerpo de 10.485.760 bytes se lee completo.
+- **ESC-181 ar:** (1) 1 advertencia de precio con `<nombre>` = `deepseek-chat\nArranque correcto` (`\n` como 2 caracteres) y ninguna línea empieza por `Arranque correcto`; (2) 2 GET, 0 peticiones a `Location` y `costoUsd` = 0.0008 de la tabla; (3) no arranca con `Configuración inválida: Llm:CatalogoPrecios:Url = "file:///etc/passwd" (URL absoluta http o https, o vacía)`.
 - CA-11, CA-15.
 
 ## Catálogo, avisos y claves nuevas

@@ -87,7 +87,7 @@ Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la
   - **SEG-10d** · Una respuesta que revela detalles internos del asistente (instrucciones, herramientas o configuración), también con separadores, sin espacios, invertida, en entidades HTML o en base64, o con palabras intercaladas en un fragmento de las instrucciones (D-79, D-102) → COMP-03 con `fuga_bloqueada`.
   - **SEG-10e** · Sin cita válida, sin datos leídos y sin sección que la apoye → COMP-03 con `sin_informacion`.
   - **SEG-10f y SEG-10g** · Segunda línea tras la poda (D-98): un estado (perdió, reprobó, aprobó, en prueba académica), una definitiva o par asignatura-cifra, un promedio o faltas de una persona autorizada que no cuadran con sus datos leídos, o un dato del coordinador atribuido a "tú" → `TEXTO_NO_VERIFICABLE` con `estado_no_verificado`; una oración normativa sin marca de persona no se verifica.
-- **SEG-11** · `LLM_API_KEY` solo se lee de la variable de entorno; nunca se valida, se rechaza por su formato, se registra, se devuelve ni se incluye en la imagen (D-84).
+- **SEG-11** · `LLM_API_KEY` solo se lee de la variable de entorno; nunca se valida, se rechaza por su formato, se registra, se devuelve ni se incluye en la imagen (D-84). La consulta del catálogo de precios no envía la llave ni ningún dato (D-105).
 - **SEG-12** · Errores sin stack trace, rutas ni respuestas crudas de servicios internos.
 - **SEG-13** · Límites: pregunta ≤ 1.000 caracteres (400), cuerpo ≤ 16 KB (413), 4 invocaciones de herramientas, 20 s para la fase del LLM y 6 s para la API académica por petición (503; RNF-02). El presupuesto diario en USD (503 con `Retry-After`) solo aplica si el operador lo configura; por defecto, sin tope (D-70).
   - Tasa por IP de la conexión (D-72): más de 600 preguntas en 60 s (configurable de 1 a 10.000) → 429 con `Retry-After` y la IP queda bloqueada 30 s; si reincide, 60 s y luego 120 s, el máximo; tras 10 min sin infracciones vuelve a 30 s. Durante el bloqueo, 429 con los segundos restantes, sin alargarlo. `X-Forwarded-For`, `Forwarded` y `X-Real-IP` se ignoran (SEG-19 retirada, D-72).
@@ -99,10 +99,11 @@ Matriz global en [`constitution.md`](../../constitution.md) §3; esta feature la
 - **RNF-02** · 503 al superar 20 s desde que empieza la fase del LLM o 6 s acumulados en la API académica; con esos valores por defecto, ninguna petición tarda 27 s o más (D-71).
 - **RNF-03** · `REPORTE.md` publica los tokens y el costo por 1.000 preguntas por proveedor.
 - **RNF-04** · Con la configuración por defecto, un cliente automático desde una sola IP, con las 8 identidades de prueba e IDs inexistentes, por debajo de 600 preguntas por minuto y en varias corridas al día, con cualquier proveedor y con o sin precio conocido, no recibe 429 ni 503 por tasa, identidades ni presupuesto (D-70, D-72).
-- **RNF-05** · La configuración se valida al arrancar: un valor inválido impide arrancar o, en las reservas, usa su defecto con advertencia; nunca se corrige en silencio. Sin configurar, la tasa por IP vale 600 por minuto y el presupuesto no tiene tope, y el log de arranque lo registra (plan.md §13). Un modelo de pago sin precio arranca con advertencia, nunca con un precio inventado (D-105).
+- **RNF-05** · La configuración se valida al arrancar: un valor inválido impide arrancar o, en las reservas, usa su defecto con advertencia; nunca se corrige en silencio. Sin configurar, la tasa por IP vale 600 por minuto y el presupuesto no tiene tope, y el log de arranque lo registra (plan.md §13).
 - **RNF-06** · Logs JSON estructurados con el `correlationId` de la petición.
 - **RNF-07** · Arranca con `docker compose up` sin dependencias en el host salvo Docker.
 - **RNF-08** · Mantenibilidad: reglas de [`AGENTS.md`](../../AGENTS.md).
+- **RNF-09** · El precio del modelo en uso sale del catálogo público de precios, con una tabla propia de respaldo, sin retrasar el arranque ni ninguna respuesta; sin precio en ninguno, `costoUsd` es 0 y el log lo advierte una vez, nunca con un precio inventado; Ollama cuesta 0 (D-105).
 ## 9. Criterios de aceptación (un escenario o esquema por CA; detalle en los ESC indicados y umbral en plan.md §15)
 ```gherkin
 # language: es
@@ -243,7 +244,7 @@ Característica: Asistente académico
       | caso         | efecto                                                                               |
       | ESC-181 n    | el arranque falla antes de aceptar peticiones, con una línea por cada valor inválido |
       | ESC-181 o    | arranca, usa la reserva por defecto y advierte                                       |
-      | ESC-181 am   | arranca y advierte que el modelo no tiene precio                                     |
+      | ESC-181 am   | arranca y advierte que no encontró el precio del modelo                              |
       | ESC-181 r    | arranca sin advertencia con el valor configurado                                     |
       | ESC-199 c1   | el arranque falla con una temperatura fuera de su rango                              |
   Esquema del escenario: CA-16 · Lo entregado es lo verificado (Detalle: ESC-183)
