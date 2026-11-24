@@ -2,31 +2,11 @@ namespace TutorFlow.Infrastructure.Llm;
 
 public static class ResolutorProveedorLlm
 {
-    private static readonly Dictionary<string, ProveedorLlm> ProveedoresExplicitos =
-        new Dictionary<string, ProveedorLlm>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["anthropic"] = ProveedorLlm.Anthropic,
-            ["openai"] = ProveedorLlm.OpenAi,
-            ["groq"] = ProveedorLlm.Groq,
-            ["openrouter"] = ProveedorLlm.OpenRouter,
-            ["gemini"] = ProveedorLlm.Gemini,
-            ["ollama"] = ProveedorLlm.Ollama,
-            ["openai-compatible"] = ProveedorLlm.OpenAiCompatible
-        };
-
-    private static readonly (string Prefijo, ProveedorLlm Proveedor)[] PrefijosDeLlave =
-    [
-        ("sk-ant-", ProveedorLlm.Anthropic),
-        ("sk-or-", ProveedorLlm.OpenRouter),
-        ("gsk_", ProveedorLlm.Groq),
-        ("AIza", ProveedorLlm.Gemini),
-        ("sk-", ProveedorLlm.OpenAi)
-    ];
-
     public static ProveedorResuelto Resolver(EntornoLlm entorno, OpcionesLlm opciones)
     {
         var urlExplicita = Limpiar(entorno.UrlBase);
-        var proveedor = DeterminarProveedor(entorno, urlExplicita);
+        var determinacion = DeterminacionDelProveedor.Determinar(Limpiar(entorno.Proveedor), Limpiar(entorno.Llave), Limpiar(entorno.Modelo), urlExplicita);
+        var proveedor = determinacion.Proveedor;
         var configuracion = ConfiguracionDe(proveedor, opciones);
         var modelo = ElegirModelo(entorno, configuracion);
         var precio = ResolverPrecio(entorno, configuracion, modelo);
@@ -37,7 +17,8 @@ public static class ResolutorProveedorLlm
             modelo,
             precio.Entrada,
             precio.Salida,
-            precio.Desconocido);
+            precio.Desconocido,
+            determinacion.Conflicto);
     }
 
     private static string ElegirModelo(EntornoLlm entorno, ConfiguracionProveedor? configuracion) =>
@@ -62,34 +43,6 @@ public static class ResolutorProveedorLlm
         public static PrecioResuelto De(decimal? entrada, decimal? salida) =>
             new(entrada.GetValueOrDefault(), salida.GetValueOrDefault(), !entrada.HasValue || !salida.HasValue);
     }
-
-    private static ProveedorLlm DeterminarProveedor(EntornoLlm entorno, string? urlExplicita)
-    {
-        var explicito = Limpiar(entorno.Proveedor);
-        if (explicito is not null && ProveedoresExplicitos.TryGetValue(explicito, out var elegido))
-        {
-            return Validar(elegido, urlExplicita);
-        }
-
-        var llave = Limpiar(entorno.Llave);
-        return llave is null ? ProveedorLlm.Ollama : PorPrefijo(llave, urlExplicita);
-    }
-
-    private static ProveedorLlm PorPrefijo(string llave, string? urlExplicita)
-    {
-        foreach (var (prefijo, proveedor) in PrefijosDeLlave)
-        {
-            if (llave.StartsWith(prefijo, StringComparison.Ordinal))
-            {
-                return proveedor;
-            }
-        }
-
-        return urlExplicita is null ? ProveedorLlm.Desconocido : ProveedorLlm.OpenAiCompatible;
-    }
-
-    private static ProveedorLlm Validar(ProveedorLlm proveedor, string? urlExplicita) =>
-        proveedor == ProveedorLlm.OpenAiCompatible && urlExplicita is null ? ProveedorLlm.Desconocido : proveedor;
 
     private static ConfiguracionProveedor? ConfiguracionDe(ProveedorLlm proveedor, OpcionesLlm opciones)
     {

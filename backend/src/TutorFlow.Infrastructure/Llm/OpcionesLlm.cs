@@ -55,4 +55,5 @@ public sealed record ProveedorResuelto(
     string Modelo,
     decimal PrecioEntradaPorMillon,
     decimal PrecioSalidaPorMillon,
-    bool PrecioDesconocido);
+    bool PrecioDesconocido,
+    ConflictoDeProveedor? Conflicto = null);
