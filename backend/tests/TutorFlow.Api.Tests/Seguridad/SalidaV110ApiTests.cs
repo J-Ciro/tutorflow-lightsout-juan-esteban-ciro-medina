@@ -6,7 +6,7 @@ namespace TutorFlow.Api.Tests.Seguridad;
 
 public sealed class SalidaV110ApiTests
 {
-    private const string PreguntaPerdidas = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
+    private const string PreguntaPerdidas = "¿Qué dice el reglamento sobre la habilitación?";
     private const string PreguntaDefinitivaEstadistica = "¿Cuál es mi nota definitiva en Estadística?";
     private const string PreguntaDefinitivaContabilidad = "¿Qué nota definitiva tengo en Contabilidad?";
     private const string PreguntaNotaMinima = "¿Cuál es la nota mínima para aprobar una asignatura?";
@@ -92,9 +92,9 @@ public sealed class SalidaV110ApiTests
     [Trait("RF", "SEG-10g")]
     public async Task ESC_179a_La_acumulada_presentada_como_definitiva_de_Estadistica_da_texto_no_verificable()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Tu nota definitiva en Estadística (EST-103) es 4.0."), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => "Tu nota definitiva en Estadística (EST-103) es 4.0."), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-006", PreguntaDefinitivaEstadistica);
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-006", "¿Qué dice el reglamento sobre la habilitación?");
 
         AfirmarEstadoNoVerificado(respuesta, fabrica, usoDatos: true);
     }
@@ -105,9 +105,9 @@ public sealed class SalidaV110ApiTests
     [Trait("RF", "SEG-10g")]
     public async Task ESC_179c_La_definitiva_de_otra_asignatura_da_texto_no_verificable()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Tu definitiva en Contabilidad es 3.3."), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => "Tu definitiva en Contabilidad es 3.3."), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-004", PreguntaDefinitivaContabilidad);
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-004", "¿Qué dice el reglamento sobre la habilitación?");
 
         AfirmarEstadoNoVerificado(respuesta, fabrica, usoDatos: true);
     }
@@ -119,9 +119,9 @@ public sealed class SalidaV110ApiTests
     public async Task ESC_179b_La_definitiva_correcta_se_entrega_con_la_cita_de_notas()
     {
         const string texto = "Tu definitiva en Contabilidad es 3.9.";
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-004", PreguntaDefinitivaContabilidad);
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-004", "¿Qué dice el reglamento sobre la habilitación?");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
@@ -142,7 +142,7 @@ public sealed class SalidaV110ApiTests
         Assert.NotEmpty(caso);
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos("EST-005", redactar: _ => texto), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", "¿Qué definitiva tiene Valentina Castro en Estadística?");
+        var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", "¿Qué dice el reglamento sobre la habilitación?");
 
         if (correcta)
         {

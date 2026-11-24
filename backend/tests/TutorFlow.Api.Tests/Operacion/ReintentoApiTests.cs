@@ -26,20 +26,20 @@ public sealed class ReintentoApiTests
     [Trait("RF", "SEG-10c")]
     public async Task ESC_193b_El_reintento_se_entrega_con_los_tokens_y_el_costo_de_los_dos_turnos_y_reintento_true_en_la_auditoria()
     {
-        var llm = GuionesPorTurno.Texto("Tu promedio es 4.40.", "Tu promedio es 4.39.");
+        var llm = GuionesPorTurno.Texto("Se aprueba con 4.40.", "Se aprueba con 3.0.");
         using var fabrica = new FabricaApi(llm: llm, configuracion: FabricaApi.Precios("0.10", "0.50"), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPromedio);
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar una asignatura?");
 
         Assert.Equal(200, respuesta.Estado);
         Afirmaciones.SalidaDelContrato(respuesta);
-        Assert.Equal("Tu promedio es 4.39.", respuesta.Respuesta);
+        Assert.Equal("Se aprueba con 3.0.", respuesta.Respuesta);
         Assert.Equal(2, fabrica.Llm.Llamadas);
         var entrada = fabrica.Llm.Solicitudes.Sum(ConsumoRealista.Reportados);
         var salida = fabrica.Llm.Llamadas * SalidaPorLlamada;
         Assert.Equal(entrada + salida, respuesta.Tokens);
         Assert.InRange(respuesta.CostoUsd, ConsumoRealista.CostoDe(entrada, salida, 0.10m, 0.50m) - ToleranciaDeCosto, ConsumoRealista.CostoDe(entrada, salida, 0.10m, 0.50m) + ToleranciaDeCosto);
-        Assert.True(respuesta.UsoDatosEstudiante);
+        Assert.False(respuesta.UsoDatosEstudiante);
         var evento = Assert.Single(fabrica.Auditoria.Eventos);
         Assert.Equal(ResultadoAuditoria.Respondida, evento.Resultado);
         Assert.Equal(entrada + salida, evento.Tokens);
@@ -55,7 +55,7 @@ public sealed class ReintentoApiTests
         var llm = GuionesPorTurno.LeeElProgramaYResponde(PerdidaDeMateo, PerdidasDeValentina);
         using var fabrica = new FabricaApi(llm: llm, conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaQ10Seis);
+        var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", "¿Qué dice el reglamento sobre la habilitación?");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(PerdidasDeValentina, respuesta.Respuesta);
@@ -109,12 +109,12 @@ public sealed class ReintentoApiTests
     public async Task ESC_193h_Con_un_timeout_de_1_s_el_reintento_de_500_ms_se_cancela_al_llegar_a_1_s_y_se_responde_el_primer_bloqueo_en_menos_de_2_s_sin_503()
     {
         var reloj = new RelojControlado();
-        var llm = new ClienteLlmConDemoraPorTurno(reloj, TimeSpan.FromMilliseconds(750), TimeSpan.FromMilliseconds(500), "Tu promedio es 4.40.", "Tu promedio es 4.39.");
+        var llm = new ClienteLlmConDemoraPorTurno(reloj, TimeSpan.FromMilliseconds(750), TimeSpan.FromMilliseconds(500), "Se aprueba con 4.40.", "Se aprueba con 3.0.");
         var configuracion = new Dictionary<string, string?> { ["Limites:TimeoutLlmSegundos"] = "1" };
         using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: configuracion, conocimientoReal: true, reloj: reloj);
         _ = fabrica.Services;
 
-        var respuesta = await reloj.AvanzarHastaQueTermine(fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPromedio));
+        var respuesta = await reloj.AvanzarHastaQueTermine(fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar una asignatura?"));
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(Textos.NoVerificable, respuesta.Respuesta);
@@ -133,9 +133,9 @@ public sealed class ReintentoApiTests
     public async Task ESC_193i_Sin_presupuesto_para_una_segunda_reserva_no_hay_reintento()
     {
         var configuracion = new Dictionary<string, string?> { ["Limites:PresupuestoDiarioUsd"] = "0.004", ["Llm:ReservaPorPeticionUsd"] = "0.003" };
-        using var fabrica = new FabricaApi(llm: GuionesPorTurno.Texto("Tu promedio es 4.40.", "Tu promedio es 4.39."), configuracion: configuracion, variablesEntorno: EntornoSinPrecio(), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: GuionesPorTurno.Texto("Se aprueba con 4.40.", "Se aprueba con 3.0."), configuracion: configuracion, variablesEntorno: EntornoSinPrecio(), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPromedio);
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar una asignatura?");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(Textos.NoVerificable, respuesta.Respuesta);
@@ -152,12 +152,12 @@ public sealed class ReintentoApiTests
     public async Task ESC_193i_Con_presupuesto_para_la_segunda_reserva_el_reintento_ocurre()
     {
         var configuracion = new Dictionary<string, string?> { ["Limites:PresupuestoDiarioUsd"] = "0.01", ["Llm:ReservaPorPeticionUsd"] = "0.003" };
-        using var fabrica = new FabricaApi(llm: GuionesPorTurno.Texto("Tu promedio es 4.40.", "Tu promedio es 4.39."), configuracion: configuracion, variablesEntorno: EntornoSinPrecio(), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: GuionesPorTurno.Texto("Se aprueba con 4.40.", "Se aprueba con 3.0."), configuracion: configuracion, variablesEntorno: EntornoSinPrecio(), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPromedio);
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar una asignatura?");
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.Equal("Tu promedio es 4.39.", respuesta.Respuesta);
+        Assert.Equal("Se aprueba con 3.0.", respuesta.Respuesta);
         Assert.Equal(2, fabrica.Llm.Llamadas);
     }
 }

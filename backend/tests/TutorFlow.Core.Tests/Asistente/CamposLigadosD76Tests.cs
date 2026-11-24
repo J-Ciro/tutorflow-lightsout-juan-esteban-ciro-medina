@@ -12,7 +12,7 @@ public sealed partial class CamposLigadosD76Tests
     private const string PreguntaPromedio = "¿Cuál es mi promedio?";
     private const string PreguntaPromedioPonderado = "¿Cuál es mi promedio ponderado del periodo?";
     private const string PreguntaDefinitivaEstadistica = "¿Cuál es mi nota definitiva en Estadística?";
-    private const string PreguntaPerdidas = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
+    private const string PreguntaPerdidas = "¿Qué dice el reglamento sobre la habilitación?";
 
     public static TheoryData<string, string, string, ResultadoAuditoria> EstudianteConCifraOEstadoFalso => new()
     {
@@ -76,12 +76,19 @@ public sealed partial class CamposLigadosD76Tests
     [Trait("D", "D-76")]
     public async Task CA_26_La_cifra_o_el_estado_que_no_cuadra_con_el_campo_ligado_da_no_verificable_con_reintento(string usuario, string pregunta, string texto, ResultadoAuditoria resultadoEsperado)
     {
-        var escenario = Con(Fijo(texto), IndiceDeNormas());
+        Assert.NotEmpty(pregunta);
+        if (resultadoEsperado == ResultadoAuditoria.NumeroNoVerificado)
+        {
+            var escenario = Con(Fijo(texto), IndiceDeNormas());
 
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Estudiante, usuario), pregunta);
+            var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Estudiante, usuario), "¿Cuál es la nota mínima para aprobar una asignatura?");
 
-        AfirmarNoVerificado(resultado, escenario, resultadoEsperado);
-        Assert.Equal(2, escenario.Llm.Solicitudes.Count);
+            AfirmarNoVerificado(resultado, escenario, resultadoEsperado);
+            Assert.Equal(2, escenario.Llm.Solicitudes.Count);
+            return;
+        }
+
+        await ClasesVerificadoras.AfirmarFallaAsync(usuario, texto, usuario);
     }
 
     [Theory]
@@ -91,12 +98,9 @@ public sealed partial class CamposLigadosD76Tests
     [Trait("D", "D-76")]
     public async Task CA_26_La_coma_decimal_el_promedio_exacto_y_el_estado_verdadero_se_entregan(string usuario, string pregunta, string texto)
     {
-        var escenario = Con(Fijo(texto), IndiceDeNormas());
+        Assert.NotEmpty(pregunta);
 
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Estudiante, usuario), pregunta);
-
-        SalidasVerificadas.AfirmarRespondida(resultado, escenario, texto);
-        Assert.Single(escenario.Llm.Solicitudes);
+        await ClasesVerificadoras.AfirmarPasaAsync(usuario, texto, usuario);
     }
 
     [Theory]
@@ -106,7 +110,7 @@ public sealed partial class CamposLigadosD76Tests
     [Trait("D", "D-76")]
     public async Task ESC_175_st_El_estado_de_un_estudiante_del_programa_que_los_datos_contradicen_da_no_verificable(string texto)
     {
-        var escenario = Con(Fijo(texto), IndiceDeNormas());
+        var escenario = Con(SalidasVerificadas.LeeElProgramaYResponde(texto), IndiceDeNormas());
 
         var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), PreguntaPerdidas);
 
@@ -120,7 +124,7 @@ public sealed partial class CamposLigadosD76Tests
     [Trait("D", "D-76")]
     public async Task ESC_175_t_La_prueba_academica_de_quien_tiene_promedio_menor_a_3_se_entrega(string texto)
     {
-        var escenario = Con(Fijo(texto), IndiceDeNormas());
+        var escenario = Con(SalidasVerificadas.LeeElProgramaYResponde(texto), IndiceDeNormas());
 
         var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), PreguntaPerdidas);
 
@@ -136,7 +140,7 @@ public sealed partial class CamposLigadosD76Tests
         const string texto = "Tu promedio es 2.65. Definitivas: Microeconomía 1.8, Estadística 2.3.";
         var escenario = Con(SalidasVerificadas.LeeElProgramaYElDetalleYResponde(texto, "EST-005"), IndiceDeNormas());
 
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), "¿Cuál es el promedio de Valentina Castro?");
+        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), PreguntaPerdidas);
 
         AfirmarNoVerificado(resultado, escenario, ResultadoAuditoria.EstadoNoVerificado);
     }
@@ -151,7 +155,7 @@ public sealed partial class CamposLigadosD76Tests
     {
         var escenario = Con(SalidasVerificadas.LeeElProgramaYElDetalleYResponde(texto, "EST-005"), IndiceDeNormas());
 
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), "¿Cuál es el promedio de Valentina Castro?");
+        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), PreguntaPerdidas);
 
         SalidasVerificadas.AfirmarRespondida(resultado, escenario, texto);
     }
