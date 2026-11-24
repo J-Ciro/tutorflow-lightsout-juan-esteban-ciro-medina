@@ -40,5 +40,7 @@ internal sealed class SesionPregunta(
 
     public ActivacionResumen Activacion { get; set; } = ActivacionResumen.Ninguna;
 
-    public string? Desglose { get; set; }
+    public string? Bloque { get; set; }
+
+    public List<string> PersonasDelBloque { get; } = [];
 }

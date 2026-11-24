@@ -8,9 +8,37 @@ internal static class FormateadorPrograma
 {
     private const string Ninguno = "ninguno";
 
+    public static string LineaDeNumero(Programa programa, IReadOnlyList<EstudianteDePrograma> estudiantes) =>
+        $"Programa {programa.Id} ({programa.Nombre}): {estudiantes.Count} estudiantes.";
+
+    public static string Listado(ListadoDePrograma listado, Programa programa, IReadOnlyList<EstudianteDePrograma> estudiantes) => listado switch
+    {
+        ListadoDePrograma.Perdidas => $"Estudiantes con asignaturas perdidas: {ListaOninguno(estudiantes.Where(HayPerdidas).Select(DePerdidas))}",
+        ListadoDePrograma.PruebaAcademica => $"Estudiantes en prueba académica: {ListaOninguno(estudiantes.Where(e => e.Resumen.PruebaAcademica).Select(DePrueba))}",
+        ListadoDePrograma.SinDefinitiva => $"Estudiantes con asignaturas sin definitiva: {ListaOninguno(estudiantes.Select(e => DeAsignaturas(e, EstadoAsignatura.SinDefinitiva)).OfType<string>(), "; ")}",
+        ListadoDePrograma.SinRegistro => $"Estudiantes con asistencia sin registro: {ListaOninguno(estudiantes.Select(DeSinRegistro).OfType<string>(), "; ")}",
+        ListadoDePrograma.Promedios => $"Promedios del periodo: {ListaOninguno(estudiantes.Where(e => e.Resumen.Promedio is not null).Select(DePromedio), "; ")}",
+        _ => LineaDeNumero(programa, estudiantes)
+    };
+
+    private static string? DeAsignaturas(EstudianteDePrograma estudiante, EstadoAsignatura estado) =>
+        Agrupar(estudiante, estudiante.Resumen.Asignaturas.Where(resultado => resultado.Estado == estado));
+
+    private static string? DeSinRegistro(EstudianteDePrograma estudiante) =>
+        Agrupar(estudiante, estudiante.Resumen.Asignaturas.Where(resultado => resultado.EstadoAsistencia == EstadoAsistencia.SinRegistro));
+
+    private static string? Agrupar(EstudianteDePrograma estudiante, IEnumerable<ResultadoAsignatura> resultados)
+    {
+        var nombres = resultados.Select(resultado => resultado.Asignatura.Nombre).ToList();
+        return nombres.Count == 0 ? null : $"{estudiante.Estudiante.Nombre} ({string.Join(", ", nombres)})";
+    }
+
+    private static string DePromedio(EstudianteDePrograma estudiante) =>
+        $"{estudiante.Estudiante.Nombre} {FormateadorDatos.Promedio(estudiante.Resumen.Promedio)}";
+
     public static string Bloque(Programa programa, IReadOnlyList<EstudianteDePrograma> estudiantes)
     {
-        var lineas = new List<string> { $"Programa {programa.Id} ({programa.Nombre}): {estudiantes.Count} estudiantes." };
+        var lineas = new List<string> { LineaDeNumero(programa, estudiantes) };
         foreach (var estudiante in estudiantes)
         {
             lineas.Add(string.Empty);
@@ -73,9 +101,9 @@ internal static class FormateadorPrograma
     private static string DePrueba(EstudianteDePrograma estudiante) =>
         $"{estudiante.Estudiante.Nombre} (promedio {FormateadorDatos.Promedio(estudiante.Resumen.Promedio)})";
 
-    private static string ListaOninguno(IEnumerable<string> elementos)
+    private static string ListaOninguno(IEnumerable<string> elementos, string separador = ", ")
     {
         var lista = elementos.ToList();
-        return lista.Count == 0 ? Ninguno : string.Join(", ", lista);
+        return lista.Count == 0 ? Ninguno : string.Join(separador, lista);
     }
 }

@@ -17,7 +17,7 @@ public static partial class ConstructorPrompts
 
     private const string EncabezadoPrelectura = "Datos de los estudiantes de tus programas, calculados por el sistema:";
 
-    private const string NotaDelDesglose = "El sistema añadirá el desglose de faltas; no escribas cifras de faltas ni de clases.";
+    private const string NotaDelBloque = "El sistema añadirá los datos; escribe solo una introducción breve y la regla aplicable con su cita, sin datos ni estados de personas.";
 
 
     private const string BloqueDeEjemplosDelEstudiante = """
@@ -98,7 +98,7 @@ public static partial class ConstructorPrompts
 
     public static string Instrucciones(string promptSistema) => BloqueDeEjemplos().Replace(promptSistema, string.Empty);
 
-    internal static MensajeLlm MensajeInicial(string pregunta, IReadOnlyList<SeccionDocumento> secciones, ResumenEntregado? resumen, string? prelectura = null, bool conDesglose = false)
+    internal static MensajeLlm MensajeInicial(string pregunta, IReadOnlyList<SeccionDocumento> secciones, ResumenEntregado? resumen, string? prelectura = null, bool conBloque = false)
     {
         var constructor = new StringBuilder();
         AgregarBloque(constructor, resumen is null ? null : EncabezadoResumen, resumen is null ? null : FormateadorDatos.Delimitar(Textos.FuenteResumenPropio, resumen.Texto));
@@ -106,16 +106,16 @@ public static partial class ConstructorPrompts
 
         AgregarSecciones(constructor, secciones);
         constructor.AppendLine();
-        AgregarNota(constructor, conDesglose);
+        AgregarNota(constructor, conBloque);
         constructor.Append($"Pregunta: {pregunta}");
         return new MensajeLlm(RolMensaje.Usuario, constructor.ToString(), null, []);
     }
 
-    private static void AgregarNota(StringBuilder constructor, bool conDesglose)
+    private static void AgregarNota(StringBuilder constructor, bool conBloque)
     {
-        if (conDesglose)
+        if (conBloque)
         {
-            constructor.AppendLine(NotaDelDesglose);
+            constructor.AppendLine(NotaDelBloque);
         }
     }
 
