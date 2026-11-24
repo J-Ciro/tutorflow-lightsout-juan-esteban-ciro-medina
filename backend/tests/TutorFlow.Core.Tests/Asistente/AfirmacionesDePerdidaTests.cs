@@ -13,7 +13,7 @@ public sealed class AfirmacionesDePerdidaTests
     private const string PreguntaHabilitacion = "¿Qué dice el reglamento sobre la habilitación?";
     private static readonly Usuario Coord01 = new(Rol.Coordinador, "COORD-01");
     private static readonly Usuario Coord02 = new(Rol.Coordinador, "COORD-02");
-    private static readonly Usuario Est002 = new(Rol.Estudiante, "EST-002");
+    private static readonly Usuario Est005 = new(Rol.Estudiante, "EST-005");
 
     public static TheoryData<string, string> TextosConPerdidaNoRespaldada => new()
     {
@@ -51,28 +51,8 @@ public sealed class AfirmacionesDePerdidaTests
         { "Andrés Martínez perdió Inglés III.", false }
     };
 
-    private static Func<SolicitudLlm, int, RespuestaLlm> LeeElPrograma(string texto) =>
-        (_, llamada) => llamada == 0 ? Herramienta(HerramientasAsistente.Programa) : Texto(texto);
-
-    private static EscenarioAsistente ConPrograma(string texto) =>
-        Con(LeeElPrograma(texto), Indice(Articulo5, Articulo6, Articulo20));
-
-    private static void AfirmarEstadoNoVerificado(ResultadoPregunta resultado, EscenarioAsistente escenario, bool usoDatos)
-    {
-        var respuesta = resultado.Respuesta!;
-        Assert.Equal(Textos.NoVerificable, respuesta.Respuesta);
-        Assert.Empty(respuesta.Citas);
-        Assert.Equal(usoDatos, respuesta.UsoDatosEstudiante);
-        Assert.Equal(ResultadosNuevosDeAuditoria.EstadoNoVerificado, resultado.Auditoria);
-        Assert.Equal(ResultadosNuevosDeAuditoria.EstadoNoVerificado, Assert.Single(escenario.Auditoria.Eventos).Resultado);
-    }
-
-    private static void AfirmarRespondida(ResultadoPregunta resultado, string texto)
-    {
-        Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.Equal(texto, resultado.Respuesta!.Respuesta);
-        Assert.True(resultado.Respuesta.UsoDatosEstudiante);
-    }
+    private static readonly string[] Adm = ["EST-004", "EST-005", "EST-006"];
+    private static readonly string[] IngSis = ["EST-001", "EST-002", "EST-003"];
 
     [Theory]
     [MemberData(nameof(TextosConPerdidaNoRespaldada))]
@@ -82,11 +62,8 @@ public sealed class AfirmacionesDePerdidaTests
     public async Task Una_perdida_que_los_datos_leidos_no_respaldan_se_reemplaza_por_texto_no_verificable(string caso, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = ConPrograma(texto);
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
-
-        AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        await ClasesVerificadoras.AfirmarFallaAsync("COORD-02", texto, Adm);
     }
 
     [Theory]
@@ -96,12 +73,7 @@ public sealed class AfirmacionesDePerdidaTests
     [Trait("SEG", "SEG-10f")]
     public async Task Un_texto_que_los_datos_respaldan_o_sin_forma_de_perdida_se_entrega_sin_cambios(string texto)
     {
-        var escenario = ConPrograma(texto);
-
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
-
-        AfirmarRespondida(resultado, texto);
-        Assert.Contains(new Cita(Textos.DocumentoDatosPrograma, "ADM"), resultado.Respuesta!.Citas);
+        await ClasesVerificadoras.AfirmarPasaAsync("COORD-02", texto, Adm);
     }
 
     [Theory]
@@ -111,18 +83,13 @@ public sealed class AfirmacionesDePerdidaTests
     [Trait("SEG", "SEG-10f")]
     public async Task La_ventana_de_inasistencia_se_evalua_por_asignatura(string texto, bool correcto)
     {
-        var escenario = Con(LeeElPrograma(texto), Indice(Articulo5, Articulo6, Articulo11));
-
-        var resultado = await escenario.PreguntarAsync(Coord01, PreguntaPerdidas);
-
         if (correcto)
         {
-            AfirmarRespondida(resultado, texto);
-            Assert.Contains(new Cita(Textos.DocumentoDatosPrograma, "ING-SIS"), resultado.Respuesta!.Citas);
+            await ClasesVerificadoras.AfirmarPasaAsync("COORD-01", texto, IngSis);
         }
         else
         {
-            AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+            await ClasesVerificadoras.AfirmarFallaAsync("COORD-01", texto, IngSis);
         }
     }
 
@@ -132,12 +99,7 @@ public sealed class AfirmacionesDePerdidaTests
     [Trait("SEG", "SEG-10f")]
     public async Task Sin_datos_leidos_una_perdida_atribuida_a_una_persona_autorizada_no_se_verifica()
     {
-        var escenario = Con(Fijo("Valentina Castro perdió Microeconomía."), Indice(Articulo6));
-
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaHabilitacion);
-
-        Assert.Empty(escenario.Api.LecturasNotas);
-        AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: false);
+        await ClasesVerificadoras.AfirmarFallaAsync("COORD-02", "Valentina Castro perdió Microeconomía.");
     }
 
     [Fact]
@@ -164,9 +126,9 @@ public sealed class AfirmacionesDePerdidaTests
     [Trait("SEG", "SEG-10f")]
     public async Task El_orden_de_evaluacion_pone_el_numero_inventado_antes_que_la_perdida()
     {
-        var escenario = ConPrograma("Valentina Castro perdió Microeconomía (1.9).");
+        var escenario = Con(Fijo("Perdiste Microeconomía (1.9)."), Indice(Articulo6));
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
+        var resultado = await escenario.PreguntarAsync(Est005, PreguntaPerdidas);
 
         Assert.Equal(Textos.NoVerificable, resultado.Respuesta!.Respuesta);
         Assert.Equal(ResultadoAuditoria.NumeroNoVerificado, resultado.Auditoria);
