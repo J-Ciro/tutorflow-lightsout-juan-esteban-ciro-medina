@@ -16,8 +16,7 @@ public enum TipoResultadoPregunta
 {
     Respondida,
     Denegada,
-    NoDisponible,
-    LimiteIdentidades
+    NoDisponible
 }
 
 public sealed record ResultadoPregunta(
@@ -107,7 +106,8 @@ public sealed class PreguntarAsistente
             return _emisor.Denegar(sesion, identidad.Motivo, 0);
         }
 
-        return ControlarIdentidades(sesion) ?? await ResponderSiEstaAutorizadoAsync(sesion, cancellationToken);
+        AuditarIdentidades(sesion);
+        return await ResponderSiEstaAutorizadoAsync(sesion, cancellationToken);
     }
 
     private async Task<ResultadoPregunta> ResponderSiEstaAutorizadoAsync(SesionPregunta sesion, CancellationToken cancellationToken)
@@ -118,38 +118,13 @@ public sealed class PreguntarAsistente
             : _emisor.Denegar(sesion, decision.Motivo, 0);
     }
 
-    private ResultadoPregunta? ControlarIdentidades(SesionPregunta sesion)
+    private void AuditarIdentidades(SesionPregunta sesion)
     {
-        if (_limitadorIdentidades is null)
+        var identidades = _limitadorIdentidades?.Registrar(sesion.IpOrigen, sesion.Entrada.Usuario.Id);
+        if (identidades is { SuperacionNueva: true })
         {
-            return null;
+            _auditor.RegistrarMultiplesIdentidades(sesion.IpOrigen, identidades.Ids);
         }
-
-        var identidades = _limitadorIdentidades.Registrar(sesion.IpOrigen, sesion.Entrada.Usuario.Id);
-        var bloqueada = identidades.Superado && _limites.BloquearMultiplesIdentidades;
-        if (identidades.SuperacionNueva)
-        {
-            _auditor.RegistrarMultiplesIdentidades(sesion.IpOrigen, identidades.Ids, bloqueada);
-        }
-
-        return bloqueada ? RechazarPorIdentidades(sesion, identidades.SegundosParaReintentar) : null;
-    }
-
-    private ResultadoPregunta RechazarPorIdentidades(SesionPregunta sesion, int segundosParaReintentar)
-    {
-        var usuario = sesion.Entrada.Usuario;
-        _auditor.RegistrarSinConsultas(new SolicitudAuditoria(
-            sesion.IpOrigen,
-            sesion.CorrelationId,
-            usuario.Rol,
-            usuario.Id,
-            sesion.Entrada.Pregunta,
-            ResultadoAuditoria.Denegada,
-            sesion.Cronometro.ElapsedMilliseconds));
-        return new ResultadoPregunta(TipoResultadoPregunta.LimiteIdentidades, null, ResultadoAuditoria.Denegada, null)
-        {
-            SegundosParaReintentar = segundosParaReintentar
-        };
     }
 
     private DirectorioAcademico ExcluirCodigosDePersonas(DirectorioAcademico directorio)

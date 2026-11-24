@@ -13,5 +13,4 @@ public sealed class LimitesAsistente
     public decimal? PresupuestoDiarioUsd { get; init; }
     public int MaximoIdentidadesPorIp { get; init; } = 3;
     public int VentanaIdentidadesMinutos { get; init; } = 10;
-    public bool BloquearMultiplesIdentidades { get; init; }
 }
