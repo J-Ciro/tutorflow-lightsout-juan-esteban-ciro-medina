@@ -17,7 +17,7 @@ internal static partial class ReferenciasEscritas
 
     public static string Limpiar(string respuestaOriginal, IReadOnlyList<Cita> citas)
     {
-        var respuesta = HtmlEnRespuesta.AMarkdown(respuestaOriginal);
+        var respuesta = HtmlEnRespuesta.AMarkdown(EnvoltorioDelDelimitador.Quitar(respuestaOriginal));
         var marcada = AtribucionGenerica.Marcar(MarcarReferenciasInvalidas(respuesta, citas), citas);
         marcada = FraseFijaAnexada(marcada);
         return marcada.Contains(Marca, StringComparison.Ordinal) ? LimpiezaDeOraciones.Depurar(marcada) : respuesta;
