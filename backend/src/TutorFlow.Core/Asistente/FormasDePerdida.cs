@@ -19,7 +19,7 @@ internal static class FormasDePerdida
         "aprobe", "aprobo", "aprobaste", "aprobaron", "aprobado", "aprobados", "aprobada", "aprobadas"
     };
 
-    private static readonly HashSet<string> Verbos =new(StringComparer.Ordinal)
+    private static readonly HashSet<string> Verbos = new(StringComparer.Ordinal)
     {
         "tiene", "tienen", "tengo", "tienes", "tener", "hay", "registra", "registran"
     };

@@ -13,10 +13,7 @@ internal static class EnterosDeAsistencia
         "falta", "faltas", "inasistencia", "inasistencias", "clase", "clases"
     };
 
-    private static readonly HashSet<string> PalabrasQueExcluyen = new(StringComparer.Ordinal)
-    {
-        "corte", "cortes", "semana", "semanas", "nivel", "seccion", "secciones", "articulo", "articulos", "art"
-    };
+    private static readonly HashSet<string> PalabrasQueExcluyen = new(["corte", "cortes", "semana", "semanas", "nivel", .. VocabularioDeTexto.PalabrasDeReferencia], StringComparer.Ordinal);
 
     private static readonly HashSet<string> Conectores = new(StringComparer.Ordinal) { "y", "e", "a" };
 

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Globalization;
+using TutorFlow.Infrastructure.Llm;
 
 namespace TutorFlow.Evals;
 
@@ -23,15 +24,6 @@ public sealed record EntornoFaseV(string FechaUtc, string Commit, string Proveed
         [ProveedorLocal] = ModeloLocal,
         ["anthropic"] = ModeloAnthropic
     };
-
-    private static readonly (string Prefijo, string Proveedor)[] PrefijosDeLlave =
-    [
-        ("sk-ant-", "anthropic"),
-        ("sk-or-", "openrouter"),
-        ("gsk_", "groq"),
-        ("AIza", "gemini"),
-        ("sk-", "openai")
-    ];
 
     public static EntornoFaseV Leer(bool offline, string raizDelRepositorio)
     {
@@ -58,14 +50,9 @@ public sealed record EntornoFaseV(string FechaUtc, string Commit, string Proveed
 
     private static string ProveedorElegido()
     {
-        var forzado = Variable("LLM_PROVEEDOR");
-        return forzado ?? ProveedorDeLaLlave(Variable("LLM_API_KEY"));
+        var entorno = new EntornoLlm(Variable("LLM_API_KEY"), Variable("LLM_PROVEEDOR"), Variable("LLM_URL_BASE"), Variable("LLM_MODELO"), null, null);
+        return ResolutorProveedorLlm.Resolver(entorno, new OpcionesLlm()).Proveedor.ToString().ToLowerInvariant();
     }
-
-    private static string ProveedorDeLaLlave(string? llave) =>
-        llave is null
-            ? ProveedorLocal
-            : PrefijosDeLlave.FirstOrDefault(p => llave.StartsWith(p.Prefijo, StringComparison.Ordinal)).Proveedor ?? ProveedorLocal;
 
     private static string ModeloDe(string proveedor) =>
         Variable("LLM_MODELO") ?? ModelosPorProveedor.GetValueOrDefault(proveedor, ModeloDelProveedor);
