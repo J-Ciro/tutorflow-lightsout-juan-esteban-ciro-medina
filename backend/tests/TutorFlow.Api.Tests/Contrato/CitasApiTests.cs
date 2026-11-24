@@ -9,7 +9,7 @@ public sealed class CitasApiTests
     private const string CitaArticulo5 = "reglamento_academico_2025.md · Artículo 5";
     private const string CitaSeccion4 = "evaluacion_y_calificaciones.md · Sección 4";
     private const string ListadoDeCitas = $"({CitaArticulo5}; {CitaSeccion4})";
-    private const string PreguntaDeCoordinador = "¿Qué estudiantes de mi programa perdieron materias?";
+    private const string PreguntaDeCoordinador = "¿Qué dice el reglamento sobre la habilitación?";
 
     private static readonly SeccionDocumento Entregada1 = new("bienestar_y_becas.md", "Sección 1", "Horario de atención de Bienestar", "Bienestar atiende de lunes a viernes en horario de oficina.");
     private static readonly SeccionDocumento Entregada2 = new("reglamento_academico_2025.md", "Artículo 7", "Atención al estudiante", "El estudiante recibe atención en Bienestar según el horario publicado.");
@@ -94,10 +94,10 @@ public sealed class CitasApiTests
     [Trait("RF", "COMP-02")]
     public async Task ESC_156_Un_numero_no_verificable_responde_con_citas_vacias()
     {
-        var llm = GuionesLlm.SinHerramientas(_ => $"Tu promedio es 4.77 {ListadoDeCitas}");
+        var llm = ClienteLlmDoble.LeeNotasYAsistencia(_ => $"Tu promedio es 4.77 {ListadoDeCitas}");
         using var fabrica = new FabricaApi(llm: llm);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cómo se calcula el promedio ponderado del periodo?");
 
         Assert.Equal(Textos.NoVerificable, respuesta.Respuesta);
         Assert.Empty(respuesta.Citas);

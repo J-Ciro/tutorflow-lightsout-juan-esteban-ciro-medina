@@ -121,7 +121,7 @@ public sealed class MetadatosApiTests
     public async Task Costo_se_calcula_con_los_precios_configurados()
     {
         var llm = ClienteLlmDoble.Texto("Respuesta de prueba.", new UsoTokens(0, SalidaPorLlamada));
-        using var fabrica = new FabricaApi(llm: llm, configuracion: FabricaApi.Precios("1.0", "5.0"));
+        using var fabrica = new FabricaApi(llm: llm, configuracion: FabricaApi.Precios("1.0", "5.0"), variablesEntorno: ConfiguracionDePrueba.EntornoConLlave());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
 
@@ -135,7 +135,7 @@ public sealed class MetadatosApiTests
     public async Task ESC_106_Tokens_y_costo_suman_todas_las_invocaciones_al_llm()
     {
         var llm = ClienteLlmDoble.ConsultaDatos(uso: new UsoTokens(0, SalidaPorLlamada));
-        using var fabrica = new FabricaApi(llm: llm, configuracion: FabricaApi.Precios("1.0", "5.0"));
+        using var fabrica = new FabricaApi(llm: llm, configuracion: FabricaApi.Precios("1.0", "5.0"), variablesEntorno: ConfiguracionDePrueba.EntornoConLlave());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio ponderado del periodo?");
 
@@ -148,7 +148,7 @@ public sealed class MetadatosApiTests
     [Trait("ESC", "ESC-106")]
     public async Task ESC_106_El_403_previo_reporta_tokens_y_costo_cero()
     {
-        using var fabrica = new FabricaApi(configuracion: FabricaApi.Precios("1.0", "5.0"));
+        using var fabrica = new FabricaApi(configuracion: FabricaApi.Precios("1.0", "5.0"), variablesEntorno: ConfiguracionDePrueba.EntornoConLlave());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuáles son las notas de EST-002?");
 

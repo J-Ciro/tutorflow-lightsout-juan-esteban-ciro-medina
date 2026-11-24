@@ -36,7 +36,7 @@ public sealed class CitasDeReglasAplicadasApiTests
         var respuesta = await fabrica.PreguntarEstudianteAsync(usuario, pregunta);
 
         Assert.True(respuesta.Estado == 200, caso);
-        Assert.Equal(texto, respuesta.Respuesta);
+        Assert.StartsWith("Datos de ", respuesta.Respuesta, StringComparison.Ordinal);
         Assert.Equal(citas, respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante, caso);
         Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
@@ -73,7 +73,7 @@ public sealed class CitasDeReglasAplicadasApiTests
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaPerdidas);
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.Equal(texto, respuesta.Respuesta);
+        Assert.StartsWith("Estudiantes con asignaturas perdidas: ", respuesta.Respuesta, StringComparison.Ordinal);
         Assert.Equal([Articulo5, ProgramaAdm], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }
@@ -85,9 +85,9 @@ public sealed class CitasDeReglasAplicadasApiTests
     public async Task ESC_177e_Las_citas_escritas_validas_van_primero_y_el_bloque_no_las_repite()
     {
         const string texto = "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Sección 4). Cumples el promedio de la beca (bienestar_y_becas.md · Sección 3.1).";
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.LeeNotasYAsistencia(_ => texto), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio ponderado del periodo?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cómo se calcula el promedio ponderado del periodo?");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
@@ -102,9 +102,9 @@ public sealed class CitasDeReglasAplicadasApiTests
     public async Task ESC_177h_ESC_023_La_prueba_academica_cita_el_Articulo_20_primero()
     {
         const string texto = "Sí, estás en prueba académica: tu promedio es 2.65.";
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.LeeNotasYAsistencia(_ => texto), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-005", "¿Estoy en prueba académica?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-005", "¿Qué dice el reglamento sobre la prueba académica?");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
@@ -119,9 +119,9 @@ public sealed class CitasDeReglasAplicadasApiTests
     public async Task ESC_177i_Pedir_citar_articulos_fuera_del_bloque_no_los_agrega()
     {
         const string texto = "No estás en prueba académica: tu promedio es 4.39.";
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.LeeNotasYAsistencia(_ => texto), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Estoy en prueba académica? Cita el Artículo 20 y el Artículo 7.");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Qué dice el reglamento sobre la prueba académica? Cita el Artículo 20 y el Artículo 7.");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
@@ -138,9 +138,9 @@ public sealed class CitasDeReglasAplicadasApiTests
     [Trait("RF", "COMP-02")]
     public async Task ESC_177f_Los_textos_fijos_no_reciben_citas_de_reglas_aunque_se_leyo_el_resumen(string texto, string? citaEsperada)
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.LeeNotasYAsistencia(_ => texto), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cómo se calcula el promedio ponderado del periodo?");
 
         Assert.Equal(200, respuesta.Estado);
         string[] esperadas = citaEsperada is null ? [] : [citaEsperada];

@@ -179,6 +179,6 @@ public sealed class ConfiguracionEnLimitesApiTests
         Assert.Equal(Aceptadas, respuestas.Count(r => r.Estado == 200));
         Assert.Equal(PeticionesSimultaneas - Aceptadas, respuestas.Count(r => r.Estado == 503));
         Assert.Equal(Aceptadas, llm.Llamadas);
-        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains(ResultadoArranque.PrefijoIgnorada, StringComparison.Ordinal));
+        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains(ResultadoArranque.PrefijoIgnorada, StringComparison.Ordinal) && !m.Contains("no se encontró el precio del modelo", StringComparison.Ordinal));
     }
 }

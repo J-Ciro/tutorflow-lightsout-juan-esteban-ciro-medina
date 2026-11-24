@@ -7,8 +7,7 @@ namespace TutorFlow.Api.Tests.Seguridad;
 public sealed class SalidaV110ApiTests
 {
     private const string PreguntaPerdidas = "¿Qué dice el reglamento sobre la habilitación?";
-    private const string PreguntaDefinitivaEstadistica = "¿Cuál es mi nota definitiva en Estadística?";
-    private const string PreguntaDefinitivaContabilidad = "¿Qué nota definitiva tengo en Contabilidad?";
+    private const string PreguntaDefinitivaNormativa = "¿Cómo se calcula la nota definitiva de una asignatura?";
     private const string PreguntaNotaMinima = "¿Cuál es la nota mínima para aprobar una asignatura?";
     private const string Seccion3 = "evaluacion_y_calificaciones.md · Sección 3";
     private const string Seccion4 = "evaluacion_y_calificaciones.md · Sección 4";
@@ -18,6 +17,7 @@ public sealed class SalidaV110ApiTests
     private const string Articulo20 = "reglamento_academico_2025.md · Artículo 20";
     private const string Notas = "Datos del estudiante · Notas";
     private const string Asistencia = "Datos del estudiante · Asistencia";
+    private const string DatosBasicos = "Datos del estudiante · Datos básicos";
 
     public static TheoryData<string, string> FormasDePerdidaNoRespaldadas => new()
     {
@@ -55,35 +55,44 @@ public sealed class SalidaV110ApiTests
 
     [Theory]
     [MemberData(nameof(FormasDePerdidaNoRespaldadas))]
-    [Trait("CA", "CA-06")]
+    [Trait("CA", "CA-17")]
     [Trait("ESC", "ESC-175")]
-    [Trait("RF", "SEG-10f")]
-    public async Task ESC_175_Una_forma_de_perdida_que_los_datos_no_respaldan_da_texto_no_verificable(string caso, string texto)
+    [Trait("D", "D-98")]
+    public async Task ESC_175_Fuera_del_modo_bloque_la_oracion_con_el_nombre_de_una_persona_se_elimina(string caso, string texto)
     {
         Assert.NotEmpty(caso);
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaPerdidas);
 
-        AfirmarEstadoNoVerificado(respuesta, fabrica, usoDatos: true);
+        if (caso == "q")
+        {
+            Assert.Equal("- Asignatura perdida: Estadística", respuesta.Respuesta);
+            return;
+        }
+
+        Afirmaciones.OracionConPersonaPodada(respuesta, fabrica, usoDatos: true);
     }
 
     [Theory]
     [MemberData(nameof(FormasDePerdidaRespaldadasONegadas))]
-    [Trait("CA", "CA-01")]
+    [Trait("CA", "CA-17")]
     [Trait("ESC", "ESC-175")]
-    [Trait("RF", "SEG-10f")]
-    public async Task ESC_175p1p2_Una_forma_de_perdida_respaldada_negada_o_hipotetica_se_entrega_sin_cambios(string caso, string texto)
+    [Trait("D", "D-98")]
+    public async Task ESC_175p1p2_Fuera_del_modo_bloque_la_oracion_con_persona_se_elimina_aunque_este_respaldada(string caso, string texto)
     {
         Assert.NotEmpty(caso);
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaPerdidas);
 
-        Assert.Equal(200, respuesta.Estado);
-        Assert.Equal(texto, respuesta.Respuesta);
-        Assert.Contains("Datos del programa · ADM", respuesta.Citas);
-        Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
+        if (caso == "r")
+        {
+            Assert.StartsWith("- Asignaturas perdidas: Microeconomía (1.8) y Estadística (2.3)", respuesta.Respuesta);
+            return;
+        }
+
+        Afirmaciones.OracionConPersonaPodada(respuesta, fabrica, usoDatos: true);
     }
 
     [Fact]
@@ -130,31 +139,36 @@ public sealed class SalidaV110ApiTests
     }
 
     [Theory]
-    [InlineData("g", "La definitiva de Valentina Castro en Estadística es 3.2.", false)]
-    [InlineData("h", "La definitiva de Valentina Castro en Estadística es 2.3.", true)]
-    [InlineData("i", "Valentina Castro:\n- Definitiva en Estadística: 3.2", false)]
-    [InlineData("j", "Valentina Castro:\n- Definitiva en Estadística: 2.3", true)]
-    [Trait("CA", "CA-06")]
+    [InlineData("g", "La definitiva de Valentina Castro en Estadística es 3.2.")]
+    [InlineData("h", "La definitiva de Valentina Castro en Estadística es 2.3.")]
+    [Trait("CA", "CA-17")]
     [Trait("ESC", "ESC-179")]
-    [Trait("RF", "SEG-10g")]
-    public async Task ESC_179_La_definitiva_atribuida_a_una_persona_del_programa_se_verifica_contra_su_asignatura(string caso, string texto, bool correcta)
+    [Trait("D", "D-98")]
+    public async Task ESC_179_La_definitiva_atribuida_por_nombre_se_elimina_fuera_del_modo_bloque(string caso, string texto)
     {
         Assert.NotEmpty(caso);
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos("EST-005", redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", "¿Qué dice el reglamento sobre la habilitación?");
 
-        if (correcta)
-        {
-            Assert.Equal(200, respuesta.Estado);
-            Assert.Equal(texto, respuesta.Respuesta);
-            Assert.Contains("Datos del programa · ADM", respuesta.Citas);
-            Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
-        }
-        else
-        {
-            AfirmarEstadoNoVerificado(respuesta, fabrica, usoDatos: true);
-        }
+        Afirmaciones.OracionConPersonaPodada(respuesta, fabrica, usoDatos: true);
+    }
+
+    [Theory]
+    [InlineData("i", "Valentina Castro:\n- Definitiva en Estadística: 3.2", "- Definitiva en Estadística: 3.2")]
+    [InlineData("j", "Valentina Castro:\n- Definitiva en Estadística: 2.3", "- Definitiva en Estadística: 2.3")]
+    [Trait("CA", "CA-17")]
+    [Trait("ESC", "ESC-179")]
+    [Trait("D", "D-98")]
+    public async Task ESC_179_El_encabezado_con_el_nombre_se_elimina_y_la_linea_restante_se_entrega(string caso, string texto, string esperado)
+    {
+        Assert.NotEmpty(caso);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos("EST-005", redactar: _ => texto), conocimientoReal: true);
+
+        var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", "¿Qué dice el reglamento sobre la habilitación?");
+
+        Assert.Equal(200, respuesta.Estado);
+        Assert.Equal(esperado, respuesta.Respuesta);
     }
 
     [Fact]
@@ -180,14 +194,14 @@ public sealed class SalidaV110ApiTests
     public async Task ESC_178b_El_nombre_con_tilde_se_elimina_y_la_cita_es_la_del_campo_definitiva()
     {
         using var fabrica = new FabricaApi(
-            llm: GuionesLlm.SinHerramientas(_ => "Contabilidad: 3.9. La definitiva se calcula con los pesos de evaluación_y_calificaciones.md."),
+            llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => "Contabilidad: 3.9. La definitiva se calcula con los pesos de evaluación_y_calificaciones.md."),
             conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-004", PreguntaDefinitivaContabilidad);
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-004", PreguntaDefinitivaNormativa);
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal("Contabilidad: 3.9. La definitiva se calcula con los pesos.", respuesta.Respuesta);
-        Assert.Equal([Seccion3, Notas, Asistencia], respuesta.Citas);
+        Assert.Equal([Seccion3, Notas, Asistencia, DatosBasicos], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }
 
@@ -199,14 +213,14 @@ public sealed class SalidaV110ApiTests
     public async Task ESC_178d_El_nombre_de_documento_con_espacios_se_elimina_con_su_conector()
     {
         using var fabrica = new FabricaApi(
-            llm: GuionesLlm.SinHerramientas(_ => "Sí, estás en prueba académica según el artículo 20 del reglamento académico 2025.md: tu promedio es 2.65."),
+            llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => "Sí, estás en prueba académica según el artículo 20 del reglamento académico 2025.md: tu promedio es 2.65."),
             conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-005", "¿Estoy en prueba académica?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-005", "¿Qué dice el reglamento sobre la prueba académica?");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal("Sí, estás en prueba académica: tu promedio es 2.65.", respuesta.Respuesta);
-        Assert.Equal([Articulo20, Seccion4, Notas, Asistencia], respuesta.Citas);
+        Assert.Equal([Articulo20, Seccion4, Notas, Asistencia, DatosBasicos], respuesta.Citas);
     }
 
     [Fact]
@@ -230,9 +244,9 @@ public sealed class SalidaV110ApiTests
     [Trait("RF", "COMP-03")]
     public async Task ESC_178h_Un_texto_que_queda_sin_palabras_responde_comp_03_con_el_uso_de_datos_leido()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Documento.md · Sección 11."), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => "Documento.md · Sección 11."), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Qué dice el reglamento sobre la habilitación?");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(Textos.SinInformacion, respuesta.Respuesta);

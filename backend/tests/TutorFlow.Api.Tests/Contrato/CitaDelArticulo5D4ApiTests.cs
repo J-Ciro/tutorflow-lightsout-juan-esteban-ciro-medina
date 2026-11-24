@@ -34,9 +34,9 @@ public sealed class CitaDelArticulo5D4ApiTests
     public async Task D99_D4_un_estudiante_con_una_asignatura_perdida_que_escribe_perdiste_conserva_el_Articulo_5()
     {
         const string texto = "Perdiste Microeconomía (1.8) y Estadística (2.3).";
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.LeeNotasYAsistencia(_ => texto), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-005", "¿Perdí alguna asignatura?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-005", "¿Qué dice el reglamento sobre la habilitación?");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);

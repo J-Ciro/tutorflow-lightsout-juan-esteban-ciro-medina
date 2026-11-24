@@ -7,8 +7,8 @@ namespace TutorFlow.Api.Tests.Llm;
 
 public sealed class DatoOpacoDelProveedorApiTests
 {
-    private const string Pregunta = "¿Cuál es mi promedio?";
-    private const string PreguntaDelCoordinador = "¿Qué estudiantes de mi programa perdieron materias?";
+    private const string Pregunta = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaDelCoordinador = "¿Qué dice el reglamento sobre la habilitación?";
     private const string LlaveDeGemini = "AIzaLLAVEABC123";
     private const string FirmaUno = "CiQBjz1rX3Ab9ZfirmaUno";
     private const string FirmaDos = "CiQBjz1rX3Ab9ZfirmaDos";

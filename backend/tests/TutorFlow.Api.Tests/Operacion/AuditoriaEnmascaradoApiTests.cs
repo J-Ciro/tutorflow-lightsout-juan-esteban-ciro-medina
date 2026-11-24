@@ -147,9 +147,9 @@ public sealed class AuditoriaIdSolicitadoApiTests
 {
     public static TheoryData<string, string, string, string, string> Casos => new()
     {
-        { "coordinador", "COORD-01", "EST-004", "¿Qué estudiantes de mi programa perdieron materias?", "EST-004" },
-        { "estudiante", "EST-001", "EST-002", "¿Cuál es mi promedio?", "EST-002" },
-        { "coordinador", "COORD-01", "../EST-004\nx", "¿Qué estudiantes de mi programa perdieron materias?", "[FORMATO_INVALIDO]" }
+        { "coordinador", "COORD-01", "EST-004", "¿Qué dice el reglamento sobre la habilitación?", "EST-004" },
+        { "estudiante", "EST-001", "EST-002", "¿Qué dice el reglamento sobre la habilitación?", "EST-002" },
+        { "coordinador", "COORD-01", "../EST-004\nx", "¿Qué dice el reglamento sobre la habilitación?", "[FORMATO_INVALIDO]" }
     };
 
     private static async Task<(RespuestaApi Respuesta, JsonElement Evento)> PreguntarCapturandoAsync(string rol, string id, string pedido, string pregunta)

@@ -13,9 +13,9 @@ public sealed class SinInformacionTrasLecturaApiTests
     [Trait("D", "D-66")]
     public async Task COMP_03_tras_el_resumen_propio_responde_citas_vacias_y_uso_true()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => Textos.SinInformacion), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.LeeNotasYAsistencia(_ => Textos.SinInformacion), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cómo se calcula el promedio ponderado del periodo?");
 
         Assert.Equal(Textos.SinInformacion, respuesta.Respuesta);
         Assert.Empty(respuesta.Citas);
@@ -30,7 +30,7 @@ public sealed class SinInformacionTrasLecturaApiTests
     {
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => Textos.SinInformacion), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio ponderado del periodo?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cómo se calcula el promedio ponderado del periodo?");
 
         Assert.Equal(Textos.SinInformacion, respuesta.Respuesta);
         Assert.Empty(respuesta.Citas);
@@ -43,9 +43,9 @@ public sealed class SinInformacionTrasLecturaApiTests
     [Trait("D", "D-66")]
     public async Task COMP_03_tras_la_prelectura_del_programa_responde_citas_vacias_y_uso_true()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => Textos.SinInformacion), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => Textos.SinInformacion), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaPerdidas);
+        var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", "¿Qué dice el reglamento sobre la habilitación?");
 
         Assert.Equal(Textos.SinInformacion, respuesta.Respuesta);
         Assert.Empty(respuesta.Citas);

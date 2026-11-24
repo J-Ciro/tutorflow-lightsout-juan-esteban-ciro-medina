@@ -5,8 +5,8 @@ namespace TutorFlow.Api.Tests.Contrato;
 
 public sealed class ReferenciasANumerosApiTests
 {
-    private const string PreguntaPromedio = "¿Cuál es mi promedio?";
-    private const string PreguntaPromedioPonderado = "¿Cuál es mi promedio ponderado del periodo?";
+    private const string PreguntaPromedio = "¿Cómo se calcula el promedio ponderado del periodo?";
+    private const string PreguntaPromedioPonderado = "¿Cómo se calcula el promedio ponderado del periodo?";
     private const string PreguntaNotaMinima = "¿Cuál es la nota mínima para aprobar una asignatura?";
     private const string PreguntaBeca = "¿Qué requisitos tiene la beca por rendimiento académico?";
     private const string CitaSeccion4 = "evaluacion_y_calificaciones.md · Sección 4";
@@ -51,7 +51,7 @@ public sealed class ReferenciasANumerosApiTests
     [Trait("RF", "SEG-10c")]
     public async Task ESC_174_Una_cifra_no_respaldada_junto_a_una_referencia_se_sigue_verificando(string pregunta, string texto)
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: pregunta == PreguntaPromedio ? ClienteLlmDoble.LeeNotasYAsistencia(_ => texto) : GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", pregunta);
 
@@ -68,7 +68,7 @@ public sealed class ReferenciasANumerosApiTests
     public async Task ESC_174f_Las_secciones_3_y_4_de_una_referencia_en_lista_no_bloquean_el_promedio_y_la_referencia_sale_entera()
     {
         const string texto = "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).";
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.LeeNotasYAsistencia(_ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPromedioPonderado);
 

@@ -1,124 +1,9 @@
-using TutorFlow.Pruebas.Soporte;
-using System.Collections.Concurrent;
 using System.Net;
-using System.Text;
-using System.Text.Json;
 using TutorFlow.Api.Tests.Dobles;
 using TutorFlow.Core.Asistente;
+using TutorFlow.Pruebas.Soporte;
 
 namespace TutorFlow.Api.Tests.Llm;
-
-public sealed record PeticionLlm(Uri Uri, IReadOnlyDictionary<string, string> Encabezados, string Cuerpo);
-
-public sealed class ManejadorLlmFalso : HttpMessageHandler
-{
-    private readonly ConcurrentQueue<PeticionLlm> _peticiones = new();
-    private readonly Func<PeticionLlm, int, HttpResponseMessage> _guion;
-
-    public ManejadorLlmFalso(Func<PeticionLlm, int, HttpResponseMessage> guion)
-    {
-        _guion = guion;
-    }
-
-    public IReadOnlyList<PeticionLlm> Peticiones => [.. _peticiones];
-
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        var cuerpo = request.Content is null ? string.Empty : await request.Content.ReadAsStringAsync(cancellationToken);
-        var encabezados = request.Headers.ToDictionary(h => h.Key, h => string.Join(",", h.Value), StringComparer.OrdinalIgnoreCase);
-        var peticion = new PeticionLlm(request.RequestUri!, encabezados, cuerpo);
-        int numero;
-        lock (_peticiones)
-        {
-            numero = _peticiones.Count;
-            _peticiones.Enqueue(peticion);
-        }
-
-        return _guion(peticion, numero);
-    }
-}
-
-public static class RespuestasProveedor
-{
-    public static bool EsAnthropic(PeticionLlm peticion) => peticion.Uri.Host.Contains("anthropic", StringComparison.OrdinalIgnoreCase);
-
-    public static HttpResponseMessage Json(string contenido, HttpStatusCode estado = HttpStatusCode.OK) =>
-        new(estado) { Content = new StringContent(contenido, Encoding.UTF8, "application/json") };
-
-    public static HttpResponseMessage Texto(PeticionLlm peticion, string texto, int salida) =>
-        Texto(peticion, texto, ConsumoRealistaHttp.Reportados(peticion), salida);
-
-    public static HttpResponseMessage LlamadaAHerramienta(PeticionLlm peticion, int salida) =>
-        LlamadaAHerramienta(peticion, ConsumoRealistaHttp.Reportados(peticion), salida);
-
-    public static HttpResponseMessage Texto(PeticionLlm peticion, string texto, int entrada, int salida) =>
-        Serializar(EsAnthropic(peticion)
-            ? new
-            {
-                id = "msg_1",
-                type = "message",
-                role = "assistant",
-                model = "m",
-                content = new object[] { new { type = "text", text = texto } },
-                stop_reason = "end_turn",
-                usage = new { input_tokens = entrada, output_tokens = salida }
-            }
-            : new
-            {
-                id = "c1",
-                @object = "chat.completion",
-                choices = new object[] { new { index = 0, message = new { role = "assistant", content = texto, refusal = (string?)null }, finish_reason = "stop" } },
-                usage = new { prompt_tokens = entrada, completion_tokens = salida, total_tokens = entrada + salida }
-            });
-
-    public static HttpResponseMessage LlamadaAHerramienta(PeticionLlm peticion, int entrada, int salida)
-    {
-        using var cuerpo = JsonDocument.Parse(peticion.Cuerpo);
-        var primera = cuerpo.RootElement.GetProperty("tools")[0];
-        return EsAnthropic(peticion)
-            ? LlamadaAnthropic(primera.GetProperty("name").GetString(), entrada, salida)
-            : LlamadaOpenAi(primera.GetProperty("function").GetProperty("name").GetString(), entrada, salida);
-    }
-
-    private static HttpResponseMessage LlamadaAnthropic(string? herramienta, int entrada, int salida) =>
-        Serializar(new
-        {
-            id = "msg_2",
-            type = "message",
-            role = "assistant",
-            model = "m",
-            content = new object[] { new { type = "tool_use", id = "tu_1", name = herramienta, input = new { } } },
-            stop_reason = "tool_use",
-            usage = new { input_tokens = entrada, output_tokens = salida }
-        });
-
-    private static HttpResponseMessage LlamadaOpenAi(string? herramienta, int entrada, int salida) =>
-        Serializar(new
-        {
-            id = "c2",
-            @object = "chat.completion",
-            choices = new object[] { new { index = 0, message = MensajeConHerramienta(herramienta), finish_reason = "tool_calls" } },
-            usage = new { prompt_tokens = entrada, completion_tokens = salida, total_tokens = entrada + salida }
-        });
-
-    private static object MensajeConHerramienta(string? herramienta) =>
-        new
-        {
-            role = "assistant",
-            content = (string?)null,
-            tool_calls = new object[] { new { id = "call_1", type = "function", function = new { name = herramienta, arguments = "{}" } } }
-        };
-
-    private static HttpResponseMessage Serializar(object valor) => Json(JsonSerializer.Serialize(valor));
-
-    public static HttpResponseMessage Rechazo(PeticionLlm peticion)
-    {
-        var entrada = ConsumoRealistaHttp.Reportados(peticion);
-        return Json(EsAnthropic(peticion)
-            ? $$$"""{"id":"msg_3","type":"message","role":"assistant","model":"m","content":[],"stop_reason":"refusal","usage":{"input_tokens":{{{entrada}}},"output_tokens":0}}"""
-            : $$$"""{"id":"c3","object":"chat.completion","choices":[{"index":0,"message":{"role":"assistant","content":null,"refusal":"No puedo ayudar con eso"},"finish_reason":"stop"}],"usage":{"prompt_tokens":{{{entrada}}},"completion_tokens":0,"total_tokens":{{{entrada}}}}}""");
-    }
-}
 
 public sealed class ProveedoresHttpTests
 {
@@ -129,12 +14,25 @@ public sealed class ProveedoresHttpTests
     private const decimal PrecioSalida = 5.0m;
     private const decimal ToleranciaDeCosto = 0.000001m;
 
-    private static void AfirmarConsumo(RespuestaApi respuesta, ManejadorLlmFalso manejador)
+    private static Dictionary<string, string?> PreciosDeTodos()
+    {
+        var configuracion = new Dictionary<string, string?> { [FabricaApi.ClaveUrlCatalogoPrecios] = string.Empty };
+        foreach (var proveedor in new[] { "anthropic", "openai", "groq", "openrouter", "gemini" })
+        {
+            configuracion[$"Llm:Proveedores:{proveedor}:Modelos:0:PrecioEntradaPorMillon"] = "1.0";
+            configuracion[$"Llm:Proveedores:{proveedor}:Modelos:0:PrecioSalidaPorMillon"] = "5.0";
+        }
+
+        return configuracion;
+    }
+
+    private static void AfirmarConsumo(RespuestaApi respuesta, ManejadorLlmFalso manejador, string? llave)
     {
         var entrada = manejador.Peticiones.Sum(ConsumoRealistaHttp.Reportados);
         var salida = manejador.Peticiones.Count * SalidaPorLlamada;
+        var costoEsperado = llave is null ? 0m : ConsumoRealista.CostoDe(entrada, salida, PrecioEntrada, PrecioSalida);
         Assert.Equal(entrada + salida, respuesta.Tokens);
-        Assert.InRange(respuesta.CostoUsd, ConsumoRealista.CostoDe(entrada, salida, PrecioEntrada, PrecioSalida) - ToleranciaDeCosto, ConsumoRealista.CostoDe(entrada, salida, PrecioEntrada, PrecioSalida) + ToleranciaDeCosto);
+        Assert.InRange(respuesta.CostoUsd, costoEsperado - ToleranciaDeCosto, costoEsperado + ToleranciaDeCosto);
     }
 
     public static TheoryData<string?, string, string> Proveedores => new()
@@ -153,7 +51,7 @@ public sealed class ProveedoresHttpTests
         llave is null ? [] : new Dictionary<string, string?> { ["LLM_API_KEY"] = llave };
 
     private static FabricaApi Fabrica(string? llave, ManejadorLlmFalso manejador) =>
-        new(configuracion: FabricaApi.Precios("1.0", "5.0"), variablesEntorno: Llave(llave), reemplazarLlm: false, manejadorHttp: manejador);
+        new(configuracion: PreciosDeTodos(), variablesEntorno: Llave(llave), reemplazarLlm: false, manejadorHttp: manejador);
 
     private static string? EncabezadoDeAutenticacion(PeticionLlm peticion) =>
         peticion.Encabezados.TryGetValue("x-api-key", out var anthropic)
@@ -173,7 +71,7 @@ public sealed class ProveedoresHttpTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(RespuestaNormativa, respuesta.Respuesta);
-        AfirmarConsumo(respuesta, manejador);
+        AfirmarConsumo(respuesta, manejador, llave);
         Assert.NotEmpty(manejador.Peticiones);
         Assert.All(manejador.Peticiones, p => Assert.Equal(host, p.Uri.Host));
         Assert.All(manejador.Peticiones, p => Assert.Contains(modelo, p.Cuerpo, StringComparison.Ordinal));
@@ -192,11 +90,11 @@ public sealed class ProveedoresHttpTests
             : RespuestasProveedor.Texto(p, "Datos revisados.", SalidaPorLlamada));
         using var fabrica = Fabrica(llave, manejador);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio ponderado del periodo?");
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Qué dice el reglamento sobre la habilitación?");
 
         Assert.Equal(200, respuesta.Estado);
         Assert.True(respuesta.UsoDatosEstudiante);
-        AfirmarConsumo(respuesta, manejador);
+        AfirmarConsumo(respuesta, manejador, llave);
         Assert.Equal(2, manejador.Peticiones.Count);
         Assert.Contains("4.39", manejador.Peticiones[1].Cuerpo, StringComparison.Ordinal);
         Assert.All(manejador.Peticiones, p => Assert.Equal(host, p.Uri.Host));
@@ -264,7 +162,7 @@ public sealed class ProveedoresHttpTests
         var manejador = new ManejadorLlmFalso((p, _) => RespuestasProveedor.Texto(p, "Listo.", 5));
         using var fabrica = Fabrica(llave, manejador);
 
-        await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
+        await fabrica.PreguntarEstudianteAsync("EST-001", "¿Qué dice el reglamento sobre la habilitación?");
 
         var cuerpo = manejador.Peticiones[0].Cuerpo;
         Assert.DoesNotContain("estudianteId", cuerpo, StringComparison.OrdinalIgnoreCase);

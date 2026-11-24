@@ -5,7 +5,7 @@ namespace TutorFlow.Api.Tests.Contrato;
 
 public sealed class CitasTrasLaLimpiezaApiTests
 {
-    private const string PreguntaPromedio = "¿Cuál es mi promedio ponderado del periodo?";
+    private const string PreguntaPromedio = "¿Cómo se calcula el promedio ponderado del periodo?";
     private const string Seccion4 = "evaluacion_y_calificaciones.md · Sección 4";
     private const string Notas = "Datos del estudiante · Notas";
     private const string Asistencia = "Datos del estudiante · Asistencia";
@@ -24,7 +24,7 @@ public sealed class CitasTrasLaLimpiezaApiTests
     public async Task ESC_183_La_respuesta_cita_la_Seccion_4_por_el_campo_promedio_y_los_datos_leidos(string caso, string texto, string esperada)
     {
         Assert.NotEmpty(caso);
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.LeeNotasYAsistencia(_ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPromedio);
 

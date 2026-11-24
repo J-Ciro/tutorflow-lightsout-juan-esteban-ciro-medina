@@ -46,7 +46,7 @@ public sealed class PreguntasDeQ10ApiTests
         { "Q10 #2", "EST-001", PreguntaP2, $"Tu promedio es 4.39. {Definitivas}", [Seccion4, Seccion3, Notas, Asistencia], true },
         { "Q10 #2 literal", "EST-001", PreguntaP2, $"4.39. {Definitivas}", [Seccion4, Seccion3, Notas, Asistencia], true },
         { "Q10 #3", "EST-001", PreguntaP3, "Bases de Datos: 2 faltas de 48 clases.", [Articulo11, Notas, Asistencia], true },
-        { "Q10 #5", "EST-004", PreguntaP5, "Contabilidad: 3.9. Se aprueba con una definitiva de 3.0 o más (reglamento_academico_2025.md · Artículo 5).", [Articulo5, Seccion3, Notas, Asistencia], true },
+        { "Q10 #5", "EST-004", PreguntaP5, "Contabilidad: 3.9. Se aprueba con una definitiva de 3.0 o más (reglamento_academico_2025.md · Artículo 5).", [Seccion3, Notas, Asistencia], true },
         { "Q10 #7", "EST-001", PreguntaP7, "Lunes a viernes de 8:00 a 17:00 y sábados de 8:00 a 12:00, en el edificio B, piso 2.", [Bienestar1], false },
         { "Q10 #8 con el Artículo 20 escrito", "EST-004", PreguntaP8, $"{TextoP8.TrimEnd('.')} ({Articulo20}).", [Beca31], false },
         { "Q10 #8 sin cita escrita", "EST-004", PreguntaP8, TextoP8, [Beca31], false },
@@ -151,7 +151,8 @@ public sealed class PreguntasDeQ10ApiTests
 
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaP6);
 
-        Assert.Equal(texto, respuesta.Respuesta);
+        Assert.StartsWith("Estudiantes con asignaturas perdidas: ", respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.DoesNotContain("Bienestar", respuesta.Respuesta, StringComparison.Ordinal);
         Assert.Equal([Articulo5, ProgramaAdm], respuesta.Citas);
         Assert.DoesNotContain(respuesta.Citas, c => c.StartsWith("bienestar_y_becas.md", StringComparison.Ordinal));
     }

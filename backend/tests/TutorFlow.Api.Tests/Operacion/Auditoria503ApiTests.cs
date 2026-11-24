@@ -6,7 +6,8 @@ namespace TutorFlow.Api.Tests.Operacion;
 
 public sealed class Auditoria503ApiTests
 {
-    private const string Pregunta = "¿Cuál es mi promedio?";
+    private const string Pregunta = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaConResumen = "¿Cuál es mi promedio?";
     private const int SalidaPorLlamada = 20;
     private const int PeticionesQueConsumenElPresupuesto = 3;
     private const decimal CostoDeseadoPorPeticionUsd = 0.0029m;
@@ -39,7 +40,7 @@ public sealed class Auditoria503ApiTests
     {
         var sonda = ClienteLlmDoble.Texto("Tu promedio es 4.39.", new UsoTokens(0, 0));
         using var fabricaSonda = new FabricaApi(llm: sonda);
-        await fabricaSonda.PreguntarEstudianteAsync("EST-001", Pregunta);
+        await fabricaSonda.PreguntarEstudianteAsync("EST-001", PreguntaConResumen);
         var tokensDeEntrada = ConsumoRealista.Reportados(sonda.Solicitudes[0]);
         return Math.Round(CostoDeseadoPorPeticionUsd * TokensPorMillon / tokensDeEntrada, PrecisionDelPrecio)
             .ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -54,7 +55,7 @@ public sealed class Auditoria503ApiTests
     public async Task Un_503_por_llm_caido_tras_leer_datos_audita_lo_consultado_y_el_consumo(string tipo)
     {
         var llm = LeeNotasYLuegoFalla(Fallo(tipo));
-        using var fabrica = new FabricaApi(llm: llm, configuracion: ConPrecios());
+        using var fabrica = new FabricaApi(llm: llm, configuracion: ConPrecios(), variablesEntorno: ConfiguracionDePrueba.EntornoConLlave());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);
 
@@ -77,7 +78,7 @@ public sealed class Auditoria503ApiTests
     [Trait("HALLAZGO", "H-04")]
     public async Task Un_503_por_llm_caido_sin_haber_leido_datos_audita_cero_consultas_y_cero_consumo()
     {
-        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.Falla(new HttpRequestException("llm caído")), configuracion: ConPrecios());
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.Falla(new HttpRequestException("llm caído")), configuracion: ConPrecios(), variablesEntorno: ConfiguracionDePrueba.EntornoConLlave());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es la nota mínima para aprobar?");
 
@@ -104,10 +105,10 @@ public sealed class Auditoria503ApiTests
             ["Limites:PresupuestoDiarioUsd"] = "0.010",
             ["Llm:ReservaPorPeticionUsd"] = "0.004"
         };
-        using var fabrica = new FabricaApi(llm: llm, configuracion: configuracion);
+        using var fabrica = new FabricaApi(llm: llm, configuracion: configuracion, variablesEntorno: ConfiguracionDePrueba.EntornoConLlave());
         for (var i = 0; i < PeticionesQueConsumenElPresupuesto; i++)
         {
-            await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);
+            await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaConResumen);
         }
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cómo voy en Bases de Datos?");
@@ -128,7 +129,7 @@ public sealed class Auditoria503ApiTests
     [Trait("HALLAZGO", "H-04")]
     public async Task Un_503_por_limite_de_herramientas_audita_los_datos_leidos_y_los_tokens_consumidos()
     {
-        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.PideHerramientaSinParar(), configuracion: ConPrecios());
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.PideHerramientaSinParar(), configuracion: ConPrecios(), variablesEntorno: ConfiguracionDePrueba.EntornoConLlave());
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);
 

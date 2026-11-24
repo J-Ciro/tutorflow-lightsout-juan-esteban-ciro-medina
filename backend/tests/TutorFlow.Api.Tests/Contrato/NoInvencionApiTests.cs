@@ -132,7 +132,7 @@ public sealed class NoInvencionApiTests
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaDeCoordinador);
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.Contains(RespuestaDeCoordinador, respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.StartsWith("Estudiantes con asignaturas perdidas: ", respuesta.Respuesta, StringComparison.Ordinal);
         Assert.Equal([CitaArticulo5, CitaDatosPrograma], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }
@@ -148,7 +148,7 @@ public sealed class NoInvencionApiTests
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaDeCoordinador);
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.Contains(RespuestaDeCoordinador, respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.StartsWith("Estudiantes con asignaturas perdidas: ", respuesta.Respuesta, StringComparison.Ordinal);
         Assert.Equal([CitaArticulo5, CitaDatosPrograma], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }

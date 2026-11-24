@@ -48,6 +48,16 @@ public static class Afirmaciones
         Assert.Equal(ResultadoAuditoria.SinInformacion, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 
+    public static void OracionConPersonaPodada(RespuestaApi respuesta, FabricaApi fabrica, bool usoDatos)
+    {
+        Assert.Equal(200, respuesta.Estado);
+        SalidaDelContrato(respuesta);
+        Assert.Equal(Textos.SinInformacion, respuesta.Respuesta);
+        Assert.Empty(respuesta.Citas);
+        Assert.Equal(usoDatos, respuesta.UsoDatosEstudiante);
+        Assert.Equal(ResultadoAuditoria.SinInformacion, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
+    }
+
     public static void SinInformacionTrasLlm(RespuestaApi respuesta, FabricaApi fabrica)
     {
         SinInformacion(respuesta);
