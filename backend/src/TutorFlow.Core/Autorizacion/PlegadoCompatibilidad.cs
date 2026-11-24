@@ -12,8 +12,9 @@ internal static class PlegadoCompatibilidad
     private const int LineaDeVersionUnicode = 0;
     private const int LineaDeVersionConfusables = 1;
     private const int ColumnasPorFila = 3;
+    private const int TopeDeLaCache = 4096;
 
-    private static readonly string[] TiposDespuesDeLaDescomposicion = ["mn", "conf", "trazo", "nd", "cf"];
+    private static readonly string[] TiposDespuesDeLaDescomposicion = ["mn", "conf", "trazo", "nd", "cf", "di"];
 
     private static readonly List<string> Lineas = LeerRecurso();
 
@@ -27,7 +28,19 @@ internal static class PlegadoCompatibilidad
 
     public static string Aplicar(string texto) => string.Concat(texto.EnumerateRunes().Select(De));
 
-    public static string De(Rune rune) => Resueltos.GetOrAdd(rune.Value, Resolver);
+    public static string De(Rune rune) =>
+        Resueltos.TryGetValue(rune.Value, out var resuelto) ? resuelto : ResolverYGuardar(rune.Value);
+
+    private static string ResolverYGuardar(int punto)
+    {
+        var resuelto = Resolver(punto);
+        if (Resueltos.Count < TopeDeLaCache)
+        {
+            Resueltos.TryAdd(punto, resuelto);
+        }
+
+        return resuelto;
+    }
 
     private static string Resolver(int punto)
     {

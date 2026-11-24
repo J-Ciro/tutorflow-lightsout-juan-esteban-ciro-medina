@@ -7,7 +7,8 @@ internal static class VocabularioCapacidadAjena
         "coordinador", "coordinadora", "coordinadores", "coordinadoras", "coord", "coordinacion",
         "coordinator", "coordinators", "advisor", "director del programa", "directora del programa",
         "director de programa", "tutor del programa", "tutora del programa", "program director",
-        "administrador", "administradores", "admin", "otro estudiante", "otra estudiante",
+        "administrador", "administradores", "admin", "decano", "decana", "profesor", "profesora", "profesores", "profesoras",
+        "docente", "docentes", "dean", "teacher", "teachers", "otro estudiante", "otra estudiante",
         "otro usuario", "otros usuarios", "companero", "companeros", "companera", "companeras"
     ];
 
@@ -38,6 +39,12 @@ internal static class VocabularioCapacidadAjena
 
     public static readonly string[] CapacidadDeTenencia = ["tiene", "tienen", "has", "have"];
 
+    public const string ConjuncionQue = "que";
+
+    public static readonly string[] PreposicionesDeTema = ["sobre", "de"];
+
+    public static readonly string[] PalabrasDePersona = ["mi", "mis", "me", "yo"];
+
     public static readonly string[] CapacidadDelCoordinador = ["hacer", "hace", "hacen", "do"];
 
     public static readonly string[] IntroductoresDeContenido =
@@ -60,7 +67,7 @@ internal static class VocabularioCapacidadAjena
         "permisos", "herramientas", "privilegios", "configuracion", "visibilidad", "permissions", "tools",
         "privileges", "veria", "verian", "would see", "le respondes", "le responderias", "le contestas",
         "responde como", "responder como", "contesta como", "actua como", "habla como", "si fueras",
-        "imagina que eres", "finge que eres", "finge ser", "simula ser", "haz de", "act as", "pretend",
+        "imagina que eres", "finge que eres", "finge ser", "simula ser", "haz de", "hazte pasar", "asume el rol", "ponte en el lugar de", "act as", "pretend",
         "if you were"
     ];
 
