@@ -16,7 +16,6 @@ public sealed class ConfiguracionAsistente
     public ConfiguracionAsistente(
         PrecioModelo? precio,
         string? marcadorCanarioConfigurado,
-        IReadOnlyCollection<string>? codigosAsignatura = null,
         decimal? reservaPorPeticionUsd = null,
         int relevanciaMinima = RelevanciaMinimaPorDefecto, int apoyoMinimoRespaldo = ApoyoMinimoPorDefecto,
         IReadOnlyList<AsignaturaCatalogo>? catalogo = null,
@@ -27,7 +26,7 @@ public sealed class ConfiguracionAsistente
         Advertir = AdvertenciaOSilencio(advertir);
         Precio = precio;
         MarcadorCanario = MarcadorOAleatorio(marcadorCanarioConfigurado);
-        CodigosAsignatura = CodigosOCatalogo(codigosAsignatura, Catalogo);
+        CodigosAsignatura = [.. Catalogo.Select(asignatura => asignatura.Codigo)];
         Ajustes = ajustes ?? new AjustesDelModelo();
         ReservaPorPeticionUsd = reservaPorPeticionUsd is > 0m ? reservaPorPeticionUsd.Value : ReservaPorDefecto(precio, reservaSinPrecioUsd);
         RelevanciaMinima = Math.Max(MinimoPermitido, relevanciaMinima);
@@ -69,9 +68,6 @@ public sealed class ConfiguracionAsistente
         string.IsNullOrWhiteSpace(configurado) ? Convert.ToHexString(RandomNumberGenerator.GetBytes(BytesDelMarcadorAleatorio)) : configurado;
 
     private static Action<string> AdvertenciaOSilencio(Action<string>? advertir) => advertir ?? (_ => { });
-
-    private static IReadOnlyCollection<string> CodigosOCatalogo(IReadOnlyCollection<string>? codigos, IReadOnlyList<AsignaturaCatalogo> catalogo) =>
-        codigos ?? [.. catalogo.Select(asignatura => asignatura.Codigo)];
 
     public decimal GastoDe(UsoTokens uso, int llamadas = 1) =>
         Precio is null ? ReservaPorPeticionUsd * llamadas : CalculadoraCosto.Calcular(uso, Precio);
