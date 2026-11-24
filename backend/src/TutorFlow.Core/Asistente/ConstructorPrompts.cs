@@ -62,7 +62,7 @@ public static partial class ConstructorPrompts
         </ejemplos>
         """;
 
-    private const string FormulaDeDefinitiva ="definitiva = 0.3 × corte 1 + 0.3 × corte 2 + 0.4 × corte 3";
+    private const string FormulaDeDefinitiva = "definitiva = 0.3 × corte 1 + 0.3 × corte 2 + 0.4 × corte 3";
 
     private const string FormulaDeDefinitivaEnPorcentajes = "definitiva = 30% × corte 1 + 30% × corte 2 + 40% × corte 3";
 
