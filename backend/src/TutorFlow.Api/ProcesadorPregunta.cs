@@ -77,7 +77,7 @@ public sealed partial class ProcesadorPregunta
         }
 
         var solicitud = await LeerSolicitudParaAuditoriaAsync(contexto, cancellationToken);
-        return Rechazar429(contexto, peticion, solicitud, tasa.SegundosParaReintentar);
+        return Rechazar429(contexto, peticion, solicitud, tasa);
     }
 
     private async Task<SolicitudValidada?> LeerSolicitudParaAuditoriaAsync(HttpContext contexto, CancellationToken cancellationToken)
@@ -165,7 +165,7 @@ public sealed partial class ProcesadorPregunta
         return Results.Problem(statusCode: estado, title: titulo);
     }
 
-    private IResult Rechazar429(HttpContext contexto, DatosPeticion peticion, SolicitudValidada? solicitud, int segundosParaReintentar)
+    private IResult Rechazar429(HttpContext contexto, DatosPeticion peticion, SolicitudValidada? solicitud, ResultadoTasa tasa)
     {
         _auditor.RegistrarSinConsultas(new SolicitudAuditoria(
             peticion.Ip,
@@ -174,8 +174,9 @@ public sealed partial class ProcesadorPregunta
             solicitud?.UsuarioId,
             solicitud?.Pregunta,
             ResultadoAuditoria.Denegada,
-            Milisegundos(peticion)));
-        return Responder429(contexto, segundosParaReintentar);
+            Milisegundos(peticion),
+            tasa.IniciaBloqueo ? tasa.SegundosParaReintentar : null));
+        return Responder429(contexto, tasa.SegundosParaReintentar);
     }
 
     private static IResult Responder503(HttpContext contexto, int segundosParaReintentar)

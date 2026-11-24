@@ -9,7 +9,8 @@ public sealed record SolicitudAuditoria(
     string? UsuarioId,
     string? Pregunta,
     ResultadoAuditoria Resultado,
-    long DuracionMs);
+    long DuracionMs,
+    int? BloqueoSegundos = null);
 
 public sealed class AuditorPeticiones
 {
@@ -73,7 +74,10 @@ public sealed class AuditorPeticiones
             0,
             0m,
             solicitud.DuracionMs,
-            false));
+            false)
+        {
+            BloqueoSegundos = solicitud.BloqueoSegundos
+        });
     }
 
     public void RegistrarMultiplesIdentidades(string ipOrigen, IReadOnlyList<string> usuarioIds) =>
