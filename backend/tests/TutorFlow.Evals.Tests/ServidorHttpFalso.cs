@@ -64,6 +64,7 @@ public sealed class ServidorHttpFalso : IDisposable
         var bytes = Encoding.UTF8.GetBytes(_respuestaJson);
         contexto.Response.StatusCode = 200;
         contexto.Response.ContentType = "application/json; charset=utf-8";
+        contexto.Response.Headers["X-Correlation-Id"] = Guid.CreateVersion7().ToString();
         contexto.Response.ContentLength64 = bytes.Length;
         await contexto.Response.OutputStream.WriteAsync(bytes);
         contexto.Response.Close();
