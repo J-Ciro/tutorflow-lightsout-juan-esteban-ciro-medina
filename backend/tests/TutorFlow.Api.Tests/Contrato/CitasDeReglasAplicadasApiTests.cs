@@ -20,7 +20,6 @@ public sealed class CitasDeReglasAplicadasApiTests
     public static TheoryData<string, string, string, string, string[]> PreguntasDeQ10ConResumen => new()
     {
         { "ESC-177a", "EST-001", "¿Cuál es mi promedio ponderado del periodo?", "Tu promedio es 4.39. Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0.", [Seccion4, Seccion3, Notas, Asistencia] },
-        { "ESC-177b", "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", [Articulo11, Notas, Asistencia] },
         { "ESC-177c", "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9.", [Seccion3, Notas, Asistencia] }
     };
 
@@ -40,6 +39,24 @@ public sealed class CitasDeReglasAplicadasApiTests
         Assert.Equal(texto, respuesta.Respuesta);
         Assert.Equal(citas, respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante, caso);
+        Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-01")]
+    [Trait("CA", "CA-27")]
+    [Trait("ESC", "ESC-177")]
+    [Trait("D", "D-92")]
+    public async Task ESC_177b_Q10_3_cita_el_Articulo_11_con_Notas_y_Asistencia_y_responde_con_el_desglose()
+    {
+        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Aquí está el detalle de tus faltas."), conocimientoReal: true);
+
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuántas faltas tengo en Bases de Datos?");
+
+        Assert.Equal(200, respuesta.Estado);
+        Assert.Equal([Articulo11, Notas, Asistencia], respuesta.Citas);
+        Assert.Contains("2 de 48 clases programadas", respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.True(respuesta.UsoDatosEstudiante);
         Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 

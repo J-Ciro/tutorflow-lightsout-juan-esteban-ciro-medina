@@ -7,8 +7,7 @@ public sealed class FormasVerbalesD74ApiTests
     private const string Articulo6 = "reglamento_academico_2025.md · Artículo 6";
     private const string Articulo7 = "reglamento_academico_2025.md · Artículo 7";
     private const string Articulo11 = "reglamento_academico_2025.md · Artículo 11";
-    private const string PreguntaFaltasRestantes = "¿Cuántas faltas más puedo tener en Bases de Datos sin perderla?";
-    private const string PreguntaFaltas = "¿Cuántas faltas tengo en Bases de Datos?";
+    private const string PreguntaSinTerminoDeFaltas = "¿Cómo voy en Bases de Datos?";
     private const string PreguntaHabilitar = "¿Puedo habilitar Bases de Datos?";
 
     public static TheoryData<string, string> FormasDeInasistencia => new()
@@ -35,7 +34,7 @@ public sealed class FormasVerbalesD74ApiTests
         Assert.NotEmpty(forma);
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaFaltasRestantes);
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaSinTerminoDeFaltas);
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
@@ -69,7 +68,7 @@ public sealed class FormasVerbalesD74ApiTests
         const string texto = "A Bases de Datos le falta calificar el corte 3.";
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaFaltas);
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaSinTerminoDeFaltas);
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);

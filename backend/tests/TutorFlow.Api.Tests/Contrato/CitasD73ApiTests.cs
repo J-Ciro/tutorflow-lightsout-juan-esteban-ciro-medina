@@ -16,6 +16,7 @@ public sealed class CitasD73ApiTests
     private const string ProgramaIngSis = "Datos del programa · ING-SIS";
     private const string ProgramaAdm = "Datos del programa · ADM";
     private const string PreguntaP3 = "¿Cuántas faltas tengo en Bases de Datos?";
+    private const string DesgloseDeBasesDeDatos = "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.";
     private const string PreguntaP4 = "¿Cómo se calcula la nota definitiva de una asignatura?";
     private const string PreguntaP6 = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
     private const string PreguntaDosMilVeintitres = "¿Qué decía el reglamento de 2023 sobre la habilitación?";
@@ -66,7 +67,11 @@ public sealed class CitasD73ApiTests
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaP3);
 
-        Assert.Equal("Bases de Datos: 2 faltas de 48 clases.", respuesta.Respuesta);
+        Assert.Contains(DesgloseDeBasesDeDatos, respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.Contains("Total: 2 faltas", respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.DoesNotContain("evaluacion_y_calificaciones.md", respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.Equal([Articulo11], respuesta.Citas.Where(c => c.StartsWith("reglamento", StringComparison.Ordinal) || c.StartsWith("evaluacion", StringComparison.Ordinal)));
+        Assert.Equal(1, fabrica.Llm.Llamadas);
         Assert.DoesNotContain(Seccion3, respuesta.Citas);
         Assert.DoesNotContain(Seccion4, respuesta.Citas);
     }
