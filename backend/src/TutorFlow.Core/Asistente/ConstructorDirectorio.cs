@@ -52,22 +52,20 @@ public static class ConstructorDirectorio
         IApiAcademica api,
         CancellationToken cancellationToken)
     {
-        var coordinadores = new List<Coordinador>();
         var ids = programas.Select(p => p.CoordinadorId).Where(Identificadores.EsIdCoordinador).Distinct();
+        var coordinadores = new List<Coordinador>();
         foreach (var id in ids.Where(id => id != propio?.Id))
         {
-            var coordinador = await api.ObtenerCoordinadorAsync(id, cancellationToken);
-            if (coordinador is not null)
-            {
-                coordinadores.Add(coordinador);
-            }
+            coordinadores.AddRange(await LeerCoordinadorAsync(api, id, cancellationToken));
         }
 
-        if (propio is not null)
-        {
-            coordinadores.Add(propio);
-        }
-
+        coordinadores.AddRange(propio is null ? [] : [propio]);
         return coordinadores;
+    }
+
+    private static async Task<IEnumerable<Coordinador>> LeerCoordinadorAsync(IApiAcademica api, string id, CancellationToken cancellationToken)
+    {
+        var coordinador = await api.ObtenerCoordinadorAsync(id, cancellationToken);
+        return coordinador is null ? [] : [coordinador];
     }
 }
