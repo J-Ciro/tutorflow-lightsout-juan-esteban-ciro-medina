@@ -21,7 +21,7 @@ internal static partial class BloquesDeRespuesta
     public static IReadOnlyList<BloqueDeTexto> De(string respuesta)
     {
         var estado = new EstadoDeBloques();
-        return [.. SaltoDeLinea().Split(respuesta).Select(Preparar).SelectMany(estado.Procesar)];
+        return [.. SaltoDeLinea().Split(ComaDecimal.APunto(respuesta)).Select(Preparar).SelectMany(estado.Procesar)];
     }
 
     internal static LineaPreparada Preparar(string linea)

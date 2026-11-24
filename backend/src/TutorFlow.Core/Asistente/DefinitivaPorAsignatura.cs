@@ -11,6 +11,7 @@ internal sealed partial class DefinitivaPorAsignatura
     private const int PalabrasDelRequisito = 4;
     private const string Definitiva = "definitiva";
     private const string Definitivas = "definitivas";
+    private const string NotaFinal = "final";
 
     private static readonly HashSet<string> Comparadores = new(StringComparer.Ordinal)
     {
@@ -29,7 +30,7 @@ internal sealed partial class DefinitivaPorAsignatura
 
     private static readonly HashSet<string> Negaciones = new(StringComparer.Ordinal) { "no", "ni", "sin" };
 
-    private static readonly HashSet<string>[] SaltosPrevios = [new(StringComparer.Ordinal) { "nota" }, Determinantes, FormasDePerdida.Auxiliares];
+    private static readonly HashSet<string>[] SaltosPrevios = [new(StringComparer.Ordinal) { "nota", "calificacion" }, Determinantes, FormasDePerdida.Auxiliares];
 
     private readonly IReadOnlyList<AsignaturaCatalogo> _catalogo;
 
@@ -109,7 +110,7 @@ internal sealed partial class DefinitivaPorAsignatura
         var apariciones = CatalogoAsignaturas.Apariciones(tokens, catalogo);
         var hayDefinitiva = Enumerable.Range(0, tokens.Count).Any(indice => EsDefinitiva(tokens, indice) && !EstaNegada(tokens, indice));
         var porCifra = Enumerable.Range(0, tokens.Count)
-            .Where(indice => tokens[indice].Valor == Definitiva && !EstaNegada(tokens, indice))
+            .Where(indice => EsDefinitivaSingular(tokens, indice) && !EstaNegada(tokens, indice))
             .Select(indice => CifraEfectiva(tokens, indice))
             .OfType<int>()
             .SelectMany(cifra => AtribucionMasCercana(bloque, tokens, apariciones, cifra));
@@ -156,9 +157,15 @@ internal sealed partial class DefinitivaPorAsignatura
         asignatura.Fin < cifra ? cifra - asignatura.Fin : asignatura.Inicio - cifra;
 
     private static bool EsDefinitiva(IReadOnlyList<TokenTexto> tokens, int indice) =>
-        tokens[indice].Valor is Definitiva or Definitivas;
+        tokens[indice].Valor == Definitivas || EsDefinitivaSingular(tokens, indice);
 
-    private static int? CifraEfectiva(IReadOnlyList<TokenTexto> tokens, int definitiva)
+    private static bool EsDefinitivaSingular(IReadOnlyList<TokenTexto> tokens, int indice) =>
+        tokens[indice].Valor == Definitiva || EsNotaFinal(tokens, indice);
+
+    private static bool EsNotaFinal(IReadOnlyList<TokenTexto> tokens, int indice) =>
+        tokens[indice].Valor == NotaFinal && indice > 0 && tokens[indice - 1].Valor is "nota" or "calificacion";
+
+    internal static int? CifraEfectiva(IReadOnlyList<TokenTexto> tokens, int definitiva)
     {
         var cifra = CifraAsociada(tokens, definitiva);
         return cifra is { } asociada && EsUmbralDeCifra(tokens, asociada) ? SiguienteNoUmbral(tokens, asociada) : cifra;
@@ -184,7 +191,7 @@ internal sealed partial class DefinitivaPorAsignatura
     private static bool SigueARequisito(IReadOnlyList<TokenTexto> tokens, int cifra) =>
         RequisitoPrevio().IsMatch(string.Join(' ', tokens.Take(cifra).TakeLast(PalabrasDelRequisito).Select(token => token.Valor)));
 
-    private static bool EstaNegada(IReadOnlyList<TokenTexto> tokens, int indice)
+    internal static bool EstaNegada(IReadOnlyList<TokenTexto> tokens, int indice)
     {
         var anterior = SaltosPrevios.Aggregate(indice - 1, (posicion, saltables) => Saltar(tokens, posicion, saltables));
         return anterior >= 0 && Negaciones.Contains(tokens[anterior].Valor);

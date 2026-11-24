@@ -92,7 +92,7 @@ public sealed partial class VerificadorSalida
         EquivalentesDePeso.TryGetValue(numero, out var equivalente) ? [numero, equivalente] : [numero];
 
     private IEnumerable<string> NumerosAVerificar(string respuesta) =>
-        _notaOPorcentaje.Matches(ReferenciasASeccion.Quitar(CifraPartida().Replace(TokenizadorTexto.Plegado(respuesta), "$1.$2")))
+        _notaOPorcentaje.Matches(ReferenciasASeccion.Quitar(CifraPartida().Replace(ComaDecimal.APunto(TokenizadorTexto.Plegado(respuesta)), "$1.$2")))
             .Select(coincidencia => coincidencia.Groups["numero"].Value);
 
     [GeneratedRegex(@"(?<![\d.])(\d+) +[.,](\d{1,2})(?!\d)", RegexOptions.None, matchTimeoutMilliseconds: TiempoLimiteRegex.Milisegundos)]

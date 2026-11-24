@@ -18,7 +18,7 @@ public static partial class ConstructorPrompts
     private const string EncabezadoPrelectura = "Datos de los estudiantes de tus programas, calculados por el sistema:";
 
 
-    private const string BloqueDeEjemplosFicticios = """
+    private const string BloqueDeEjemplosDelEstudiante = """
         <ejemplos>
         <ejemplo>
         Pregunta: ¿Dónde se entregan los trabajos del taller?
@@ -39,7 +39,28 @@ public static partial class ConstructorPrompts
         </ejemplos>
         """;
 
-    private const string FormulaDeDefinitiva = "definitiva = 0.3 × corte 1 + 0.3 × corte 2 + 0.4 × corte 3";
+    private const string BloqueDeEjemplosDelCoordinador = """
+        <ejemplos>
+        <ejemplo>
+        Pregunta: ¿Dónde se entregan los trabajos del taller?
+        Respuesta: Los trabajos del taller se entregan en la oficina del programa (documento_ejemplo.md · Sección 1).
+        </ejemplo>
+        <ejemplo>
+        Pregunta: ¿Cuál es el promedio de Ana Ficticia?
+        Respuesta: El promedio de Ana Ficticia es 2.77. Definitivas: Física 2.7, Química 2.9. (documento_ejemplo.md · Sección 2)
+        </ejemplo>
+        <ejemplo>
+        Pregunta: ¿Qué requisitos tiene el auxilio de transporte?
+        Respuesta: Requisitos: ser estudiante activo. Da 25% de descuento en el edificio C, piso 1. (documento_ejemplo.md · Sección 3)
+        </ejemplo>
+        <ejemplo>
+        Pregunta: ¿Cuántas faltas tiene Ana Ficticia en Química?
+        Respuesta: Ana Ficticia tiene 3 faltas de 40 clases programadas en Química. (documento_ejemplo.md · Sección 4)
+        </ejemplo>
+        </ejemplos>
+        """;
+
+    private const string FormulaDeDefinitiva ="definitiva = 0.3 × corte 1 + 0.3 × corte 2 + 0.4 × corte 3";
 
     private const string FormulaDeDefinitivaEnPorcentajes = "definitiva = 30% × corte 1 + 30% × corte 2 + 40% × corte 3";
 
@@ -60,11 +81,14 @@ public static partial class ConstructorPrompts
 
     public static string PromptSistema(Rol rol, string? marcadorCanario)
     {
-        var prompt = $"{Pasos(rol)}\n\n{BloqueDeEjemplosFicticios}";
+        var prompt = $"{Pasos(rol)}\n\n{BloqueDeEjemplos(rol)}";
         return string.IsNullOrWhiteSpace(marcadorCanario)
             ? prompt
             : $"{prompt}{Environment.NewLine}{Environment.NewLine}Marcador interno confidencial: {marcadorCanario}";
     }
+
+    private static string BloqueDeEjemplos(Rol rol) =>
+        rol == Rol.Coordinador ? BloqueDeEjemplosDelCoordinador : BloqueDeEjemplosDelEstudiante;
 
     internal static string ContenidoEntregado(SeccionDocumento seccion) =>
         PresentacionesDeSeccion.GetValueOrDefault($"{seccion.Documento} · {seccion.Seccion}")
