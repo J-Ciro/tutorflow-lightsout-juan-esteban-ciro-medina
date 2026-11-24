@@ -42,8 +42,14 @@ internal static class ListadosDePrograma
     private static IEnumerable<string> Grupo(Programa programa, IReadOnlyList<EstudianteDePrograma> estudiantes, IReadOnlyList<ListadoDePrograma> pedidos, bool variosProgramas)
     {
         var encabezado = variosProgramas ? [FormateadorPrograma.LineaDeNumero(programa, estudiantes)] : Array.Empty<string>();
-        return encabezado.Concat(pedidos.Select(listado => FormateadorPrograma.Listado(listado, programa, estudiantes)));
+        var listados = pedidos.Select(listado => FormateadorPrograma.Listado(listado, programa, estudiantes));
+        return encabezado.Concat(listados).Concat(Cantidades(pedidos, estudiantes));
     }
+
+    private static IEnumerable<string> Cantidades(IReadOnlyList<ListadoDePrograma> pedidos, IReadOnlyList<EstudianteDePrograma> estudiantes) =>
+        pedidos.Contains(ListadoDePrograma.Numero)
+            ? pedidos.Select(listado => FormateadorPrograma.Cantidad(listado, estudiantes)).OfType<string>()
+            : [];
 
     private static bool Contiene(string texto, string termino) => texto.Contains($" {termino} ", StringComparison.Ordinal);
 

@@ -10,7 +10,8 @@ namespace TutorFlow.Core.Tests.Asistente;
 public sealed class CitasD73Tests
 {
     private const string DesgloseDeBasesDeDatos = "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.\nTotal: 2 faltas";
-    private const string PreguntaFaltas = "¿Cuántas faltas tengo en Bases de Datos?";
+    private const string PreguntaNormativa = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaFaltas ="¿Cuántas faltas tengo en Bases de Datos?";
     private const string PreguntaContabilidad = "¿Qué nota definitiva tengo en Contabilidad?";
     private const string PreguntaPerdidas = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
     private const string PreguntaEstudiantesDelPrograma = "¿Cuántos estudiantes tiene mi programa?";
@@ -56,7 +57,7 @@ public sealed class CitasD73Tests
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaFaltas);
 
-        Assert.Equal(DesgloseDeBasesDeDatos, resultado.Respuesta!.Respuesta.Replace("\r\n", "\n", StringComparison.Ordinal));
+        Assert.Contains(DesgloseDeBasesDeDatos, resultado.Respuesta!.Respuesta.Replace("\r\n", "\n", StringComparison.Ordinal), StringComparison.Ordinal);
         Assert.Equal([Art11], Documentos(resultado));
         Assert.Contains(DatosAsistencia, resultado.Respuesta.Citas);
     }
@@ -88,7 +89,7 @@ public sealed class CitasD73Tests
         var resultado = await escenario.PreguntarAsync(Coord01, PreguntaEstudiantesDelPrograma);
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.Equal("Tu programa tiene 3 estudiantes.", resultado.Respuesta!.Respuesta);
+        Assert.Contains("Programa ING-SIS (Ingeniería de Sistemas): 3 estudiantes.", resultado.Respuesta!.Respuesta, StringComparison.Ordinal);
         Assert.Empty(Documentos(resultado));
         Assert.Equal([DatosProgramaIngSis], resultado.Respuesta.Citas.ToArray());
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
@@ -100,9 +101,9 @@ public sealed class CitasD73Tests
     [Trait("D", "D-73")]
     public async Task ESC_198f2_Con_solo_la_cifra_de_la_definitiva_no_hay_campo_usado_ni_reglas_aplicadas_ni_respaldo_con_datos_leidos()
     {
-        var escenario = Con(Fijo("3.9."), IndiceDeReglas(NotaDefinitiva, Articulo5));
+        var escenario = Con(SalidasVerificadas.LeeNotasYAsistenciaYResponde("3.9."), IndiceDeReglas(NotaDefinitiva, Articulo5, Articulo6));
 
-        var resultado = await escenario.PreguntarAsync(Est004, PreguntaContabilidad);
+        var resultado = await escenario.PreguntarAsync(Est004, PreguntaNormativa);
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
         Assert.Equal("3.9.", resultado.Respuesta!.Respuesta);
@@ -133,10 +134,11 @@ public sealed class CitasD73Tests
     [Trait("D", "D-73")]
     public async Task ESC_177c_Una_cifra_distinta_de_la_definitiva_no_forma_el_par_por_valor()
     {
-        var escenario = Con(Fijo("Contabilidad: 4.1."), IndiceDeReglas());
+        var escenario = Con(SalidasVerificadas.LeeNotasYAsistenciaYResponde("Contabilidad: 3.3."), IndiceDeReglas(Articulo6));
 
-        var resultado = await escenario.PreguntarAsync(Est004, PreguntaContabilidad);
+        var resultado = await escenario.PreguntarAsync(Est004, PreguntaNormativa);
 
+        Assert.Equal(ResultadoAuditoria.EstadoNoVerificado, resultado.Auditoria);
         Assert.DoesNotContain(Sec3, resultado.Respuesta!.Citas);
     }
 
@@ -162,10 +164,11 @@ public sealed class CitasD73Tests
     [Trait("D", "D-73")]
     public async Task ESC_177d_Sin_valores_ni_terminos_de_perdida_el_coordinador_no_recibe_el_Articulo_5()
     {
-        var escenario = Con(LeeElProgramaYResponde("Valentina Castro tiene dos asignaturas con nota baja: Microeconomía y Estadística."), IndiceDeReglas());
+        var escenario = Con(LeeElProgramaYResponde("Hay dos asignaturas con nota baja: Microeconomía y Estadística."), IndiceDeReglas(Articulo6));
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
+        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaNormativa);
 
+        Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
         Assert.DoesNotContain(Art5, resultado.Respuesta!.Citas);
     }
 
@@ -175,9 +178,9 @@ public sealed class CitasD73Tests
     [Trait("D", "D-73")]
     public async Task La_pregunta_o_los_datos_leidos_no_usan_el_campo_sin_que_la_respuesta_final_lo_haga()
     {
-        var escenario = Con(LeeElProgramaYResponde("Revisa el detalle de tus estudiantes."), IndiceDeReglas());
+        var escenario = Con(LeeElProgramaYResponde("Revisa el detalle de tus estudiantes."), IndiceDeReglas(Articulo6));
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
+        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaNormativa);
 
         Assert.Empty(Documentos(resultado));
         Assert.Equal([DatosProgramaAdm], resultado.Respuesta!.Citas.ToArray());

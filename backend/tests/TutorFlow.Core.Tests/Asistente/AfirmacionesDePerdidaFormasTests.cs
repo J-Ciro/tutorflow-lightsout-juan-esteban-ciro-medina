@@ -1,17 +1,7 @@
-using TutorFlow.Core.Asistente;
-using TutorFlow.Core.Autorizacion;
-using TutorFlow.Core.Conocimiento;
-using static TutorFlow.Core.Tests.Asistente.EscenarioAsistente;
-using static TutorFlow.Core.Tests.Asistente.SalidasVerificadas;
-using static TutorFlow.Core.Tests.Asistente.SeccionesDeReferencia;
-
 namespace TutorFlow.Core.Tests.Asistente;
 
 public sealed class AfirmacionesDePerdidaFormasTests
 {
-    private const string PreguntaPerdidas = "¿Qué dice el reglamento sobre la habilitación?";
-    private static readonly Usuario Coord02 = new(Rol.Coordinador, "COORD-02");
-
     public static TheoryData<string, string> FormasQueLosDatosNoRespaldan => new()
     {
         { "j", "Mateo Vargas (EST-006) tiene asignatura perdida por Estadística." },
@@ -38,8 +28,7 @@ public sealed class AfirmacionesDePerdidaFormasTests
         { "r", "Valentina Castro:\n- Asignaturas perdidas: Microeconomía (1.8) y Estadística (2.3)\nMateo Vargas:\n- Sin definitiva: Estadística" }
     };
 
-    private static EscenarioAsistente ConPrograma(string texto) =>
-        Con(LeeElProgramaYResponde(texto), Indice(Articulo5, Articulo6, Articulo20));
+    private static readonly string[] Adm = ["EST-004", "EST-005", "EST-006"];
 
     [Theory]
     [MemberData(nameof(FormasQueLosDatosNoRespaldan))]
@@ -49,11 +38,8 @@ public sealed class AfirmacionesDePerdidaFormasTests
     public async Task ESC_175_Una_forma_de_perdida_que_los_datos_no_respaldan_se_reemplaza_por_texto_no_verificable(string caso, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = ConPrograma(texto);
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
-
-        AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        await ClasesVerificadoras.AfirmarFallaAsync("COORD-02", texto, Adm);
     }
 
     [Theory]
@@ -64,12 +50,8 @@ public sealed class AfirmacionesDePerdidaFormasTests
     public async Task ESC_175p1p2_Una_forma_de_perdida_respaldada_negada_o_hipotetica_se_entrega_sin_cambios(string caso, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = ConPrograma(texto);
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
-
-        AfirmarRespondida(resultado, escenario, texto);
-        Assert.Contains(new Cita(Textos.DocumentoDatosPrograma, "ADM"), resultado.Respuesta!.Citas);
+        await ClasesVerificadoras.AfirmarPasaAsync("COORD-02", texto, Adm);
     }
 
     [Fact]
@@ -78,11 +60,7 @@ public sealed class AfirmacionesDePerdidaFormasTests
     [Trait("SEG", "SEG-10f")]
     public async Task ESC_175j_Mateo_Vargas_con_asignatura_perdida_por_Estadistica_es_la_regresion_del_fallo_real()
     {
-        var escenario = ConPrograma("Mateo Vargas (EST-006) tiene asignatura perdida por Estadística.");
-
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
-
-        AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        await ClasesVerificadoras.AfirmarFallaAsync("COORD-02", "Mateo Vargas (EST-006) tiene asignatura perdida por Estadística.", Adm);
     }
 
     [Fact]
@@ -91,11 +69,7 @@ public sealed class AfirmacionesDePerdidaFormasTests
     [Trait("SEG", "SEG-10f")]
     public async Task ESC_175m_Una_construccion_nominal_sin_asignatura_se_respalda_con_alguna_perdida_de_la_persona()
     {
-        var escenario = ConPrograma("Valentina Castro tiene alguna materia perdida.");
-
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
-
-        AfirmarRespondida(resultado, escenario, "Valentina Castro tiene alguna materia perdida.");
+        await ClasesVerificadoras.AfirmarPasaAsync("COORD-02", "Valentina Castro tiene alguna materia perdida.", Adm);
     }
 
     [Fact]

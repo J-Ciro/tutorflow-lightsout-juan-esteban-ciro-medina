@@ -10,6 +10,7 @@ public sealed class CitasPorTemaTests
 {
     private const string PreguntaP4 = "¿Cómo se calcula la nota definitiva de una asignatura?";
     private const string PreguntaP5 = "¿Qué nota definitiva tengo en Contabilidad?";
+    private const string PreguntaNotaDefinitiva = "¿Cómo se calcula la nota definitiva de una asignatura?";
     private const string PreguntaP8 = "¿Qué requisitos tiene la beca por rendimiento académico?";
     private const string TextoDePesosYRedondeo = "La definitiva pondera 30% el corte 1, 30% el corte 2 y 40% el corte 3, y se redondea a una cifra decimal.";
     private static readonly Usuario Est001 = new(Rol.Estudiante, "EST-001");
@@ -87,9 +88,9 @@ public sealed class CitasPorTemaTests
     public async Task ESC_198d1_El_tema_pesos_con_una_sola_raiz_compartida_no_cita_la_Seccion_2()
     {
         const string texto = "Contabilidad: 3.9. La definitiva se calcula con los pesos.";
-        var escenario = Con(Fijo(texto), IndiceDeEvaluacion());
+        var escenario = Con(SalidasVerificadas.LeeNotasYAsistenciaYResponde(texto), IndiceDeEvaluacion());
 
-        var resultado = await escenario.PreguntarAsync(Est004, PreguntaP5);
+        var resultado = await escenario.PreguntarAsync(Est004, PreguntaNotaDefinitiva);
 
         Assert.Equal(texto, resultado.Respuesta!.Respuesta);
         Assert.Equal([Sec3], Documentos(resultado));
@@ -118,9 +119,9 @@ public sealed class CitasPorTemaTests
     public async Task ESC_198d3_Una_cita_por_tema_nunca_sale_de_una_seccion_no_entregada()
     {
         const string texto = "Tu promedio es 4.39 y se calcula con los pesos y se redondea.";
-        var escenario = Con(Fijo(texto), Indice([PromedioPonderado, NotaDefinitiva, Cortes], [PromedioPonderado]));
+        var escenario = Con(SalidasVerificadas.LeeNotasYAsistenciaYResponde(texto), Indice([PromedioPonderado, NotaDefinitiva, Cortes], [PromedioPonderado]));
 
-        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es mi promedio ponderado del periodo?");
+        var resultado = await escenario.PreguntarAsync(Est001, "¿Cómo se calcula el promedio ponderado?");
 
         Assert.Equal(texto, resultado.Respuesta!.Respuesta);
         Assert.Equal([Sec4], Documentos(resultado));

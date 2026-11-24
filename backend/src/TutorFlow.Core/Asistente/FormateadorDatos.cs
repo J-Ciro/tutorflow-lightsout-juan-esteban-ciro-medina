@@ -107,7 +107,7 @@ public static class FormateadorDatos
         resultado.Habilitable ? $"Habilitable: {resultado.Asignatura.Nombre}" : $"No habilitable: {resultado.Asignatura.Nombre}"
     ];
 
-    private static IEnumerable<string> LineaDeEquivalente(ResultadoAsignatura resultado) =>
+    internal static IEnumerable<string> LineaDeEquivalente(ResultadoAsignatura resultado) =>
         resultado.Acumulada is { } acumulada
             ? [$"Equivalente de la acumulada de {resultado.Asignatura.Nombre} sobre la nota completa: {Nota(acumulada.EquivalenteSobreEvaluado)}"]
             : [];

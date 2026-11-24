@@ -23,11 +23,9 @@ public sealed class PrelecturaDelProgramaTests
     public static TheoryData<string, string, string> PreguntasConActivador => new()
     {
         { "conteo", "¿Cuántos estudiantes tiene mi programa?", EncabezadoAdm },
-        { "estudiante del programa", "¿Cuál es el promedio de Valentina Castro?", "Promedio del periodo: 2.65" },
         { "Q10 #6", PreguntaQ10Seis, LineaDePerdidasAdm },
         { "forma de pérdida", "¿Alguien perdió materias?", LineaDePerdidasAdm },
         { "prueba académica", "¿Quiénes están en prueba académica?", LineaDePruebaAdm },
-        { "ID de un estudiante propio", "¿Cómo va EST-005?", LineaDePerdidasAdm },
         { "estudiante", "¿Hay algún estudiante en riesgo?", EncabezadoAdm },
         { "programas", "¿Qué programas tengo a cargo?", EncabezadoAdm },
         { "perdida", "¿Hay alguna asignatura perdida?", LineaDePerdidasAdm },
@@ -40,8 +38,14 @@ public sealed class PrelecturaDelProgramaTests
         { "reprobada", "¿Hay alguna materia reprobada?", LineaDePerdidasAdm },
         { "reprobadas", "¿Cuáles son las materias reprobadas?", LineaDePerdidasAdm },
         { "mayúsculas y tildes", "¿QUIÉNES ESTÁN EN PRUEBA ACADÉMICA?", LineaDePruebaAdm },
-        { "mis estudiantes con reglamento (ESC-190 l)", "¿Qué dice el reglamento de mis estudiantes en prueba académica?", LineaDePruebaAdm },
-        { "nombre de un estudiante suyo con reglamento (ESC-190 l)", "Según el reglamento, ¿Valentina Castro pierde la beca?", "Promedio del periodo: 2.65" }
+        { "mis estudiantes con reglamento (ESC-190 l)", "¿Qué dice el reglamento de mis estudiantes en prueba académica?", LineaDePruebaAdm }
+    };
+
+    public static TheoryData<string> PreguntasConEstudianteNombrado => new()
+    {
+        "¿Cuál es el promedio de Valentina Castro?",
+        "¿Cómo va EST-005?",
+        "Según el reglamento, ¿Valentina Castro pierde la beca?"
     };
 
     public static TheoryData<string, string> PreguntasSinActivador => new()
@@ -93,13 +97,12 @@ public sealed class PrelecturaDelProgramaTests
 
     [Theory]
     [InlineData("¿Cuántos estudiantes tiene mi programa?")]
-    [InlineData("¿Cuál es el promedio de Valentina Castro?")]
     [InlineData(PreguntaQ10Seis)]
     [InlineData("¿Quiénes están en prueba académica?")]
     [Trait("CA", "CA-19")]
     [Trait("ESC", "ESC-190")]
     [Trait("COMP", "COMP-08")]
-    public async Task ESC_190_La_prelectura_lee_solo_el_programa_propio_y_marca_uso_de_datos_sin_citas_en_la_respuesta_sin_informacion(string pregunta)
+    public async Task ESC_190_La_prelectura_lee_solo_el_programa_propio_y_la_respuesta_es_el_bloque_con_la_cita_del_programa(string pregunta)
     {
         var escenario = Con(Fijo(Textos.SinInformacion));
 
@@ -108,8 +111,26 @@ public sealed class PrelecturaDelProgramaTests
         Assert.All(EstudiantesDeIngSis, id => Assert.DoesNotContain(id, escenario.Api.LecturasNotas.Concat(escenario.Api.LecturasAsistencia)));
         Assert.Equal(EstudiantesDeAdm, escenario.Api.LecturasNotas.Distinct().Order().ToArray());
         Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
-        Assert.Empty(resultado.Respuesta.Citas);
+        Assert.Contains(new Cita(Textos.DocumentoDatosPrograma, "ADM"), resultado.Respuesta.Citas);
+        Assert.DoesNotContain(resultado.Respuesta.Citas, c => c.Seccion == "ING-SIS");
         Assert.False(PrimeraLlamada(escenario).Contains("Programa ING-SIS", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [MemberData(nameof(PreguntasConEstudianteNombrado))]
+    [Trait("CA", "CA-19")]
+    [Trait("ESC", "ESC-190")]
+    [Trait("COMP", "COMP-08")]
+    public async Task ESC_190_Con_un_estudiante_nombrado_no_hay_prelectura_y_se_leen_solo_sus_datos(string pregunta)
+    {
+        var escenario = Con(Fijo(Textos.SinInformacion));
+
+        var resultado = await escenario.PreguntarAsync(Coord02, pregunta);
+
+        Assert.Equal(["EST-005"], escenario.Api.LecturasNotas.Distinct().ToArray());
+        Assert.DoesNotContain(MarcaDelBloque, PrimeraLlamada(escenario), StringComparison.Ordinal);
+        Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
+        Assert.DoesNotContain(resultado.Respuesta.Citas, c => c.Documento == Textos.DocumentoDatosPrograma);
     }
 
     [Theory]

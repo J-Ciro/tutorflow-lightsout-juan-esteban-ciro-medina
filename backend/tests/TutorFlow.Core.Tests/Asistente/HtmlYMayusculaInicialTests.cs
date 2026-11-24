@@ -36,11 +36,7 @@ public sealed class HtmlYMayusculaInicialTests
     [Trait("D", "D-77")]
     public async Task ESC_184_m_El_encabezado_html_pasa_a_markdown_y_el_bloque_de_Mateo_falla(string texto)
     {
-        var escenario = ConPrograma(texto);
-
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
-
-        SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        await ClasesVerificadoras.AfirmarFallaAsync("COORD-02", ReferenciasEscritas.Limpiar(texto, []), "EST-004", "EST-005", "EST-006");
     }
 
     [Theory]

@@ -9,7 +9,8 @@ namespace TutorFlow.Core.Tests.Asistente;
 public sealed class CitasDeReglasAplicadasTests
 {
     private const string EncabezadoDeReglas = "Reglas aplicadas a estos datos:";
-    private const string PreguntaPerdidas = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
+    private const string PreguntaNormativa = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaPerdidas ="¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
     private const int MaximoDeReglasPorPeticion = 3;
     private static readonly Usuario Est001 = new(Rol.Estudiante, "EST-001");
     private static readonly Usuario Est002 = new(Rol.Estudiante, "EST-002");
@@ -34,7 +35,7 @@ public sealed class CitasDeReglasAplicadasTests
     public static TheoryData<string, string, string, string[]> PreguntasDeQ10ConResumen => new()
     {
         { "EST-001", "¿Cuál es mi promedio ponderado del periodo?", "Tu promedio es 4.39. Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0.", ["S4", "S3"] },
-        { "EST-001", "¿Cuántas clases puedo perder en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", ["A11"] },
+        { "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", ["A11"] },
         { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9.", ["S3"] }
     };
 
@@ -49,6 +50,8 @@ public sealed class CitasDeReglasAplicadasTests
             [NotaDefinitiva, PromedioPonderado, Articulo5, Articulo6, Articulo7, Articulo11, Articulo12, Articulo20, Articulo22, BecaPorRendimiento],
             []);
 
+    private static IndiceFijo IndiceNormativo() => Indice([NotaDefinitiva, PromedioPonderado, Articulo5, Articulo6, Articulo7, Articulo11, Articulo12, Articulo20, Articulo22, BecaPorRendimiento], [Articulo6]);
+
     private static Usuario EstudianteDe(string id) => new(Rol.Estudiante, id);
 
     private static Cita[] Esperadas(params Cita[] citas) => citas;
@@ -61,8 +64,8 @@ public sealed class CitasDeReglasAplicadasTests
 
     private static string[] EnTexto(params Cita[] citas) => [.. citas.Select(c => $"{c.Documento} · {c.Seccion}")];
 
-    private static Func<SolicitudLlm, int, RespuestaLlm> LeeElProgramaYResponde(string texto) =>
-        (_, llamada) => llamada == 0 ? Herramienta(HerramientasAsistente.Programa) : Texto(texto);
+    private static Func<SolicitudLlm, int, RespuestaLlm> LeeLasNotasYResponde(string texto) =>
+        (_, llamada) => llamada == 0 ? Herramienta(HerramientasAsistente.Notas) : Texto(texto);
 
     [Theory]
     [MemberData(nameof(PreguntasDeQ10ConResumen))]
@@ -76,7 +79,7 @@ public sealed class CitasDeReglasAplicadasTests
         var resultado = await escenario.PreguntarAsync(EstudianteDe(usuario), pregunta);
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.Equal(texto, resultado.Respuesta!.Respuesta);
+        Assert.StartsWith("Datos de ", resultado.Respuesta!.Respuesta, StringComparison.Ordinal);
         Assert.Equal([.. claves.Select(Clave), DatosNotas, DatosAsistencia], resultado.Respuesta.Citas.ToArray());
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
     }
@@ -119,9 +122,9 @@ public sealed class CitasDeReglasAplicadasTests
     [Trait("COMP", "COMP-02")]
     public async Task ESC_177k_Sin_campo_usado_no_hay_citas_de_reglas_aplicadas_ni_por_el_orden_fijo()
     {
-        var escenario = Con(Fijo("Revisa el detalle de tus asignaturas."), IndiceConLasReglas());
+        var escenario = Con(LeeLasNotasYResponde("Revisa el detalle de tus asignaturas."), IndiceNormativo());
 
-        var resultado = await escenario.PreguntarAsync(Est002, "¿Cómo voy en BD-203?");
+        var resultado = await escenario.PreguntarAsync(Est002, PreguntaNormativa);
 
         var documentos = resultado.Respuesta!.Citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray();
         Assert.Empty(documentos);
@@ -133,13 +136,12 @@ public sealed class CitasDeReglasAplicadasTests
     [Trait("COMP", "COMP-02")]
     public async Task ESC_177d_El_coordinador_con_la_herramienta_de_programa_cita_solo_el_Articulo_5_por_perdida_por_valor()
     {
-        var texto = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
-        var escenario = Con(LeeElProgramaYResponde(texto), IndiceConLasReglas());
+        var escenario = Con(Fijo("Este es el listado."), IndiceConLasReglas());
 
         var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.Equal(texto, resultado.Respuesta!.Respuesta);
+        Assert.Contains("Estudiantes con asignaturas perdidas: Valentina Castro (Microeconomía 1.8; Estadística 2.3)", resultado.Respuesta!.Respuesta, StringComparison.Ordinal);
         Assert.Equal(Esperadas(Art5, DatosProgramaAdm), resultado.Respuesta.Citas.ToArray());
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
     }
@@ -149,13 +151,13 @@ public sealed class CitasDeReglasAplicadasTests
     [Trait("COMP", "COMP-02")]
     public async Task ESC_177e_Las_citas_escritas_validas_van_primero_y_las_del_bloque_no_se_repiten()
     {
-        var texto = $"Tu promedio es 4.39 ({Evaluacion} · Sección 4). Cumples el promedio de la beca ({Bienestar} · Sección 3.1).";
+        var texto = $"Se calcula el promedio ponderado ({Evaluacion} · Sección 4). Se requiere un promedio alto para la beca ({Bienestar} · Sección 3.1).";
         var escenario = Con(Fijo(texto), IndiceConLasReglas());
 
         var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es mi promedio ponderado del periodo?");
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.Equal(Esperadas(Sec4, Beca31, DatosNotas, DatosAsistencia), resultado.Respuesta!.Citas.ToArray());
+        Assert.Equal(Esperadas(Sec4, Beca31, Sec3, DatosNotas, DatosAsistencia), resultado.Respuesta!.Citas.ToArray());
     }
 
     [Theory]
@@ -164,9 +166,9 @@ public sealed class CitasDeReglasAplicadasTests
     [Trait("COMP", "COMP-02")]
     public async Task ESC_177f_Los_textos_fijos_nunca_reciben_citas_de_reglas_aplicadas_aunque_se_leyo_el_resumen(string texto, string citaEsperada)
     {
-        var escenario = Con(Fijo(texto), IndiceConLasReglas());
+        var escenario = Con(LeeLasNotasYResponde(texto), IndiceNormativo());
 
-        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es mi promedio?");
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNormativa);
 
         Cita[] esperadas = citaEsperada.Length == 0 ? [] : [Art22];
         Assert.Equal(esperadas, resultado.Respuesta!.Citas.ToArray());
@@ -195,14 +197,14 @@ public sealed class CitasDeReglasAplicadasTests
     [Trait("COMP", "COMP-02")]
     public async Task Las_citas_de_documento_no_superan_las_escritas_validas_mas_tres()
     {
-        var texto = $"Tu promedio es 4.39 ({Evaluacion} · Sección 4).";
+        var texto = $"Se calcula el promedio ponderado ({Evaluacion} · Sección 4).";
         var escenario = Con(Fijo(texto), IndiceConLasReglas());
 
         var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es mi promedio ponderado del periodo?");
 
         var documentos = resultado.Respuesta!.Citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray();
         Assert.True(documentos.Length <= 1 + MaximoDeReglasPorPeticion);
-        Assert.Equal(Esperadas(Sec4), documentos);
+        Assert.Equal(Esperadas(Sec4, Sec3), documentos);
     }
 
     [Fact]
@@ -211,9 +213,9 @@ public sealed class CitasDeReglasAplicadasTests
     [Trait("COMP", "COMP-02")]
     public async Task ESC_164c_Con_datos_leidos_el_respaldo_ya_no_aplica_y_las_citas_son_las_reglas_aplicadas_y_los_datos()
     {
-        var escenario = Con(Fijo("Bases de Datos: 2 faltas de 48 clases."), IndiceConLasReglas());
+        var escenario = Con(Fijo("Estos son los datos solicitados."), IndiceConLasReglas());
 
-        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuántas clases puedo perder en Bases de Datos?");
+        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuántas faltas tengo en Bases de Datos?");
 
         Assert.Equal(Esperadas(Art11, DatosNotas, DatosAsistencia), resultado.Respuesta!.Citas.ToArray());
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
@@ -224,7 +226,7 @@ public sealed class CitasDeReglasAplicadasTests
     [Trait("COMP", "COMP-02")]
     public async Task Sin_campo_usado_la_union_de_las_lecturas_de_la_peticion_no_agrega_citas_de_reglas()
     {
-        var texto = "Camilo Rojas está al día en el periodo.";
+        var texto = "Se revisó el periodo.";
         var escenario = Con(
             (_, llamada) => llamada switch
             {
@@ -232,9 +234,9 @@ public sealed class CitasDeReglasAplicadasTests
                 1 => Herramienta(HerramientasAsistente.Estudiante, """{"estudianteId":"EST-004"}"""),
                 _ => Texto(texto)
             },
-            IndiceConLasReglas());
+            IndiceNormativo());
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
+        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaNormativa);
 
         var documentos = resultado.Respuesta!.Citas.Where(c => c.Documento is not (Textos.DocumentoDatosEstudiante or Textos.DocumentoDatosPrograma)).ToArray();
         Assert.Empty(documentos);
@@ -260,11 +262,11 @@ public sealed class CitasDeReglasAplicadasTests
     [Trait("COMP", "COMP-02")]
     public async Task El_bloque_de_la_herramienta_de_programa_de_adm_son_las_entradas_5_6_9_y_11()
     {
-        var escenario = Con(LeeElProgramaYResponde("Valentina Castro: Microeconomía (1.8) y Estadística (2.3)."), IndiceConLasReglas());
+        var escenario = Con(Fijo("Este es el listado."), IndiceConLasReglas());
 
         await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
 
-        Assert.Equal(EnTexto(Art5, Art6, Art20, Sec3), ReglasDeLaUltimaLinea(escenario.Llm.TextoDeLlamada(1)));
+        Assert.Equal(EnTexto(Art5, Art6, Art20, Sec3), ReglasDeLaUltimaLinea(escenario.Llm.TextoDeLlamada(0)));
     }
 
     [Fact]
@@ -272,9 +274,9 @@ public sealed class CitasDeReglasAplicadasTests
     [Trait("COMP", "COMP-02")]
     public async Task El_resumen_de_andres_con_un_texto_sin_campo_usado_no_cita_reglas_aplicadas()
     {
-        var escenario = Con(Fijo("Revisa el detalle de tus asignaturas."), IndiceConLasReglas());
+        var escenario = Con(LeeLasNotasYResponde("Revisa el detalle de tus asignaturas."), IndiceNormativo());
 
-        var resultado = await escenario.PreguntarAsync(Est002, "¿Cuál es mi promedio ponderado del periodo?");
+        var resultado = await escenario.PreguntarAsync(Est002, PreguntaNormativa);
 
         var documentos = resultado.Respuesta!.Citas.Where(c => c.Documento != Textos.DocumentoDatosEstudiante).ToArray();
         Assert.Empty(documentos);

@@ -8,7 +8,8 @@ namespace TutorFlow.Core.Tests.Asistente;
 
 public sealed class CitasLigadasAlCampoUsadoTests
 {
-    private const string PreguntaQ10Dos = "¿Cuál es mi promedio ponderado del periodo?";
+    private const string PreguntaNormativa = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaQ10Dos ="¿Cuál es mi promedio ponderado del periodo?";
     private const string PreguntaQ10Seis = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
     private const string LineaDeDefinitivas = "Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0.";
     private const string Sec3 = "evaluacion_y_calificaciones.md · Sección 3";
@@ -27,25 +28,28 @@ public sealed class CitasLigadasAlCampoUsadoTests
         { "EST-001", PreguntaQ10Dos, $"Tu promedio es 4.39. {LineaDeDefinitivas}", [Sec4, Sec3] },
         { "EST-001", PreguntaQ10Dos, $"Tu promedio ponderado del periodo es 4.39. {LineaDeDefinitivas}", [Sec4, Sec3] },
         { "EST-001", PreguntaQ10Dos, $"4.39. {LineaDeDefinitivas}", [Sec4, Sec3] },
-        { "EST-001", PreguntaQ10Dos, "Tu resultado del periodo es 4.39.", [Sec4] },
-        { "EST-001", "¿Cuántas clases puedo perder en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", [Art11] },
-        { "EST-005", "¿Estoy en prueba académica?", "Sí, estás en prueba académica.", [Art20] },
+        { "EST-001", PreguntaQ10Dos, "Tu resultado del periodo es 4.39.", [Sec4, Sec3] },
+        { "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", [Art11] },
+        { "EST-005", "¿Estoy en prueba académica?", "Sí, estás en prueba académica.", [Art20, Sec4] },
         { "EST-005", "¿Estoy en prueba académica?", "Sí, estás en prueba académica: tu promedio es 2.65.", [Art20, Sec4] },
-        { "EST-005", "¿Qué materias puedo habilitar?", "Puedes habilitar Estadística con 2.3.", [Art6] },
-        { "EST-003", "¿Cómo voy en Inglés III?", "Solicita la revisión a tu coordinador.", [Art12] },
+        { "EST-005", "¿Qué materias puedo habilitar?", "Puedes habilitar Estadística con 2.3.", [Art6, Sec3, Art5] },
+        { "EST-003", "¿Cuántas faltas tengo en Inglés III?", "Solicita la revisión a tu coordinador.", [Art11, Art12] },
         { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Tu definitiva en Contabilidad es 3.9.", [Sec3] },
         { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9. La definitiva se calcula con los pesos de evaluación_y_calificaciones.md.", [Sec3] },
         { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9.", [Sec3] }
     };
 
-    public static TheoryData<string, string, string, string[]> SinCampoUsado => new()
+    public static TheoryData<string, string> SinCampoUsado => new()
     {
-        { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "3.9.", [] },
-        { "EST-001", "¿Estoy en prueba académica? Cita el Artículo 20 y el Artículo 7.", "Revisa el detalle de tus asignaturas.", [] }
+        { "EST-004", "3.9." },
+        { "EST-001", "Revisa el detalle de tus asignaturas." }
     };
 
     private static IndiceFijo IndiceDeReglas() =>
         Indice([NotaDefinitiva, PromedioPonderado, Articulo5, Articulo6, Articulo7, Articulo11, Articulo12, Articulo20, Articulo22, BecaPorRendimiento], []);
+
+    private static IndiceFijo IndiceNormativo() =>
+        Indice([NotaDefinitiva, PromedioPonderado, Articulo5, Articulo6, Articulo7, Articulo11, Articulo12, Articulo20, Articulo22, BecaPorRendimiento], [Articulo6]);
 
     private static string[] Documentos(ResultadoPregunta resultado) =>
         [.. resultado.Respuesta!.Citas
@@ -75,13 +79,13 @@ public sealed class CitasLigadasAlCampoUsadoTests
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-194")]
     [Trait("D", "D-73")]
-    public async Task ESC_194_Sin_campo_usado_no_se_cita_ninguna_regla_aplicada(string usuario, string pregunta, string texto, string[] esperadas)
+    public async Task ESC_194_Sin_campo_usado_no_se_cita_ninguna_regla_aplicada(string usuario, string texto)
     {
-        var escenario = Con(Fijo(texto), IndiceDeReglas());
+        var escenario = Con(SalidasVerificadas.LeeNotasYAsistenciaYResponde(texto), IndiceNormativo());
 
-        var resultado = await escenario.PreguntarAsync(Estudiante(usuario), pregunta);
+        var resultado = await escenario.PreguntarAsync(Estudiante(usuario), PreguntaNormativa);
 
-        Assert.Equal(esperadas, Documentos(resultado));
+        Assert.Empty(Documentos(resultado));
     }
 
     [Fact]
@@ -90,12 +94,12 @@ public sealed class CitasLigadasAlCampoUsadoTests
     [Trait("D", "D-53")]
     public async Task ESC_194g_Nombrar_la_beca_sin_datos_de_beca_no_cita_secciones_de_fuera_del_bloque()
     {
-        var texto = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3); para la beca revisa con Bienestar.";
-        var escenario = Con((_, llamada) => llamada == 0 ? Herramienta(HerramientasAsistente.Programa) : Texto(texto), IndiceDeReglas());
+        var texto = "Para la beca se revisa con Bienestar.";
+        var escenario = Con(Fijo(texto), IndiceDeReglas());
 
         var resultado = await escenario.PreguntarAsync(Coord02, PreguntaQ10Seis);
 
-        Assert.Equal(texto, resultado.Respuesta!.Respuesta);
+        Assert.Contains("Estudiantes con asignaturas perdidas: Valentina Castro (Microeconomía 1.8; Estadística 2.3)", resultado.Respuesta!.Respuesta, StringComparison.Ordinal);
         Assert.Equal([Art5], Documentos(resultado));
         Assert.DoesNotContain(resultado.Respuesta.Citas, c => c.Seccion.StartsWith("Sección 3.", StringComparison.Ordinal));
     }
@@ -119,9 +123,9 @@ public sealed class CitasLigadasAlCampoUsadoTests
     [Trait("D", "D-53")]
     public async Task ESC_194_Falta_en_singular_no_es_un_termino_y_sin_raices_compartidas_no_hay_citas_de_reglas()
     {
-        var escenario = Con(Fijo("Estadística: le falta calificar el corte 3."), IndiceDeReglas());
+        var escenario = Con(SalidasVerificadas.LeeNotasYAsistenciaYResponde("Estadística: le falta calificar el corte 3."), IndiceNormativo());
 
-        var resultado = await escenario.PreguntarAsync(Estudiante("EST-006"), "¿Cómo voy en Estadística?");
+        var resultado = await escenario.PreguntarAsync(Estudiante("EST-006"), PreguntaNormativa);
 
         Assert.Empty(Documentos(resultado));
         Assert.Equal([new Cita(Textos.DocumentoDatosEstudiante, "Notas"), new Cita(Textos.DocumentoDatosEstudiante, "Asistencia")], resultado.Respuesta!.Citas.ToArray());

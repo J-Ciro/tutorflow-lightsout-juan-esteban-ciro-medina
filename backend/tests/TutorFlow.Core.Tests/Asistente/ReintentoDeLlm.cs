@@ -5,7 +5,7 @@ namespace TutorFlow.Core.Tests.Asistente;
 
 internal sealed record MensajeCapturado(RolMensaje Rol, string Contenido);
 
-internal sealed class GuionDeDosTurnos(string primerTurno, string reintento, bool leePrograma = false)
+internal sealed class GuionDeDosTurnos(string primerTurno, string reintento, string? herramientaInicial = null)
 {
     public List<IReadOnlyList<MensajeCapturado>> Capturas { get; } = [];
 
@@ -17,8 +17,8 @@ internal sealed class GuionDeDosTurnos(string primerTurno, string reintento, boo
             return Texto(reintento);
         }
 
-        return leePrograma && !solicitud.Mensajes.Any(m => m.Rol == RolMensaje.Herramienta)
-            ? Herramienta(HerramientasAsistente.Programa)
+        return herramientaInicial is not null && !solicitud.Mensajes.Any(m => m.Rol == RolMensaje.Herramienta)
+            ? Herramienta(herramientaInicial)
             : Texto(primerTurno);
     }
 }

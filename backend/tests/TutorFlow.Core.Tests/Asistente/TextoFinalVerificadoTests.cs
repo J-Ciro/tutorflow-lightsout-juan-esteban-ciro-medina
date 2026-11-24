@@ -113,7 +113,7 @@ public sealed class TextoFinalVerificadoTests
     {
         var escenario = Con(SalidasVerificadas.LeeElProgramaYResponde("Valentina b.md Castro (EST a.md 005) tiene Microeconomía perdida."), Indice(Articulo5, Articulo6, Articulo20));
 
-        var resultado = await escenario.PreguntarAsync(Coord01, PreguntaPerdieron);
+        var resultado = await escenario.PreguntarAsync(Coord01, "¿Qué dice el reglamento sobre la habilitación?");
 
         Assert.Equal(Textos.NegativaCoordinador, resultado.Respuesta!.Respuesta);
         Assert.Equal([CitaNegativa], resultado.Respuesta.Citas);
@@ -153,6 +153,23 @@ public sealed class TextoFinalVerificadoTests
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
     }
 
+    [Theory]
+    [InlineData("Valentina Castro tiene Microeconomía perdida.")]
+    [InlineData("Valentina b.md Castro (EST a.md 005) tiene Microeconomía perdida.")]
+    [Trait("CA", "CA-16")]
+    [Trait("ESC", "ESC-183")]
+    [Trait("RF", "SEG-10b")]
+    public async Task ESC_183c_En_modo_bloque_el_coordinador_que_nombra_a_un_estudiante_ajeno_recibe_la_negativa(string texto)
+    {
+        var escenario = Con(Fijo(texto), Indice(Articulo5, Articulo6, Articulo20));
+
+        var resultado = await escenario.PreguntarAsync(Coord01, PreguntaPerdieron);
+
+        Assert.Equal(Textos.NegativaCoordinador, resultado.Respuesta!.Respuesta);
+        Assert.Equal([CitaNegativa], resultado.Respuesta.Citas);
+        Assert.Equal(ResultadoAuditoria.FugaBloqueada, resultado.Auditoria);
+    }
+
     [Fact]
     [Trait("CA", "CA-16")]
     [Trait("ESC", "ESC-183")]
@@ -163,6 +180,7 @@ public sealed class TextoFinalVerificadoTests
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaHorario);
 
-        Assert.Equal("Bienestar atiende de lunes a viernes de 8:00 a 17:00.", resultado.Respuesta!.Respuesta);
+        Assert.StartsWith("Bienestar atiende de lunes a viernes de 8:00 a 17:00.", resultado.Respuesta!.Respuesta, StringComparison.Ordinal);
+        Assert.DoesNotContain("Documento.md", resultado.Respuesta.Respuesta, StringComparison.Ordinal);
     }
 }

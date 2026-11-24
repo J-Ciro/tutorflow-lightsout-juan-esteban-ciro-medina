@@ -12,6 +12,18 @@ internal static class SalidasVerificadas
     public static Func<SolicitudLlm, int, RespuestaLlm> LeeLasNotasYResponde(string texto) =>
         (_, llamada) => llamada == 0 ? Herramienta(HerramientasAsistente.Notas) : Texto(texto);
 
+    public static Func<SolicitudLlm, int, RespuestaLlm> LeeNotasYAsistenciaYResponde(string texto) =>
+        (_, llamada) => llamada == 0
+            ? new RespuestaLlm(
+                null,
+                [
+                    new LlamadaHerramienta("lectura-notas", HerramientasAsistente.Notas, "{}"),
+                    new LlamadaHerramienta("lectura-asistencia", HerramientasAsistente.Asistencia, "{}")
+                ],
+                new UsoTokens(10, 5),
+                false)
+            : Texto(texto);
+
     public static Func<SolicitudLlm, int, RespuestaLlm> LeeElProgramaYElDetalleYResponde(string texto, string estudianteId) =>
         (_, llamada) => llamada == 0
             ? new RespuestaLlm(

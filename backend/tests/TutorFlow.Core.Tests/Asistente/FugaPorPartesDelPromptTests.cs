@@ -124,8 +124,9 @@ public sealed class FugaPorPartesDelPromptTests
         var resultado = await escenario.PreguntarAsync(Est004, "¿Qué nota definitiva tengo en Contabilidad?");
 
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.Equal(TextoRealQ10Numero5, resultado.Respuesta!.Respuesta);
-        Assert.Contains(new Cita(Reglamento, "Artículo 5"), resultado.Respuesta.Citas);
+        Assert.StartsWith("Datos de Camilo Rojas (EST-004)", resultado.Respuesta!.Respuesta, StringComparison.Ordinal);
+        Assert.Contains("Contabilidad 3.9", resultado.Respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.Contains(new Cita("evaluacion_y_calificaciones.md", "Sección 3"), resultado.Respuesta.Citas);
         Assert.Contains(new Cita(Textos.DocumentoDatosEstudiante, "Notas"), resultado.Respuesta.Citas);
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
     }

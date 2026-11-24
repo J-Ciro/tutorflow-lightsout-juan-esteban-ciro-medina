@@ -10,12 +10,15 @@ namespace TutorFlow.Core.Tests.Asistente;
 
 public sealed class ReintentoAcotadoTests
 {
-    private const string PreguntaQ10Seis = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
-    private const string PreguntaDefinitiva = "¿Cuál es mi nota definitiva en Estadística?";
+    private const string PreguntaNormativa = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaNotaMinima = "¿Cuál es la nota mínima para aprobar una asignatura?";
     private const string PreguntaTutorias = "¿Cuándo hay tutorías académicas?";
-    private const string PerdidaDeMateo = "Mateo Vargas perdió Estadística.";
-    private const string PerdidasDeValentina = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
-    private const string MotivoPerdidaDeMateo = "la afirmación de pérdida de Mateo Vargas en Estadística no coincide con los datos entregados";
+    private const string CitaArt5 = "(reglamento_academico_2025.md · Artículo 5)";
+    private const string CitaArt6 = "(reglamento_academico_2025.md · Artículo 6)";
+    private const string NotaMinimaValida = $"Se aprueba con 3.0 {CitaArt5}.";
+    private const string HabilitacionValida = $"La habilitación exige una definitiva igual o superior a 2.0 {CitaArt6}.";
+    private const string PerdidaAjena = "Perdiste Contabilidad.";
+    private const string MotivoPerdidaAjena = "la afirmación de pérdida en Contabilidad no coincide con los datos entregados";
     private const int SalidaPorLlamada = 5;
     private static readonly Usuario Est001 = new(Rol.Estudiante, "EST-001");
 
@@ -33,7 +36,7 @@ public sealed class ReintentoAcotadoTests
         { "verificada", PreguntaPromedio, "Tu promedio es 4.39.", ResultadoAuditoria.Respondida }
     };
 
-    private static EscenarioAsistente ConPrograma(GuionDeDosTurnos guion) =>
+    private static EscenarioAsistente ConNormativa(GuionDeDosTurnos guion) =>
         Con(guion.Responder, Indice(Articulo5, Articulo6, Articulo20));
 
     [Fact]
@@ -42,17 +45,16 @@ public sealed class ReintentoAcotadoTests
     [Trait("RF", "SEG-10f")]
     public async Task ESC_193a_Un_bloqueo_de_perdida_admite_un_solo_segundo_turno_con_la_plantilla_fija_y_se_entrega_el_reintento()
     {
-        var guion = new GuionDeDosTurnos(PerdidaDeMateo, PerdidasDeValentina, leePrograma: true);
-        var escenario = ConPrograma(guion);
+        var guion = new GuionDeDosTurnos(PerdidaAjena, HabilitacionValida, HerramientasAsistente.Notas);
+        var escenario = ConNormativa(guion);
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaQ10Seis);
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNormativa);
 
-        Assert.Equal(PerdidasDeValentina, resultado.Respuesta!.Respuesta);
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
-        Assert.True(resultado.Respuesta.UsoDatosEstudiante);
+        Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
         Assert.Single(ReintentoDeLlm.Reintentos(escenario.Llm));
         ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
-        ReintentoDeLlm.AfirmarSegundoTurno(guion, PerdidaDeMateo, ReintentoDeLlm.Instruccion(MotivoPerdidaDeMateo));
+        ReintentoDeLlm.AfirmarSegundoTurno(guion, PerdidaAjena, ReintentoDeLlm.Instruccion(MotivoPerdidaAjena));
         Assert.Equal(TokensEsperados(escenario), resultado.Respuesta.Tokens);
     }
 
@@ -62,17 +64,18 @@ public sealed class ReintentoAcotadoTests
     [Trait("RF", "SEG-10c")]
     public async Task ESC_193b_Un_bloqueo_de_numero_hace_exactamente_2_llamadas_con_el_motivo_de_la_cifra_y_suma_los_dos_turnos()
     {
-        var guion = new GuionDeDosTurnos("Tu promedio es 4.40.", "Tu promedio es 4.39.");
-        var escenario = Con(guion.Responder);
+        var primera = $"Se aprueba con 3.5 {CitaArt5}.";
+        var guion = new GuionDeDosTurnos(primera, NotaMinimaValida);
+        var escenario = Con(guion.Responder, Indice(Articulo5));
 
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedio);
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
         Assert.Equal(2, escenario.Llm.Solicitudes.Count);
-        Assert.Equal("Tu promedio es 4.39.", resultado.Respuesta!.Respuesta);
+        Assert.Equal(NotaMinimaValida, resultado.Respuesta!.Respuesta);
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
         Assert.Equal(TokensEsperados(escenario), resultado.Respuesta.Tokens);
         ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
-        ReintentoDeLlm.AfirmarSegundoTurno(guion, "Tu promedio es 4.40.", ReintentoDeLlm.Instruccion("la cifra 4.40 no está en los datos ni en las secciones entregados"));
+        ReintentoDeLlm.AfirmarSegundoTurno(guion, primera, ReintentoDeLlm.Instruccion("la cifra 3.5 no está en los datos ni en las secciones entregados"));
     }
 
     [Fact]
@@ -81,13 +84,13 @@ public sealed class ReintentoAcotadoTests
     [Trait("RF", "SEG-10c")]
     public async Task ESC_193_Un_valor_monetario_inventado_admite_el_reintento_con_el_motivo_del_valor()
     {
-        var guion = new GuionDeDosTurnos("La matrícula cuesta $1.500.000.", "Tu promedio es 4.39.");
-        var escenario = Con(guion.Responder);
+        var guion = new GuionDeDosTurnos("La matrícula cuesta $1.500.000.", NotaMinimaValida);
+        var escenario = Con(guion.Responder, Indice(Articulo5));
 
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedio);
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
         Assert.Equal(2, escenario.Llm.Solicitudes.Count);
-        Assert.Equal("Tu promedio es 4.39.", resultado.Respuesta!.Respuesta);
+        Assert.Equal(NotaMinimaValida, resultado.Respuesta!.Respuesta);
         var instruccion = guion.Capturas[^1][^1];
         Assert.Equal(RolMensaje.Usuario, instruccion.Rol);
         Assert.Equal(ReintentoDeLlm.Instruccion("el valor 1.500.000 no está en las fuentes"), instruccion.Contenido);
@@ -99,12 +102,12 @@ public sealed class ReintentoAcotadoTests
     [Trait("RF", "SEG-10d")]
     public async Task ESC_193c_La_negativa_que_nombra_la_herramienta_admite_el_reintento_sin_repetir_el_identificador()
     {
-        var guion = new GuionDeDosTurnos("Usa consultar_programa para verlo.", PerdidasDeValentina, leePrograma: true);
-        var escenario = ConPrograma(guion);
+        var guion = new GuionDeDosTurnos("Usa consultar_programa para verlo.", HabilitacionValida, HerramientasAsistente.Programa);
+        var escenario = ConNormativa(guion);
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaQ10Seis);
+        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaNormativa);
 
-        Assert.Equal(PerdidasDeValentina, resultado.Respuesta!.Respuesta);
+        Assert.Equal(HabilitacionValida, resultado.Respuesta!.Respuesta);
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
         Assert.Single(ReintentoDeLlm.Reintentos(escenario.Llm));
         ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
@@ -119,12 +122,12 @@ public sealed class ReintentoAcotadoTests
     [Trait("RF", "SEG-10g")]
     public async Task ESC_193d_Si_el_reintento_vuelve_a_fallar_se_entrega_el_resultado_del_primer_bloqueo_tras_exactamente_2_llamadas()
     {
-        var guion = new GuionDeDosTurnos("Tu definitiva en Estadística es 4.0.", "Tu definitiva en Estadística es 4.0.");
+        var guion = new GuionDeDosTurnos("Tu definitiva en Estadística es 4.0.", "Tu definitiva en Estadística es 4.0.", HerramientasAsistente.Notas);
         var escenario = Con(guion.Responder, Indice(Articulo5, Articulo6));
 
-        var resultado = await escenario.PreguntarAsync(Est006, PreguntaDefinitiva);
+        var resultado = await escenario.PreguntarAsync(Est006, PreguntaNormativa);
 
-        Assert.Equal(2, escenario.Llm.Solicitudes.Count);
+        Assert.Equal(3, escenario.Llm.Solicitudes.Count);
         SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
         ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
         Assert.Equal(ReintentoDeLlm.Instruccion("la definitiva 4.0 de Estadística no coincide con los datos entregados"), guion.Capturas[^1][^1].Contenido);
@@ -136,9 +139,9 @@ public sealed class ReintentoAcotadoTests
     [Trait("RF", "SEG-10")]
     public async Task ESC_193e_Un_reintento_con_un_nombre_no_autorizado_se_descarta_y_se_entrega_el_primer_bloqueo()
     {
-        var escenario = Con(new GuionDeDosTurnos("Tu promedio es 4.40.", "Andres Martinez tiene 4.39.").Responder);
+        var escenario = Con(new GuionDeDosTurnos($"Se aprueba con 3.5 {CitaArt5}.", "Andres Martinez tiene 3.0.").Responder, Indice(Articulo5));
 
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedio);
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
         Assert.Equal(2, escenario.Llm.Solicitudes.Count);
         Assert.Equal(Textos.NoVerificable, resultado.Respuesta!.Respuesta);
@@ -154,11 +157,11 @@ public sealed class ReintentoAcotadoTests
     [Trait("RF", "SEG-10")]
     public async Task ESC_193_La_respuesta_del_reintento_recorre_de_nuevo_la_limpieza_de_referencias()
     {
-        var escenario = Con(new GuionDeDosTurnos("Tu promedio es 4.40.", "Tu promedio es 4.39 (x.md · Sección 9).").Responder, Indice(PromedioPonderado, NotaDefinitiva));
+        var escenario = Con(new GuionDeDosTurnos($"Se aprueba con 3.5 {CitaArt5}.", "Se aprueba con 3.0 (x.md · Sección 9).").Responder, Indice(Articulo5));
 
-        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es mi promedio ponderado del periodo?");
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
-        Assert.Equal("Tu promedio es 4.39.", resultado.Respuesta!.Respuesta);
+        Assert.Equal("Se aprueba con 3.0.", resultado.Respuesta!.Respuesta);
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
     }
 
@@ -187,7 +190,7 @@ public sealed class ReintentoAcotadoTests
     {
         var escenario = Con(SalidasVerificadas.LeeElProgramaYElDetalleYResponde("Detalle de EST-004.", "EST-004"), Indice(Articulo5, Articulo6, Articulo20));
 
-        var resultado = await escenario.PreguntarAsync(Coord01, "¿Qué estudiantes de mi programa perdieron materias?");
+        var resultado = await escenario.PreguntarAsync(Coord01, PreguntaNormativa);
 
         Assert.Equal(TipoResultadoPregunta.Denegada, resultado.Tipo);
         Assert.Equal(MotivoDenegacion.HerramientaIdAjeno, resultado.Motivo);
@@ -201,18 +204,18 @@ public sealed class ReintentoAcotadoTests
     [Trait("RF", "SEG-10f")]
     public async Task ESC_193g_La_instruccion_correctiva_no_revela_otros_nombres_ids_ni_cifras()
     {
-        var guion = new GuionDeDosTurnos(PerdidaDeMateo, PerdidaDeMateo, leePrograma: true);
-        var escenario = ConPrograma(guion);
+        var guion = new GuionDeDosTurnos(PerdidaAjena, PerdidaAjena, HerramientasAsistente.Notas);
+        var escenario = ConNormativa(guion);
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaQ10Seis);
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNormativa);
 
         var instruccion = guion.Capturas[^1][^1];
-        Assert.Equal(ReintentoDeLlm.Instruccion(MotivoPerdidaDeMateo), instruccion.Contenido);
+        Assert.Equal(ReintentoDeLlm.Instruccion(MotivoPerdidaAjena), instruccion.Contenido);
         Assert.DoesNotMatch(new Regex(@"\d"), instruccion.Contenido);
         Assert.DoesNotContain("Valentina", instruccion.Contenido, StringComparison.Ordinal);
         Assert.DoesNotContain("Camilo", instruccion.Contenido, StringComparison.Ordinal);
         Assert.DoesNotContain("EST-", instruccion.Contenido, StringComparison.Ordinal);
-        ReintentoDeLlm.AfirmarSegundoTurno(guion, PerdidaDeMateo, instruccion.Contenido);
+        ReintentoDeLlm.AfirmarSegundoTurno(guion, PerdidaAjena, instruccion.Contenido);
         SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
         ReintentoDeLlm.AfirmarReintentoRegistrado(Assert.Single(escenario.Auditoria.Eventos));
     }
@@ -224,10 +227,10 @@ public sealed class ReintentoAcotadoTests
     [Trait("RF", "SEG-10g")]
     public async Task ESC_199g1_El_motivo_de_una_definitiva_para_el_estudiante_no_nombra_a_ninguna_persona()
     {
-        var guion = new GuionDeDosTurnos("Tu definitiva en Estadística es 4.0.", "Tu definitiva en Estadística es 4.0.");
+        var guion = new GuionDeDosTurnos("Tu definitiva en Estadística es 4.0.", "Tu definitiva en Estadística es 4.0.", HerramientasAsistente.Notas);
         var escenario = Con(guion.Responder, Indice(Articulo5, Articulo6));
 
-        var resultado = await escenario.PreguntarAsync(Est006, PreguntaDefinitiva);
+        var resultado = await escenario.PreguntarAsync(Est006, PreguntaNormativa);
 
         ReintentoDeLlm.AfirmarSegundoTurno(guion, "Tu definitiva en Estadística es 4.0.", ReintentoDeLlm.Instruccion("la definitiva 4.0 de Estadística no coincide con los datos entregados"));
         SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
@@ -241,10 +244,10 @@ public sealed class ReintentoAcotadoTests
     [Trait("RF", "SEG-10f")]
     public async Task ESC_199g2_El_motivo_de_una_perdida_para_el_estudiante_no_nombra_a_ninguna_persona()
     {
-        var guion = new GuionDeDosTurnos("Perdiste Contabilidad.", "Perdiste Contabilidad.");
+        var guion = new GuionDeDosTurnos("Perdiste Contabilidad.", "Perdiste Contabilidad.", HerramientasAsistente.Notas);
         var escenario = Con(guion.Responder, Indice(Articulo5, Articulo6));
 
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Estudiante, "EST-005"), "¿Perdí Contabilidad?");
+        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Estudiante, "EST-005"), PreguntaNormativa);
 
         ReintentoDeLlm.AfirmarSegundoTurno(guion, "Perdiste Contabilidad.", ReintentoDeLlm.Instruccion("la afirmación de pérdida en Contabilidad no coincide con los datos entregados"));
         SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
@@ -298,10 +301,10 @@ public sealed class ReintentoAcotadoTests
     [Trait("RF", "SEG-10f")]
     public async Task ESC_193_El_reintento_nunca_pasa_de_uno_aunque_el_segundo_turno_tambien_se_bloquee()
     {
-        var guion = new GuionDeDosTurnos(PerdidaDeMateo, PerdidaDeMateo, leePrograma: true);
-        var escenario = ConPrograma(guion);
+        var guion = new GuionDeDosTurnos(PerdidaAjena, PerdidaAjena, HerramientasAsistente.Notas);
+        var escenario = ConNormativa(guion);
 
-        await escenario.PreguntarAsync(Coord02, PreguntaQ10Seis);
+        await escenario.PreguntarAsync(Est001, PreguntaNormativa);
 
         Assert.Single(ReintentoDeLlm.Reintentos(escenario.Llm));
         Assert.Single(guion.Capturas, c => c.Any(m => m.Contenido.StartsWith(ReintentoDeLlm.Prefijo, StringComparison.Ordinal)));

@@ -78,11 +78,8 @@ public sealed class DefinitivaPorAsignaturaTests
     public async Task ESC_179_La_definitiva_de_otra_asignatura_atribuida_a_una_persona_del_programa_se_reemplaza(string caso, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = Con(LeeElProgramaYElDetalleYResponde(texto, EstudianteDeLaPregunta), Indice(Articulo5, Articulo6, Articulo20));
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaDefinitivaCoordinador);
-
-        AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        await ClasesVerificadoras.AfirmarFallaAsync("COORD-02", texto, "EST-004", "EST-005", "EST-006");
     }
 
     [Theory]
@@ -93,12 +90,8 @@ public sealed class DefinitivaPorAsignaturaTests
     public async Task ESC_179_La_definitiva_correcta_de_la_persona_del_tramo_se_entrega(string caso, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = Con(LeeElProgramaYElDetalleYResponde(texto, EstudianteDeLaPregunta), Indice(Articulo5, Articulo6, Articulo20));
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaDefinitivaCoordinador);
-
-        AfirmarRespondida(resultado, escenario, texto);
-        Assert.Contains(DatosProgramaAdm, resultado.Respuesta!.Citas);
+        await ClasesVerificadoras.AfirmarPasaAsync("COORD-02", texto, "EST-004", "EST-005", "EST-006");
     }
 
     [Fact]

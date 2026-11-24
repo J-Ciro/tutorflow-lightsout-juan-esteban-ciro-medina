@@ -1,14 +1,8 @@
-using TutorFlow.Core.Autorizacion;
-using static TutorFlow.Core.Tests.Asistente.EscenarioAsistente;
-using static TutorFlow.Core.Tests.Asistente.SeccionesDeReferencia;
-
 namespace TutorFlow.Core.Tests.Asistente;
 
 public sealed class BloquesDePerdidaTests
 {
-    private const string PreguntaPerdidas = "¿Qué dice el reglamento sobre la habilitación?";
-    private const string CitaPrograma = "Datos del programa";
-    private static readonly Usuario Coord02 = new(Rol.Coordinador, "COORD-02");
+    private static readonly string[] Adm = ["EST-004", "EST-005", "EST-006"];
 
     public static TheoryData<string, string> EvasionesQueDebenFallar => new()
     {
@@ -48,8 +42,6 @@ public sealed class BloquesDePerdidaTests
         { "EST-005", "Asignaturas perdidas:\n- Microeconomía (1.8)\n- Estadística (2.3)", "entrega" }
     };
 
-    private static EscenarioAsistente ConPrograma(string texto) =>
-        Con(SalidasVerificadas.LeeElProgramaYResponde(texto), Indice(Articulo5, Articulo6, Articulo20));
 
     [Theory]
     [MemberData(nameof(EvasionesQueDebenFallar))]
@@ -59,11 +51,8 @@ public sealed class BloquesDePerdidaTests
     public async Task ESC_184_Una_afirmacion_de_perdida_en_el_formato_de_un_modelo_que_los_datos_no_respaldan_falla_cerrada(string caso, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = ConPrograma(texto);
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
-
-        SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        await ClasesVerificadoras.AfirmarFallaAsync("COORD-02", texto, Adm);
     }
 
     [Theory]
@@ -74,12 +63,8 @@ public sealed class BloquesDePerdidaTests
     public async Task ESC_184_Un_bloque_fiel_negado_o_sin_forma_de_perdida_se_entrega_sin_cambios(string caso, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = ConPrograma(texto);
 
-        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
-
-        SalidasVerificadas.AfirmarRespondida(resultado, escenario, texto);
-        Assert.Contains(resultado.Respuesta!.Citas, c => c.Documento == CitaPrograma && c.Seccion == "ADM");
+        await ClasesVerificadoras.AfirmarPasaAsync("COORD-02", texto, Adm);
     }
 
     [Theory]

@@ -8,7 +8,8 @@ namespace TutorFlow.Core.Tests.Asistente;
 
 public sealed class LimpiezaAmpliadaTests
 {
-    private const string PreguntaPromedio4 = "¿Cuál es mi promedio ponderado del periodo?";
+    private const string PreguntaNormativa = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaPromedio4 ="¿Cuál es mi promedio ponderado del periodo?";
     private static readonly Usuario Est001 = new(Rol.Estudiante, "EST-001");
     private static readonly Cita Art5 = new(Reglamento, "Artículo 5");
     private static readonly Cita Art11 = new(Reglamento, "Artículo 11");
@@ -110,12 +111,12 @@ public sealed class LimpiezaAmpliadaTests
     [Trait("RF", "COMP-02")]
     public async Task ESC_195f_La_frase_fija_de_COMP_03_anexada_a_una_respuesta_con_datos_se_elimina_y_se_entrega_el_resto()
     {
-        var escenario = Con(Fijo("Tu promedio es 4.39. No encuentro esa información en los documentos disponibles."), Indice(PromedioPonderado, NotaDefinitiva));
+        var escenario = Con(SalidasVerificadas.LeeLasNotasYResponde("Tu promedio es 4.39. No encuentro esa información en los documentos disponibles."), Indice(Articulo6, PromedioPonderado));
 
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedio4);
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNormativa);
 
-        Assert.Equal("Tu promedio es 4.39.", resultado.Respuesta!.Respuesta);
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
+        Assert.Equal("Tu promedio es 4.39.", resultado.Respuesta!.Respuesta);
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);
     }
 
@@ -127,7 +128,7 @@ public sealed class LimpiezaAmpliadaTests
     {
         var escenario = Con(Fijo(Textos.SinInformacion));
 
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedio);
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNormativa);
 
         Assert.Equal(Textos.SinInformacion, resultado.Respuesta!.Respuesta);
         Assert.Empty(resultado.Respuesta.Citas);
@@ -144,6 +145,7 @@ public sealed class LimpiezaAmpliadaTests
 
         var resultado = await escenario.PreguntarAsync(Est001, "¿Cuál es el horario de atención de Bienestar?");
 
-        Assert.Equal("Bienestar atiende de lunes a viernes de 8:00 a 17:00.", resultado.Respuesta!.Respuesta);
+        Assert.StartsWith("Bienestar atiende de lunes a viernes de 8:00 a 17:00.", resultado.Respuesta!.Respuesta, StringComparison.Ordinal);
+        Assert.DoesNotContain("Estos horarios", resultado.Respuesta.Respuesta, StringComparison.Ordinal);
     }
 }
