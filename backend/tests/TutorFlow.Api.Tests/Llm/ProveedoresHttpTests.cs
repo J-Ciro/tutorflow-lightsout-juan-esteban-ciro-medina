@@ -76,37 +76,38 @@ public static class RespuestasProveedor
         using var cuerpo = JsonDocument.Parse(peticion.Cuerpo);
         var primera = cuerpo.RootElement.GetProperty("tools")[0];
         return EsAnthropic(peticion)
-            ? Serializar(new
-            {
-                id = "msg_2",
-                type = "message",
-                role = "assistant",
-                model = "m",
-                content = new object[] { new { type = "tool_use", id = "tu_1", name = primera.GetProperty("name").GetString(), input = new { } } },
-                stop_reason = "tool_use",
-                usage = new { input_tokens = entrada, output_tokens = salida }
-            })
-            : Serializar(new
-            {
-                id = "c2",
-                @object = "chat.completion",
-                choices = new object[]
-                {
-                    new
-                    {
-                        index = 0,
-                        message = new
-                        {
-                            role = "assistant",
-                            content = (string?)null,
-                            tool_calls = new object[] { new { id = "call_1", type = "function", function = new { name = primera.GetProperty("function").GetProperty("name").GetString(), arguments = "{}" } } }
-                        },
-                        finish_reason = "tool_calls"
-                    }
-                },
-                usage = new { prompt_tokens = entrada, completion_tokens = salida, total_tokens = entrada + salida }
-            });
+            ? LlamadaAnthropic(primera.GetProperty("name").GetString(), entrada, salida)
+            : LlamadaOpenAi(primera.GetProperty("function").GetProperty("name").GetString(), entrada, salida);
     }
+
+    private static HttpResponseMessage LlamadaAnthropic(string? herramienta, int entrada, int salida) =>
+        Serializar(new
+        {
+            id = "msg_2",
+            type = "message",
+            role = "assistant",
+            model = "m",
+            content = new object[] { new { type = "tool_use", id = "tu_1", name = herramienta, input = new { } } },
+            stop_reason = "tool_use",
+            usage = new { input_tokens = entrada, output_tokens = salida }
+        });
+
+    private static HttpResponseMessage LlamadaOpenAi(string? herramienta, int entrada, int salida) =>
+        Serializar(new
+        {
+            id = "c2",
+            @object = "chat.completion",
+            choices = new object[] { new { index = 0, message = MensajeConHerramienta(herramienta), finish_reason = "tool_calls" } },
+            usage = new { prompt_tokens = entrada, completion_tokens = salida, total_tokens = entrada + salida }
+        });
+
+    private static object MensajeConHerramienta(string? herramienta) =>
+        new
+        {
+            role = "assistant",
+            content = (string?)null,
+            tool_calls = new object[] { new { id = "call_1", type = "function", function = new { name = herramienta, arguments = "{}" } } }
+        };
 
     private static HttpResponseMessage Serializar(object valor) => Json(JsonSerializer.Serialize(valor));
 
