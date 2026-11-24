@@ -37,6 +37,7 @@ public sealed class CorrelacionApiTests
     private static async Task<Captura> EjecutarAsync(int codigo)
     {
         using var fabrica = codigo == 500 ? new FabricaApi(conocimiento: new ConocimientoQueExplota()) : new FabricaApi();
+        _ = fabrica.Services;
         fabrica.Reloj.Fijar(DateTimeOffset.UtcNow);
         var respuesta = codigo switch
         {
