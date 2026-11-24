@@ -65,7 +65,7 @@ public sealed class AuditoriaJsonConsola : IAuditoria
             ["correlationId"] = evento.CorrelationId,
             ["ipOrigen"] = evento.IpOrigen,
             ["usuario"] = new { rol = evento.Rol is { } rol ? NombreSnake(rol) : null, id = evento.UsuarioId },
-            ["pregunta"] = evento.Pregunta,
+            ["pregunta"] = EscapeDeAuditoria.Aplicar(evento.Pregunta),
             ["resultado"] = NombreSnake(evento.Resultado),
             ["motivoDenegacion"] = evento.MotivoDenegacion is { } motivo ? NombreSnake(motivo) : null,
             ["estudiantesConsultados"] = evento.EstudiantesConsultados,
