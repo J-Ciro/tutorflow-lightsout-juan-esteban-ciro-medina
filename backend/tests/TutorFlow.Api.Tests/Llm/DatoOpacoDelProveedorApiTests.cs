@@ -99,6 +99,26 @@ public sealed class DatoOpacoDelProveedorApiTests
         Assert.Equal("{}", reenviada.GetProperty("function").GetProperty("arguments").GetString());
     }
 
+    [Theory]
+    [MemberData(nameof(Proveedores))]
+    [Trait("CA", "CA-07")]
+    [Trait("CA", "CA-08")]
+    [Trait("ESC", "ESC-192")]
+    [Trait("D", "D-86")]
+    public async Task ESC_192i_El_extra_content_no_aparece_en_la_auditoria_ni_en_el_log(string? llave)
+    {
+        var manejador = Proveedor(null, new LlamadaDoble("call_77", HerramientasAsistente.Notas, "{}", FirmaUno));
+        using var fabrica = Fabrica(llave, manejador);
+
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);
+
+        Assert.Equal(200, respuesta.Estado);
+        Assert.NotEmpty(fabrica.Auditoria.Eventos);
+        var auditoria = string.Join("\n", fabrica.Auditoria.Eventos.Select(e => JsonSerializer.Serialize(e) + e));
+        Assert.DoesNotContain(PropiedadExtra, auditoria, StringComparison.Ordinal);
+        Assert.DoesNotContain(PropiedadExtra, string.Join("\n", fabrica.Logs.Mensajes), StringComparison.Ordinal);
+    }
+
     [Fact]
     [Trait("CA", "CA-07")]
     [Trait("ESC", "ESC-192")]
