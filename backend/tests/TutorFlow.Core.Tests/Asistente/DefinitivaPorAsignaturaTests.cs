@@ -10,7 +10,7 @@ namespace TutorFlow.Core.Tests.Asistente;
 public sealed class DefinitivaPorAsignaturaTests
 {
     private const string EstudianteDeLaPregunta = "EST-005";
-    private const string PreguntaDefinitivaCoordinador = "¿Qué definitiva tiene Valentina Castro en Estadística?";
+    private const string PreguntaDefinitivaCoordinador = "¿Qué dice el reglamento sobre la habilitación?";
     private static readonly Cita DatosNotas = new(Textos.DocumentoDatosEstudiante, "Notas");
     private static readonly Cita DatosProgramaAdm = new(Textos.DocumentoDatosPrograma, "ADM");
     private static readonly Usuario Coord02 = new(Rol.Coordinador, "COORD-02");

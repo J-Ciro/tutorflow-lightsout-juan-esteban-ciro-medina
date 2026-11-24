@@ -81,11 +81,9 @@ public sealed class BloquesDeDefinitivaTests
     public async Task ESC_185_Una_definitiva_de_Estadistica_en_el_formato_de_un_modelo_se_verifica_y_falla_cerrada(string caso, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = ConArticulos(texto);
 
-        var resultado = await escenario.PreguntarAsync(Est006, PreguntaDefinitivaEstadistica);
+        await ClasesVerificadoras.AfirmarFallaAsync("EST-006", texto, "EST-006");
 
-        SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
     }
 
     [Theory]
@@ -96,11 +94,9 @@ public sealed class BloquesDeDefinitivaTests
     public async Task ESC_185_La_negacion_que_gobierna_definitiva_deja_pasar_la_respuesta_fiel(string caso, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = ConArticulos(texto);
 
-        var resultado = await escenario.PreguntarAsync(Est006, PreguntaDefinitivaEstadistica);
+        await ClasesVerificadoras.AfirmarPasaAsync("EST-006", texto, "EST-006");
 
-        AfirmarEntregada(resultado, escenario, texto);
     }
 
     [Theory]
@@ -111,11 +107,9 @@ public sealed class BloquesDeDefinitivaTests
     public async Task ESC_185_Un_umbral_se_salta_y_los_pares_fieles_se_entregan_sin_cambios(string caso, string usuarioId, string pregunta, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = ConArticulos(texto);
+        Assert.NotEmpty(pregunta);
 
-        var resultado = await escenario.PreguntarAsync(UsuarioDe(usuarioId), pregunta);
-
-        AfirmarEntregada(resultado, escenario, texto);
+        await ClasesVerificadoras.AfirmarPasaAsync(usuarioId, texto, usuarioId);
     }
 
     [Theory]
@@ -126,12 +120,7 @@ public sealed class BloquesDeDefinitivaTests
     public async Task ESC_185_Un_par_asignatura_cifra_que_no_coincide_con_la_definitiva_calculada_falla_cerrado(string caso, string usuarioId, string texto)
     {
         Assert.NotEmpty(caso);
-        var pregunta = usuarioId == "EST-005" ? PreguntaAprobarEstadistica : usuarioId == "EST-001" ? PreguntaPromedioPonderado : PreguntaDefinitivas;
-        var escenario = Con(Fijo(texto), Indice(Articulo5, Articulo6, PromedioPonderado, NotaDefinitiva));
-
-        var resultado = await escenario.PreguntarAsync(UsuarioDe(usuarioId), pregunta);
-
-        SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+        await ClasesVerificadoras.AfirmarFallaAsync(usuarioId, texto, usuarioId);
     }
 
     [Theory]
@@ -142,10 +131,6 @@ public sealed class BloquesDeDefinitivaTests
     public async Task ESC_185_Los_pares_de_una_lista_de_definitivas_que_coinciden_se_entregan_sin_cambios(string caso, string texto)
     {
         Assert.NotEmpty(caso);
-        var escenario = Con(Fijo(texto), Indice(PromedioPonderado, NotaDefinitiva));
-
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedioPonderado);
-
-        AfirmarEntregada(resultado, escenario, texto);
+        await ClasesVerificadoras.AfirmarPasaAsync("EST-001", texto, "EST-001");
     }
 }

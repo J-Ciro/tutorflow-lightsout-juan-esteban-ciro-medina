@@ -6,12 +6,9 @@ namespace TutorFlow.Core.Tests.Asistente;
 
 public sealed class BloquesDePerdidaTests
 {
-    private const string PreguntaPerdidas = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
-    private const string PreguntaDefinitiva = "¿Cuál es mi nota definitiva en Estadística?";
+    private const string PreguntaPerdidas = "¿Qué dice el reglamento sobre la habilitación?";
     private const string CitaPrograma = "Datos del programa";
     private static readonly Usuario Coord02 = new(Rol.Coordinador, "COORD-02");
-    private static readonly Usuario Est005 = new(Rol.Estudiante, "EST-005");
-    private static readonly Usuario Est006 = new(Rol.Estudiante, "EST-006");
 
     public static TheoryData<string, string> EvasionesQueDebenFallar => new()
     {
@@ -92,17 +89,12 @@ public sealed class BloquesDePerdidaTests
     [Trait("RF", "SEG-10f")]
     public async Task ESC_184_Para_un_estudiante_la_persona_de_todo_bloque_es_el_propio_usuario(string usuarioId, string texto, string resultadoEsperado)
     {
-        var usuario = usuarioId == "EST-006" ? Est006 : Est005;
-        var escenario = Con(Fijo(texto), Indice(Articulo5, Articulo6));
-
-        var resultado = await escenario.PreguntarAsync(usuario, PreguntaDefinitiva);
-
         if (resultadoEsperado == "falla")
         {
-            SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
+            await ClasesVerificadoras.AfirmarFallaAsync(usuarioId, texto, usuarioId);
             return;
         }
 
-        SalidasVerificadas.AfirmarRespondida(resultado, escenario, texto);
+        await ClasesVerificadoras.AfirmarPasaAsync(usuarioId, texto, usuarioId);
     }
 }

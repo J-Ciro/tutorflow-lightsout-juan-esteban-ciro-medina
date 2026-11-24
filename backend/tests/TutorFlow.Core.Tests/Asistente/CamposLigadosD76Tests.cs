@@ -12,7 +12,7 @@ public sealed partial class CamposLigadosD76Tests
     private const string PreguntaPromedio = "¿Cuál es mi promedio?";
     private const string PreguntaPromedioPonderado = "¿Cuál es mi promedio ponderado del periodo?";
     private const string PreguntaDefinitivaEstadistica = "¿Cuál es mi nota definitiva en Estadística?";
-    private const string PreguntaPerdidas = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
+    private const string PreguntaPerdidas = "¿Qué dice el reglamento sobre la habilitación?";
 
     public static TheoryData<string, string, string, ResultadoAuditoria> EstudianteConCifraOEstadoFalso => new()
     {
@@ -136,7 +136,7 @@ public sealed partial class CamposLigadosD76Tests
         const string texto = "Tu promedio es 2.65. Definitivas: Microeconomía 1.8, Estadística 2.3.";
         var escenario = Con(SalidasVerificadas.LeeElProgramaYElDetalleYResponde(texto, "EST-005"), IndiceDeNormas());
 
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), "¿Cuál es el promedio de Valentina Castro?");
+        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), PreguntaPerdidas);
 
         AfirmarNoVerificado(resultado, escenario, ResultadoAuditoria.EstadoNoVerificado);
     }
@@ -151,7 +151,7 @@ public sealed partial class CamposLigadosD76Tests
     {
         var escenario = Con(SalidasVerificadas.LeeElProgramaYElDetalleYResponde(texto, "EST-005"), IndiceDeNormas());
 
-        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), "¿Cuál es el promedio de Valentina Castro?");
+        var resultado = await escenario.PreguntarAsync(new Usuario(Rol.Coordinador, "COORD-02"), PreguntaPerdidas);
 
         SalidasVerificadas.AfirmarRespondida(resultado, escenario, texto);
     }

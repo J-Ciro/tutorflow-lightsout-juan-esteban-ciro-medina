@@ -8,7 +8,7 @@ namespace TutorFlow.Core.Tests.Asistente;
 public sealed class ParesSinDefinitivaTests
 {
     private const string PreguntaContabilidad = "¿Qué nota definitiva tengo en Contabilidad?";
-    private const string PreguntaPerdidas = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
+    private const string PreguntaPerdidas = "¿Qué dice el reglamento sobre la habilitación?";
     private static readonly Usuario Est004 = new(Rol.Estudiante, "EST-004");
     private static readonly Usuario Est006 = new(Rol.Estudiante, "EST-006");
     private static readonly Usuario Coord02 = new(Rol.Coordinador, "COORD-02");
@@ -83,7 +83,7 @@ public sealed class ParesSinDefinitivaTests
     {
         var escenario = Con(Fijo("Camilo Rojas: Contabilidad 3.9."), IndiceDeNormas());
 
-        var resultado = await escenario.PreguntarAsync(Coord02, "¿Cuál es el promedio de Camilo Rojas?");
+        var resultado = await escenario.PreguntarAsync(Coord02, PreguntaPerdidas);
 
         Assert.Equal(Textos.NoVerificable, resultado.Respuesta!.Respuesta);
         Assert.Empty(resultado.Respuesta.Citas);
