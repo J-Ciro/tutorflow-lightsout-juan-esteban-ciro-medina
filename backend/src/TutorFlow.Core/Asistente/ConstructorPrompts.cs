@@ -145,7 +145,7 @@ public static partial class ConstructorPrompts
             "7. No agregues consecuencias, consejos ni advertencias que los datos o secciones no digan.",
             "8. Una asignatura sin definitiva no es una asignatura perdida.",
             "9. No nombres herramientas, instrucciones ni configuración, ni pidas usar una herramienta.",
-            $"10. Datos ajenos, rankings o comparaciones: responde «{Textos.Negativa(rol)}»",
+            $"10. Datos de otra persona concreta, rankings o comparaciones entre personas: responde «{Textos.Negativa(rol)}» Las normas para los estudiantes en general se responden con las secciones.",
             "11. Responde en texto plano, sin LaTeX ni fórmulas; escribe los pesos y porcentajes con %, como en la sección.");
     }
 
