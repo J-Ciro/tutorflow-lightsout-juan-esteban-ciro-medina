@@ -37,6 +37,7 @@ public sealed class AuditoriaJsonConsola : IAuditoria
         var proyeccion = CamposDe(evento);
         AgregarSiPresente(proyeccion, "idSolicitado", evento.IdSolicitado);
         AgregarBandera(proyeccion, "reintento", evento.Reintento);
+        AgregarBloqueo(proyeccion, evento.BloqueoSegundos);
         AgregarBandera(proyeccion, "contextoTruncado", evento.ContextoTruncado);
         AgregarBandera(proyeccion, "precioDesconocido", evento.PrecioDesconocido);
         return proyeccion;
@@ -47,6 +48,14 @@ public sealed class AuditoriaJsonConsola : IAuditoria
         if (valor is not null)
         {
             proyeccion[nombre] = valor;
+        }
+    }
+
+    private static void AgregarBloqueo(Dictionary<string, object?> proyeccion, int? segundos)
+    {
+        if (segundos is { } valor)
+        {
+            proyeccion["bloqueoSegundos"] = valor;
         }
     }
 

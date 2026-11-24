@@ -4,12 +4,16 @@ public sealed record ResultadoIdentidades(bool SuperacionNueva, IReadOnlyList<st
 
 public sealed class LimitadorIdentidades
 {
-    private const int UmbralDeLimpieza = 10_000;
+    private const int UmbralDeLimpieza = 1_000;
+    private const int SegundosEntreLimpiezas = 10;
+
+    private static readonly TimeSpan EntreLimpiezas = TimeSpan.FromSeconds(SegundosEntreLimpiezas);
 
     private readonly Lock _candado = new();
     private readonly Dictionary<string, VentanaDeIp> _porIp = [];
     private readonly IReloj _reloj;
     private readonly LimitesAsistente _limites;
+    private DateTimeOffset? _ultimaLimpieza;
 
     public LimitadorIdentidades(IReloj reloj, LimitesAsistente limites)
     {
@@ -59,12 +63,13 @@ public sealed class LimitadorIdentidades
 
     private void LimpiarSiHaceFalta(DateTimeOffset ahora)
     {
-        if (_porIp.Count < UmbralDeLimpieza)
+        if (_porIp.Count < UmbralDeLimpieza || !HayQueLimpiar(ahora))
         {
             return;
         }
 
-        foreach (var (ip, ventana) in _porIp.ToList())
+        _ultimaLimpieza = ahora;
+        foreach (var (ip, ventana) in _porIp)
         {
             ventana.Purgar(ahora, Ventana);
             if (ventana.EstaVacia)
@@ -73,6 +78,9 @@ public sealed class LimitadorIdentidades
             }
         }
     }
+
+    private bool HayQueLimpiar(DateTimeOffset ahora) =>
+        _ultimaLimpieza is not { } anterior || ahora - anterior >= EntreLimpiezas;
 
     private sealed class VentanaDeIp
     {

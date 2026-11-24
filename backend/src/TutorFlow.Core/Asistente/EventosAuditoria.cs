@@ -54,6 +54,8 @@ public sealed record EventoAuditoria(
     public bool Reintento { get; init; }
 
     public bool ContextoTruncado { get; init; }
+
+    public int? BloqueoSegundos { get; init; }
 }
 
 public sealed record EventoMultiplesIdentidades(
