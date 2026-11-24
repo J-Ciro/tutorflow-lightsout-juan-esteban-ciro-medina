@@ -109,7 +109,7 @@ internal sealed class CierreDeRespuesta
     private IReadOnlyList<Cita> EscritasValidas(SesionPregunta sesion, string texto, EntradaConversacion entrada)
     {
         var respuestaFinal = sesion.Bloque is null ? texto : $"{texto}\n{sesion.Bloque}";
-        IReadOnlyCollection<Cita> secciones = sesion.Registro.Reglas;
+        IReadOnlyCollection<Cita> secciones = sesion.Registro.UsoDatos ? CitasDeReglasAplicadas.SeccionesDeLaTabla : sesion.Registro.Reglas;
         var usadas = _citasDeReglas.Usadas(sesion.Registro, ExtractorCitas.SinCitas(respuestaFinal), sesion.Directorio);
         return _verificadorSalida.DescartarCitasInexistentes(
             _citasDeRespuesta.EscritasConApoyo(texto, entrada.Secciones, secciones, usadas),
