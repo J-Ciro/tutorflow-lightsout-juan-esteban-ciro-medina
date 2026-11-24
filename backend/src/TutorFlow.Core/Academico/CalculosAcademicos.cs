@@ -32,22 +32,24 @@ public static class CalculosAcademicos
     public static decimal Redondear(decimal valor, int decimales) =>
         Math.Round(valor, decimales, MidpointRounding.AwayFromZero);
 
-    public static NotaAcumulada? CalcularNotaAcumulada(NotasCorte cortes)
-    {
-        var aportes = new (decimal Peso, decimal? Corte)[]
+    private static List<(decimal Peso, decimal Corte)> AportesEvaluados(NotasCorte cortes) =>
+        new (decimal Peso, decimal? Corte)[]
         {
             (PesoCorte1, cortes.Corte1),
             (PesoCorte2, cortes.Corte2),
             (PesoCorte3, cortes.Corte3)
-        }.Where(aporte => aporte.Corte.HasValue).ToList();
+        }.Where(aporte => aporte.Corte is not null).Select(aporte => (aporte.Peso, aporte.Corte.GetValueOrDefault())).ToList();
 
+    public static NotaAcumulada? CalcularNotaAcumulada(NotasCorte cortes)
+    {
+        var aportes = AportesEvaluados(cortes);
         if (aportes.Count == 0)
         {
             return null;
         }
 
         var pesoEvaluado = aportes.Sum(aporte => aporte.Peso);
-        var acumulada = aportes.Sum(aporte => aporte.Peso * aporte.Corte!.Value);
+        var acumulada = aportes.Sum(aporte => aporte.Peso * aporte.Corte);
         return new NotaAcumulada(
             Redondear(acumulada, DecimalesDefinitiva),
             pesoEvaluado * BasePorcentual,
@@ -93,14 +95,17 @@ public static class CalculosAcademicos
 
     public static decimal? CalcularPromedioPonderado(IReadOnlyList<ResultadoAsignatura> resultados)
     {
-        var conDefinitiva = resultados.Where(resultado => resultado.Definitiva.HasValue).ToList();
-        var creditos = conDefinitiva.Sum(resultado => resultado.Asignatura.Creditos);
+        var conDefinitiva = resultados
+            .Where(resultado => resultado.Definitiva.HasValue)
+            .Select(resultado => (Definitiva: resultado.Definitiva.GetValueOrDefault(), resultado.Asignatura.Creditos))
+            .ToList();
+        var creditos = conDefinitiva.Sum(resultado => resultado.Creditos);
         if (creditos == 0)
         {
             return null;
         }
 
-        var puntos = conDefinitiva.Sum(resultado => resultado.Definitiva!.Value * resultado.Asignatura.Creditos);
+        var puntos = conDefinitiva.Sum(resultado => resultado.Definitiva * resultado.Creditos);
         return Redondear(puntos / creditos, DecimalesPromedio);
     }
 
