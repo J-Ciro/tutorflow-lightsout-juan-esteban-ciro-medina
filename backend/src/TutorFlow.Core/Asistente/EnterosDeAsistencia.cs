@@ -35,10 +35,20 @@ internal static class EnterosDeAsistencia
 
     public static IEnumerable<string> Candidatos(string texto, IReadOnlyList<TokenTexto> tokens) =>
         Enumerable.Range(0, tokens.Count)
-            .Where(indice => EsEntero(tokens[indice]) && !EsPorcentaje(texto, tokens[indice]) && !ExcluidoPorLaPalabraPrevia(tokens, indice) && TienePalabraClaveCerca(tokens, indice))
+            .Where(indice => EsEntero(tokens[indice]) && !EsPorcentaje(texto, tokens[indice]) && !EsParteDeUnNombre(texto, tokens[indice]))
+            .Where(indice => !ExcluidoPorLaPalabraPrevia(tokens, indice) && TienePalabraClaveCerca(tokens, indice))
             .Select(indice => tokens[indice].Valor);
 
     private static bool EsEntero(TokenTexto token) => token.Valor.All(char.IsAsciiDigit);
+
+    private static bool EsParteDeUnNombre(string texto, TokenTexto token) =>
+        CaracterEn(texto, token.Inicio - 1) == '_' || CaracterEn(texto, token.Fin) == '_' || EsExtensionDeArchivo(texto, token);
+
+    private static bool EsExtensionDeArchivo(string texto, TokenTexto token) =>
+        CaracterEn(texto, token.Fin) == '.' && char.IsLetter(CaracterEn(texto, token.Fin + 1));
+
+    private static char CaracterEn(string texto, int posicion) =>
+        posicion >= 0 && posicion < texto.Length ? texto[posicion] : ' ';
 
     private static bool EsPorcentaje(string texto, TokenTexto token) =>
         texto[token.Fin..].TrimStart().StartsWith('%');

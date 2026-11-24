@@ -46,30 +46,29 @@ internal sealed class CierreDeRespuesta
 
     public CierreEvaluado Evaluar(SesionPregunta sesion, string texto, EntradaConversacion entrada)
     {
-        if (sesion.Desglose is null)
+        var propio = IntroduccionDelModelo(sesion, texto);
+        if (propio.Trim() == Textos.SinInformacion)
         {
-            return EvaluarTexto(sesion, texto, entrada);
+            return SinIntroduccion(sesion, entrada);
         }
 
-        var introduccion = IntroduccionDelDesglose.SinCifras(texto);
-        return introduccion.Length == 0 || introduccion == Textos.SinInformacion
-            ? Completar(sesion, string.Empty, [], entrada)
-            : EvaluarTexto(sesion, introduccion, entrada);
-    }
-
-    private CierreEvaluado EvaluarTexto(SesionPregunta sesion, string texto, EntradaConversacion entrada)
-    {
-        if (texto.Trim() == Textos.SinInformacion)
-        {
-            return CierreEvaluado.Entregable(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion);
-        }
-
-        var escritas = EscritasValidas(sesion, texto, entrada);
-        var limpio = Textos.CitasDeTextoFijo(texto) is null ? ReferenciasEscritas.Limpiar(texto, escritas) : texto;
+        var escritas = EscritasValidas(sesion, propio, entrada);
+        var limpio = Limpiar(propio, escritas);
         return ReferenciasEscritas.TieneContenido(limpio) || HayFuga(sesion, limpio, entrada)
             ? Verificar(sesion, limpio, escritas, entrada)
-            : CierreEvaluado.Entregable(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion);
+            : SinIntroduccion(sesion, entrada);
     }
+
+    private static string IntroduccionDelModelo(SesionPregunta sesion, string texto) =>
+        sesion.Desglose is null ? texto : IntroduccionDelDesglose.SinCifras(texto);
+
+    private static string Limpiar(string texto, IReadOnlyList<Cita> escritas) =>
+        Textos.CitasDeTextoFijo(texto) is null ? ReferenciasEscritas.Limpiar(texto, escritas) : texto;
+
+    private CierreEvaluado SinIntroduccion(SesionPregunta sesion, EntradaConversacion entrada) =>
+        sesion.Desglose is null
+            ? CierreEvaluado.Entregable(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion)
+            : Completar(sesion, string.Empty, [], entrada);
 
     private bool HayFuga(SesionPregunta sesion, string limpio, EntradaConversacion entrada) =>
         DetectorFugaConfiguracion.HayFuga(limpio, Confidencial(sesion, entrada), sesion.Registro.Fuentes);
