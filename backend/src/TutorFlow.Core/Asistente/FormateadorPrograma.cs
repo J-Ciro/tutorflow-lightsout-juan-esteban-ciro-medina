@@ -41,15 +41,20 @@ internal static class FormateadorPrograma
 
     private static IEnumerable<string> LineasDeLaAsignatura(ResultadoAsignatura resultado)
     {
+        var asistencia = resultado.EstadoAsistencia == EstadoAsistencia.SinRegistro ? $"Asistencia sin registro: {resultado.Asignatura.Nombre}" : null;
+        return new[] { LineaDeEstado(resultado), asistencia }.OfType<string>();
+    }
+
+    private static string? LineaDeEstado(ResultadoAsignatura resultado)
+    {
         var nombre = resultado.Asignatura.Nombre;
-        var estado = resultado.Estado switch
+        return resultado.Estado switch
         {
             EstadoAsignatura.Perdida => $"Perdida por nota: {nombre} (definitiva {FormateadorDatos.Nota(resultado.Definitiva)})",
             EstadoAsignatura.PerdidaPorInasistencia => $"Perdida por inasistencia: {nombre} (definitiva {FormateadorDatos.Nota(0m)})",
             EstadoAsignatura.SinDefinitiva => $"Sin definitiva (falta calificar un corte): {nombre}",
             _ => null
         };
-        return new[] { estado, resultado.EstadoAsistencia == EstadoAsistencia.SinRegistro ? $"Asistencia sin registro: {nombre}" : null }.OfType<string>();
     }
 
     private static bool HayPerdidas(EstudianteDePrograma estudiante) =>
