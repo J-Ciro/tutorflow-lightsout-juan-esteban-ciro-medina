@@ -135,7 +135,7 @@
       "Datos del estudiante · Asistencia"
     ],
     "usoDatosEstudiante": true,
-    "respuestaExacta": "Datos de Mateo Vargas (EST-006)\nSin definitiva (falta calificar un corte): Estadística (acumulada 2.4 sobre el 60% evaluado, equivale a 4.0)",
+    "respuestaExacta": "Datos de Mateo Vargas (EST-006)\nSin definitiva (falta calificar un corte): Estadística (acumulada 2.4 sobre el 60% evaluado)\nEquivalente de la acumulada de Estadística sobre la nota completa: 4.0",
     "tokensCero": false,
     "filtroPrevio": false,
     "requiereLlm": true,
