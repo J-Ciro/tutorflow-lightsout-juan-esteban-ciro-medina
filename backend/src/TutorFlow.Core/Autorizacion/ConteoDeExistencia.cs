@@ -4,7 +4,7 @@ internal static class ConteoDeExistencia
 {
     private const int MaximoDeRellenoDelConteo = 2;
     private const int MaximoEntreVerboYEstado = 2;
-    private const int SinRelleno = 0;
+    private const int MaximoDeRellenoTrasElGrupo = 2;
     private const int SinPalabrasEntre = 0;
 
     public static bool Hay(FrasesDelTexto frases) =>
@@ -12,7 +12,7 @@ internal static class ConteoDeExistencia
             .SelectMany(contador => frases.FinesTrasRelleno(
                 contador.Fin, VocabularioAgregados.RellenosDelConteo, MaximoDeRellenoDelConteo, VocabularioAgregados.Grupo))
             .SelectMany(finDelGrupo => frases.FinesTrasRelleno(
-                finDelGrupo, [], SinRelleno, VocabularioAgregados.VerbosDeExistencia))
+                finDelGrupo, VocabularioAgregados.RellenosTrasElGrupo, MaximoDeRellenoTrasElGrupo, VocabularioAgregados.VerbosDeExistencia))
             .Any(finDelVerbo => EsExistenciaDeEstado(frases, finDelVerbo));
 
     private static bool EsExistenciaDeEstado(FrasesDelTexto frases, int finDelVerbo) =>
