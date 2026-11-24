@@ -64,7 +64,7 @@ public sealed class FormasVerbalesD74ApiTests
     [Trait("CA", "CA-02")]
     [Trait("ESC", "ESC-177")]
     [Trait("D", "D-74")]
-    public async Task Le_falta_calificar_el_corte_3_no_cita_el_Articulo_11_aunque_este_en_el_bloque()
+    public async Task Le_falta_calificar_el_corte_3_no_cita_el_Articulo_11_aunque_este_en_las_reglas_aplicadas()
     {
         const string texto = "A Bases de Datos le falta calificar el corte 3.";
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
@@ -74,6 +74,7 @@ public sealed class FormasVerbalesD74ApiTests
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
         Assert.DoesNotContain(Articulo11, respuesta.Citas);
-        Assert.Contains(Articulo11, GuionesLlm.Bloques(Assert.Single(fabrica.Llm.Solicitudes)).Select(b => b.Fuente));
+        var reglas = GuionesLlm.ResumenOSinDatos(Assert.Single(fabrica.Llm.Solicitudes), "Bases de Datos").Split('\n').Last(l => l.StartsWith("Reglas aplicadas", StringComparison.Ordinal));
+        Assert.Contains(Articulo11, reglas, StringComparison.Ordinal);
     }
 }
