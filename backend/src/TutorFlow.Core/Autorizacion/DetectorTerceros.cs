@@ -21,9 +21,6 @@ public static partial class DetectorTerceros
             || MencionesDeNombre(tokens, directorio).Any(mencion => !ambito.ClavesDeNombre.Contains(mencion.Clave));
     }
 
-    public static bool TieneFormaDeIdPersona(string textoNormalizado, DirectorioAcademico directorio) =>
-        MencionesDeId(TokenizadorTexto.Tokenizar(textoNormalizado), directorio).Count > 0;
-
     public static bool MencionaIdFueraDe(string textoNormalizado, IReadOnlyCollection<string> idsAutorizados, DirectorioAcademico directorio)
     {
         var clavesAutorizadas = idsAutorizados.Select(AmbitoPersonal.Clave).ToHashSet();
