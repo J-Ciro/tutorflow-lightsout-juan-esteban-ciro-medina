@@ -27,15 +27,16 @@ public static class DetectorFugaConfiguracion
 
     private static bool ContieneAlgunSecreto(string respuesta, IEnumerable<string> secretos)
     {
-        var compacta = Compactar(respuesta);
-        return secretos.Select(Compactar).Where(secreto => secreto.Length > 0).Any(secreto => compacta.Contains(secreto, StringComparison.Ordinal));
+        var compactas = VariantesDeTexto.De(respuesta).Select(Compactar).ToList();
+        return secretos.Select(Compactar).Where(secreto => secreto.Length > 0)
+            .Any(secreto => compactas.Any(compacta => compacta.Contains(secreto, StringComparison.Ordinal)));
     }
 
     private static string Compactar(string texto) =>
         string.Concat(texto.Where(caracter => !EsSeparadorOInvisible(caracter))).ToLowerInvariant();
 
     private static bool EsSeparadorOInvisible(char caracter) =>
-        caracter is '_' or '-' or '.' || char.GetUnicodeCategory(caracter) == System.Globalization.UnicodeCategory.Format;
+        caracter is '_' or '-' or '.' || char.IsWhiteSpace(caracter) || char.GetUnicodeCategory(caracter) == System.Globalization.UnicodeCategory.Format;
 
     private static bool ComparteFragmentoConfidencial(
         string respuesta,
@@ -43,8 +44,11 @@ public static class DetectorFugaConfiguracion
         IReadOnlyCollection<string> textosEntregados)
     {
         var permitidos = TextosFijos().Concat(textosEntregados).SelectMany(FragmentosDe).ToHashSet(StringComparer.Ordinal);
-        var confidenciales = textosConfidenciales.SelectMany(FragmentosDe).ToHashSet(StringComparer.Ordinal);
-        return FragmentosDe(respuesta).Any(fragmento => confidenciales.Contains(fragmento) && !permitidos.Contains(fragmento));
+        string[] palabrasDeLaRespuesta = [.. TokenizadorTexto.Valores(respuesta)];
+        return textosConfidenciales
+            .SelectMany(texto => FragmentoEnVentana.Fragmentos([.. TokenizadorTexto.Valores(texto)]))
+            .Where(fragmento => !permitidos.Contains(string.Join(' ', fragmento)))
+            .Any(fragmento => FragmentoEnVentana.Aparece(fragmento, palabrasDeLaRespuesta));
     }
 
     private static string[] TextosFijos() =>

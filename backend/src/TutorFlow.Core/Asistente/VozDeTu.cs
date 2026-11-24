@@ -26,7 +26,7 @@ internal static class VozDeTu
         indice + 1 < tokens.Count && Referencias.Contains(tokens[indice + 1].Valor);
 
     private static bool TieneCampoCerca(IReadOnlyList<TokenTexto> tokens, int indice) =>
-        Enumerable.Range(Math.Max(0, indice - PalabrasHastaElCampo), (2 * PalabrasHastaElCampo) + 1)
-            .Where(posicion => posicion < tokens.Count && posicion != indice)
+        VentanaDePalabras.Posiciones(tokens.Count, indice, PalabrasHastaElCampo)
+            .Where(posicion => posicion != indice)
             .Any(posicion => Campos.Contains(tokens[posicion].Valor));
 }

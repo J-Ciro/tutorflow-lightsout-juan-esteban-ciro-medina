@@ -15,13 +15,17 @@ internal static class VocabularioAgregados
 
     public static readonly string[] RellenosDelPromedio = ["de", "del", "la", "mi"];
 
-    public static readonly string[] Colectivos = ["curso", "clase", "grupo", "programa", "carrera"];
+    public static readonly string[] Colectivos = ["curso", "clase", "grupo", "programa", "carrera", "salon", "cohorte", "seccion"];
+
+    public static readonly string[] PrimerosYUltimos = ["primeros", "ultimos"];
+
+    public static readonly string[] RellenosDelPuesto = ["de", "del", "los", "las", "la", "el"];
 
     public static readonly string[] PluralesSuperlativos = ["mejores", "peores"];
 
     public static readonly string[] NotasPlurales = ["notas", "promedios"];
 
-    public static readonly string[] Notas = ["nota", "notas", "promedio", "promedios", "gpa"];
+    public static readonly string[] Notas = ["nota", "notas", "promedio", "promedios", "gpa", "definitiva", "definitivas", "calificacion", "calificaciones"];
 
     public static readonly string[] Posesivos = ["mi", "mis"];
 
@@ -30,7 +34,7 @@ internal static class VocabularioAgregados
     public static readonly string[] Grupo =
     [
         "estudiantes", "alumnos", "companeros", "companeras", "personas", "gente", "alguien", "quien",
-        "quienes", "los demas", "otros programas", "mi clase", "mi curso", "mi grupo", "students",
+        "quienes", "los demas", "otros programas", "mi clase", "mi curso", "mi grupo", "mi salon", "mi cohorte", "mi seccion", "students",
         "classmates", "anyone", "who"
     ];
 
@@ -49,6 +53,8 @@ internal static class VocabularioAgregados
     public static readonly string[] RellenosDelConteo = ["otros", "otras", "de", "mis", "los", "las"];
 
     public static readonly string[] VerbosDeExistencia = ["hay", "estan", "tiene", "tienen", "van", "siguen", "quedaron"];
+
+    public static readonly string[] RellenosTrasElGrupo = ["en", "total"];
 
     public static readonly string[] Derecho = ["derecho"];
 

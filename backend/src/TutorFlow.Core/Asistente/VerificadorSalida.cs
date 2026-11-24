@@ -76,9 +76,6 @@ public sealed partial class VerificadorSalida
             || DetectorTerceros.MencionaIdFueraDe(normalizada, idsPersonasAutorizadas, directorio);
     }
 
-    public bool TodosLosNumerosSonVerificables(string respuesta, IReadOnlyCollection<string> textosFuente) =>
-        PrimeraCifraNoVerificable(respuesta, textosFuente) is null;
-
     private string? PrimeraCifraNoVerificable(string respuesta, IReadOnlyCollection<string> textosFuente)
     {
         var numerosDeFuentes = textosFuente
