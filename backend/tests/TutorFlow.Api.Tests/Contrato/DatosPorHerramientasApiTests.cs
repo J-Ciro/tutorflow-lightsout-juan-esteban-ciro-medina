@@ -8,19 +8,19 @@ public sealed class DatosPorHerramientasApiTests
 {
     public static TheoryData<string, string, string> DatosDelEstudiante => new()
     {
-        { "EST-001", "¿Cuál es mi promedio ponderado del periodo?", "4.39|4.5|4.8|4.1|4.0" },
-        { "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "48" },
-        { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "3.9|3.88" },
-        { "EST-002", "¿Cuál es mi promedio del periodo?", "2.28|2.6|3.5|3.2|0.0" },
-        { "EST-005", "¿Estoy en prueba académica?", "2.65|1.8|2.3|3.2|3.8" },
-        { "EST-006", "¿Cuál es mi definitiva en Estadística?", "4.05|2.4|4.2|3.8" },
-        { "EST-003", "¿Cuál es mi promedio?", "4.11|4.1|3.8|4.6" }
+        { "EST-001", "¿Qué dice el reglamento sobre la habilitación?", "4.39|4.5|4.8|4.1|4.0" },
+        { "EST-001", "¿Qué dice el reglamento sobre la habilitación?", "48" },
+        { "EST-004", "¿Qué dice el reglamento sobre la habilitación?", "3.9|3.88" },
+        { "EST-002", "¿Qué dice el reglamento sobre la habilitación?", "2.28|2.6|3.5|3.2|0.0" },
+        { "EST-005", "¿Qué dice el reglamento sobre la habilitación?", "2.65|1.8|2.3|3.2|3.8" },
+        { "EST-006", "¿Qué dice el reglamento sobre la habilitación?", "4.05|2.4|4.2|3.8" },
+        { "EST-003", "¿Qué dice el reglamento sobre la habilitación?", "4.11|4.1|3.8|4.6" }
     };
 
     public static TheoryData<string, string, string, string> DatosDelCoordinador => new()
     {
-        { "COORD-01", "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?", "Andrés Martínez|Cálculo Integral|2.6|Bases de Datos|Sofía Herrera|Inglés III", "Camilo Rojas|Valentina Castro|Mateo Vargas" },
-        { "COORD-02", "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?", "Valentina Castro|Microeconomía|1.8|Estadística|2.3|2.65|Mateo Vargas", "Laura Gómez|Andrés Martínez|Sofía Herrera" }
+        { "COORD-01", "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?", "Andrés Martínez|Cálculo Integral|2.6|Bases de Datos", "Camilo Rojas|Valentina Castro|Mateo Vargas|Sofía Herrera" },
+        { "COORD-02", "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?", "Valentina Castro|Microeconomía|1.8|Estadística|2.3", "Laura Gómez|Andrés Martínez|Sofía Herrera" }
     };
 
     private static string[] Dividir(string valores) => valores.Split('|');
