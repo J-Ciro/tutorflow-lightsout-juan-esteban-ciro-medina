@@ -13,7 +13,7 @@ public sealed class TimeoutTotalApiTests
     private static readonly TimeSpan CotaDe158b = TimeSpan.FromSeconds(27);
     private const int LlamadasConHerramienta = 4;
     private const int MaximoDeLlamadas = 4;
-    private const string Pregunta = "¿Cuál es mi promedio?";
+    private const string Pregunta = "¿Qué dice el reglamento sobre la habilitación?";
 
     [Fact]
     [Trait("CA", "CA-07")]

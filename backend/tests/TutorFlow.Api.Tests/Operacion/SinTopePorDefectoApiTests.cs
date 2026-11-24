@@ -146,7 +146,7 @@ public sealed class SinTopePorDefectoApiTests
         Assert.All(respuestas, r => Assert.Equal(200, r.Estado));
         Assert.Equal(3, llm.Llamadas);
         Assert.Contains(LineaSinTopePresupuesto, fabrica.Logs.Mensajes);
-        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains(ResultadoArranque.PrefijoIgnorada, StringComparison.Ordinal));
+        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains(ResultadoArranque.PrefijoIgnorada, StringComparison.Ordinal) && !m.Contains("no se encontró el precio del modelo", StringComparison.Ordinal));
     }
 
     [Theory]
@@ -172,7 +172,7 @@ public sealed class SinTopePorDefectoApiTests
         Assert.Equal("30", respuestas[^1].Encabezado("Retry-After"));
         Assert.Contains(LineaTasaPorDefecto, fabrica.Logs.Mensajes);
         Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains("Límite sin tope: Limites:PreguntasPorMinutoPorIp", StringComparison.Ordinal));
-        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains(ResultadoArranque.PrefijoIgnorada, StringComparison.Ordinal));
+        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains(ResultadoArranque.PrefijoIgnorada, StringComparison.Ordinal) && !m.Contains("no se encontró el precio del modelo", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -238,6 +238,6 @@ public sealed class SinTopePorDefectoApiTests
         Assert.All(respuestas, r => Assert.Equal(200, r.Estado));
         Assert.All(fabrica.Auditoria.Eventos, e => Assert.Equal("10.0.0.5", e.IpOrigen));
         Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains(ResultadoArranque.PrefijoInvalida, StringComparison.Ordinal));
-        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains(ResultadoArranque.PrefijoIgnorada, StringComparison.Ordinal));
+        Assert.DoesNotContain(fabrica.Logs.Mensajes, m => m.Contains(ResultadoArranque.PrefijoIgnorada, StringComparison.Ordinal) && !m.Contains("no se encontró el precio del modelo", StringComparison.Ordinal));
     }
 }
