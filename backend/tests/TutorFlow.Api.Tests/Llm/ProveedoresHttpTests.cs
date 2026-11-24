@@ -14,12 +14,25 @@ public sealed class ProveedoresHttpTests
     private const decimal PrecioSalida = 5.0m;
     private const decimal ToleranciaDeCosto = 0.000001m;
 
-    private static void AfirmarConsumo(RespuestaApi respuesta, ManejadorLlmFalso manejador)
+    private static Dictionary<string, string?> PreciosDeTodos()
+    {
+        var configuracion = new Dictionary<string, string?> { [FabricaApi.ClaveUrlCatalogoPrecios] = string.Empty };
+        foreach (var proveedor in new[] { "anthropic", "openai", "groq", "openrouter", "gemini" })
+        {
+            configuracion[$"Llm:Proveedores:{proveedor}:Modelos:0:PrecioEntradaPorMillon"] = "1.0";
+            configuracion[$"Llm:Proveedores:{proveedor}:Modelos:0:PrecioSalidaPorMillon"] = "5.0";
+        }
+
+        return configuracion;
+    }
+
+    private static void AfirmarConsumo(RespuestaApi respuesta, ManejadorLlmFalso manejador, string? llave)
     {
         var entrada = manejador.Peticiones.Sum(ConsumoRealistaHttp.Reportados);
         var salida = manejador.Peticiones.Count * SalidaPorLlamada;
+        var costoEsperado = llave is null ? 0m : ConsumoRealista.CostoDe(entrada, salida, PrecioEntrada, PrecioSalida);
         Assert.Equal(entrada + salida, respuesta.Tokens);
-        Assert.InRange(respuesta.CostoUsd, ConsumoRealista.CostoDe(entrada, salida, PrecioEntrada, PrecioSalida) - ToleranciaDeCosto, ConsumoRealista.CostoDe(entrada, salida, PrecioEntrada, PrecioSalida) + ToleranciaDeCosto);
+        Assert.InRange(respuesta.CostoUsd, costoEsperado - ToleranciaDeCosto, costoEsperado + ToleranciaDeCosto);
     }
 
     public static TheoryData<string?, string, string> Proveedores => new()
@@ -38,7 +51,7 @@ public sealed class ProveedoresHttpTests
         llave is null ? [] : new Dictionary<string, string?> { ["LLM_API_KEY"] = llave };
 
     private static FabricaApi Fabrica(string? llave, ManejadorLlmFalso manejador) =>
-        new(configuracion: FabricaApi.Precios("1.0", "5.0"), variablesEntorno: Llave(llave), reemplazarLlm: false, manejadorHttp: manejador);
+        new(configuracion: PreciosDeTodos(), variablesEntorno: Llave(llave), reemplazarLlm: false, manejadorHttp: manejador);
 
     private static string? EncabezadoDeAutenticacion(PeticionLlm peticion) =>
         peticion.Encabezados.TryGetValue("x-api-key", out var anthropic)
@@ -58,7 +71,7 @@ public sealed class ProveedoresHttpTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(RespuestaNormativa, respuesta.Respuesta);
-        AfirmarConsumo(respuesta, manejador);
+        AfirmarConsumo(respuesta, manejador, llave);
         Assert.NotEmpty(manejador.Peticiones);
         Assert.All(manejador.Peticiones, p => Assert.Equal(host, p.Uri.Host));
         Assert.All(manejador.Peticiones, p => Assert.Contains(modelo, p.Cuerpo, StringComparison.Ordinal));
@@ -81,7 +94,7 @@ public sealed class ProveedoresHttpTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.True(respuesta.UsoDatosEstudiante);
-        AfirmarConsumo(respuesta, manejador);
+        AfirmarConsumo(respuesta, manejador, llave);
         Assert.Equal(2, manejador.Peticiones.Count);
         Assert.Contains("4.39", manejador.Peticiones[1].Cuerpo, StringComparison.Ordinal);
         Assert.All(manejador.Peticiones, p => Assert.Equal(host, p.Uri.Host));
