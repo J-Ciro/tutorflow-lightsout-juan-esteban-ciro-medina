@@ -1,4 +1,5 @@
 using System.Text.Json;
+using TutorFlow.Api.Tests.Dobles;
 using TutorFlow.Core.Asistente;
 using TutorFlow.Core.Autorizacion;
 using TutorFlow.Core.Conocimiento;
@@ -54,7 +55,7 @@ public sealed class AuditoriaConsolaTests
     private static string Capturar(Action accion)
     {
         var original = Console.Out;
-        using var escritor = new StringWriter();
+        using var escritor = new EscritorSincronizado();
         Console.SetOut(escritor);
         try
         {

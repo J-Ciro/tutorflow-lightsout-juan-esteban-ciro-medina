@@ -1,4 +1,5 @@
 using System.Text.Json;
+using TutorFlow.Api;
 using TutorFlow.Api.Tests.Dobles;
 using TutorFlow.Core.Asistente;
 using TutorFlow.Core.Autorizacion;
@@ -155,7 +156,7 @@ public sealed class AuditoriaIdSolicitadoApiTests
     {
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.PideEstudiante(pedido), auditoriaReal: true);
         var original = Console.Out;
-        using var escritor = new StringWriter();
+        using var escritor = new EscritorSincronizado();
         Console.SetOut(escritor);
         RespuestaApi respuesta;
         try
@@ -167,7 +168,8 @@ public sealed class AuditoriaIdSolicitadoApiTests
             Console.SetOut(original);
         }
 
-        var lineas = escritor.ToString().Split('\n').Select(l => l.TrimEnd('\r')).Where(l => l.Contains("\"correlationId\"", StringComparison.Ordinal)).ToList();
+        var correlacion = respuesta.Encabezados.GetValues(CorrelacionDePeticion.Encabezado).Single();
+        var lineas = escritor.ToString().Split('\n').Select(l => l.TrimEnd('\r')).Where(l => l.Contains(correlacion, StringComparison.Ordinal)).ToList();
         return (respuesta, JsonElement.Parse(Assert.Single(lineas)));
     }
 

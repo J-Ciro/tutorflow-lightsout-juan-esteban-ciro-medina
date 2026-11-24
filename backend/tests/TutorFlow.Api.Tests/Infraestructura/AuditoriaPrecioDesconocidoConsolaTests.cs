@@ -1,4 +1,5 @@
 using System.Text.Json;
+using TutorFlow.Api.Tests.Dobles;
 using TutorFlow.Core.Asistente;
 using TutorFlow.Core.Autorizacion;
 using TutorFlow.Infrastructure.Auditoria;
@@ -32,7 +33,7 @@ public sealed class AuditoriaPrecioDesconocidoConsolaTests
     private static JsonElement Emitir(EventoAuditoria evento)
     {
         var original = Console.Out;
-        using var escritor = new StringWriter();
+        using var escritor = new EscritorSincronizado();
         Console.SetOut(escritor);
         try
         {
