@@ -15,7 +15,7 @@ internal sealed class FaseDelModelo
     private readonly EmisorDeResultados _emisor;
     private readonly CierreDeRespuesta _cierre;
     private readonly LectorResumenPropio _lectorResumen;
-    private readonly DesgloseDeFaltas _desglose;
+    private readonly PreparadorDelBloque _bloques;
 
     public static FaseDelModelo Ensamblar(DependenciasDeAsistente d, EmisorDeResultados emisor)
     {
@@ -40,7 +40,7 @@ internal sealed class FaseDelModelo
         _emisor = emisor;
         _cierre = cierre;
         _lectorResumen = new LectorResumenPropio(politicaAcceso);
-        _desglose = new DesgloseDeFaltas(politicaAcceso, configuracion.Catalogo);
+        _bloques = new PreparadorDelBloque(politicaAcceso, configuracion.Catalogo);
     }
 
     public async Task<ResultadoPregunta> ResponderAsync(SesionPregunta sesion, CancellationToken limite, CancellationToken cliente)
@@ -78,7 +78,7 @@ internal sealed class FaseDelModelo
     private async Task<ResultadoPregunta> ReintentarAsync(Turno turno, CierreEvaluado primero, CancellationToken limite)
     {
         var instruccion = $"{InicioDeLaInstruccion}{primero.MotivoDeReintento}{FinDeLaInstruccion}";
-        var segundo = await turno.Conversacion.ReintentarAsync(turno.Contexto, turno.Entrada.PromptSistema, turno.Resultado, instruccion, turno.Sesion.Registro, limite);
+        var segundo = await turno.Conversacion.ReintentarAsync(turno.Contexto, turno.Entrada.PromptSistema, turno.Resultado, instruccion, turno.Entrada.ConBloque, turno.Sesion.Registro, limite);
         return segundo.Estado switch
         {
             EstadoConversacion.Completada => Emitir(turno.Sesion, ElegirEntre(primero, _cierre.Evaluar(turno.Sesion, segundo.Texto ?? string.Empty, turno.Entrada))),
@@ -109,15 +109,16 @@ internal sealed class FaseDelModelo
     private async Task<EntradaConversacion> PrepararEntradaAsync(SesionPregunta sesion, ContextoUsuario contexto, HerramientasAsistente herramientas, CancellationToken cancellationToken)
     {
         var resumen = await _lectorResumen.LeerAsync(contexto, sesion.Activacion, sesion.Api, sesion.Registro, cancellationToken);
-        sesion.Desglose = await _desglose.PrepararAsync(sesion, contexto, cancellationToken);
-        var prelectura = sesion.Desglose is null ? await PrelecturaAsync(sesion, contexto, herramientas, cancellationToken) : null;
+        sesion.Bloque = await _bloques.DePersonasAsync(sesion, contexto, cancellationToken);
+        var prelectura = sesion.Bloque is null ? await PrelecturaAsync(sesion, contexto, herramientas, cancellationToken) : null;
+        sesion.Bloque ??= prelectura is null ? null : _bloques.DelPrograma(sesion, contexto);
         foreach (var seccion in sesion.Secciones)
         {
             sesion.Registro.AgregarFuente(ConstructorPrompts.ContenidoEntregado(seccion));
         }
 
         var prompt = ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario);
-        return new EntradaConversacion(sesion.Entrada.Pregunta, sesion.Secciones, resumen, prelectura, prompt, sesion.Desglose is not null);
+        return new EntradaConversacion(sesion.Entrada.Pregunta, sesion.Secciones, resumen, prelectura, prompt, sesion.Bloque is not null);
     }
 
     private async Task<string?> PrelecturaAsync(SesionPregunta sesion, ContextoUsuario contexto, HerramientasAsistente herramientas, CancellationToken cancellationToken)

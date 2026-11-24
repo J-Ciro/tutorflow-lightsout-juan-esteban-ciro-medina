@@ -1,29 +1,25 @@
 using Microsoft.AspNetCore.Hosting;
 using TutorFlow.Core.Asistente;
-using TutorFlow.Infrastructure.Configuracion;
 
 namespace TutorFlow.Api;
 
 internal sealed partial class ValidacionDeArranque : IStartupFilter
 {
-    private static readonly string[] VariablesDePrecio = ["LLM_PRECIO_ENTRADA", "LLM_PRECIO_SALIDA"];
     private const string ClaveTasaPorIp = "Limites:PreguntasPorMinutoPorIp";
     private const string ClavePresupuestoDiario = "Limites:PresupuestoDiarioUsd";
 
     private readonly IConfiguration _configuracion;
-    private readonly IVariablesEntorno _variables;
     private readonly ILogger _logger;
 
-    public ValidacionDeArranque(IConfiguration configuracion, IVariablesEntorno variables, ILoggerFactory fabricaDeLogs)
+    public ValidacionDeArranque(IConfiguration configuracion, ILoggerFactory fabricaDeLogs)
     {
         _configuracion = configuracion;
-        _variables = variables;
         _logger = fabricaDeLogs.CreateLogger("TutorFlow.Configuracion");
     }
 
     public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> siguiente)
     {
-        var efectiva = ConEntorno();
+        var efectiva = _configuracion;
         var errores = ValidadorDeConfiguracion.Validar(efectiva);
         if (errores.Count > 0)
         {
@@ -50,14 +46,6 @@ internal sealed partial class ValidacionDeArranque : IStartupFilter
         {
             RegistrarLimiteSinTope(_logger, ClavePresupuestoDiario);
         }
-    }
-
-    private IConfiguration ConEntorno()
-    {
-        var delEntorno = VariablesDePrecio
-            .Select(nombre => new KeyValuePair<string, string?>(nombre, _variables.Leer(nombre)))
-            .Where(par => par.Value is not null);
-        return new ConfigurationBuilder().AddConfiguration(_configuracion).AddInMemoryCollection(delEntorno).Build();
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Límite sin tope: {Clave}")]

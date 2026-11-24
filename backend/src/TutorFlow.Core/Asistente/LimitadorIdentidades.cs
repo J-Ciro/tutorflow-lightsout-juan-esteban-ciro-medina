@@ -6,6 +6,7 @@ public sealed class LimitadorIdentidades
 {
     private const int UmbralDeLimpieza = 1_000;
     private const int SegundosEntreLimpiezas = 10;
+    private const int TopeDeIps = 50_000;
 
     private static readonly TimeSpan EntreLimpiezas = TimeSpan.FromSeconds(SegundosEntreLimpiezas);
 
@@ -30,11 +31,14 @@ public sealed class LimitadorIdentidades
             var ahora = _reloj.AhoraUtc;
             LimpiarSiHaceFalta(ahora);
             var ventana = ObtenerVigente(ipOrigen, ahora);
-            return ventana.Contiene(usuarioId)
-                ? Renovar(ventana, usuarioId, ahora)
-                : Admitir(ventana, usuarioId, ahora);
+            return ventana is null ? new ResultadoIdentidades(false, []) : Registrar(ventana, usuarioId, ahora);
         }
     }
+
+    private ResultadoIdentidades Registrar(VentanaDeIp ventana, string usuarioId, DateTimeOffset ahora) =>
+        ventana.Contiene(usuarioId)
+            ? Renovar(ventana, usuarioId, ahora)
+            : Admitir(ventana, usuarioId, ahora);
 
     private static ResultadoIdentidades Renovar(VentanaDeIp ventana, string usuarioId, DateTimeOffset ahora)
     {
@@ -49,10 +53,15 @@ public sealed class LimitadorIdentidades
         return new ResultadoIdentidades(superada, ventana.Ids);
     }
 
-    private VentanaDeIp ObtenerVigente(string ipOrigen, DateTimeOffset ahora)
+    private VentanaDeIp? ObtenerVigente(string ipOrigen, DateTimeOffset ahora)
     {
         if (!_porIp.TryGetValue(ipOrigen, out var ventana))
         {
+            if (_porIp.Count >= TopeDeIps)
+            {
+                return null;
+            }
+
             ventana = new VentanaDeIp();
             _porIp[ipOrigen] = ventana;
         }

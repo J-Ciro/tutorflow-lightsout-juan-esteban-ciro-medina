@@ -46,6 +46,8 @@ internal sealed partial class CitasDeReglasAplicadas
         _perdida = new PerdidaPorValor(definitivas);
     }
 
+    public static IReadOnlyCollection<Cita> SeccionesDeLaTabla => Terminos.Keys;
+
     public IReadOnlyList<Cita> Usadas(RegistroConsultas registro, string respuesta, DirectorioAcademico directorio)
     {
         var texto = $" {NormalizadorTexto.Normalizar(respuesta)} ";

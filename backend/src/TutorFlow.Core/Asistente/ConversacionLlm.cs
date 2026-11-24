@@ -25,7 +25,7 @@ internal sealed record EntradaConversacion(
     ResumenEntregado? Resumen,
     string? Prelectura,
     string PromptSistema,
-    bool ConDesglose = false);
+    bool ConBloque = false);
 
 internal sealed class ConversacionLlm
 {
@@ -58,8 +58,9 @@ internal sealed class ConversacionLlm
         var estado = new Turnos(
             contexto,
             registro,
-            [ConstructorPrompts.MensajeInicial(entrada.Pregunta, entrada.Secciones, entrada.Resumen, entrada.Prelectura, entrada.ConDesglose)],
-            entrada.PromptSistema);
+            [ConstructorPrompts.MensajeInicial(entrada.Pregunta, entrada.Secciones, entrada.Resumen, entrada.Prelectura, entrada.ConBloque)],
+            entrada.PromptSistema)
+        { SinHerramientas = entrada.ConBloque };
         return await CorrerAsync(estado, cancellationToken);
     }
 
@@ -68,6 +69,7 @@ internal sealed class ConversacionLlm
         string promptSistema,
         ResultadoConversacion anterior,
         string instruccion,
+        bool sinHerramientas,
         RegistroConsultas registro,
         CancellationToken cancellationToken)
     {
@@ -77,7 +79,7 @@ internal sealed class ConversacionLlm
             new MensajeLlm(RolMensaje.Asistente, anterior.Texto ?? string.Empty, null, []),
             new MensajeLlm(RolMensaje.Usuario, instruccion, null, [])
         ];
-        return await CorrerAsync(new Turnos(contexto, registro, mensajes, promptSistema) { Invocaciones = anterior.Invocaciones }, cancellationToken);
+        return await CorrerAsync(new Turnos(contexto, registro, mensajes, promptSistema) { Invocaciones = anterior.Invocaciones, SinHerramientas = sinHerramientas }, cancellationToken);
     }
 
     private async Task<ResultadoConversacion> CorrerAsync(Turnos estado, CancellationToken cancellationToken)
@@ -112,7 +114,7 @@ internal sealed class ConversacionLlm
             return new ResultadoConversacion(EstadoConversacion.Rechazada, null);
         }
 
-        return respuesta.Llamadas.Count == 0 ? Completada(estado, respuesta) : LimiteSuperado(estado);
+        return respuesta.Llamadas.Count == 0 || estado.SinHerramientas ? Completada(estado, respuesta) : LimiteSuperado(estado);
     }
 
     private static ResultadoConversacion Completada(Turnos estado, RespuestaLlm respuesta) =>
@@ -157,7 +159,7 @@ internal sealed class ConversacionLlm
         new(
             estado.PromptSistema,
             [.. estado.Mensajes],
-            HerramientasAsistente.Definir(estado.Contexto.Usuario.Rol),
+            estado.SinHerramientas ? [] : HerramientasAsistente.Definir(estado.Contexto.Usuario.Rol),
             _limites.MaximoTokensSalida,
             _configuracion.Ajustes.Temperatura);
 
@@ -172,5 +174,7 @@ internal sealed class ConversacionLlm
         public string PromptSistema { get; } = promptSistema;
 
         public int Invocaciones { get; set; }
+
+        public bool SinHerramientas { get; init; }
     }
 }

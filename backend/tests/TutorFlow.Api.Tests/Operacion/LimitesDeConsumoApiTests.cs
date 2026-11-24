@@ -72,8 +72,9 @@ public sealed class PresupuestoConcurrenteApiTests
     {
         ["Limites:PresupuestoDiarioUsd"] = PresupuestoDiario,
         ["Llm:ReservaPorPeticionUsd"] = ReservaPorPeticion,
-        ["LLM_PRECIO_ENTRADA"] = precioEntrada,
-        ["LLM_PRECIO_SALIDA"] = "0"
+        ["Llm:CatalogoPrecios:Url"] = "",
+        ["Llm:Proveedores:anthropic:Modelos:0:PrecioEntradaPorMillon"] = precioEntrada,
+        ["Llm:Proveedores:anthropic:Modelos:0:PrecioSalidaPorMillon"] = "0"
     };
 
     private static async Task<string> PrecioParaUnCostoPorPeticionAsync()
@@ -93,7 +94,7 @@ public sealed class PresupuestoConcurrenteApiTests
     public async Task ESC_159_Con_cinco_peticiones_simultaneas_exactamente_dos_responden_200_y_tres_503_sin_llamar_al_llm()
     {
         var llm = new ClienteLlmRetenido(new UsoTokens(0, TokensDeSalida));
-        using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: Configuracion(await PrecioParaUnCostoPorPeticionAsync()));
+        using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: Configuracion(await PrecioParaUnCostoPorPeticionAsync()), variablesEntorno: ConfiguracionDePrueba.EntornoConLlave());
         _ = fabrica.Services;
         var peticiones = Enumerable.Range(0, PeticionesSimultaneas)
             .Select(_ => Task.Run(() => fabrica.PreguntarEstudianteAsync("EST-001", Pregunta)))
@@ -127,7 +128,7 @@ public sealed class PresupuestoConcurrenteApiTests
     public async Task ESC_159_El_gasto_del_dia_es_el_costo_real_y_no_la_reserva()
     {
         var llm = new ClienteLlmRetenido(new UsoTokens(0, TokensDeSalida));
-        using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: Configuracion(await PrecioParaUnCostoPorPeticionAsync()));
+        using var fabrica = new FabricaApi(clienteLlm: llm, configuracion: Configuracion(await PrecioParaUnCostoPorPeticionAsync()), variablesEntorno: ConfiguracionDePrueba.EntornoConLlave());
         llm.Liberar();
 
         var estados = new List<int>();

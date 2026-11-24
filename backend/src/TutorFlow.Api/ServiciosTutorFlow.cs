@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.AspNetCore.Hosting;
 using System.Net;
 using System.Text.Encodings.Web;
@@ -76,7 +75,8 @@ public static class ServiciosTutorFlow
         servicios.AddSingleton<LimitadorIdentidades>();
         servicios.AddSingleton(proveedor => new LimitadorTasaPorIp(
             proveedor.GetRequiredService<LimitesAsistente>().PreguntasPorMinutoPorIp,
-            proveedor.GetRequiredService<TimeProvider>()));
+            proveedor.GetRequiredService<TimeProvider>(),
+            AdvertirPor(proveedor.GetRequiredService<ILoggerFactory>().CreateLogger("TutorFlow.Limitador"))));
         servicios.AddSingleton(proveedor => ConfiguracionDelAsistente(proveedor, configuracion));
         servicios.AddScoped<PreguntarAsistente>();
         servicios.AddScoped<ProcesadorPregunta>();
@@ -112,11 +112,21 @@ public static class ServiciosTutorFlow
             .ConfigureHttpClient((proveedor, cliente) =>
                 cliente.Timeout = TimeSpan.FromSeconds(proveedor.GetRequiredService<LimitesAsistente>().TimeoutLlmSegundos));
         servicios.AddSingleton<IHttpMessageHandlerBuilderFilter>(new SinRedireccionesLlm(NombreClienteLlm));
+        AgregarCatalogoDePrecios(servicios);
         servicios.AddScoped<IClienteLlm>(proveedor => FabricaClienteLlm.Crear(
             proveedor.GetRequiredService<ProveedorResuelto>(),
             proveedor.GetRequiredService<IVariablesEntorno>().Leer(VariableLlaveLlm),
             proveedor.GetRequiredService<IHttpClientFactory>().CreateClient(NombreClienteLlm),
             proveedor.GetRequiredService<ILoggerFactory>().CreateLogger("TutorFlow.Llm")));
+    }
+
+    private static void AgregarCatalogoDePrecios(IServiceCollection servicios)
+    {
+        servicios.AddHttpClient(ServicioDePrecios.NombreCliente)
+            .RemoveAllLoggers();
+        servicios.AddSingleton<IHttpMessageHandlerBuilderFilter>(new SinRedireccionesLlm(ServicioDePrecios.NombreCliente));
+        servicios.AddSingleton<ServicioDePrecios>();
+        servicios.AddHostedService(proveedor => proveedor.GetRequiredService<ServicioDePrecios>());
     }
 
     private static EntornoLlm EntornoDesde(IVariablesEntorno variables, IConfiguration configuracion)
@@ -127,22 +137,18 @@ public static class ServiciosTutorFlow
             Valor("LLM_PROVEEDOR"),
             Valor("LLM_URL_BASE"),
             Valor("LLM_MODELO"),
-            LeerDecimal(Valor("LLM_PRECIO_ENTRADA")),
-            LeerDecimal(Valor("LLM_PRECIO_SALIDA")));
+            null,
+            null);
     }
 
     private static Action<string> AdvertirPor(ILogger logger) =>
         mensaje => ValidacionDeArranque.RegistrarAdvertencia(logger, mensaje);
 
-    private static decimal? LeerDecimal(string? valor) =>
-        decimal.TryParse(valor, NumberStyles.Number, CultureInfo.InvariantCulture, out var numero) ? numero : null;
-
     private static ConfiguracionAsistente ConfiguracionDelAsistente(IServiceProvider proveedor, IConfiguration configuracion)
     {
-        var resuelto = proveedor.GetRequiredService<ProveedorResuelto>();
-        var precio = resuelto.PrecioDesconocido ? null : new PrecioModelo(resuelto.PrecioEntradaPorMillon, resuelto.PrecioSalidaPorMillon);
+        var servicioDePrecios = proveedor.GetRequiredService<ServicioDePrecios>();
         return new ConfiguracionAsistente(
-            precio,
+            null,
             configuracion[ClaveMarcadorCanario],
             ValidadorDeConfiguracion.Efectivo(configuracion, ClaveReservaPorPeticion),
             Entero(configuracion, ClaveRelevanciaMinima, ConfiguracionAsistente.RelevanciaMinimaPorDefecto),
@@ -150,7 +156,8 @@ public static class ServiciosTutorFlow
             configuracion.GetSection(SeccionAsignaturas).Get<AsignaturaCatalogo[]>(),
             ValidadorDeConfiguracion.Efectivo(configuracion, ClaveReservaSinPrecio) ?? ConfiguracionAsistente.ReservaSinPrecioPorDefectoUsd,
             AdvertirPor(proveedor.GetRequiredService<ILoggerFactory>().CreateLogger("TutorFlow.Configuracion")),
-            AjustesDelModelo(configuracion));
+            AjustesDelModelo(configuracion),
+            servicioDePrecios.Vigente);
     }
 
     private static UmbralesDeEntrega UmbralesDeEntregaDe(IConfiguration configuracion) =>

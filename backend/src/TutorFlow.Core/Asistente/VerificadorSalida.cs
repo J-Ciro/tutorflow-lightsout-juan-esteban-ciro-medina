@@ -39,6 +39,16 @@ public sealed partial class VerificadorSalida
         ?? RechazoPorNumero(respuesta, textosFuente)
         ?? new SalidaVerificada(respuesta, DescartarCitasInexistentes(citas, baseConocimiento), ResultadoAuditoria.Respondida);
 
+    public SalidaVerificada? RechazoPrevio(
+        Usuario usuario,
+        string respuesta,
+        IReadOnlyCollection<string> idsPersonasAutorizadas,
+        IReadOnlyCollection<string> textosFuente,
+        DirectorioAcademico directorio,
+        MaterialConfidencial? confidencial) =>
+        RechazoPorPersona(usuario, respuesta, idsPersonasAutorizadas, directorio)
+        ?? RechazoPorConfiguracion(respuesta, textosFuente, confidencial);
+
     private SalidaVerificada? RechazoPorPersona(
         Usuario usuario,
         string respuesta,

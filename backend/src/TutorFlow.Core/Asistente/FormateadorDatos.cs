@@ -84,7 +84,7 @@ public static class FormateadorDatos
         _ => "no determinable aún porque hay asignaturas sin definitiva"
     };
 
-    private static string DefinitivaEnLinea(ResultadoAsignatura resultado) =>
+    internal static string DefinitivaEnLinea(ResultadoAsignatura resultado) =>
         resultado.Estado == EstadoAsignatura.PerdidaPorInasistencia
             ? $"{resultado.Asignatura.Nombre} {Nota(0m)} (por inasistencia)"
             : $"{resultado.Asignatura.Nombre} {Nota(resultado.Definitiva)}";
@@ -112,7 +112,7 @@ public static class FormateadorDatos
             ? [$"Equivalente de la acumulada de {resultado.Asignatura.Nombre} sobre la nota completa: {Nota(acumulada.EquivalenteSobreEvaluado)}"]
             : [];
 
-    private static string LineaSinDefinitiva(ResultadoAsignatura resultado) =>
+    internal static string LineaSinDefinitiva(ResultadoAsignatura resultado) =>
         resultado.Acumulada is { } acumulada
             ? $"{SinDefinitivaEncabezado}: {resultado.Asignatura.Nombre} (acumulada {Nota(acumulada.Valor)} sobre el {acumulada.PorcentajeEvaluado.ToString("0", CultureInfo.InvariantCulture)}% evaluado)"
             : $"{SinDefinitivaEncabezado}: {resultado.Asignatura.Nombre}";

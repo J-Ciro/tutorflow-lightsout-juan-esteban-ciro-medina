@@ -25,8 +25,9 @@ public sealed partial class RegistroArranqueLlm : IHostedService
             return Task.CompletedTask;
         }
 
+        var modelo = ValorDeMensaje.De(proveedor.Modelo);
         var temperatura = ServiciosTutorFlow.AjustesDelModelo(_configuracion).Temperatura.ToString(CultureInfo.InvariantCulture);
-        RegistrarProveedor(_logger, proveedor.Proveedor, proveedor.Adaptador, proveedor.Modelo, proveedor.PrecioDesconocido, temperatura);
+        RegistrarProveedor(_logger, proveedor.Proveedor, proveedor.Adaptador, modelo, proveedor.PrecioDesconocido, temperatura);
         return Task.CompletedTask;
     }
 

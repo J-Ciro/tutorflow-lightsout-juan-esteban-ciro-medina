@@ -1,5 +1,4 @@
 using TutorFlow.Core.Academico;
-using TutorFlow.Core.Autorizacion;
 
 namespace TutorFlow.Core.Asistente;
 
@@ -7,15 +6,10 @@ internal static class TextoDelDesglose
 {
     private const string TotalSinRegistro = "Total: sin registro";
 
-    public static string? De(ResumenEstudiante resumen, IReadOnlyCollection<string> claves, bool terceraPersona)
-    {
-        var elegidas = resumen.Asignaturas
-            .Where(resultado => claves.Count == 0 || claves.Contains(AmbitoPersonal.Clave(resultado.Asignatura.Codigo)))
-            .ToList();
-        return elegidas.Count == 0
-            ? null
-            : string.Join("\n", elegidas.Select(resultado => FormateadorDatos.LineaDeAsistencia(resultado, terceraPersona)).Append(Total(elegidas)));
-    }
+    public static IEnumerable<string> Lineas(IReadOnlyList<ResultadoAsignatura> elegidas, bool terceraPersona) =>
+        elegidas.Count == 0
+            ? []
+            : elegidas.Select(resultado => FormateadorDatos.LineaDeAsistencia(resultado, terceraPersona)).Append(Total(elegidas));
 
     private static string Total(IReadOnlyList<ResultadoAsignatura> elegidas)
     {
