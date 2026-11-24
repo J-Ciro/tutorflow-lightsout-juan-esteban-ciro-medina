@@ -70,7 +70,7 @@ internal sealed class EmisorDeResultados
         return new EventoAuditoria(
             _auditor.AhoraUtc, sesion.CorrelationId, sesion.IpOrigen, usuario.Rol, usuario.Id, pregunta, resultado, motivo,
             registro.Estudiantes, registro.Recursos, citas, sesion.Uso.Valor.Total, costo,
-            sesion.Cronometro.ElapsedMilliseconds, sesion.ReservaHecha && _configuracion.Precio is null)
+            sesion.MilisegundosTranscurridos, sesion.ReservaHecha && _configuracion.Precio is null)
         {
             DatosConsultados = registro.DatosConsultados,
             IdSolicitado = idSolicitado,

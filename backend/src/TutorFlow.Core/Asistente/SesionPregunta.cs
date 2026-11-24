@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using TutorFlow.Core.Autorizacion;
 using TutorFlow.Core.Conocimiento;
 
@@ -8,7 +7,8 @@ internal sealed class SesionPregunta(
     PreguntaEntrada entrada,
     string ipOrigen,
     string correlationId,
-    ApiAcademicaConPresupuesto api)
+    ApiAcademicaConPresupuesto api,
+    TimeProvider tiempo)
 {
     public PreguntaEntrada Entrada { get; } = entrada;
 
@@ -18,7 +18,9 @@ internal sealed class SesionPregunta(
 
     public ApiAcademicaConPresupuesto Api { get; } = api;
 
-    public Stopwatch Cronometro { get; } = Stopwatch.StartNew();
+    private readonly long _inicio = tiempo.GetTimestamp();
+
+    public long MilisegundosTranscurridos => (long)tiempo.GetElapsedTime(_inicio).TotalMilliseconds;
 
     public RegistroConsultas Registro { get; } = new();
 

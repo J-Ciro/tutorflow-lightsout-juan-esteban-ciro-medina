@@ -36,6 +36,7 @@ public sealed class PreguntarAsistente
     private readonly RelevanciaPrevia _relevancia;
     private readonly EmisorDeResultados _emisor;
     private readonly FaseDelModelo _fase;
+    private readonly TimeProvider _tiempo;
 
     public PreguntarAsistente(
         IApiAcademica apiAcademica,
@@ -47,15 +48,18 @@ public sealed class PreguntarAsistente
         LimitesAsistente limites,
         ConfiguracionAsistente configuracion,
         PresupuestoDiario presupuesto,
-        LimitadorIdentidades? limitadorIdentidades = null)
+        LimitadorIdentidades? limitadorIdentidades = null,
+        TimeProvider? tiempo = null)
         : this(
             new DependenciasDeAsistente(apiAcademica, clienteLlm, baseConocimiento, auditor, politicaAcceso, verificadorSalida, limites, configuracion, presupuesto),
-            limitadorIdentidades)
+            limitadorIdentidades,
+            tiempo ?? TimeProvider.System)
     {
     }
 
-    private PreguntarAsistente(DependenciasDeAsistente dependencias, LimitadorIdentidades? limitadorIdentidades)
+    private PreguntarAsistente(DependenciasDeAsistente dependencias, LimitadorIdentidades? limitadorIdentidades, TimeProvider tiempo)
     {
+        _tiempo = tiempo;
         _dependencias = dependencias;
         _limitadorIdentidades = limitadorIdentidades;
         _lectorResumen = new LectorResumenPropio(dependencias.PoliticaAcceso);
@@ -71,8 +75,8 @@ public sealed class PreguntarAsistente
         CancellationToken cancellationToken)
     {
         var presupuestoApi = TimeSpan.FromSeconds(_dependencias.Limites.PresupuestoApiAcademicaSegundos);
-        var api = new ApiAcademicaConPresupuesto(_dependencias.ApiAcademica, presupuestoApi);
-        var sesion = new SesionPregunta(entrada, ipOrigen, correlationId, api);
+        var api = new ApiAcademicaConPresupuesto(_dependencias.ApiAcademica, presupuestoApi, _tiempo);
+        var sesion = new SesionPregunta(entrada, ipOrigen, correlationId, api, _tiempo);
         try
         {
             return await ResponderSesionAsync(sesion, cancellationToken);
@@ -182,8 +186,8 @@ public sealed class PreguntarAsistente
 
     private async Task<ResultadoPregunta> ResponderConTimeoutAsync(SesionPregunta sesion, CancellationToken cancellationToken)
     {
-        using var limite = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        limite.CancelAfter(TimeSpan.FromSeconds(_dependencias.Limites.TimeoutLlmSegundos));
+        using var temporizador = new CancellationTokenSource(TimeSpan.FromSeconds(_dependencias.Limites.TimeoutLlmSegundos), _tiempo);
+        using var limite = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, temporizador.Token);
         try
         {
             return await _fase.ResponderAsync(sesion, limite.Token, cancellationToken);
