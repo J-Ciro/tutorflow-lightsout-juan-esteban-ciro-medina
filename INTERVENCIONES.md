@@ -249,3 +249,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** la complejidad no aportaba valor proporcional y añadía riesgos de despliegue (subredes fijas, INT-029).
 - **Costo:** ~2 min humanos.
 - **Prevención:** aprobada por el humano y aplicada, con su ajuste: *"ante cualquier solucion debe de ser evualuada con otro sub agente y presetnar las soluciones al arquitecto al agente de back y front para tomar una desicion"*. `FABRICA.md` §2 y `arquitecto-spec` exigen que toda solución la evalúe un subagente distinto del que la propone y que las alternativas, empezando por la más simple, se decidan entre `arquitecto-spec`, `backend-dotnet` y `frontend-react`. Si añade infraestructura, requiere además aprobación humana.
+
+### INT-031 · 2026-11-24 · La llave del LLM no se filtra por su formato
+- **Fase:** spec
+- **Qué pasó:** con una llave de Gemini que no empieza por `AIza`, el backend no resolvió el proveedor ("la llave tiene un prefijo desconocido y falta LLM_URL_BASE") y las preguntas con LLM responderían 503. D-16 decidía el proveedor por el prefijo de la llave.
+- **Qué hizo el humano:** *"Ten encuyenta que esa es la llave que proporciono entonces no hay que tener un fiultraod de llves, simplemente se usa la API key que sea indifrente de su valor para eso instalamos Microsoft.Extension.IA"*.
+- **Por qué:** los formatos de llave cambian y el evaluador usará la suya. Rechazarla por su forma bloquea la evaluación (INT-027).
+- **Costo:** ~1 min humano.
+- **Prevención:** la llave nunca se valida ni se rechaza por su formato. El proveedor se resuelve con información explícita (`LLM_PROVEEDOR`, el nombre del modelo en `LLM_MODELO`, `LLM_URL_BASE`) y el prefijo de la llave queda solo como pista. Decisión técnica por INT-030.
