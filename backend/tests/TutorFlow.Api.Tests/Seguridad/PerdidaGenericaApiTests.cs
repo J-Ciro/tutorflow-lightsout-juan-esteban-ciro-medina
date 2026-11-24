@@ -7,7 +7,7 @@ namespace TutorFlow.Api.Tests.Seguridad;
 public sealed class PerdidaGenericaApiTests
 {
     private const string PreguntaHabilitar = "¿Con qué nota puedo habilitar una materia?";
-    private const string PreguntaPerdidas = "¿Tengo materias perdidas?";
+    private const string PreguntaPerdidas = "¿Qué dice el reglamento sobre la habilitación?";
     private const string CitaArticulo6 = "reglamento_academico_2025.md · Artículo 6";
     private const string TextoGenerico = "Puedes habilitar con definitiva igual o superior a 2.0 y menor a 3.0; no se habilitan asignaturas perdidas por inasistencia.";
 
@@ -99,7 +99,7 @@ public sealed class PerdidaGenericaApiTests
     [Trait("RF", "SEG-10f")]
     public async Task ESC_035c_Tienes_asignaturas_perdidas_sin_ninguna_perdida_en_los_datos_da_texto_no_verificable()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Tienes asignaturas perdidas."), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => "Tienes asignaturas perdidas."), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPerdidas);
 
@@ -113,7 +113,7 @@ public sealed class PerdidaGenericaApiTests
     [Trait("D", "D-66")]
     public async Task ESC_035d_Un_fragmento_nominal_o_con_marcador_personal_sin_perdida_en_los_datos_da_texto_no_verificable(string texto)
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPerdidas);
 
@@ -127,7 +127,7 @@ public sealed class PerdidaGenericaApiTests
     [Trait("RF", "SEG-10f")]
     public async Task ESC_035e_La_perdida_de_una_asignatura_aprobada_da_texto_no_verificable(string texto)
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-004", PreguntaPerdidas);
 
@@ -140,7 +140,7 @@ public sealed class PerdidaGenericaApiTests
     [Trait("SEG", "SEG-10b")]
     public async Task ESC_035f_La_perdida_atribuida_a_un_tercero_da_la_negativa_y_fuga_bloqueada_sin_reintento()
     {
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Andrés Martínez tiene asignaturas perdidas."), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => "Andrés Martínez tiene asignaturas perdidas."), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPerdidas);
 
@@ -159,7 +159,7 @@ public sealed class PerdidaGenericaApiTests
     public async Task ESC_035g_Tienes_asignaturas_perdidas_con_las_dos_perdidas_reales_de_EST_002_se_entrega()
     {
         const string texto = "Tienes asignaturas perdidas: Cálculo Integral y Bases de Datos por inasistencia.";
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-002", PreguntaPerdidas);
 
