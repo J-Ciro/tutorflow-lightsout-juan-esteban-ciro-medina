@@ -56,10 +56,13 @@ internal sealed class CierreDeRespuesta
             : CierreEvaluado.Entregable(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion);
     }
 
-    private IReadOnlyList<Cita> EscritasValidas(SesionPregunta sesion, string texto, EntradaConversacion entrada) =>
-        _verificadorSalida.DescartarCitasInexistentes(
-            _citasDeRespuesta.EscritasConApoyo(texto, entrada.Secciones, sesion.Registro.Reglas),
+    private IReadOnlyList<Cita> EscritasValidas(SesionPregunta sesion, string texto, EntradaConversacion entrada)
+    {
+        var usadas = _citasDeReglas.Usadas(sesion.Registro, ExtractorCitas.SinCitas(texto), sesion.Directorio);
+        return _verificadorSalida.DescartarCitasInexistentes(
+            _citasDeRespuesta.EscritasConApoyo(texto, entrada.Secciones, sesion.Registro.Reglas, usadas),
             _baseConocimiento);
+    }
 
     private CierreEvaluado Verificar(SesionPregunta sesion, string limpio, IReadOnlyList<Cita> escritas, EntradaConversacion entrada)
     {
@@ -113,9 +116,11 @@ internal sealed class CierreDeRespuesta
 
     private IReadOnlyList<Cita> CitasDeDocumento(SesionPregunta sesion, string limpio, IReadOnlyList<Cita> escritas, EntradaConversacion entrada)
     {
-        var reglas = _citasDeReglas.De(sesion.Registro, sesion.Entrada.Pregunta, limpio, escritas, sesion.Directorio);
-        IReadOnlyList<Cita> sinRespaldo = [.. escritas.Concat(reglas).Concat(_citasDeRespuesta.PorTema(limpio, entrada.Secciones)).Distinct()];
-        return sinRespaldo.Count > 0 ? sinRespaldo : _citasDeRespuesta.Respaldo(limpio, entrada.Secciones);
+        var usadas = _citasDeReglas.Usadas(sesion.Registro, limpio, sesion.Directorio);
+        var vigentes = escritas.Where(cita => !sesion.Registro.Reglas.Contains(cita) || usadas.Contains(cita)).ToList();
+        var reglas = _citasDeReglas.De(usadas, sesion.Entrada.Pregunta, vigentes);
+        IReadOnlyList<Cita> sinRespaldo = [.. vigentes.Concat(reglas).Concat(_citasDeRespuesta.PorTema(limpio, entrada.Secciones)).Distinct()];
+        return sinRespaldo.Count > 0 || sesion.Registro.UsoDatos ? sinRespaldo : _citasDeRespuesta.Respaldo(limpio, entrada.Secciones);
     }
 
     private MaterialConfidencial Confidencial(SesionPregunta sesion, EntradaConversacion entrada) =>

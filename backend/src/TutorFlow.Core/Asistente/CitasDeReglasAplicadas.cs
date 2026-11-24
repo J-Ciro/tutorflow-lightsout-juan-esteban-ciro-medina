@@ -33,35 +33,23 @@ internal sealed partial class CitasDeReglasAplicadas
 
     private readonly IBaseConocimiento _baseConocimiento;
     private readonly DefinitivaPorAsignatura _definitivas;
+    private readonly PerdidaPorValor _perdida;
 
     public CitasDeReglasAplicadas(IBaseConocimiento baseConocimiento, DefinitivaPorAsignatura definitivas)
     {
         _baseConocimiento = baseConocimiento;
         _definitivas = definitivas;
+        _perdida = new PerdidaPorValor(definitivas);
     }
 
-    public IReadOnlyList<Cita> De(
-        RegistroConsultas registro,
-        string pregunta,
-        string respuesta,
-        IReadOnlyCollection<Cita> escritas,
-        DirectorioAcademico directorio)
+    public IReadOnlyList<Cita> Usadas(RegistroConsultas registro, string respuesta, DirectorioAcademico directorio)
     {
         var texto = $" {NormalizadorTexto.Normalizar(respuesta)} ";
-        var usadas = registro.Reglas.Where(regla => UsaElCampo(regla, texto, respuesta, registro, directorio)).ToList();
-        IEnumerable<Cita> elegidas = usadas.Count > 0
-            ? Ordenar(usadas, RaicesDeContenido.De(pregunta).ToList()).Take(MaximoDeCitas)
-            : SinCampo(registro.Reglas, pregunta);
-        return [.. elegidas.Where(regla => !escritas.Contains(regla))];
+        return [.. registro.Reglas.Where(regla => UsaElCampo(regla, texto, respuesta, registro, directorio))];
     }
 
-    private IEnumerable<Cita> SinCampo(IReadOnlyList<Cita> bloque, string pregunta)
-    {
-        var raices = RaicesDeContenido.De(pregunta).ToList();
-        return raices.Count == 0
-            ? bloque.Take(MaximoDeCitas)
-            : Ordenar(bloque, raices).Where(regla => Relevancia(regla, raices) > 0).Take(MaximoDeCitas);
-    }
+    public IReadOnlyList<Cita> De(IReadOnlyList<Cita> usadas, string pregunta, IReadOnlyCollection<Cita> escritas) =>
+        [.. Ordenar(usadas, RaicesDeContenido.De(pregunta).ToList()).Take(MaximoDeCitas).Where(regla => !escritas.Contains(regla))];
 
     private List<Cita> Ordenar(IReadOnlyList<Cita> reglas, List<string> raices) =>
         raices.Count == 0 ? [.. reglas] : [.. reglas.OrderByDescending(regla => Relevancia(regla, raices))];
@@ -80,7 +68,9 @@ internal sealed partial class CitasDeReglasAplicadas
         Terminos.TryGetValue(regla, out var palabras) && palabras.Any(palabra => texto.Contains($" {palabra} ", StringComparison.Ordinal));
 
     private bool UsaElValor(Cita regla, string respuesta, RegistroConsultas registro, DirectorioAcademico directorio) =>
-        (regla == Definitiva && ParPorValor(respuesta, registro, directorio)) || (regla == Promedio && PromedioPorValor(respuesta, registro));
+        (regla == Definitiva && ParPorValor(respuesta, registro, directorio))
+        || (regla == Promedio && PromedioPorValor(respuesta, registro))
+        || _perdida.Usa(regla, respuesta, registro, directorio);
 
     private bool ParPorValor(string respuesta, RegistroConsultas registro, DirectorioAcademico directorio) =>
         registro.ReglasIncluyenNotas

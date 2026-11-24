@@ -19,10 +19,14 @@ internal sealed partial class CitasDeRespuesta
         _apoyoMinimo = apoyoMinimo;
     }
 
-    public IReadOnlyList<Cita> EscritasConApoyo(string texto, IReadOnlyList<SeccionDocumento> entregadas, IReadOnlyCollection<Cita> reglasDeDatos)
+    public IReadOnlyList<Cita> EscritasConApoyo(
+        string texto,
+        IReadOnlyList<SeccionDocumento> entregadas,
+        IReadOnlyCollection<Cita> bloqueDeReglas,
+        IReadOnlyCollection<Cita> reglasConCampoUsado)
     {
         var apoyadas = SeccionesConApoyo(texto, entregadas).Select(apoyada => CitaDe(apoyada.Seccion)).ToHashSet();
-        return [.. ExtractorCitas.De(texto).Where(cita => apoyadas.Contains(cita) || reglasDeDatos.Contains(cita))];
+        return [.. ExtractorCitas.De(texto).Where(cita => bloqueDeReglas.Contains(cita) ? reglasConCampoUsado.Contains(cita) : apoyadas.Contains(cita))];
     }
 
     public IReadOnlyList<Cita> Respaldo(string texto, IReadOnlyList<SeccionDocumento> entregadas) =>
