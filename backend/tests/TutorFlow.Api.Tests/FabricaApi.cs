@@ -56,20 +56,20 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
 
     private static readonly Dictionary<string, string?> SinConfiguracion = [];
 
-    private static readonly object CandadoDeArranque = new();
+    private static readonly object CandadoPorListenerDiagnosticoCompartidoDelPuntoDeEntrada = new();
 
     public new IServiceProvider Services
     {
         get
         {
-            lock (CandadoDeArranque)
+            lock (CandadoPorListenerDiagnosticoCompartidoDelPuntoDeEntrada)
             {
                 return base.Services;
             }
         }
     }
 
-    private HttpClient ClienteSerializado()
+    private HttpClient ClienteConHostCreadoEnSerie()
     {
         _ = Services;
         return CreateClient();
@@ -105,7 +105,7 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
 
     public async Task<RespuestaApi> EnviarAsync(HttpMethod metodo, string ruta, string? cuerpo, string ip = IpPorDefecto, IReadOnlyDictionary<string, string>? encabezados = null)
     {
-        using var cliente = ClienteSerializado();
+        using var cliente = ClienteConHostCreadoEnSerie();
         using var peticion = new HttpRequestMessage(metodo, ruta);
         peticion.Headers.Add(FiltroIpRemota.Encabezado, ip);
         foreach (var (clave, valor) in encabezados ?? new Dictionary<string, string>())
@@ -125,7 +125,7 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
 
     public async Task<RespuestaApi> EnviarConTipoAsync(string cuerpo, string? tipoContenido, string ip = IpPorDefecto, IReadOnlyDictionary<string, string>? encabezados = null)
     {
-        using var cliente = ClienteSerializado();
+        using var cliente = ClienteConHostCreadoEnSerie();
         using var peticion = new HttpRequestMessage(HttpMethod.Post, "/api/asistente/preguntar");
         peticion.Headers.Add(FiltroIpRemota.Encabezado, ip);
         foreach (var (clave, valor) in encabezados ?? new Dictionary<string, string>())

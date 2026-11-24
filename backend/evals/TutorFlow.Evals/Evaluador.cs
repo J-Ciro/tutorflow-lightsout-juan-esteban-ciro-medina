@@ -35,23 +35,27 @@ public static class Evaluador
             return [Criterios.Etiquetar(Criterios.Codigo, "el cuerpo no cumple la forma del contrato")];
         }
 
-        var fallos = new List<string>();
-        fallos.AddRange(Textos(caso, salida));
-        fallos.AddRange(Parejas(caso, salida));
-        fallos.AddRange(ContieneAlguna(caso, salida));
-        fallos.AddRange(Respondida(caso, salida));
-        fallos.AddRange(Citas(caso, salida));
-        fallos.AddRange(CitasExactas(caso, salida));
-        fallos.AddRange(CitasDeDocumentoExactas(caso, salida));
-        fallos.AddRange(CitasTotal(caso, salida));
-        fallos.AddRange(Metadatos(caso, salida));
-        fallos.AddRange(Globales(caso, salida, cuerpo, llave));
-        fallos.AddRange(ReglasDeTexto.OracionesTruncadas(salida.Respuesta!).Select(f => Criterios.Etiquetar(Criterios.Texto, f)));
-        fallos.AddRange(ReglasDeTexto.ReferenciasSinCita(salida.Respuesta!, salida.Citas).Select(f => Criterios.Etiquetar(Criterios.Texto, f)));
-        fallos.AddRange(ReglasDeTexto.Latex(salida.Respuesta!).Select(f => Criterios.Etiquetar(Criterios.Texto, f)));
-        fallos.AddRange(ReglasDeTexto.HuecosTrasUbicacion(salida.Respuesta!).Select(f => Criterios.Etiquetar(Criterios.Texto, f)));
-        return fallos;
+        return [.. CriteriosDelCaso(caso, salida, cuerpo, llave).Concat(ReglasDeRedaccion(salida))];
     }
+
+    private static IEnumerable<string> CriteriosDelCaso(CasoEval caso, SalidaEval salida, string cuerpo, string? llave) =>
+        Textos(caso, salida)
+            .Concat(Parejas(caso, salida))
+            .Concat(ContieneAlguna(caso, salida))
+            .Concat(Respondida(caso, salida))
+            .Concat(Citas(caso, salida))
+            .Concat(CitasExactas(caso, salida))
+            .Concat(CitasDeDocumentoExactas(caso, salida))
+            .Concat(CitasTotal(caso, salida))
+            .Concat(Metadatos(caso, salida))
+            .Concat(Globales(caso, salida, cuerpo, llave));
+
+    private static IEnumerable<string> ReglasDeRedaccion(SalidaEval salida) =>
+        ReglasDeTexto.OracionesTruncadas(salida.Respuesta!)
+            .Concat(ReglasDeTexto.ReferenciasSinCita(salida.Respuesta!, salida.Citas!))
+            .Concat(ReglasDeTexto.Latex(salida.Respuesta!))
+            .Concat(ReglasDeTexto.HuecosTrasUbicacion(salida.Respuesta!))
+            .Select(f => Criterios.Etiquetar(Criterios.Texto, f));
 
     private static IEnumerable<string> Textos(CasoEval caso, SalidaEval salida)
     {
