@@ -25,6 +25,8 @@ internal sealed partial record ReglaDeConfiguracion(
     string? Defecto = null)
 {
     internal const decimal MaximoDecimal = 1000m;
+    private const string MaximoDecimalEnTexto = "1000";
+    private const string TextoDecimalPositivo = "decimal mayor que 0";
     private const decimal MaximaTemperatura = 0.3m;
     private const int SemillaMaxima = int.MaxValue;
     private const int PuntajeMaximo = 100;
@@ -45,7 +47,7 @@ internal sealed partial record ReglaDeConfiguracion(
         Entero("Limites:MaximoInvocacionesHerramientas", 1, 4),
         Entero("Limites:TimeoutLlmSegundos", 1, 60),
         Entero("Limites:PresupuestoApiAcademicaSegundos", 1, 30),
-        new("Limites:PresupuestoDiarioUsd", TipoDeValor.Decimal, new RangoNumerico(0m, MaximoDecimal, true), "decimal mayor que 0 y hasta 1000"),
+        new("Limites:PresupuestoDiarioUsd", TipoDeValor.Decimal, new RangoNumerico(0m, MaximoDecimal, true), $"{TextoDecimalPositivo} y hasta {MaximoDecimalEnTexto}"),
         Entero("Limites:MaximoIdentidadesPorIp", 1, 100),
         Entero("Limites:VentanaIdentidadesMinutos", 1, 1440),
         Precio("LLM_PRECIO_ENTRADA"),
@@ -62,7 +64,7 @@ internal sealed partial record ReglaDeConfiguracion(
         Todas.Concat(ConAdvertencia).First(regla => regla.Clave == clave);
 
     public static ReglaDeConfiguracion Precio(string clave) =>
-        new(clave, TipoDeValor.Decimal, new RangoNumerico(0m, MaximoDecimal), "decimal de 0 a 1000");
+        new(clave, TipoDeValor.Decimal, new RangoNumerico(0m, MaximoDecimal), $"decimal de 0 a {MaximoDecimalEnTexto}");
 
     public bool Cumple(string valor) => Tipo switch
     {
@@ -78,7 +80,7 @@ internal sealed partial record ReglaDeConfiguracion(
         new(clave, TipoDeValor.Entero, new RangoNumerico(minimo, maximo), $"entero de {minimo} a {maximo}");
 
     private static ReglaDeConfiguracion Reserva(string clave, string defecto) =>
-        new(clave, TipoDeValor.Decimal, new RangoNumerico(0m, decimal.MaxValue, true), "decimal mayor que 0", defecto);
+        new(clave, TipoDeValor.Decimal, new RangoNumerico(0m, decimal.MaxValue, true), TextoDecimalPositivo, defecto);
 
     private static decimal Convertir(string valor) =>
         decimal.Parse(valor, NumberStyles.Float, CultureInfo.InvariantCulture);

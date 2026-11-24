@@ -22,12 +22,12 @@ internal static class ActivadorResumenPropio
         "materia", "materias", "asignatura", "asignaturas"
     };
 
-    private static readonly HashSet<string> TerminosDeDatosAcademicos = new(StringComparer.Ordinal)
-    {
-        "nota", "notas", "definitiva", "promedio", "corte", "falta", "faltas", "asistencia", "inasistencia",
-        "inasistencias", "beca", "habilitar", "materia", "materias", "asignatura", "asignaturas", "perdida",
+    private static readonly HashSet<string> TerminosDeDatosAcademicos =
+    [
+        "nota", "notas", "definitiva", "promedio", "corte", "falta", "faltas", "asistencia", .. FormasDePerdida.Inasistencias,
+        "beca", "habilitar", "materia", "materias", "asignatura", "asignaturas", "perdida",
         "perdidas", "aprobe"
-    };
+    ];
 
     public static ActivacionResumen Evaluar(ContextoUsuario contexto, string pregunta, IReadOnlyList<AsignaturaCatalogo> catalogo)
     {

@@ -103,8 +103,7 @@ internal sealed class ConversacionLlm
     {
         if (respuesta.ContextoTruncado is { } truncado)
         {
-            _configuracion.Advertir($"Contexto del proveedor local truncado: estimación de {truncado.TokensEstimados} tokens y prompt_tokens reportados {truncado.TokensReportados}.");
-            return new ResultadoConversacion(EstadoConversacion.ContextoTruncado, null);
+            return ContextoTruncado(truncado);
         }
 
         if (respuesta.Rechazada)
@@ -112,14 +111,21 @@ internal sealed class ConversacionLlm
             return new ResultadoConversacion(EstadoConversacion.Rechazada, null);
         }
 
-        if (respuesta.Llamadas.Count == 0)
-        {
-            return new ResultadoConversacion(EstadoConversacion.Completada, respuesta.Texto, null, [.. estado.Mensajes], estado.Invocaciones);
-        }
+        return respuesta.Llamadas.Count == 0 ? Completada(estado, respuesta) : LimiteSuperado(estado);
+    }
 
-        return estado.Invocaciones > _limites.MaximoInvocacionesHerramientas
+    private static ResultadoConversacion Completada(Turnos estado, RespuestaLlm respuesta) =>
+        new(EstadoConversacion.Completada, respuesta.Texto, null, [.. estado.Mensajes], estado.Invocaciones);
+
+    private ResultadoConversacion? LimiteSuperado(Turnos estado) =>
+        estado.Invocaciones > _limites.MaximoInvocacionesHerramientas
             ? new ResultadoConversacion(EstadoConversacion.LimiteHerramientas, null)
             : null;
+
+    private ResultadoConversacion ContextoTruncado(ContextoTruncadoDetectado truncado)
+    {
+        _configuracion.Advertir($"Contexto del proveedor local truncado: estimación de {truncado.TokensEstimados} tokens y prompt_tokens reportados {truncado.TokensReportados}.");
+        return new ResultadoConversacion(EstadoConversacion.ContextoTruncado, null);
     }
 
     private async Task<ResultadoConversacion?> EjecutarHerramientasAsync(Turnos estado, RespuestaLlm respuesta, CancellationToken cancellationToken)
