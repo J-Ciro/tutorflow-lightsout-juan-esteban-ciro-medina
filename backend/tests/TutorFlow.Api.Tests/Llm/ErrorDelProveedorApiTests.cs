@@ -12,12 +12,23 @@ public sealed class ErrorDelProveedorApiTests
     private const string MensajeConDatos = "nota de prueba 4.39\\r\\nERROR falso";
     private const string LlaveEnElMensaje = "sk-ant-canaria";
     private const int LongitudMaximaDelCodigo = 64;
+    private const string LlaveDeAnthropic = "sk-ant-api03-CANARIA-llave-que-no-debe-aparecer";
+    private const string CuerpoDeAnthropic = """{"type":"error","error":{"type":"invalid_request_error","message":"seed: Extra inputs are not permitted"}}""";
+    private const string CuerpoSoloConMensaje = """{"error":{"message":"x"}}""";
+    private const string CuerpoQueNoEsJson = "<html>fallo del proveedor</html>";
 
     public static TheoryData<int, string, string> ErroresConDatosEnElMensaje => new()
     {
         { 400, $$$"""{"error":{"code":400,"status":"INVALID_ARGUMENT","message":"{{{MensajeConDatos}}}"}}""", "INVALID_ARGUMENT" },
         { 401, $$$"""{"error":{"code":401,"status":"UNAUTHENTICATED","message":"Clave incorrecta {{{LlaveEnElMensaje}}}-9911"}}""", "UNAUTHENTICATED" },
         { 500, $$$"""{"error":{"code":"server_error","message":"fallo con {{{LlaveEnElMensaje}}} y {{{MensajeConDatos}}}"}}""", "server_error" }
+    };
+
+    public static TheoryData<string, int, string, string?> ErroresD85 => new()
+    {
+        { LlaveDeAnthropic, 400, CuerpoDeAnthropic, "400 invalid_request_error" },
+        { LlaveDeGemini, 500, CuerpoSoloConMensaje, null },
+        { LlaveDeGemini, 502, CuerpoQueNoEsJson, null }
     };
 
     private static FabricaApi Fabrica(ManejadorLlmFalso manejador) =>
@@ -27,6 +38,44 @@ public sealed class ErrorDelProveedorApiTests
         new((_, _) => RespuestasProveedor.Json(cuerpo, (HttpStatusCode)estado));
 
     private static string TodoElLog(FabricaApi fabrica) => string.Join("\n", fabrica.Logs.Mensajes);
+
+    [Theory]
+    [MemberData(nameof(ErroresD85))]
+    [Trait("CA", "CA-07")]
+    [Trait("ESC", "ESC-110")]
+    [Trait("D", "D-85")]
+    public async Task ESC_110h_El_503_es_generico_y_el_log_warn_trae_el_estado_y_el_codigo_solo_si_existe_sin_la_palabra_message(string llave, int estado, string cuerpo, string? esperado)
+    {
+        using var fabrica = new FabricaApi(variablesEntorno: new Dictionary<string, string?> { ["LLM_API_KEY"] = llave }, reemplazarLlm: false, manejadorHttp: Responde(estado, cuerpo));
+        var textoEstado = estado.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);
+
+        Afirmaciones.ProblemDetails(respuesta, 503);
+        var aviso = Assert.Single(fabrica.Logs.Entradas, e => e.Nivel == LogLevel.Warning && e.Mensaje.Contains(textoEstado, StringComparison.Ordinal));
+        Assert.Contains(esperado ?? textoEstado, aviso.Mensaje, StringComparison.Ordinal);
+        Assert.DoesNotContain("message", TodoElLog(fabrica), StringComparison.Ordinal);
+        Assert.DoesNotContain(llave, TodoElLog(fabrica), StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(500, CuerpoSoloConMensaje)]
+    [InlineData(502, CuerpoQueNoEsJson)]
+    [Trait("CA", "CA-07")]
+    [Trait("ESC", "ESC-110")]
+    [Trait("D", "D-85")]
+    public async Task ESC_110h_Sin_codigo_en_el_cuerpo_o_con_un_cuerpo_que_no_es_json_el_aviso_no_inventa_codigo(int estado, string cuerpo)
+    {
+        using var fabrica = Fabrica(Responde(estado, cuerpo));
+
+        await fabrica.PreguntarEstudianteAsync("EST-001", Pregunta);
+
+        var aviso = Assert.Single(fabrica.Logs.Entradas, e => e.Nivel == LogLevel.Warning && e.Mensaje.Contains(estado.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.Ordinal));
+        Assert.DoesNotContain("INVALID_ARGUMENT", aviso.Mensaje, StringComparison.Ordinal);
+        Assert.DoesNotContain("invalid_request_error", aviso.Mensaje, StringComparison.Ordinal);
+        Assert.DoesNotContain("server_error", aviso.Mensaje, StringComparison.Ordinal);
+        Assert.DoesNotContain("fallo del proveedor", TodoElLog(fabrica), StringComparison.Ordinal);
+    }
 
     [Fact]
     [Trait("CA", "CA-07")]
