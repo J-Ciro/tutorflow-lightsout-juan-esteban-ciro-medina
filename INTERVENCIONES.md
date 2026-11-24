@@ -273,3 +273,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** un total sin desglose no le sirve al estudiante, y un número por asignatura que no es el de esa asignatura es un dato falso aunque pertenezca a la persona.
 - **Costo:** ~2 min humanos.
 - **Prevención:** aprobada por el humano y aplicada en `arquitecto-spec`: ante un defecto de exactitud, definir primero el comportamiento observable para el usuario (qué dato, con qué desglose) y solo después la verificación que lo garantiza.
+
+### INT-034 · 2026-11-24 · Solo se validan las pruebas afectadas por el cambio
+- **Fase:** pruebas
+- **Qué pasó:** el plan de cierre de la 001 repetía en la fase V la validación completa (todas las pruebas, cobertura, evals, Postman, Docker y las 10 preguntas de Q10 × 5 con Gemini), aunque gran parte ya estaba validada y no cambia con la ronda.
+- **Qué hizo el humano:** *"No ejecutes validaciones que son innecesarias ya sea o por que ya se validaron y volverlas a vlaidar no aprotan valor ya que digamos de 100 test solo se modifcaron 50 solo se ejcutan los 50 afectados no 100 ya que el resultado de los otros 50 sera el mismo"*.
+- **Por qué:** repetir validaciones cuyo resultado no puede cambiar gasta tiempo y tokens sin aportar información.
+- **Costo:** ~1 min humano.
+- **Prevención:** propuesta pendiente de aprobación: en `implementar-spec` y `qa-calidad`, la fase V ejecuta solo lo afectado por el diff. Las pruebas de los archivos de prueba cambiados y de las clases de producción cambiadas o de sus dependientes se seleccionan con `dotnet test --filter`. Del LLM real se miden solo las preguntas cuyo camino toca el cambio. Se ejecutan solo los artefactos de Postman y Docker que se tocaron. La suite completa queda para el CI, que no gasta tokens.
