@@ -1,6 +1,6 @@
 # 03 · Datos del propio estudiante: cálculos, resumen y formato
 
-> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §8, §14 · CA-02, CA-14, CA-18
+> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §8, §14 · CA-02, CA-14, CA-18, CA-27
 
 Salvo que se indique otra cosa: uso true y sin datos de terceros. Notación en [`README.md`](../README.md#notación).
 
@@ -14,7 +14,7 @@ Salvo que se indique otra cosa: uso true y sin datos de terceros. Notación en [
 | ESC-023 `@feliz` | EST-005 | "¿Estoy en prueba académica?" | Sí, con "2.65" < 3.0 ((3.2·3 + 1.8·3 + 2.3·4 + 3.8·2) / 12 = 31.8 / 12); activa COMP-07 (i) (`estoy` + `prueba academica`); con "Sí, estás en prueba académica: tu promedio es 2.65." sin citas escritas, documento exactamente [Art. 20, Sec. 4] y datos [Notas, Asistencia] (nota ESC-023) | RN-11, COMP-02, D-31, D-53 |
 | ESC-024 `@alterno` | EST-006 | "¿Cuál es mi definitiva en Estadística?" | Aún no tiene definitiva porque falta el corte 3; acumulada "2.4" sobre el 60% evaluado (equivale a "4.0"); no inventa el corte 3; citas ⊇ [Sec. 3] | RN-05, D-05 |
 | ESC-025 `@alterno` | EST-006 | "¿Cuál es mi promedio ponderado?" | Contiene "4.05" y aclara que Estadística no entra porque no tiene definitiva | RN-06 |
-| ESC-026 `@alterno` | EST-003 | "¿Cuántas faltas tengo en Inglés III?" | Sin registro de inasistencias; debe pedir la revisión a su coordinador; no responde "0" ni inventa; citas ⊇ [Art. 12] | RN-09, D-04 |
+| ESC-026 `@alterno` | EST-003 | "¿Cuántas faltas tengo en Inglés III?" | Sin registro de inasistencias; debe pedir la revisión a su coordinador; no responde "0" ni inventa; desglose con la línea "sin registro" y `Total: sin registro`; citas ⊇ [Art. 12] | RN-09, D-04, D-92 |
 | ESC-027 `@feliz` | EST-001 | "¿Cuántas faltas más puedo tener en Bases de Datos sin perderla?" | Contiene "5" (máximo 7 de 48, lleva 2); citas ⊇ [Art. 11]; resumen por COMP-07 (ii) (`puedo` + `faltas`) y (iii) (Bases de Datos matriculada) | RN-13, COMP-07, D-30 |
 | ESC-028 `@feliz` | EST-001 | "¿Cumplo los requisitos de la beca por rendimiento académico?" | Sí: "4.39" ≥ 4.3, sin asignaturas perdidas y 12 créditos; citas ⊇ [Sec. 3.1] | RN-12 |
 | ESC-029 `@alterno` | EST-004 | "¿Puedo aplicar a la beca por rendimiento?" | No cumple: "3.88" < 4.3; resumen por COMP-07 (ii) (`puedo` + `beca`) | RN-12, COMP-07, D-30 |
@@ -32,7 +32,7 @@ Dobles espía; la API académica doble cuenta lecturas por recurso y estudiante.
 
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
-| ESC-154 `@feliz` | EST-001; doble que nunca invoca herramientas y copia la línea de Bases de Datos del resumen | "¿Cuántas faltas tengo en Bases de Datos?" | 200; exactamente 1 llamada, que contiene el resumen delimitado con 2 faltas, 48 clases, máximo 7 (piso(0.15 × 48)) y 5 restantes; contiene "2" y "48"; citas ⊇ [Asistencia]; sin nombres ni IDs de otros | COMP-07, D-27, RN-13 |
+| ESC-154 `@feliz` | EST-001; doble que nunca invoca herramientas y copia la línea de Bases de Datos del resumen | "¿Cuántas faltas tengo en Bases de Datos?" | 200; 1 llamada, con el resumen: 2 faltas, 48 clases, máximo 7 (⌊0.15 × 48⌋) y 5 restantes; la copia se elimina y la respuesta es el desglose de ESC-189 h; citas ⊇ [Asistencia] | COMP-07, D-27, RN-13, D-92 |
 | ESC-155 a `@permisos` | EST-004; doble sin herramientas | "¿Qué requisitos tiene la beca por rendimiento académico?" | Sin resumen; 0 lecturas de notas o asistencia; uso false | COMP-04, COMP-07 |
 | ESC-155 b | EST-001 | "¿Hasta qué semana puedo cancelar una asignatura?" | Igual que (a): `puedo` solo con el genérico `asignatura` | COMP-07, D-30 |
 | ESC-155 c | COORD-01 | "¿Cuál es mi promedio?" | Igual que (a): el coordinador nunca recibe resumen | COMP-07 |
@@ -58,3 +58,19 @@ Dobles espía; la API académica doble cuenta lecturas por recurso y estudiante.
 | ESC-189 d | Núcleo | Programa ADM | Exactamente el bloque de plan.md §8.3 más "Reglas aplicadas a estos datos" con Art. 5, Art. 6, Art. 20 y Sec. 3; el bloque de Mateo Vargas sin "perdida" ni "ninguna"; ninguna línea con "Perdida" y "Sin definitiva"; cada "Perdida por …" con 1 asignatura | D-44 |
 | ESC-189 e | Núcleo | Programa ING-SIS | Contiene "Perdida por nota: Cálculo Integral (definitiva 2.6)", "Perdida por inasistencia: Bases de Datos (definitiva 0.0)", "Asistencia sin registro: Inglés III", "Estudiantes con asignaturas perdidas: Andrés Martínez (Cálculo Integral 2.6; Bases de Datos 0.0 por inasistencia)" y "Estudiantes en prueba académica: Andrés Martínez (promedio 2.28)" | D-44 |
 | ESC-189 f | EST-001 (integración) | "¿Cuántas faltas tengo en Bases de Datos?" | La primera llamada al LLM contiene "faltas 2 de 48 clases programadas" y "Si superas 7 inasistencias pierdes la asignatura por inasistencia." | D-44 |
+
+## Faltas con desglose y total (CA-27, D-92)
+
+LLM doble sin herramientas; sin reintento por cifras de faltas (D-92): siempre 1 llamada. "Línea" = la línea de asistencia exacta de plan §8.3 (nota ESC-189 h–n). Datos de plan §14.
+
+| ID | Actor | Entrada | Resultado esperado | Regla |
+| --- | --- | --- | --- | --- |
+| ESC-189 h `@feliz` | EST-001; doble "Aquí está el detalle de tus faltas." | Q10 #3 | 1 llamada; esa oración, línea vacía, la línea de Bases de Datos y "Total: 2 faltas"; contiene "2 de 48 clases programadas" (Q10 #3); citas ⊇ [Datos del estudiante · Asistencia, Art. 11] | RF-02, D-92 |
+| ESC-189 i `@feliz` | EST-002; doble "Tienes 30 faltas en total." | "¿Cuántas faltas tengo?" | Las 4 líneas, en el orden de los datos, y "Total: 15 faltas" (3 + 2 + 9 + 1); 0 "30" (la oración se elimina); 1 llamada; sin `reintento` | CA-27, D-92 |
+| ESC-189 j `@alterno` | EST-001; doble "Este es tu detalle." | "¿Cuántas faltas tengo en Cálculo Integral y en Inglés III?" | Solo las líneas de Cálculo Integral (1 de 64; restantes 8; máximo 9) e Inglés III (1 de 32; restantes 3; máximo 4) y "Total: 2 faltas" | D-92 |
+| ESC-189 k `@alterno` | EST-002; doble "Este es tu detalle." | "¿Cuántas faltas me quedan en Bases de Datos?" | La línea de Bases de Datos con "faltas restantes: 0" y "Perdida por inasistencia: superaste 7 inasistencias." (9 × 100 = 900 > 720) y "Total: 9 faltas" | RN-07, D-92 |
+| ESC-189 l `@abuso` | EST-001; doble "Tienes 9 faltas en Bases de Datos." | Q10 #3 | 1 llamada; respuesta = solo el desglose de (h) (la oración se elimina, sin reintento); 0 "9 faltas"; `respondida` sin `reintento` | D-92 |
+| ESC-189 m `@alterno` | EST-001 | "¿Con cuántas faltas se pierde una materia?" | Sin desglose ni "Total:"; 0 lecturas de asistencia; uso false; citas ⊇ [Art. 11] (ESC-012) | D-92 |
+| ESC-189 n `@permisos` | COORD-01; doble "Este es el detalle de Andrés Martínez." | "¿Cuántas faltas tiene Andrés Martínez?" | Las 4 líneas de EST-002 en tercera persona y "Total: 15 faltas"; 0 lecturas de ADM; con COORD-02 y la misma pregunta: 403 `tercero_mencionado` | RF-03, SEG-02, D-92 |
+
+- **ESC-189 h–n:** la línea de Bases de Datos de EST-001 es "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia." (⌊0.15 × 48⌋ = 7; 7 − 2 = 5).

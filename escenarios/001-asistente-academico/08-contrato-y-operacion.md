@@ -19,7 +19,7 @@ Notación en [`README.md`](../README.md#notación).
 | ESC-111 `@contrato` | — | Cualquier respuesta | `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`; nunca `Access-Control-Allow-Origin: *` | SEG-14 |
 | ESC-112 `@contrato` | — | Excepción no controlada | 500 `ProblemDetails` con `traceId` (UUID v7 = `X-Correlation-Id`, ESC-151), sin stack trace, tipos .NET ni rutas | SEG-12 |
 | ESC-150 `@contrato` | EST-001 | Cuerpo válido con `Content-Type: text/plain`, con `application/x-www-form-urlencoded` o sin encabezado | 415 sin stack trace; 0 llamadas al LLM y a la API; auditoría `invalida` con `pregunta: [NO_EVALUADA]`. Con `application/json` o `application/json; charset=utf-8`, 200 | Contrato |
-| ESC-151 `@contrato` | — | Una petición 200 (ESC-002), 400 (ESC-102), 403 (ESC-050), 415 (ESC-150) y 500 (ESC-112) | `X-Correlation-Id` UUID en minúsculas con versión `7` y variante `8`, `9`, `a` o `b`; igual al `correlationId` del evento y al `traceId` de los `ProblemDetails`; su marca de tiempo difiere < 1 s del `timestamp`; los 5 valores son distintos | D-26 |
+| ESC-151 `@contrato` | — | Una petición 200 (ESC-002), 400 (ESC-102), 403 (ESC-050), 415 (ESC-150) y 500 (ESC-112) | `X-Correlation-Id` UUID v7 en minúsculas (variante `8`, `9`, `a` o `b`) igual al `correlationId` del evento y al `traceId`; con un `TimeProvider` falso, su marca (ms) es la del reloj inyectado e igual al `timestamp`; los 5 valores son distintos | D-26, F-06 |
 | ESC-152 `@abuso` | EST-001 | "¿Cuál es mi promedio?" con `X-Correlation-Id: 00000000-0000-7000-8000-000000000001` | La respuesta trae otro UUID v7; ningún log ni evento contiene el valor del cliente | D-26 |
 
 ## Resiliencia, límites y proveedor
@@ -33,7 +33,16 @@ Notación en [`README.md`](../README.md#notación).
 | ESC-110 c `@operacion` | Igual; reloj 2026-11-23T10:00:00Z y `Retry-After: Mon, 23 Nov 2026 10:02:00 GMT` | Igual | 503 con `Retry-After: 120` | plan §4.1, D-70 |
 | ESC-110 d `@alterno` `@abuso` | Igual, una corrida por valor de `Retry-After`: `0`, `3601`, `abc`, `-5`, fecha ya pasada, ausente | Igual | 503 con el `ProblemDetails` genérico y sin encabezado `Retry-After` | plan §4.1, D-70 |
 | ESC-110 e `@alterno` | Igual con `Retry-After: 3600` y luego `1` | Igual | 503 con `Retry-After: 3600` y `1` (límites del rango) | plan §4.1, D-70 |
-| ESC-119 `@operacion` | `LLM_API_KEY` con `sk-ant-`, `sk-or-`, `gsk_`, `AIza`, `sk-proj-` y sin llave | — | Proveedor, en orden: Anthropic, OpenRouter, Groq, Gemini, OpenAI y Ollama; con `LLM_PROVEEDOR`, gana la variable; el log muestra proveedor y modelo, nunca la llave | D-16 |
+| ESC-110 f `@operacion` `@abuso` | EST-001; llave canaria; proveedor doble que responde el 400 de la nota ESC-110 f | "¿Cuál es mi promedio?" | 503 genérico; 1 línea `warn` con `400` e `INVALID_ARGUMENT` y nada más del cuerpo (0 `Unknown name`); 0 apariciones de la llave, de encabezados y del cuerpo de la petición | plan §4.1, D-85 |
+| ESC-110 g `@abuso` | Igual; una corrida por respuesta del doble: 400 con `status` `INVALID_ARGUMENT` y `message` "nota de prueba 4.39\r\nERROR falso"; 401 con `message` que contiene `sk-ant-canaria` | Igual | 503 genérico en ambas; el log tiene `400`/`INVALID_ARGUMENT` y `401`, y 0 apariciones de "nota de prueba", `sk-ant-canaria` o una línea que empiece por "ERROR falso" | D-85 |
+| ESC-119 a `@operacion` | `LLM_API_KEY` con `sk-ant-`, `sk-or-`, `gsk_`, `AIza`, `sk-proj-` y sin llave; sin `LLM_PROVEEDOR` ni `LLM_MODELO` | — | Proveedor, en orden: Anthropic, OpenRouter, Groq, Gemini, OpenAI y Ollama (pista de la llave); el log muestra proveedor y modelo, nunca la llave | D-16, D-84 |
+| ESC-119 b | `LLM_PROVEEDOR` = `groq` con una llave `sk-ant-` | — | Groq: gana la variable | D-84 |
+| ESC-119 c | Llave sin prefijo conocido y `LLM_MODELO` = `gemini-2.5-flash`, `claude-haiku-5-5`, `gpt-5-mini` o `meta/llama-4` (una corrida por valor) | — | Gemini, Anthropic, OpenAI y OpenRouter; la llave nunca se rechaza por su formato | D-84 |
+| ESC-119 d | Llave `AIza…` y `LLM_MODELO` = `claude-haiku-5-5` | — | `NoConfigurado`; log que nombra Gemini y Anthropic, sin la llave; salud 200; una pregunta con LLM da 503 y el proveedor recibe 0 peticiones | D-84 |
+| ESC-119 e | Llave `sk-` genérica y `LLM_MODELO` = `gemini-2.5-flash` | — | Gemini (`sk-` genérica no es conflicto) | D-84 |
+| ESC-119 f | Llave sin prefijo conocido y `LLM_MODELO` = `qwen2.5:7b`, sin `LLM_URL_BASE` | — | `NoConfigurado` con el log `No se pudo determinar el proveedor: define LLM_PROVEEDOR, LLM_MODELO o LLM_URL_BASE` (no se infiere por `qwen`) | D-84 |
+| ESC-119 g | Llave sin prefijo conocido y solo `LLM_URL_BASE` | — | Compatible con OpenAI en esa URL | D-84 |
+| ESC-119 h | Cualquiera de (a)–(g) | — | 0 apariciones de la llave en el log de arranque y en los errores | SEG-11, D-84 |
 | ESC-158 a `@operacion` | EST-001; doble con 5 llamadas de 6 s y las 4 primeras invocan herramienta | "¿Cuál es mi promedio?" | 503 genérico en < 21 s desde el inicio de la fase del LLM (la 4.ª empieza en 18 s y se cancela en 20 s); como máximo 4 llamadas; `error` | SEG-13, RNF-02 |
 | ESC-158 b `@operacion` `@alterno` | EST-001; la API académica tarda 5 s en resolver la identidad (las demás lecturas, al instante) y el LLM doble nunca responde | "¿Cuál es mi promedio?" | 503 genérico con petición total ≥ 25 s y < 27 s (5 s de API + 20 s de LLM, sin acumular más); `error` | RNF-02, D-71 |
 | ESC-159 `@abuso` | Presupuesto 0.010 USD, `Llm:ReservaPorPeticionUsd` 0.004; doble que retiene y cuesta 0.003 | 5 peticiones simultáneas de EST-001; se libera tras los 503 | 2 responden 200 y 3 responden 503 sin LLM (2 × 0.004 = 0.008 ≤ 0.010; 3 × 0.004 = 0.012 > 0.010); 2 llamadas; gasto 0.006 USD | SEG-13 |
@@ -41,6 +50,8 @@ Notación en [`README.md`](../README.md#notación).
 | ESC-180 a `@alterno` `@abuso` `@operacion` | Presupuesto 0.03; doble de §4.4 (salida 200); sin precio; reserva sin precio 0.01; reloj 23:00:00 UTC | EST-001, 4 veces "¿Cuál es mi promedio?" | 1–3: 200, tokens = lo reportado, costo 0, `precioDesconocido: true`, gasto 0.01 cada una (3 × 0.01 = 0.03); 4.ª: 503 sin LLM con `Retry-After: 3600` (0.03 + 0.01 > 0.03); 3 llamadas | SEG-13, D-39, D-70 |
 | ESC-180 b | Igual con `Llm:ReservaSinPrecioUsd` 0 (se usa 0.01 con advertencia al arrancar) | Igual | Igual que (a) | SEG-13, D-39, D-40 |
 | ESC-180 c `@operacion` | Igual con `ollama` a precio 0 / 0 | Igual | Las 4 responden 200 con costo 0; ningún `precioDesconocido`; 4 llamadas | D-39 |
+
+- **ESC-110 f:** cuerpo `{"error":{"code":400,"status":"INVALID_ARGUMENT","message":"Unknown name \"seed\": Cannot find field."}}` (medido con Gemini antes de D-85). Un código con CR/LF o de más de 64 caracteres se registra saneado.
 
 ## Tasa por IP y bloqueo escalonado (CA-13)
 
@@ -56,6 +67,7 @@ Salvo que se indique otra cosa: configuración por defecto (600 por minuto); rel
 | ESC-142 d `@abuso` | Tandas en 0, 30, 90 y 210 | — | En cada tanda, 600 × 200; la 601.ª: 429 con `Retry-After` 30, 60, 120 y 120 (bloqueos hasta los segundos 30, 90, 210 y 330) | SEG-13, D-72 |
 | ESC-142 e `@alterno` | Igual que (d) | Una tanda más en el segundo 929 (corrida 1) o 930 (corrida 2) | 929: 429 con `Retry-After: 120` (599 s desde el fin del bloqueo, en 330); 930: `Retry-After: 30` (600 s: la escalada se reinicia) | SEG-13, D-72 |
 | ESC-142 f `@alterno` | 600 preguntas en el segundo 0 | Una pregunta en el 59.9 (corrida 1) o en el 60 (corrida 2) | 59.9: 429 con `Retry-After: 30` (las 600 siguen en la ventana); 60: 200 (una marca de hace 60 s exactos ya no cuenta) | SEG-13, D-72 |
+| ESC-142 g `@abuso` `@operacion` | Tandas en 0 y 30, más 50 preguntas en el segundo 10 | — | Exactamente 2 eventos 429: la 601.ª de cada tanda, con `bloqueoSegundos` 30 y 60; 0 eventos de las 50 del segundo 10 (siguen con 429 `Retry-After: 20`) | RF-08, D-81 |
 
 - ESC-048 · retirado (D-72)
 - ESC-049 · retirado (D-72)

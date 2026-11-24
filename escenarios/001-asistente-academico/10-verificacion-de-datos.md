@@ -1,6 +1,6 @@
 # 10 · Verificación de los datos en la salida y reintento
 
-> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §2 paso 6, §11 · CA-06, CA-16, CA-17, CA-21
+> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §2 paso 6, §11 · CA-06, CA-16, CA-17, CA-21, CA-26
 
 Salvo que se indique otra cosa:
 
@@ -69,6 +69,9 @@ COORD-02 con la herramienta de programa (lee EST-004, EST-005 y EST-006) y la pr
 | ESC-184 j | COORD-02 | "Mateo Vargas no ha perdido Estadística." | Pasa (`no` + `ha` gobiernan) | D-42 |
 | ESC-184 k | COORD-02 | "Mateo Vargas:\n- Sin definitiva: Estadística" | Pasa (sin forma) | D-42 |
 | ESC-184 l | COORD-02 | "Estudiantes con asignaturas perdidas:\n- Valentina Castro: Microeconomía (1.8)\n\nMateo Vargas tiene Estadística sin definitiva." | Pasa (el texto tras la línea vacía no hereda) | D-42 |
+| ESC-184 m `@abuso` | COORD-02 | `<b>Mateo Vargas</b>\nAsignatura perdida: Estadística` · `<h3>Mateo Vargas</h3>\nAsignatura perdida: Estadística` | Falla en las 2 (D-77: la línea pasa a encabezado); la respuesta nunca contiene `<b>` ni `<h3>` | D-77 |
+| ESC-175 s `@abuso` | COORD-02, una corrida por texto | "Mateo Vargas reprobó Estadística." · "Mateo Vargas no aprobó Estadística." · "Mateo Vargas: Estadística (reprobada)." | Falla en los 3 (Estadística sin definitiva) | SEG-10f, D-76 |
+| ESC-175 t | COORD-02, una corrida por texto | "Mateo Vargas está en prueba académica." (falla: 4.05 ≥ 3.0) · "Valentina Castro está en prueba académica." (pasa: 2.65 < 3.0) | Como se indica | SEG-10f, RN-11, D-76 |
 | ESC-199 h1 `@abuso` `@permisos` `@alterno` `@operacion` | COORD-02; prelectura | "\| Mateo Vargas perdió Estadística \|\n\| --- \|" | Falla (el encabezado de columnas es un bloque) | D-62 E4 |
 | ESC-199 h2 | COORD-02; prelectura | "\| Valentina Castro perdió Microeconomía \|\n\| --- \|" | Pasa (1.81 → 1.8 < 3.0) | D-62 E4 |
 
@@ -87,6 +90,8 @@ Estudiante con un doble sin herramientas que repite su texto en el reintento; "�
 | ESC-035 e `@abuso` | EST-004, una corrida por texto | La pregunta de (c) → "Tienes Estadística perdida." · "Perdiste Estadística." · "Estadística perdida por inasistencia; no se habilita." | Falla en los 3: con asignatura, (i) se verifica siempre (Estadística 4.0, aprobada) | SEG-10f |
 | ESC-035 f `@permisos` | EST-001 | La pregunta de (c) → "Andrés Martínez tiene asignaturas perdidas." | 200 NEG del estudiante; citas [Art. 22]; `fuga_bloqueada`; sin reintento (SEG-10b va antes de (f)) | SEG-10b |
 | ESC-035 g `@alterno` | EST-002 | La pregunta de (c) → "Tienes asignaturas perdidas: Cálculo Integral y Bases de Datos por inasistencia." | Pasa (2.6 < 3.0; 9 × 100 = 900 > 15 × 48 = 720) | SEG-10f |
+| ESC-035 h `@abuso` | EST-001 | "¿Cuál es mi promedio?" → "Tu promedio es 4.39 y reprobaste Bases de Datos." | Falla (Bases de Datos 4.1 ≥ 3.0: aprobada) | SEG-10f, D-76 |
+| ESC-035 i `@abuso` `@alterno` | EST-006 y EST-004 | "¿Aprobé Estadística?" → "Ya aprobaste Estadística." | EST-006: falla (sin definitiva); EST-004: pasa (4.02 → 4.0 ≥ 3.0) | SEG-10f, D-76 |
 
 ## Definitivas (SEG-10g, CA-06, CA-17)
 
@@ -121,6 +126,18 @@ Estudiantes sin herramientas (el activador de COMP-07 entrega el resumen). En ES
 | ESC-185 j | EST-005 | La pregunta de (h) → "Para aprobar Estadística necesitas una definitiva de 3.0." | Pasa | D-42 |
 | ESC-185 k | EST-004 | "¿Cuáles son mis notas definitivas?" → "Tus definitivas:\n- Contabilidad: 3.9\n- Microeconomía: 3.3" | Pasa (3.89 → 3.9; 3.32 → 3.3) | D-42 |
 | ESC-185 l `@abuso` | EST-004 | Igual → "Tus definitivas:\n- Contabilidad: 3.3\n- Microeconomía: 3.9" | Falla | D-42 |
+| ESC-179 t `@abuso` `@alterno` | EST-001, una corrida por texto | "¿Cuál es mi promedio?" → "Tu promedio es 1,23." · "Tu definitiva en Cálculo Integral es 4,1." · "Tu promedio es 4,39." | 1,23 → 1.23 ausente: TNV `numero_no_verificado`; 4,1 → 4.1 (Bases de Datos) ≠ 4.5: falla; 4,39 → 4.39: pasa | SEG-10c, SEG-10g, D-76 |
+| ESC-179 u `@abuso` | EST-006, una corrida por texto | La pregunta de (a) → "Tu nota final en Estadística es 4.0." · "Tu calificación final de Estadística quedó en 4.0." | Falla en las 2 (sinónimos de definitiva; corte 3 `null`) | SEG-10g, D-76 |
+| ESC-179 v `@abuso` `@alterno` | EST-001; índice de prueba con la Sec. 3 y la Sec. 4 entregadas | "¿Cuál es mi promedio ponderado del periodo?" → "Tu promedio es 4.4." · "Tu promedio es 4.39." | 4.4 pasa SEG-10c (Sec. 3: "4.44 queda en 4.4") y falla por campo (52.7 / 12 = 4.3916 → 4.39); 4.39 pasa | SEG-10g, D-76 |
+| ESC-179 w `@abuso` `@alterno` | EST-001, una corrida por texto | "¿Cómo voy en Bases de Datos?" (sin término de faltas: sin desglose) → "Llevas 10 faltas en Bases de Datos." · "Llevas 2 faltas; el corte 3 ya está calificado." · "Te quedan 0 faltas." | La 1.ª falla (nota ESC-179 w); las otras 2 pasan, `respondida`. Con Q10 #3 aplica D-92 (ESC-189 h–l) | SEG-10g, D-76, D-92 |
+| ESC-179 x `@abuso` `@alterno` | COORD-02 (texto real de D-V5), una corrida por texto | "¿Cuál es el promedio de Valentina Castro?" → "Tu promedio es 2.65. Definitivas: Microeconomía 1.8, Estadística 2.3." · "El promedio de Valentina Castro es 2.65." · "Tu programa tiene 3 estudiantes." | La 1.ª falla (voz: `tu` + promedio sin persona nombrada); las otras 2 pasan | SEG-10g, D-76 |
+| ESC-179 z `@feliz` `@abuso` `@alterno` | Una corrida por texto; prelectura | Los 4 textos de la nota ESC-179 z | Las 2 prosas pasan con 1 llamada; la 3.ª falla (3.5 va a la siguiente, Cálculo Integral 2.6); la 4.ª falla (Microeconomía 1.8) | SEG-10g, D-88 |
+| ESC-179 y `@operacion` | Prueba unitaria del prompt | Bloque de ejemplos de `coordinador` y de `estudiante` | Coordinador: EJ-2 y EJ-4 en tercera persona con un estudiante ficticio, 0 "Tu promedio" y 0 "Tienes"; estudiante: sin cambios; ambos cumplen ESC-173 e | plan §5, D-76 |
+
+- **ESC-179 w:** conjunto de EST-001 (faltas, clases, máximo, restantes): Cálculo Integral 1, 64, 9, 8; POO 0, 48, 7, 7; Bases de Datos 2, 48, 7, 5; Inglés III 1, 32, 4, 3 → {0, 1, 2, 3, 4, 5, 7, 8, 9, 32, 48, 64}. 10 no está (falla); 2 sí (`corte 3` excluido) y 0 sí (POO). En las preguntas de faltas, D-92 sustituye esta comparación: el desglose da los valores exactos.
+
+- **ESC-179 z:** (1) COORD-01, Q10 #6 → "Andrés Martínez perdió Cálculo Integral, cuya definitiva es 2.6, y Bases de Datos por inasistencia.";
+  - (2) COORD-02 → "Valentina Castro perdió Microeconomía, cuya definitiva es 1.8, y Estadística, cuya definitiva es 2.3."; (3) EST-002 → "Definitiva: 3.5 de Cálculo Integral."; (4) COORD-02 → "Valentina Castro perdió Microeconomía, cuya definitiva es 2.3, y Estadística."
 
 Pares sin la palabra "definitiva" (D-64): ESC-198 g en [11-citas-y-limpieza.md](11-citas-y-limpieza.md).
 

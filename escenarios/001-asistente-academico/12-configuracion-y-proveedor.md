@@ -65,14 +65,14 @@ Notación en [`README.md`](../README.md#notación).
 | ESC-182 b | Igual | EST-006: "¿Cuál es mi nota en EST-103?" | 200; 1 llamada; `respondida` (`EST-103` sigue exceptuado) | SEG-04a |
 | ESC-188 a `@abuso` `@operacion` `@alterno` | Igual que ESC-182 | EST-006 pregunta 3 veces "¿Cuál es mi nota en EST-103?" | 3 respuestas 200 y exactamente 1 línea `Configuración ignorada: Autorizacion:Asignaturas:8:Codigo = "EST-002" …` | D-43 |
 | ESC-188 b `@abuso` | Valor de la nota ESC-188 b, una corrida por carácter | Arranque | No arranca con `Configuración inválida: Autorizacion:Asignaturas:2:Codigo = "BD-203 Arranque correcto" (formato ^[A-Z]{2,4}-[0-9]{3}\z)` y sus equivalentes ` `, `‮`, `​` (6 caracteres ASCII); sin el carácter crudo; ninguna línea empieza por `Arranque correcto` | D-43 |
-| ESC-188 c | `Conocimiento:PuntajeRelativoMinimo` = `0` o `101`; `Llm:Semilla` = `-1` (uno por corrida) | Arranque | No arranca con `… PuntajeRelativoMinimo = "0" (entero de 1 a 100)`, `… = "101" (entero de 1 a 100)` y `Configuración inválida: Llm:Semilla = "-1" (entero de 0 a 2147483647)` | RNF-05 |
+| ESC-188 c | `Conocimiento:PuntajeRelativoMinimo` = `0` o `101` (uno por corrida) | Arranque | No arranca con `… PuntajeRelativoMinimo = "0" (entero de 1 a 100)` y `… = "101" (entero de 1 a 100)` | RNF-05 |
 | ESC-188 d | Prueba unitaria: la reserva llega al núcleo sin pasar por la validación | `Llm:ReservaSinPrecioUsd` 0 o -0.5 (sin precio); `Llm:ReservaPorPeticionUsd` 0 (`claude-haiku-5-5`) | Reserva 0.01, 0.01 y 0.0018 USD; nunca 0 | SEG-13, D-43 |
-| ESC-199 c1 `@abuso` `@permisos` `@alterno` `@operacion` | Una clave por corrida | `Llm:Temperatura` = `0.31`, `-0.1`, `0,2`, `1e-1`, ` 0.1`; `Conocimiento:PuntajeRelativoRelevante` = `0`, `101`; `Conocimiento:PuntajeRelativoMinimo` = ` 55`; `Llm:Semilla` = `1 ` | No arrancan, con las líneas de la nota ESC-199 c1 | D-59, D-63 F6 |
+| ESC-199 c1 `@abuso` `@permisos` `@alterno` `@operacion` | Una clave por corrida | `Llm:Temperatura` = `0.31`, `-0.1`, `0,2`, `1e-1`, ` 0.1`; `Conocimiento:PuntajeRelativoRelevante` = `0`, `101`; `Conocimiento:PuntajeRelativoMinimo` = ` 55` | No arrancan, con las líneas de la nota ESC-199 c1 | D-59, D-63 F6 |
 | ESC-199 c2 | Igual | `Llm:Temperatura` = `0`, `0.3`, `0.30`; `PuntajeRelativoRelevante` = `40` | Arrancan sin advertencia | D-59 |
 
 - **ESC-182 a:** advertencia exacta `Configuración ignorada: Autorizacion:Asignaturas:8:Codigo = "EST-002" (coincide con el ID de una persona del registro); se excluye del catálogo`.
 - **ESC-188 b:** `Autorizacion:Asignaturas:2:Codigo` = "BD-203" + un carácter + "Arranque correcto", una corrida por U+2028, U+2029, U+202E y U+200B.
-- **ESC-199 c1:** `Configuración inválida: Llm:Temperatura = "<valor>" (decimal de 0 a 0.3)`, `… PuntajeRelativoRelevante = "<valor>" (entero de 1 a 100)`, `… PuntajeRelativoMinimo = " 55" (entero de 1 a 100)` y `… Llm:Semilla = "1 " (entero de 0 a 2147483647)`.
+- **ESC-199 c1:** `Configuración inválida: Llm:Temperatura = "<valor>" (decimal de 0 a 0.3)`, `… PuntajeRelativoRelevante = "<valor>" (entero de 1 a 100)` y `… PuntajeRelativoMinimo = " 55" (entero de 1 a 100)`.
 
 - ESC-096 · retirado (D-72)
 
@@ -81,14 +81,21 @@ Notación en [`README.md`](../README.md#notación).
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
 | ESC-191 `@feliz` `@alterno` | Prompt de `estudiante` y de `coordinador` | Instrucciones fuera de `<ejemplos>` | ≤ 12 pasos numerados de ≤ 40 palabras; P-01…P-08 como en la nota ESC-191; los 8 pasos distintos; 0 `documento.md`; el bloque cumple ESC-173 e y ESC-198 i | D-46, D-58, D-63 F7 |
-| ESC-192 a–d `@operacion` | Servidor doble del proveedor que registra el cuerpo | EST-001: "¿Cuál es la nota mínima para aprobar una asignatura?" con (a) `ollama`, (b) `openai`, (c) `anthropic`, (d) `ollama` y `Llm:Semilla` 42 | `temperature` 0 (defecto) en todos; `seed` 1 en (a) y (b), ausente en (c), 42 en (d) | D-47, D-59 |
-| ESC-192 e–g | Igual | (e) `ollama` con `Llm:Temperatura` 0.3; (f) `anthropic` con 0.1; (g) `openai` con 0.2 | `temperature` 0.3, 0.1 y 0.2; `seed` 1 en (e) y (g), ausente en (f) | D-59 |
+| ESC-192 a–d `@operacion` | Servidor doble del proveedor que registra el cuerpo | EST-001: "¿Cuál es la nota mínima para aprobar una asignatura?" con (a) `ollama`, (b) `openai`, (c) `anthropic`, (d) `gemini` | `temperature` 0 (defecto) y ningún `seed` en los 4 | D-59, D-85 |
+| ESC-192 e–g | Igual | (e) `ollama` con `Llm:Temperatura` 0.3; (f) `anthropic` con 0.1; (g) `openai` con 0.2 | `temperature` 0.3, 0.1 y 0.2; ningún `seed` | D-59, D-85 |
+| ESC-192 h `@operacion` `@alterno` | Igual, con `Llm:Semilla` = `42` en la configuración | La pregunta de (a), una corrida por proveedor de (a)–(d), con reintento | Arranca sin `Configuración inválida` ni `Configuración ignorada` (clave desconocida, plan §13.2); 0 peticiones con `seed`, también la del reintento | D-85 |
+| ESC-192 i `@operacion` | Servidor doble compatible con OpenAI que devuelve una llamada a `consultar_notas` con `extra_content` opaco | EST-001: "¿Cuál es mi promedio?" | La 2.ª petición repite esa llamada con el mismo `extra_content`, byte a byte (falla si la biblioteca deja de pasar `RawRepresentation`) | D-86 |
+| ESC-192 j `@abuso` | Igual; la llamada ejecutada difiere de la recibida en nombre, id o argumentos (una corrida por campo) | Igual | La llamada reenviada es la ejecutada, sin `extra_content` | D-86 |
+| ESC-192 k | Igual; el turno trae texto del asistente junto a la llamada | Igual | La 2.ª petición conserva ese texto en el turno del asistente | D-86 |
+| ESC-192 l `@permisos` | COORD-01; la llamada con dato opaco pide `estudianteId` EST-004 | "¿Qué estudiantes de mi programa perdieron materias?" | 403 tardío `herramienta_id_ajeno`; ninguna 2.ª petición: no hay reenvío | SEG-06, D-86 |
+| ESC-192 m | Igual que (i) con 2 llamadas: una con dato opaco y otra sin él | Igual | Las 2 se reenvían reconstruidas, sin `extra_content` | D-86 |
+| ESC-192 n `@operacion` | Eval en vivo opcional con Gemini 3 y su llave (no corre en el CI) | ESC-002, ESC-003, ESC-041 y ESC-042, 5 corridas | 5 de 5 sin 503; tipo opaco: `ToString` sin contenido y fuera de la igualdad (unitaria) | D-86 |
 | ESC-199 d1 `@operacion` | Prompt y formatos reales | Cada llamada de Q10 #1 a #8 con su usuario (Q10 #6 con prelectura) y el reintento de Q10 #6 con "Mateo Vargas perdió Estadística." | Cada una estima ≤ 3.000 tokens (plan §4.4); referencia en la nota ESC-199 d1. Si una supera el tope, falla y se reporta | D-57 |
 | ESC-199 d2 | Igual; doble que invoca `consultar_notas` y luego responde | EST-001: "¿Qué dice el reglamento sobre la habilitación de las asignaturas?" (sin resumen) | Las 2 llamadas estiman ≤ 3.000 tokens | D-57, D-65 G3 |
 | ESC-199 e1 `@abuso` | `ollama` doble que responde "Tu promedio es 4.39." y reporta ⌈0.75 × E⌉ − 1 | EST-001: "¿Cuál es mi promedio ponderado del periodo?" | 200 TNV; citas []; 1 llamada (sin reintento); `error` con `contextoTruncado: true`; advertencia en el log con la estimación y `prompt_tokens`, sin contenido | D-57 |
 | ESC-199 e2–e4 | Igual, reportando ⌈0.75 × E⌉, ⌊1.04 × E⌋ o sin `usage` | Igual | "Tu promedio es 4.39."; `respondida`; sin `contextoTruncado` | D-57 |
 | ESC-199 e5 | `openai` doble que reporta 10 | Igual | Igual que (e2): la detección solo aplica a `ollama` | D-57 |
-| ESC-199 f | `ollama` con `Llm:Temperatura` 0.2 | Cualquiera, con reintento | El log de arranque registra 0.2; toda petición, también la del reintento, lleva `temperature` 0.2 y `seed` 1 | D-59 |
+| ESC-199 f | `ollama` con `Llm:Temperatura` 0.2 | Cualquiera, con reintento | El log de arranque registra 0.2; toda petición, también la del reintento, lleva `temperature` 0.2 y ningún `seed` | D-59, D-85 |
 
 - **ESC-191:** P-01 con la frase de COMP-03 y `solo`; P-02 con `lugar`, `horario`, `montos` y `beneficio`; P-03 con `promedio` y `definitivas`; P-04 con `(archivo · sección)`; P-05 con `consecuencias` y `consejos`; P-06 con `sin definitiva` y `perdida`; P-07 con `herramientas`; P-08 con `LaTeX`, `fórmulas` y `%`. Las instrucciones contienen 0 veces `2023` y `derog` (D-73).
 - **ESC-199 d1:** referencia: Q10 #5, 7.767 caracteres → 2.220 (2.436 reales); Q10 #6 con prelectura, 6.354 → 1.816 (1.984 reales).

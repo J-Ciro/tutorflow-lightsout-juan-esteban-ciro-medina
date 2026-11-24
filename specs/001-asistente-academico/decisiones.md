@@ -4,6 +4,7 @@
 
 Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022; D-65, ambigüedades de QA; D-66, arbitraje de la ronda 4; D-67, INT-024 (humano).
 D-68 y D-69, INT-025 (humano), sustituidas por D-72; D-70, INT-027 (humano); D-71, decisión del orquestador; D-72, INT-030 (humano); D-73, fase V de cierre (orquestador, con INT-030); D-74, hallazgos de QA tras la fase A de D-73 (orquestador, con INT-030).
+D-75…D-85, ronda de cierre (INT-030; D-80 parcial, D-81, D-82 y D-85 del humano, D-84 de INT-031, D-85 de INT-032); D-86…D-91, medición con Gemini (qa-calidad, backend-dotnet y seguridad; INT-030); D-92, INT-033 (humano).
 Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitution.md). D-11, D-12, D-18 y D-19 no existen.
 
 ## Decisiones
@@ -24,7 +25,7 @@ Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitutio
 - **D-14** · Citas estructuradas `{documento, seccion}`: "Secciones 3 y 4" son dos entradas; los datos usan "Datos del estudiante"/"Datos del programa" como documento.
   Por qué: lo define el contrato; riesgo de comparación literal en pruebas ocultas, asumido. · Vigente.
 - **D-15** · Separador decimal: punto. · Por qué: así lo usan el reglamento y las preguntas de ejemplo. · Vigente.
-- **D-16** · LLM independiente del proveedor: se detecta por el prefijo de `LLM_API_KEY` y se puede forzar; sin llave, Ollama `qwen2.5:7b`; modelo pequeño por defecto. · Por qué: cualquier evaluador usa su llave; el LLM solo redacta. · Vigente, confirmada.
+- **D-16** · LLM independiente del proveedor, forzable con `LLM_PROVEEDOR`; sin llave, Ollama `qwen2.5:7b`; modelo pequeño por defecto. · Por qué: cualquier evaluador usa su llave; el LLM solo redacta. · Vigente; la detección por prefijo de la llave → sustituida por D-84.
 - **D-17** · El Anexo de `bienestar_y_becas.md` se excluye del índice y además se prueba la inyección indirecta con documentos sintéticos. · Por qué: material no confiable; defensa en profundidad. · Vigente.
 - **D-20** · Beca con asignaturas sin definitiva → "no determinable aún". · Por qué: el promedio del periodo no está completo. · Vigente.
 - **D-21** · La suplantación (SEG-16) solo se detecta y audita con el evento `multiples_identidades`; no hay bloqueo por identidades. · Por qué: las pruebas ocultas usan varias identidades desde una IP. · Vigente; el bloqueo opcional se eliminó en D-72.
@@ -58,7 +59,7 @@ Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitutio
 - **D-44** · El núcleo entrega los datos calculados con formato normativo (una línea por campo, sin mezclar pérdida y falta de definitiva). · Por qué: el modelo copia lo que recibe. · Vigente.
 - **D-45** · Prelectura del programa para el coordinador con un activador (COMP-08). · Por qué: el modelo pequeño no invoca la herramienta; no amplía el acceso. · Vigente.
 - **D-46** · Prompt en pasos cortos con reglas verificables P-01…P-07; el texto exacto lo elige la implementación. · Por qué: el modelo pequeño sigue mejor pasos cortos. · Ajustada por D-58.
-- **D-47** · Llamada determinista con semilla `Llm:Semilla` (Anthropic sin semilla). · Por qué: un fallo debe reproducirse. · Estado: temperatura 0 fija → sustituida por D-59; semilla vigente.
+- **D-47** · Llamada determinista con semilla `Llm:Semilla` → sustituida por D-59 (temperatura) y D-85 (sin semilla).
 - **D-48** · Un único reintento acotado tras SEG-10c, d, f o g; nunca tras SEG-10b. · Por qué: con temperatura 0 el modelo repite el error si no se le dice cuál fue; SEG-10b repetiría un dato ajeno. · Vigente.
 - **D-49** · (1) reglas aplicadas solo con relevancia > 0 → sustituida por D-73; (2) umbral relativo de recuperación del 50% → sustituido por D-54; (3) respaldo de 1 sola sección. · Por qué: citas de relevancia 0 degradan la precisión. · (3) vigente.
 - **D-50** · Limpieza ampliada: oración de atribución huérfana, restos solapados, atribución genérica sin cita y frase de COMP-03 anexada. · Por qué: textos truncados o mal atribuidos. · Vigente; mitigada por D-60.
@@ -100,10 +101,34 @@ Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitutio
 - **D-74** · (Orquestador, INT-030) La lista cerrada de §6.5 suma formas verbales: Inasistencia `faltar`, `faltaste`, `faltado`; Habilitación `habilitarla(s)`; No habilitable `no puedes habilitar(la)`, `no se puede habilitar`; `falta`, `faltan` y `faltaba` siguen fuera. ESC-174 f sigue a ESC-178 e (V-1). La fase V corre en proceso (plan §15.2, M-4).
   Por qué: "Puedes faltar 5 clases más" (ESC-027) y "No puedes habilitar" (ESC-032) quedaban sin cita con un LLM real; el texto crudo no viaja por HTTP. Descartadas por costo y falsos positivos: raíces (`falt` captura "le falta calificar") y campos declarados por el LLM.
   Estado: vigente; elegida la más simple (lista cerrada ampliada), pendiente de evaluación por backend-dotnet y frontend-react (INT-030). No cambia contrato ni matriz. Ajusta D-53 y D-73.
+- **D-75** · SEG-05 en dos niveles (plan §9.2): R fuerte deniega sola; G + R débil con listas cerradas y adyacencia (`compar*` incluido); SEG-04c suma docentes y decano en (A), `hazte pasar`/`asume el rol`/`ponte en el lugar de` en (D) y `tiene que`/`tiene sobre` + tema no es (B).
+  Por qué: S-02 (9 normativas con 403) y S-07 (evasiones); G + R estricto rompía ESC-187 b, "¿En qué lugar quedé?" y "promedio del programa". Descartado G + R único. · Vigente; evaluada por backend-dotnet (INT-030); residual (singular, "soy el primero de mi clase") cubierto por SEG-06 y SEG-10b.
+- **D-76** · Campos ligados (plan §11.1–§11.3): coma decimal a punto; `nota final`/`calificacion final`; promedio por igualdad decimal; estado (`reprob*`, `no aprob*`, `aprob*`, prueba académica); enteros contra el conjunto de la persona; voz del coordinador con ejemplos por rol y verificador acotado.
+  Por qué: S-01, S-03, S-04 y D-V5. Descartado `puesto` (esta ronda). · Vigente; evaluada por backend-dotnet (INT-030); las faltas de las respuestas de faltas → sustituidas por D-92.
+- **D-77** · HTML en la salida: `<b>`/`<strong>` de línea completa = negrita, `<h1>`–`<h6>` = `#`, y la limpieza quita toda etiqueta (plan §10 (5) (h)). · Por qué: S-05 (`<b>Mateo Vargas</b>` evadía el bloque). · Vigente; evaluada (INT-030).
+- **D-78** · Tipo `di` (`Default_Ignorable_Code_Point` 16.0.0) en el plegado y nombre completo de ≥ 8 letras comparado sin espacios. · Por qué: S-06 (relleno Hangul y letras separadas). · Vigente; evaluada (INT-030).
+- **D-79** · SEG-10d (1) y (2) también en forma compacta (sin `_`, `-`, `.`, `Cf`; espacios intactos); prefijo del canario de ≥ 8 caracteres y delimitador de datos confidenciales. · Por qué: S-10. · Vigente; evaluada (INT-030).
+- **D-80** · Purga cada ≥ 10 s con ≥ 1.000 entradas, sin `ToList`; caché `Resueltos` con tope de 4.096; reloj monotónico (`GetTimestamp`). Clave IPv6 = dirección completa (humano). · Por qué: S-09, S-13, S-15. · Vigente; K por petición solo si la medición lo exige.
+- **D-81** · (Humano) Del 429 solo se audita el primero de cada bloqueo, con `bloqueoSegundos`; sin agregación ni rotación (RF-08). · Por qué: S-12 (un bloqueo llenaba la auditoría). · Vigente.
+- **D-82** · (Humano) IP compartida por docker-proxy (Docker Desktop) aceptada también para la 001 directa. · Por qué: S-14; mismo riesgo y umbral holgado que D-72. · Vigente; riesgo aceptado.
+- **D-83** · Fase V: artefactos con el texto del resumen y de la prelectura; `--fase-v --url` usa la API levantada (solo respuesta y auditoría); `Llm__Proveedores__ollama__UrlBase` documentada para el host. · Por qué: D-V4 y la URL ignorada. · Vigente; evaluada (INT-030).
+- **D-84** · (INT-031) Proveedor: `LLM_PROVEEDOR` > sin llave Ollama > prefijo del modelo > prefijo de la llave como pista (conflicto → `NoConfigurado` nombrando ambos) > `LLM_URL_BASE` > `NoConfigurado`; la llave nunca se valida, rechaza ni registra.
+  Por qué: filtrar por formato rechazaba llaves válidas (Gemini sin `AIza`). Descartados OpenAI por defecto y probar endpoints (envían la llave a terceros). · Vigente; recomendada por backend-dotnet.
+- **D-85** · (Humano, INT-032) Sin semilla: ninguna petición lleva `seed` y `Llm:Semilla` se ignora como clave desconocida; un 4xx/5xx del proveedor va al log `warn` solo con el `Status` y el código de error saneado (sin CR/LF, longitud fija); nunca el cuerpo ni el mensaje de la excepción; el cliente recibe el 503 genérico.
+  Por qué: Gemini respondía 400 `Unknown name "seed"`; el cuerpo puede repetir datos académicos o la llave e inyectar líneas (seguridad M-01, M-02). Descartados filtrar `seed` por proveedor y el `message` truncado. · Vigente; sustituye la semilla de D-47.
+- **D-86** · El adaptador conserva y reenvía el dato opaco de cada llamada a herramienta (firma de razonamiento), genérico y sin reglas por proveedor, con las condiciones B-01, B-02 y B-04 de `seguridad` (plan §4.2).
+  Por qué: Gemini 3 daba 400 → 503 sin su `thought_signature` (ESC-002/003/041/042 de 0–2/5 a 5/5). Descartados `reasoning_effort` y un adaptador nativo de Google. · Vigente; evaluada (INT-030); B-03 registrado como riesgo.
+- **D-87** · La palabra "definitiva" solo usa el campo de la Sec. 3 si la respuesta no tiene cifra ni asignatura; el par por valor cubre el resto (plan §6.5). · Por qué: ESC-006 recibía una Sec. 3 no escrita. Descartado excluir la Sec. 3 de la prelectura (más invasivo). · Vigente; evaluada (INT-030).
+- **D-88** · Una cifra de definitiva se atribuye a la asignatura anterior si las separan solo `definitiva`, conectores o `cuya … es` (plan §11.3). · Por qué: falso TNV en la prosa de ESC-040 (COORD-01 y COORD-02); nunca deja pasar una definitiva falsa. · Vigente; evaluada (INT-030).
+- **D-89** · Presentación fija de `bienestar_y_becas.md · Sección 1` con lugar y horario en una oración (plan §7.6). · Por qué: ESC-007 0/5 con Gemini (el lugar quedaba en una introducción con `:`). · Vigente; se mide con ambos modelos y se revierte si baja una pregunta; cambio de ESC-198 h2 aprobado por el humano.
+- **D-90** · Presentación de la Sec. 3 con la fórmula en `30%`/`40%` y equivalencia `0.3` ↔ `30%` en la invariancia y SEG-10c (plan §7.6). · Por qué: ESC-004 1/5 (copiaba `0.3 ×`). · Vigente; cambio de ESC-198 h3 aprobado por el humano.
+- **D-91** · La mayúscula tras un prefijo eliminado admite `:`, `,`, `;` y `·` intermedios (`^[\s:,;·]*(?<letra>\p{Ll})`; plan §10 (5) (e)). · Por qué: "…, la oficina atiende" quedaba en minúscula. · Vigente; evaluada (INT-030).
+- **D-92** · (Humano, INT-033) En preguntas sobre faltas propias o de un estudiante autorizado, el backend añade el desglose exacto por asignatura (las nombradas o todas) y `Total` calculado; las oraciones del LLM con cifras de faltas o clases se eliminan, sin reintento (humano; plan §8.4).
+  Por qué: el total debe desglosarse y cuadrar. Descartados (a) total + "copia" (no garantiza) y (b) verificación por proximidad (70–100 líneas, falsos bloqueos). · Vigente; evaluada por backend-dotnet (INT-030); sustituye a D-76 en esas respuestas.
 
 ## Riesgos y su decisión
 
-Ningún riesgo queda aceptado salvo D-01 y, por D-72 (INT-030), el umbral compartido tras el proxy de la 002 y el 429 a quien supere 600 por minuto desde una IP (decisiones del humano). Evidencia de la ronda 4 en `diag-riesgos/`.
+Ningún riesgo queda aceptado salvo D-01, por D-72 (INT-030) el umbral compartido tras el proxy de la 002 y el 429 a quien supere 600 por minuto desde una IP, y por D-82 la IP compartida de Docker Desktop (decisiones del humano). Evidencia de la ronda 4 en `diag-riesgos/`.
 
 | Riesgo | Decisión | Control verificable | D | CA / ESC |
 | --- | --- | --- | --- | --- |
@@ -115,7 +140,7 @@ Ningún riesgo queda aceptado salvo D-01 y, por D-72 (INT-030), el umbral compar
 | P3, P6 o el coordinador con citas de más copiadas de "Reglas aplicadas" o por orden fijo (V-1, V-4) | Eliminado: cita del bloque solo con campo usado; sin campo, 0 reglas aplicadas; con datos, sin respaldo | ESC-177 j, k, ESC-178 e, ESC-198 f2; fase V P3 {Art. 11} 5/5 | D-73 | CA-14, CA-22 |
 | Respuesta correcta en forma verbal sin cita (Art. 11, Art. 7) o falso campo por `falta` en singular | Mitigado: formas verbales mínimas en la lista cerrada; `falta`, `faltan` y `faltaba` excluidos | ESC-027 y ESC-032 con su redacción natural; unitaria de §6.5: "le falta calificar el corte 3" con el Art. 11 en el bloque no lo cita; fase V P3 {Art. 11} 5/5 | D-74 | CA-02, CA-14 |
 | P4 con LaTeX y sin `%`; P8 sin 50% y con una frase mutilada (V-2, V-3) | Mitigado: P-08, Sec. 2 en prosa, Sec. 3.1 con el beneficio primero, prompt sin 2023 y §10 (7) en el hueco | ESC-178 m, ESC-191, ESC-198 h1, h3, j, j2; fase V P4 y P8 5/5 sin bajar otra (si no, se revierten las presentaciones) | D-73 | CA-01, CA-20 |
-| Texto crudo distinto entre corridas con temperatura 0 y semilla (caché de prompt de Ollama) | Mitigado: umbrales 5/5 que no se bajan y artefactos por corrida para diagnosticar | ESC-197 g: 50 JSON con texto crudo y secciones entregadas | D-52, D-73 | CA-01 |
+| Texto crudo distinto entre corridas con temperatura 0, sin semilla (caché de prompt de Ollama; D-85) | Mitigado: umbrales 5/5 que no se bajan y artefactos por corrida para diagnosticar | ESC-197 g: 50 JSON con texto crudo y secciones entregadas | D-52, D-73 | CA-01 |
 | Par asignatura-cifra falso sin "definitiva" | Eliminado: se verifica contra definitiva, cortes y acumulada | 2 casos que fallan y 3 que pasan | D-64 | CA-17, CA-22, ESC-198 g |
 | Contexto de 4.096 tokens de Ollama | Mitigado: tope de 3.000 estimados, detección del truncado, `OLLAMA_CONTEXT_LENGTH` documentado | Prueba del tope; 3 casos de detección y 1 de otro proveedor | D-57 | CA-23, ESC-199 d, e |
 | Completitud de P2, P3, P7 y P8 sujeta al modelo | Mitigado: ejemplos normativos y presentación de la `Sección 3.1` | Fase V 5/5; marcas EJ-1…EJ-4; invariancia | D-58 | CA-01, CA-23, ESC-197, ESC-198 h–j |
@@ -148,6 +173,32 @@ Ningún riesgo queda aceptado salvo D-01 y, por D-72 (INT-030), el umbral compar
 | Muchas IP distintas llenan la memoria del limitador | Mitigado: se purga el estado de una IP sin marcas vigentes y sin bloqueo en los últimos 10 min | Unitaria del limitador: 0 entradas de una IP inactiva 600 s después del fin de su bloqueo | D-72 | CA-13 |
 | El proveedor del evaluador limita su cuenta (429) y TutorFlow responde 503 | Mitigado: 503 sin reintento con el `Retry-After` del proveedor (1 a 3600 s); el cliente sabe cuándo volver | ESC-110 b–e | D-70 | CA-07 |
 | Una llave de DeepSeek (`sk-`) tomada por OpenAI o una de Mistral sin prefijo → 503 | Mitigado: `LLM_PROVEEDOR=openai-compatible` con `LLM_URL_BASE` y `LLM_MODELO` documentado en plan §4.1 y `.env.example` | ESC-110 a, ESC-119 | D-16, D-70 | CA-07 |
+| Llave válida rechazada por su formato o enviada al proveedor equivocado (INT-031) | Eliminado: la llave solo es pista; el modelo inequívoco decide; conflicto → `NoConfigurado` sin llamar a nadie | ESC-119 a–h: Gemini sin `AIza` con `gemini-…`, conflicto con log de ambos, 0 llaves en el log | D-84 | CA-07 |
+| 400 del proveedor por un parámetro no admitido (`seed` en Gemini) o 4xx sin diagnóstico | Eliminado: sin `seed`; mitigado el diagnóstico con `Status` y código saneado en `warn` | ESC-192 h (0 `seed`), ESC-110 f (código en el log, 503 genérico) | D-85 | CA-07, CA-20 |
+| Cuerpo del error del proveedor con datos académicos, la llave o saltos de línea en el log (M-01, M-02) | Eliminado: nunca se registran el cuerpo ni el mensaje de la excepción | ESC-110 g (400 con nota y 401 con `sk-…`: 0 apariciones y 0 líneas inyectadas) | D-85 | CA-07 |
+| 400 de Gemini 3 por la firma de razonamiento perdida | Eliminado: reenvío del dato opaco | ESC-192 i, n | D-86 | CA-07 |
+| Dato opaco reenviado con una llamada distinta de la ejecutada o sin el texto del asistente (B-01, B-02) | Eliminado: solo con nombre, id y argumentos iguales; si no, todas sin él; texto conservado | ESC-192 j–m | D-86 | CA-07 |
+| `Microsoft.Extensions.AI` deja de pasar `RawRepresentation` tal cual al actualizarse | Mitigado: versión 11.0.1 fijada (SEG-17) y ESC-192 i en rojo si cambia | ESC-192 i | D-86 | CA-07 |
+| La firma no cuenta en la estimación de contexto de §4.4 (B-03) | Mitigado: acotado por 4 invocaciones y el tope de 3.000; detección del truncado | ESC-199 d1, d2, e1 | D-86, D-57 | CA-23 |
+| Cita de la Sec. 3 que el modelo no escribió (ESC-006) | Eliminado: la palabra sola no usa el campo con cifras | ESC-177 l | D-87 | CA-14 |
+| Falso TNV por definitiva atribuida a la asignatura siguiente (ESC-040) o definitiva falsa que pasa | Eliminado: anterior con `cuya … es`; la falsa sigue bloqueada | ESC-179 z | D-88 | CA-17 |
+| Presentaciones que bajan otra pregunta con un modelo (antecedente: Q10 #7 0/5 con `qwen2.5:7b`) | Mitigado: fase V con ambos modelos; si baja, se revierte | ESC-197, ESC-198 h2, h3 | D-89, D-90 | CA-01, CA-22 |
+| Falsos 403 en normativas sobre "los estudiantes" (S-02) | Eliminado: G sin R no deniega | ESC-187 i, j con 200; CA-25 | D-75 | CA-12, CA-25 |
+| Agregados que evaden la lista (S-07) | Mitigado: dos niveles; el residual no lee datos ajenos (SEG-06) y SEG-10b bloquea nombres | ESC-187 k, l con 403; ESC-187 m con 200 y 0 lecturas ajenas | D-75 | CA-25 |
+| Coordinador que evade SEG-04b léxica ("A.D.M.", "los demás programas") | Mitigado: sus herramientas solo leen sus programas (SEG-02, SEG-06) y SEG-10b bloquea a terceros | ESC-139, ESC-176 b (0 lecturas y `fuga_bloqueada`) | D-75 | CA-04 |
+| Campo falso con coma decimal, sinónimo, promedio redondeado, estado o voz equivocada (S-01, S-03, S-04, D-V5) | Eliminado por campo ligado | CA-26; ESC-035 h, i, 175 s, t, 179 t–y | D-76 | CA-26 |
+| Entero falso igual a otro valor legítimo del mismo estudiante ("9 faltas de 48 clases" de EST-001: 9 es el máximo de Cálculo Integral) | → sustituida por D-92: en respuestas de faltas el backend entrega los valores exactos y la cifra del LLM se elimina | ESC-189 h–n | D-92 | CA-27 |
+| Total de faltas sin desglose o que no cuadra; cifra de faltas o clases inventada por el LLM (INT-033) | Eliminado: desglose y total calculados; oraciones del LLM con cifras eliminadas, sin reintento | ESC-189 i, l | D-92 | CA-27 |
+| Pregunta normativa de faltas con desglose de datos propios no pedido | Eliminado: sin marcador personal ni persona, no activa | ESC-189 m | D-92 | CA-27 |
+| Introducción del LLM eliminada entera (la respuesta queda solo con el desglose) | Aceptado por el humano: el desglose ya trae los valores exactos; sin reintento, 1 llamada | ESC-189 l (1 llamada, solo el desglose) | D-92 | CA-27 |
+| Encabezado HTML que evade el bloque (S-05) | Eliminado: HTML a Markdown y etiquetas quitadas | ESC-184 m | D-77 | CA-17 |
+| Relleno Hangul o letras separadas en nombres (S-06) | Eliminado: tipo `di` y nombre sin espacios | ESC-199 a10, a11 | D-78 | CA-24 |
+| Fuga ofuscada de herramientas, canario o delimitador (S-10) | Mitigado: forma compacta y prefijo del canario; la paráfrasis queda en (3) | ESC-146 b, ESC-147 b | D-79 | CA-05 |
+| `Cf` astral crudo en la auditoría (S-11) | Eliminado: escape por punto de código | ESC-083 b | — | CA-08 |
+| DoS del limitador con miles de IP o de la caché de plegado (S-09, S-15) | Mitigado: purga por intervalo sin copia y tope de 4.096 | Unitarias: purga con 20.000 IP sin `ToList`; caché ≤ 4.096 tras todos los puntos de código | D-80 | CA-13, CA-24 |
+| Salto del reloj de pared que acorta o alarga un bloqueo (S-13) | Eliminado: reloj monotónico | ESC-142 con `TimeProvider` falso | D-80 | CA-13 |
+| Auditoría inundada por 429 de un bloqueo (S-12) | Eliminado: solo el primer 429 de cada bloqueo | ESC-142 g | D-81 | CA-13 |
+| IP compartida por docker-proxy en la 001 directa (S-14) | Aceptado por el humano (D-82): umbral holgado de 600/min | ESC-084 d (0 × 429 con una IP) | D-82, D-72 | CA-12 |
 | `0` leído como ilimitado por error de un operador | Eliminado: `0` no arranca; tasa ausente o vacía = 600 y presupuesto ausente o vacío = sin tope, ambos registrados en el log | ESC-181 e, h; ESC-181 v y ag con su línea de arranque | D-70, D-72 | CA-15 |
 | Claves retiradas (`Limites:BloquearMultiplesIdentidades`, `Proxy:IpsConfiables`) que un operador cree activas | Mitigado: se ignoran sin efecto y sin 429 por identidades; documentado en plan §13.2 | ESC-181 ai | D-72 | CA-15 |
 | 503 de `limite_herramientas` a una pregunta legítima | Mitigado: resumen y prelectura desde la primera llamada (COMP-07, COMP-08) | Fase V: 0 × 503 en las 50 respuestas | D-27, D-45, D-70 | CA-01 |
