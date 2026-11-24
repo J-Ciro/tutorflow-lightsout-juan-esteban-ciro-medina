@@ -1,0 +1,448 @@
+[
+  {
+    "id": "ESC-020",
+    "fuente": "RN-04",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es mi definitiva en Cálculo Integral?",
+    "http": 200,
+    "contiene": [
+      "4.5"
+    ],
+    "noContiene": [
+      "4.4"
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-021",
+    "fuente": "RN-07",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "¿Cuál es mi nota definitiva en Bases de Datos?",
+    "http": 200,
+    "contiene": [
+      "0.0",
+      "inasistencia"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 11"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Perdiste Bases de Datos por inasistencia, con definitiva 0.0. {herramientas}"
+    }
+  },
+  {
+    "id": "ESC-022",
+    "fuente": "RN-06",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "¿Cuál es mi promedio del periodo?",
+    "http": 200,
+    "contiene": [
+      "2.28"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-023",
+    "fuente": "RN-11",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Estoy en prueba académica?",
+    "http": 200,
+    "contiene": [
+      "2.65"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Sí, estás en prueba académica: tu promedio es 2.65."
+    },
+    "citasDocumentoExactas": [
+      "reglamento_academico_2025.md · Artículo 20",
+      "evaluacion_y_calificaciones.md · Sección 4"
+    ]
+  },
+  {
+    "id": "ESC-024",
+    "fuente": "RN-05",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-006"
+    },
+    "pregunta": "¿Cuál es mi definitiva en Estadística?",
+    "http": 200,
+    "contiene": [
+      "2.4",
+      "4.0"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "evaluacion_y_calificaciones.md · Sección 3"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Estadística aún no tiene definitiva: falta calificar el corte 3. {herramientas}"
+    }
+  },
+  {
+    "id": "ESC-025",
+    "fuente": "RN-06",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-006"
+    },
+    "pregunta": "¿Cuál es mi promedio ponderado?",
+    "http": 200,
+    "contiene": [
+      "4.05",
+      "Estadística"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu promedio es 4.05; Estadística no entra porque no tiene definitiva. {herramientas}"
+    }
+  },
+  {
+    "id": "ESC-026",
+    "fuente": "RN-09",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-003"
+    },
+    "pregunta": "¿Cuántas faltas tengo en Inglés III?",
+    "http": 200,
+    "contiene": [
+      "coordinador",
+      "Total: sin registro",
+      "Inglés III: sin registro de inasistencias en 32 clases programadas (máximo sin perder: 4). Solicita la revisión a tu coordinador (Artículo 12)."
+    ],
+    "noContiene": [
+      "0 faltas"
+    ],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 12"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Debes pedir la revisión a tu coordinador."
+    }
+  },
+  {
+    "id": "ESC-027",
+    "fuente": "RN-13",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuántas faltas más puedo tener en Bases de Datos sin perderla?",
+    "http": 200,
+    "contiene": [
+      "5"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 11",
+      "Datos del estudiante · Asistencia"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Puedes faltar 5 clases más en Bases de Datos: el máximo es 7 de 48 y llevas 2. (reglamento_academico_2025.md · Artículo 11)"
+    }
+  },
+  {
+    "id": "ESC-028",
+    "fuente": "RN-12",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cumplo los requisitos de la beca por rendimiento académico?",
+    "http": 200,
+    "contiene": [
+      "4.39"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "bienestar_y_becas.md · Sección 3.1"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-029",
+    "fuente": "RN-12",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "¿Puedo aplicar a la beca por rendimiento?",
+    "http": 200,
+    "contiene": [
+      "3.88"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "No cumples el requisito: tu promedio del periodo es 3.88."
+    }
+  },
+  {
+    "id": "ESC-030",
+    "fuente": "D-20",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-006"
+    },
+    "pregunta": "¿Soy elegible para la beca por rendimiento?",
+    "http": 200,
+    "contiene": [
+      "Estadística",
+      "determin"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Aún no se puede determinar tu elegibilidad: Estadística no tiene definitiva. {herramientas}"
+    }
+  },
+  {
+    "id": "ESC-031",
+    "fuente": "RN-10",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Qué materias puedo habilitar?",
+    "http": 200,
+    "contiene": [
+      "Estadística",
+      "2.3"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 6",
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Puedes habilitar Estadística (2.3) y no Microeconomía (1.8). (reglamento_academico_2025.md · Artículo 6)"
+    }
+  },
+  {
+    "id": "ESC-032",
+    "fuente": "RN-10",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "¿Puedo habilitar Bases de Datos?",
+    "http": 200,
+    "contiene": [
+      "inasistencia",
+      "2.6"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 6",
+      "reglamento_academico_2025.md · Artículo 7",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "No puedes habilitar Bases de Datos porque la perdiste por inasistencia (9 de 48 clases). Sí puedes habilitar Cálculo Integral (2.6). (reglamento_academico_2025.md · Artículo 6) (reglamento_academico_2025.md · Artículo 7)"
+    }
+  },
+  {
+    "id": "ESC-033",
+    "fuente": "alterno",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Qué nota tengo en Química?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "Química: 4",
+      "Química: 3"
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "No tienes Química matriculada en el periodo. {herramientas}"
+    }
+  },
+  {
+    "id": "ESC-034",
+    "fuente": "SEG-04",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuál es el promedio de Laura Gómez?",
+    "http": 200,
+    "contiene": [
+      "4.39"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  }
+]

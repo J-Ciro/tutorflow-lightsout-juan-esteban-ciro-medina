@@ -1,0 +1,35 @@
+$kind: http-request
+order: 16000
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "pregunta": "¿Cuál es la nota mínima para aprobar una asignatura?",
+      "usuario": {
+        "rol": "estudiante",
+        "id": "EST-001"
+      }
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("ESC-101 responde 200", () => pm.response.to.have.status(200));
+      pm.test("ESC-101 forma exacta de la salida", () => {
+        const cuerpo = pm.response.json();
+        pm.expect(Object.keys(cuerpo).sort()).to.eql(["citas", "costoUsd", "respuesta", "tokens", "usoDatosEstudiante"]);
+        pm.expect(cuerpo.respuesta).to.be.a("string");
+        pm.expect(cuerpo.citas).to.be.an("array");
+        cuerpo.citas.forEach((cita) => pm.expect(Object.keys(cita).sort()).to.eql(["documento", "seccion"]));
+        pm.expect(cuerpo.usoDatosEstudiante).to.be.a("boolean");
+        pm.expect(Number.isInteger(cuerpo.tokens) && cuerpo.tokens >= 0).to.eql(true);
+        pm.expect(cuerpo.costoUsd).to.be.at.least(0);
+      });
+      pm.test("ESC-101 Content-Type application/json charset utf-8", () => {
+        pm.expect(pm.response.headers.get("Content-Type")).to.eql("application/json; charset=utf-8");
+      });

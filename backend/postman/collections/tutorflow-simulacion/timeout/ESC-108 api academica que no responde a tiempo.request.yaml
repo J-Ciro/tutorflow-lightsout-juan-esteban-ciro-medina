@@ -1,0 +1,29 @@
+$kind: http-request
+order: 1000
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "pregunta": "¿Cuál es mi promedio?",
+      "usuario": {
+        "rol": "estudiante",
+        "id": "EST-001"
+      }
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("ESC-108 responde 503", () => pm.response.to.have.status(503));
+      pm.test("ESC-108 es un ProblemDetails generico sin detalles internos", () => {
+        pm.expect(pm.response.headers.get("Content-Type")).to.include("application/problem+json");
+        const texto = pm.response.text();
+        ["StackTrace", "   at ", "Exception", "localhost", "4010", "error5xx", "timeout", "datos"].forEach((f) => pm.expect(texto).to.not.include(f));
+        pm.expect(pm.response.json()).to.not.have.property("respuesta");
+      });
+      pm.test("ESC-108 responde en menos de 7 segundos", () => pm.expect(pm.response.responseTime).to.be.below(7000));

@@ -1,0 +1,213 @@
+[
+  {
+    "id": "ESC-179m",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Puedo habilitar Microeconomía?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Datos de Valentina Castro (EST-005)\nEstado de Microeconomía: perdida con definitiva 1.8, no habilitable",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Microeconomía no es habilitable porque tu definitiva es menor a 2.0."
+    }
+  },
+  {
+    "id": "ESC-179n",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Qué necesito para aprobar Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Datos de Valentina Castro (EST-005)\nDefinitivas: Estadística 2.3\nNotas de Estadística: corte 1 2.4, corte 2 2.2, corte 3 2.3\nEstado de Estadística: perdida con definitiva 2.3, habilitable\nPromedio ponderado del periodo: 2.65\nDefinitivas: Contabilidad 3.2, Microeconomía 1.8, Estadística 2.3, Comunicación Oral y Escrita 3.8\nPrueba académica: sí\nBeca por rendimiento académico: no elegible (promedio menor a 4.3)\nEstadística: faltas 6 de 64 clases programadas (faltas restantes: 3; máximo sin perder: 9). Si superas 9 inasistencias pierdes la asignatura por inasistencia.\nTotal: 6 faltas",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Para aprobar Estadística necesitas una definitiva de al menos 3.0; hoy tienes 2.3."
+    }
+  },
+  {
+    "id": "ESC-179o",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Qué necesito para aprobar Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Datos de Valentina Castro (EST-005)\nDefinitivas: Estadística 2.3\nNotas de Estadística: corte 1 2.4, corte 2 2.2, corte 3 2.3\nEstado de Estadística: perdida con definitiva 2.3, habilitable\nPromedio ponderado del periodo: 2.65\nDefinitivas: Contabilidad 3.2, Microeconomía 1.8, Estadística 2.3, Comunicación Oral y Escrita 3.8\nPrueba académica: sí\nBeca por rendimiento académico: no elegible (promedio menor a 4.3)\nEstadística: faltas 6 de 64 clases programadas (faltas restantes: 3; máximo sin perder: 9). Si superas 9 inasistencias pierdes la asignatura por inasistencia.\nTotal: 6 faltas",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Para aprobar Estadística necesitas una definitiva de 3.0."
+    }
+  },
+  {
+    "id": "ESC-179p",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Qué necesito para aprobar Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Notas"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Datos de Valentina Castro (EST-005)\nDefinitivas: Estadística 2.3\nNotas de Estadística: corte 1 2.4, corte 2 2.2, corte 3 2.3\nEstado de Estadística: perdida con definitiva 2.3, habilitable\nPromedio ponderado del periodo: 2.65\nDefinitivas: Contabilidad 3.2, Microeconomía 1.8, Estadística 2.3, Comunicación Oral y Escrita 3.8\nPrueba académica: sí\nBeca por rendimiento académico: no elegible (promedio menor a 4.3)\nEstadística: faltas 6 de 64 clases programadas (faltas restantes: 3; máximo sin perder: 9). Si superas 9 inasistencias pierdes la asignatura por inasistencia.\nTotal: 6 faltas",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Estadística se aprueba con definitiva ≥ 3.0 y la tuya es 2.3."
+    }
+  },
+  {
+    "id": "ESC-179q",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-006"
+    },
+    "pregunta": "¿Cuál es mi nota definitiva en Estadística?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": [
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Datos de Mateo Vargas (EST-006)\nSin definitiva (falta calificar un corte): Estadística (acumulada 2.4 sobre el 60% evaluado)\nEquivalente de la acumulada de Estadística sobre la nota completa: 4.0",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu definitiva en Estadística es 4.0, mayor a 3.0."
+    }
+  },
+  {
+    "id": "ESC-179r",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Puedo habilitar Microeconomía?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": [
+      "reglamento_academico_2025.md · Artículo 6",
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "reglamento_academico_2025.md · Artículo 5",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Datos de Valentina Castro (EST-005)\nEstado de Microeconomía: perdida con definitiva 1.8, no habilitable",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Microeconomía no es habilitable porque tu definitiva es menor a 2.5."
+    }
+  },
+  {
+    "id": "ESC-179s",
+    "fuente": "SEG-10g, SEG-10c, D-38",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "¿Qué nota definitiva tengo en Contabilidad?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": [
+      "evaluacion_y_calificaciones.md · Sección 3",
+      "Datos del estudiante · Notas",
+      "Datos del estudiante · Asistencia"
+    ],
+    "usoDatosEstudiante": true,
+    "respuestaExacta": "Datos de Camilo Rojas (EST-004)\nDefinitivas: Contabilidad 3.9",
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tu definitiva en Contabilidad, que no necesita habilitación, es 3.3."
+    }
+  }
+]

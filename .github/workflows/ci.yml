@@ -1,0 +1,240 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+  DOTNET_CLI_UI_LANGUAGE: en
+
+jobs:
+  commits:
+    name: "ESC-117 CA-10 commits conformes al hook commit-msg"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Validar commits con .githooks/commit-msg
+        env:
+          BASE_PR: ${{ github.event.pull_request.base.sha }}
+          ANTES_PUSH: ${{ github.event.before }}
+        run: |
+          if [ -n "$BASE_PR" ]; then
+            BASE="$BASE_PR"
+          elif git cat-file -e "$ANTES_PUSH^{commit}" 2>/dev/null; then
+            BASE="$ANTES_PUSH"
+          else
+            BASE="$(git merge-base origin/develop HEAD)"
+          fi
+          bash .github/scripts/validar-commits.sh "$BASE..HEAD"
+
+  limites-specs:
+    name: "INT-023 limites de tamano de la documentacion"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Verificar limites de specs, planes, decisiones y SPEC.md
+        run: sh .github/scripts/verificar-limites-specs.sh
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          global-json-file: backend/global.json
+          cache: true
+          cache-dependency-path: backend/**/packages.lock.json
+      - run: dotnet restore --locked-mode
+      - run: dotnet build --no-restore -warnaserror
+      - run: dotnet format --verify-no-changes --no-restore
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          global-json-file: backend/global.json
+          cache: true
+          cache-dependency-path: backend/**/packages.lock.json
+      - run: dotnet restore --locked-mode
+      - name: Pruebas con cobertura
+        run: dotnet test --no-restore --collect "Code Coverage;Format=Cobertura" --results-directory "$RUNNER_TEMP/cobertura"
+      - name: Verificar umbrales de cobertura
+        shell: pwsh
+        run: ../.github/scripts/verificar-cobertura.ps1 -Directorio "$env:RUNNER_TEMP/cobertura" -MinimoCore 90 -MinimoTotal 80
+
+  evals-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          global-json-file: backend/global.json
+          cache: true
+          cache-dependency-path: backend/**/packages.lock.json
+      - run: dotnet restore --locked-mode
+      - run: dotnet run --no-restore --project evals/TutorFlow.Evals -c Release -- --offline
+
+  llave-llm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      presente: ${{ steps.revisar.outputs.presente }}
+    steps:
+      - id: revisar
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: |
+          if [ -n "$LLM_API_KEY" ]; then
+            echo "presente=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "presente=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  evals-llm:
+    needs: llave-llm
+    if: needs.llave-llm.outputs.presente == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          global-json-file: backend/global.json
+          cache: true
+          cache-dependency-path: backend/**/packages.lock.json
+      - run: dotnet restore --locked-mode
+      - name: Levantar el sistema
+        working-directory: .
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: docker compose up -d --build
+      - name: Esperar la salud
+        run: |
+          for intento in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/api/salud > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          echo "La API no respondio en 60 segundos" >&2
+          exit 1
+      - name: Evals con LLM real
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: dotnet run --no-restore --project evals/TutorFlow.Evals -c Release -- --url http://localhost:8080 --corridas 3 | tee "$RUNNER_TEMP/evals-llm.txt"
+      - name: Publicar tokens y costo
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: evals-llm
+          path: ${{ runner.temp }}/evals-llm.txt
+          if-no-files-found: error
+      - name: Apagar el sistema
+        if: always()
+        working-directory: .
+        run: docker compose down -v
+
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          global-json-file: backend/global.json
+          cache: true
+          cache-dependency-path: backend/**/packages.lock.json
+      - run: dotnet restore --locked-mode
+      - name: Paquetes vulnerables
+        run: |
+          dotnet list package --vulnerable --include-transitive --format json > "$RUNNER_TEMP/vulnerables.json"
+          jq -e '[.problems[]?] | length == 0' "$RUNNER_TEMP/vulnerables.json" > /dev/null || { echo "dotnet list package reporto problemas" >&2; exit 1; }
+          cantidad=$(jq '[.projects[]?.frameworks[]? | (.topLevelPackages[]?, .transitivePackages[]?) | select((.vulnerabilities // []) | length > 0)] | length' "$RUNNER_TEMP/vulnerables.json")
+          if [ "$cantidad" -gt 0 ]; then
+            jq -r '.projects[]?.frameworks[]? | (.topLevelPackages[]?, .transitivePackages[]?) | select((.vulnerabilities // []) | length > 0) | .id + " " + (.resolvedVersion // .requestedVersion)' "$RUNNER_TEMP/vulnerables.json" >&2
+            echo "Hay $cantidad paquetes vulnerables" >&2
+            exit 1
+          fi
+      - name: Busqueda de secretos con gitleaks
+        working-directory: .
+        run: docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854 detect --source /repo --config /repo/.gitleaks.toml --redact --no-banner --verbose
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Levantar el sistema
+        run: docker compose up -d --build
+      - name: Esperar la salud
+        run: |
+          for intento in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/api/salud > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          docker compose logs --no-color >&2
+          echo "La API no respondio en 60 segundos" >&2
+          exit 1
+      - name: "ESC-116 CA-09 smoke: salud 200 y 403"
+        run: |
+          salud=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/salud)
+          test "$salud" = "200"
+          ajena=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/api/asistente/preguntar \
+            -H 'Content-Type: application/json' \
+            -d '{"pregunta":"Cuales son las notas de EST-002?","usuario":{"rol":"estudiante","id":"EST-001"}}')
+          test "$ajena" = "403"
+      - name: El puerto 4000 no esta publicado
+        run: |
+          if curl -s --max-time 3 -o /dev/null http://localhost:4000/salud; then
+            echo "El puerto 4000 esta publicado en el host" >&2
+            exit 1
+          fi
+      - name: Apagar el sistema
+        if: always()
+        run: docker compose down -v

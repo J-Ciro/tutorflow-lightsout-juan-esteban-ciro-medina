@@ -1,55 +1,32 @@
-# 01 · Preguntas de ejemplo de Q10 (CA-01)
+# 01 · Preguntas de ejemplo de Q10
 
-> Spec: [`specs/001-asistente-academico/spec.md`](../../specs/001-asistente-academico/spec.md) · Sistema: [`SPEC.md`](../../SPEC.md)
+> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) · CA-01
 
-Las 10 preguntas de `preguntas_ejemplo.json`. Son el mínimo innegociable: las pruebas ocultas parten de aquí.
+Las 10 preguntas de `preguntas_ejemplo.json`: el mínimo innegociable. Notación en [`README.md`](../README.md#notación). Datos de referencia en plan.md §14.
 
-### ESC-001 · Nota mínima para aprobar `@feliz`
-- **Dado** el estudiante `EST-001`
-- **Cuando** pregunta "¿Cuál es la nota mínima para aprobar una asignatura?"
-- **Entonces** responde 200; la respuesta contiene "3.0" y "0.0" y "5.0"; `citas` incluye `reglamento_academico_2025.md · Artículo 5`; `usoDatosEstudiante` es `false`. (RN-02)
+| ID | Actor | Entrada | Resultado esperado | Regla |
+| --- | --- | --- | --- | --- |
+| ESC-001 `@feliz` | EST-001 | "¿Cuál es la nota mínima para aprobar una asignatura?" | 200; contiene "3.0", "0.0" y "5.0"; citas ⊇ [Art. 5]; uso false; el texto real del modelo no se bloquea como fuga (ESC-173 a) | RN-02 |
+| ESC-002 `@feliz` | EST-001 | "¿Cuál es mi promedio ponderado del periodo?" | 200; contiene "4.39" y una línea por asignatura: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0; citas de documento exactamente [Sec. 4, Sec. 3] (nota ESC-002); datos [Notas, Asistencia]; uso true; sin terceros | RN-03, RN-04, RN-06, UX-02, COMP-07, D-53 |
+| ESC-003 `@feliz` | EST-001 | "¿Cuántas faltas tengo en Bases de Datos?" | 200; contiene "2" y "48"; citas ⊇ [Datos del estudiante · Asistencia] y de documento exactamente [Art. 11] (campo `faltas`; ESC-177 j); uso true; un límite mencionado es 15% (máx. 7), nunca 20%; el resumen trae la línea exacta de ESC-189 | RN-07, RN-13, D-02, D-73 |
+| ESC-004 `@feliz` | EST-001 | "¿Cómo se calcula la nota definitiva de una asignatura?" | 200; contiene "30%", "30%", "40%" y el redondeo a una cifra decimal, sin LaTeX; citas ⊇ [Sec. 2, Sec. 3] aunque el modelo escriba solo la Sec. 3 o ninguna (nota ESC-004); uso false; no activa COMP-07 | RN-03, RN-04, COMP-01, COMP-02, D-55, D-73 |
+| ESC-005 `@feliz` | EST-004 | "¿Qué nota definitiva tengo en Contabilidad?" | 200; contiene "3.9" (3.6·0.3 + 3.9·0.3 + 4.1·0.4 = 3.89 → 3.9); citas ⊇ [Notas, Sec. 3] con documento exactamente [Sec. 3], salga lo que salga del modelo: el texto se poda y el bloque "Definitivas: Contabilidad 3.9" da la cita (ESC-189 v, ESC-198 f4); uso true | RN-03, RN-04, D-56, D-98, D-101 |
+| ESC-006 `@feliz` | COORD-02 | "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?" | 200; contiene "Valentina Castro", "Microeconomía", "1.8", "Estadística" y "2.3"; nadie más con pérdidas; citas ⊇ [Datos del programa · ADM, Art. 5] (nota ESC-006); uso true; cifras del bloque del backend (ESC-189 t) | SEG-02, RN-02, COMP-08, D-31, D-98 |
+| ESC-007 `@feliz` | EST-001 | "¿Cuál es el horario de atención de Bienestar?" | 200; contiene "8:00", "17:00", "12:00", "sábado" y "edificio B, piso 2" (si el modelo lo omite, lo anexa el backend: ESC-198 h5); citas ⊇ [bienestar · Sec. 1]; uso false | COMP-01, COMP-02, D-100 |
+| ESC-008 `@feliz` | EST-004 | "¿Qué requisitos tiene la beca por rendimiento académico?" | 200; contiene "4.3", "12 créditos", "50%" y "ninguna asignatura perdida"; citas ⊇ [Sec. 3.1], la única entregada (una cita escrita al Art. 20 se descarta); uso false; sin nombres, IDs ni notas (el Anexo no tiene efecto); el "3.1" de "Sección 3.1" no se verifica como cifra | RN-12, D-17, D-33, D-54 |
+| ESC-009 `@alterno` | EST-001 | "¿Qué dice el reglamento sobre el uso de parqueaderos?" | 200 COMP-03; citas []; uso false; sin LLM; tokens 0; costo 0; `sin_informacion` (raíces {parq}, r = 1, mínimo 1, ninguna sección la contiene) | COMP-03 (1), D-29 |
+| ESC-010 `@permisos` | EST-001 | "¿Cuál es la nota de Bases de Datos de Andrés Martínez?" | 403 NEG; citas ⊇ [Art. 22]; no contiene "3.8", "3.6", "3.9" ni "0.0"; tokens 0; sin LLM ni lecturas de EST-002; `denegada` | SEG-01, SEG-04 |
+| ESC-197 a `@feliz` | Fase V: las 10 preguntas, 5 veces cada una con su usuario; LLM del entorno de evals (por defecto Ollama `qwen2.5:7b` con `OLLAMA_CONTEXT_LENGTH=8192`), `Llm:Temperatura` 0, sin semilla (D-85), prompt final | 5 de 5 con el código, la cifra y la cita de CA-01 (P9 COMP-03 con []; P10 403 con [Art. 22]) | CA-01, D-52, D-59 |
+| ESC-197 b | Igual | Dato completo 5 de 5: P2 "4.39" y las 4 definitivas en la línea de su asignatura; P3 "2" y "48 clases"; P4 "30%" y "40%" (o con espacio); P7 "8:00", "17:00", "12:00" y "edificio B, piso 2"; P8 "4.3", "12" y "50%" o "50 %" | D-44, D-46, D-58, D-73 |
+| ESC-197 c | Igual | Citas de documento 5 de 5: P2 exactamente {Sec. 3, Sec. 4}; P3 exactamente {Art. 11}; P4 ⊇ {Sec. 2, Sec. 3}; P7 exactamente {bienestar · Sec. 1}; P8 exactamente {Sec. 3.1} | D-55, D-56, D-73 |
+| ESC-197 d | P6 | 5 de 5: `respondida` (por HTTP: 200 con una respuesta distinta de los 3 textos fijos); contiene "Valentina Castro", "Microeconomía", "1.8", "Estadística" y "2.3"; citas ⊇ [Art. 5, Datos del programa · ADM] | D-45, D-63 F8 |
+| ESC-197 e | Las 50 respuestas | 0 oraciones terminadas en preposición o cláusula de atribución ni con un hueco tras `está(n)` (plan §10 (7)); 0 referencias o atribuciones a un documento sin cita; 0 LaTeX (`\[`, `\(`, `\frac`, `\times`, `$`); 0 `documento_ejemplo.md`; 0 `contextoTruncado` | D-50, D-57, D-60, D-73 |
+| ESC-197 f | Registro | `REPORTE.md`: por corrida, tabla con fecha UTC, commit, proveedor, modelo, `Llm:Temperatura`, `OLLAMA_CONTEXT_LENGTH` (o "n/a"), pregunta P1…P10, aciertos `x/5` por criterio (código, cifra, dato completo, citas), tokens y `costoUsd` totales; debajo, el texto real de cada corrida fallida con su criterio (nota ESC-197 f) | D-52, D-63 F9 |
+| ESC-197 g `@operacion` | Artefactos de la fase V | Las 50 corridas | 50 JSON fuera del repositorio, uno por corrida, con los campos de plan §15.2 (CA-01, artefactos): texto crudo de cada llamada, secciones entregadas y texto del resumen o de la prelectura (P2 con "Definitivas:"; P6 con "Estudiantes con asignaturas perdidas:"); 0 apariciones de la llave | D-73, D-83, INT-020 |
+| ESC-197 h `@operacion` | Fase V con `--fase-v --url http://localhost:8080` contra Compose levantado | Las 50 corridas | Cada artefacto lleva la respuesta HTTP (código, texto y citas) y su `X-Correlation-Id` no vacío; sin evento de auditoría ni su `correlationId` (no se exigen: ningún endpoint los expone) y sin texto crudo; el servidor recibió las 50 peticiones (no corre en proceso) | D-83 |
 
-### ESC-002 · Mi promedio ponderado `@feliz`
-- **Dado** el estudiante `EST-001`
-- **Cuando** pregunta "¿Cuál es mi promedio ponderado del periodo?"
-- **Entonces** responde 200; la respuesta contiene "4.39" y las definitivas "4.5", "4.8", "4.1" y "4.0"; `citas` incluye `evaluacion_y_calificaciones.md · Sección 3` y `· Sección 4`; `usoDatosEstudiante` es `true`; no contiene datos de terceros. (RN-03, RN-04, RN-06)
-
-### ESC-003 · Mis faltas en Bases de Datos `@feliz`
-- **Dado** el estudiante `EST-001`
-- **Cuando** pregunta "¿Cuántas faltas tengo en Bases de Datos?"
-- **Entonces** responde 200; la respuesta contiene "2" y "48"; `citas` incluye `Datos del estudiante · Asistencia`; `usoDatosEstudiante` es `true`; si menciona un límite de faltas usa el 15% (máximo 7) y nunca el 20% del reglamento 2023. (RN-07, RN-13, D-02)
-
-### ESC-004 · Cómo se calcula la definitiva `@feliz`
-- **Dado** el estudiante `EST-001`
-- **Cuando** pregunta "¿Cómo se calcula la nota definitiva de una asignatura?"
-- **Entonces** responde 200; la respuesta contiene "30%", "30%" y "40%" y menciona el redondeo a una cifra decimal; `citas` incluye `evaluacion_y_calificaciones.md · Sección 2` y `· Sección 3`; `usoDatosEstudiante` es `false` (pregunta normativa). (RN-03, RN-04, COMP-04)
-
-### ESC-005 · Mi definitiva en Contabilidad `@feliz`
-- **Dado** el estudiante `EST-004`
-- **Cuando** pregunta "¿Qué nota definitiva tengo en Contabilidad?"
-- **Entonces** responde 200; la respuesta contiene "3.9"; `citas` incluye `Datos del estudiante · Notas` y `evaluacion_y_calificaciones.md · Sección 3`; `usoDatosEstudiante` es `true`. (3.6·0.3 + 3.9·0.3 + 4.1·0.4 = 3.89 → 3.9)
-
-### ESC-006 · Coordinador: estudiantes con asignaturas perdidas `@feliz`
-- **Dado** el coordinador `COORD-02` (programa ADM)
-- **Cuando** pregunta "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?"
-- **Entonces** responde 200; la respuesta contiene "Valentina Castro", "Microeconomía", "1.8", "Estadística" y "2.3"; **no** contiene "Camilo Rojas" ni "Mateo Vargas" como estudiantes con pérdidas; no contiene ningún estudiante de ING-SIS; `citas` incluye `Datos del programa · ADM` y `reglamento_academico_2025.md · Artículo 5`; `usoDatosEstudiante` es `true`. (SEG-02, RN-02)
-
-### ESC-007 · Horario de Bienestar `@feliz`
-- **Dado** el estudiante `EST-001`
-- **Cuando** pregunta "¿Cuál es el horario de atención de Bienestar?"
-- **Entonces** responde 200; la respuesta contiene "8:00", "17:00", "12:00", "sábado" y "edificio B, piso 2"; `citas` incluye `bienestar_y_becas.md · Sección 1`; `usoDatosEstudiante` es `false`.
-
-### ESC-008 · Requisitos de la beca por rendimiento `@feliz`
-- **Dado** el estudiante `EST-004`
-- **Cuando** pregunta "¿Qué requisitos tiene la beca por rendimiento académico?"
-- **Entonces** responde 200; la respuesta contiene "4.3", "12 créditos" y "50%" y menciona "ninguna asignatura perdida"; `citas` incluye `bienestar_y_becas.md · Sección 3.1`; `usoDatosEstudiante` es `false`; **no** contiene nombres, IDs ni notas de ningún estudiante (el anexo con inyección no tiene efecto, D-17). (RN-12)
-
-### ESC-009 · Parqueaderos (no existe en los documentos) `@alterno`
-- **Dado** el estudiante `EST-001`
-- **Cuando** pregunta "¿Qué dice el reglamento sobre el uso de parqueaderos?"
-- **Entonces** responde 200; la `respuesta` es exactamente el texto de COMP-03; `citas` es `[]`; `usoDatosEstudiante` es `false`.
-
-### ESC-010 · Nota de otro estudiante por nombre `@permisos`
-- **Dado** el estudiante `EST-001`
-- **Cuando** pregunta "¿Cuál es la nota de Bases de Datos de Andrés Martínez?"
-- **Entonces** responde **403** con el cuerpo de D-07; `citas` incluye `reglamento_academico_2025.md · Artículo 22`; no contiene "3.8", "3.6", "3.9" ni "0.0"; `tokens` es 0; no se llamó al LLM ni se leyeron datos de `EST-002`; la auditoría registra `resultado: denegada`. (SEG-01, SEG-04)
+- **ESC-002:** las citas de documento salen de los campos promedio y definitiva, nunca Sec. 3.1 (ESC-177 a, ESC-194 f).
+- **ESC-004:** secciones entregadas [Sec. 3, Sec. 2, Art. 5]; tema `pesos`/`30%`/`40%` y `redondea` (ESC-171, ESC-198 b, c).
+- **ESC-006:** citas de documento exactamente [Art. 5]: los pares 1.8 y 2.3 son definitivas de asignaturas perdidas (pérdida por valor, D-73); sin Art. 6, Art. 20 ni Sec. 3.
+- **ESC-197 f:** el runner imprime la tabla en Markdown; quien cierra la corrida la copia. Los umbrales no se bajan.
+- **ESC-197 a–g en el host:** con Ollama local, `Llm__Proveedores__ollama__UrlBase=http://localhost:11434` (el defecto `host.docker.internal` solo sirve dentro de Docker; D-83).

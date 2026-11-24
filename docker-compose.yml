@@ -1,0 +1,73 @@
+name: tutorflow
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/src/TutorFlow.Api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ApiAcademica__UrlBase: http://mock-api:4000
+      Auditoria__Ruta: /app/auditoria
+      Limites__PreguntasPorMinutoPorIp: "${TASA_POR_IP_PRUEBA:-}"
+      LLM_API_KEY:
+      LLM_PROVEEDOR:
+      LLM_URL_BASE:
+      LLM_MODELO:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      mock-api:
+        condition: service_healthy
+    networks:
+      - interna
+      - publica
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - auditoria:/app/auditoria
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  mock-api:
+    build:
+      context: .
+      dockerfile: docker/mock-api.Dockerfile
+    expose:
+      - "4000"
+    networks:
+      - interna
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  mock-api-dev:
+    profiles:
+      - dev
+    image: alpine/socat:1.8.0.3@sha256:beb4a68d9e4fe6b0f21ea774a0fde6c31f580dde6368939ed70100c5385b015e
+    command: tcp-listen:4000,fork,reuseaddr tcp:mock-api:4000
+    ports:
+      - "4000:4000"
+    depends_on:
+      mock-api:
+        condition: service_healthy
+    networks:
+      - interna
+      - publica
+
+volumes:
+  auditoria: {}
+
+networks:
+  interna:
+    internal: true
+  publica: {}

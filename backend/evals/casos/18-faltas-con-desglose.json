@@ -1,0 +1,320 @@
+[
+  {
+    "id": "ESC-189h",
+    "fuente": "CA-27, D-92",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuántas faltas tengo en Bases de Datos?",
+    "http": 200,
+    "contiene": [
+      "Aquí está el detalle de tus faltas.",
+      "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.",
+      "Total: 2 faltas",
+      "2 de 48 clases programadas"
+    ],
+    "noContiene": [
+      "Cálculo Integral: faltas",
+      "Programación Orientada a Objetos: faltas",
+      "Inglés III: faltas"
+    ],
+    "citasIncluye": [
+      "Datos del estudiante · Asistencia",
+      "reglamento_academico_2025.md · Artículo 11"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Aquí está el detalle de tus faltas."
+    }
+  },
+  {
+    "id": "ESC-189i",
+    "fuente": "CA-27, D-92",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "¿Cuántas faltas tengo?",
+    "http": 200,
+    "contiene": [
+      "Cálculo Integral: faltas 3 de 64 clases programadas (faltas restantes: 6; máximo sin perder: 9). Si superas 9 inasistencias pierdes la asignatura por inasistencia.",
+      "Programación Orientada a Objetos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.",
+      "Bases de Datos: faltas 9 de 48 clases programadas (faltas restantes: 0; máximo sin perder: 7). Perdida por inasistencia: superaste 7 inasistencias.",
+      "Inglés III: faltas 1 de 32 clases programadas (faltas restantes: 3; máximo sin perder: 4). Si superas 4 inasistencias pierdes la asignatura por inasistencia.",
+      "Total: 15 faltas"
+    ],
+    "noContiene": [
+      "30"
+    ],
+    "citasIncluye": [
+      "Datos del estudiante · Asistencia"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tienes 30 faltas en total."
+    }
+  },
+  {
+    "id": "ESC-189j",
+    "fuente": "CA-27, D-92",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuántas faltas tengo en Cálculo Integral y en Inglés III?",
+    "http": 200,
+    "contiene": [
+      "Cálculo Integral: faltas 1 de 64 clases programadas (faltas restantes: 8; máximo sin perder: 9). Si superas 9 inasistencias pierdes la asignatura por inasistencia.",
+      "Inglés III: faltas 1 de 32 clases programadas (faltas restantes: 3; máximo sin perder: 4). Si superas 4 inasistencias pierdes la asignatura por inasistencia.",
+      "Total: 2 faltas"
+    ],
+    "noContiene": [
+      "Programación Orientada a Objetos: faltas",
+      "Bases de Datos: faltas"
+    ],
+    "citasIncluye": [
+      "Datos del estudiante · Asistencia"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Este es tu detalle."
+    }
+  },
+  {
+    "id": "ESC-189k",
+    "fuente": "CA-27, RN-07, D-92",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-002"
+    },
+    "pregunta": "¿Cuántas faltas me quedan en Bases de Datos?",
+    "http": 200,
+    "contiene": [
+      "Bases de Datos: faltas 9 de 48 clases programadas (faltas restantes: 0; máximo sin perder: 7). Perdida por inasistencia: superaste 7 inasistencias.",
+      "faltas restantes: 0",
+      "Perdida por inasistencia: superaste 7 inasistencias.",
+      "Total: 9 faltas"
+    ],
+    "noContiene": [
+      "Cálculo Integral: faltas"
+    ],
+    "citasIncluye": [
+      "Datos del estudiante · Asistencia",
+      "reglamento_academico_2025.md · Artículo 11"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Este es tu detalle."
+    }
+  },
+  {
+    "id": "ESC-189l",
+    "fuente": "CA-27, D-92",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuántas faltas tengo en Bases de Datos?",
+    "http": 200,
+    "contiene": [
+      "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.",
+      "Total: 2 faltas"
+    ],
+    "noContiene": [
+      "9 faltas"
+    ],
+    "citasIncluye": [
+      "Datos del estudiante · Asistencia",
+      "reglamento_academico_2025.md · Artículo 11"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Tienes 9 faltas en Bases de Datos."
+    }
+  },
+  {
+    "id": "ESC-189m",
+    "fuente": "CA-27, D-92",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Con cuántas faltas se pierde una materia?",
+    "http": 200,
+    "contiene": [
+      "15%"
+    ],
+    "noContiene": [
+      "Total:",
+      "clases programadas (faltas restantes"
+    ],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 11"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Se pierde por inasistencia al faltar a más del 15% de las clases programadas."
+    }
+  },
+  {
+    "id": "ESC-189n1",
+    "fuente": "CA-27, RF-03, SEG-02, D-92",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-01"
+    },
+    "pregunta": "¿Cuántas faltas tiene Andrés Martínez?",
+    "http": 200,
+    "contiene": [
+      "Cálculo Integral: faltas 3 de 64 clases programadas (faltas restantes: 6; máximo sin perder: 9). Si supera 9 inasistencias pierde la asignatura por inasistencia.",
+      "Programación Orientada a Objetos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si supera 7 inasistencias pierde la asignatura por inasistencia.",
+      "Bases de Datos: faltas 9 de 48 clases programadas (faltas restantes: 0; máximo sin perder: 7). Perdida por inasistencia: superó 7 inasistencias.",
+      "Inglés III: faltas 1 de 32 clases programadas (faltas restantes: 3; máximo sin perder: 4). Si supera 4 inasistencias pierde la asignatura por inasistencia.",
+      "Total: 15 faltas"
+    ],
+    "noContiene": [
+      "pierdes",
+      "superaste"
+    ],
+    "citasIncluye": [
+      "Datos del estudiante · Asistencia"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Este es el detalle de Andrés Martínez."
+    }
+  },
+  {
+    "id": "ESC-189n2",
+    "fuente": "CA-27, SEG-04, D-92",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Cuántas faltas tiene Andrés Martínez?",
+    "http": 403,
+    "contiene": [
+      "No puedo compartir esa información: solo puedes consultar los datos de los estudiantes de tu programa."
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 22"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": true,
+    "filtroPrevio": true,
+    "requiereLlm": false,
+    "soloOffline": false,
+    "offline": null
+  },
+  {
+    "id": "ESC-154",
+    "fuente": "COMP-07, D-27, RN-13, D-92",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Cuántas faltas tengo en Bases de Datos?",
+    "http": 200,
+    "contiene": [
+      "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.",
+      "Total: 2 faltas"
+    ],
+    "noContiene": [
+      "5 restantes",
+      "máximo 7"
+    ],
+    "citasIncluye": [
+      "Datos del estudiante · Asistencia"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "citasExactas": null,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "soloOffline": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Bases de Datos: 2 faltas, 48 clases, máximo 7 y 5 restantes."
+    }
+  }
+]

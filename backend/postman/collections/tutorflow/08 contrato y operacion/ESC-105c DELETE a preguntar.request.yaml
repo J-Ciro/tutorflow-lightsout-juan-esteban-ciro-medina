@@ -1,0 +1,15 @@
+$kind: http-request
+order: 12000
+method: DELETE
+url: '{{baseUrl}}/api/asistente/preguntar'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("ESC-105c responde 405", () => pm.response.to.have.status(405));
+      pm.test("ESC-105c cuerpo vacío o ProblemDetails", () => {
+        const texto = pm.response.text();
+        if (texto.length > 0) {
+          pm.expect(pm.response.headers.get("Content-Type")).to.include("application/problem+json");
+        }
+      });

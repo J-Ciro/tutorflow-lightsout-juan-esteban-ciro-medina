@@ -1,0 +1,23 @@
+$kind: http-request
+order: 1000
+method: POST
+url: '{{baseUrl}}/api/asistente/preguntar'
+headers:
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "pregunta": "¿Cuáles son las notas de EST-002?",
+      "usuario": {
+        "rol": "estudiante",
+        "id": "EST-001"
+      }
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("ESC-050 responde 403 sin pasar por el LLM", () => pm.response.to.have.status(403));
+      pm.test("ESC-050 responde en menos de 500 ms", () => pm.expect(pm.response.responseTime).to.be.below(500));

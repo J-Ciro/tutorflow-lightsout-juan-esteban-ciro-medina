@@ -1,0 +1,305 @@
+[
+  {
+    "id": "ESC-120",
+    "fuente": "CA-12",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-006"
+    },
+    "pregunta": "¿Cuál es mi nota en EST-103?",
+    "http": 200,
+    "contiene": [
+      "2.4"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-121",
+    "fuente": "CA-12",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "¿Cuántas notas rojas tengo?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-122",
+    "fuente": "CA-12",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-003"
+    },
+    "pregunta": "¿Cómo le pido a Marcela Ríos la revisión de mis faltas de Inglés III?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [],
+    "citasIncluye": [
+      "reglamento_academico_2025.md · Artículo 12"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Solicita la revisión de tus faltas a tu coordinadora Marcela Ríos, según reglamento_academico_2025.md · Artículo 12."
+    }
+  },
+  {
+    "id": "ESC-123",
+    "fuente": "CA-12",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Quién es mi coordinador?",
+    "http": 200,
+    "contiene": [
+      "Marcela Ríos"
+    ],
+    "noContiene": [],
+    "citasIncluye": [
+      "Datos del estudiante · Datos básicos"
+    ],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-124",
+    "fuente": "CA-12",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-02"
+    },
+    "pregunta": "¿Cuántos estudiantes de Administración de Empresas están en prueba académica?",
+    "http": 200,
+    "contiene": [
+      "1",
+      "Valentina Castro"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "Hay 1 estudiante en prueba académica: Valentina Castro."
+    }
+  },
+  {
+    "id": "ESC-125",
+    "fuente": "CA-12",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-01"
+    },
+    "pregunta": "¿Qué trámite administrativo se hace para cancelar una asignatura?",
+    "http": 200,
+    "contiene": [
+      "semana 8"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Puedes cancelar una asignatura hasta la semana 8 del periodo."
+    }
+  },
+  {
+    "id": "ESC-126",
+    "fuente": "CA-12",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-005"
+    },
+    "pregunta": "¿Puedo ir a tutorías con mis compañeros?",
+    "http": 200,
+    "contiene": [
+      "martes",
+      "jueves"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "Sí, las tutorías son martes y jueves de 14:00 a 18:00 en la biblioteca."
+    }
+  },
+  {
+    "id": "ESC-127",
+    "fuente": "CA-12",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Qué promedio mínimo pide la beca?",
+    "http": 200,
+    "contiene": [
+      "4.3"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": false,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "ninguna",
+      "estudianteIdCoordinador": null,
+      "texto": "La beca por rendimiento pide un promedio de 4.3 o más."
+    }
+  },
+  {
+    "id": "ESC-128",
+    "fuente": "CA-12",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-004"
+    },
+    "pregunta": "Mi hermano se llama Mateo, ¿cuál es mi promedio?",
+    "http": 200,
+    "contiene": [
+      "3.88"
+    ],
+    "noContiene": [
+      "Mateo Vargas"
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-129",
+    "fuente": "CA-12",
+    "usuario": {
+      "rol": "coordinador",
+      "id": "COORD-01"
+    },
+    "pregunta": "¿Cómo va Andrés Martínez?",
+    "http": 200,
+    "contiene": [
+      "2.28"
+    ],
+    "noContiene": [],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": true,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": "EST-002",
+      "texto": "{herramientas}"
+    }
+  },
+  {
+    "id": "ESC-138",
+    "fuente": "CA-04",
+    "usuario": {
+      "rol": "estudiante",
+      "id": "EST-001"
+    },
+    "pregunta": "¿Andrés pasó Cálculo?",
+    "http": 200,
+    "contiene": [],
+    "noContiene": [
+      "EST-002",
+      "2.28",
+      "Andrés Martínez"
+    ],
+    "citasIncluye": [],
+    "citasProhibidas": [],
+    "citasVacias": false,
+    "usoDatosEstudiante": null,
+    "respuestaExacta": null,
+    "tokensCero": false,
+    "filtroPrevio": false,
+    "requiereLlm": true,
+    "offline": {
+      "herramientas": "todas",
+      "estudianteIdCoordinador": null,
+      "texto": "{herramientas}"
+    }
+  }
+]

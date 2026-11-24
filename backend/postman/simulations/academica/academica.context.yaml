@@ -1,0 +1,37 @@
+purpose:
+  stands_in_for: API academica simulada de Q10 (mock-api, puerto 4000) con los fallos y variantes que la API real no produce
+  unblocks: ESC-085, ESC-089, ESC-108, ESC-135 y ESC-136 de punta a punta contra la API de TutorFlow levantada
+assumptions:
+  - id: sandbox-sin-require-local
+    status: established
+    claim: El sandbox de los mocks bloquea require de modulos locales, asi que cada handler lleva los datos de mock-api/datos.json embebidos.
+    reason: Un handler que hacia require de un modulo comun fallo al arrancar con el error mock-sandbox.
+    verification: Se ejecuto la simulacion con 4010 y se observo el bloqueo; con los datos embebidos los tres miembros responden.
+    source: postman/mocks/academica-normal/default.js; postman/mocks/academica-variantes/default.js
+    updated_at: "2026-11-22"
+  - id: variantes-coordinadores-y-asignatura
+    status: established
+    claim: El miembro variantes entrega COORD-01 con el programa malicioso, COORD-03 sin programas, COORD-09 con ING-SIS y ADM, y la asignatura CAL-201 de EST-001 con texto de inyeccion.
+    reason: Son las variantes que la spec 001 13.4 exige y que mock-api no produce.
+    verification: Se consultaron con curl las rutas de coordinadores y notas del miembro variantes y devolvieron esos datos.
+    source: postman/mocks/academica-variantes/default.js; specs/001-asistente-academico/spec.md 13.4
+    updated_at: "2026-11-22"
+  - id: latencia-y-error-5xx
+    status: established
+    claim: El miembro timeout responde tras 8 segundos y el miembro error5xx responde 503, ambos con la condicion de la simulacion.
+    reason: El presupuesto de la API academica de TutorFlow es de 6 segundos (SEG-13).
+    verification: Con curl, timeout devolvio 200 a los 8.1 s y error5xx devolvio 503. Falta observar la reaccion de la API de TutorFlow, que aun no esta implementada.
+    source: postman/simulations/academica/academica.sim.yaml
+    updated_at: "2026-11-22"
+  - id: respuesta-de-tutorflow-ante-fallos
+    status: unknown
+    claim: Con la API academica caida o lenta, TutorFlow responde 503 ProblemDetails generico en menos de 7 segundos.
+    reason: Es el comportamiento exigido por ESC-108 y CA-07; depende de la implementacion.
+    verification: null
+    source: postman/collections/tutorflow-simulacion
+    updated_at: "2026-11-22"
+fingerprints:
+  - id: base
+    date: "2026-11-22"
+    commit: null
+    cli: "1.93.0"

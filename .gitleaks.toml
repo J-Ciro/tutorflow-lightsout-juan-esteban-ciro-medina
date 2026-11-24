@@ -1,0 +1,23 @@
+title = "TutorFlow gitleaks"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Nombres de caracteristicas beta, valores numericos y llaves canarias de las pruebas"
+regexTarget = "secret"
+regexes = [
+  '''^[a-z]+(-[a-z0-9]+)*$''',
+  '''^\d+$''',
+  '''^8080(/[a-z]+)+$''',
+  '''^AIzaCANARIA[A-Za-z0-9_-]*$''',
+  '''^gsk_LLAVEABC123[A-Za-z0-9_-]*$''',
+]
+
+[[allowlists]]
+description = "Digests de imagen Docker"
+regexTarget = "match"
+regexes = [
+  '''sha256:[a-f0-9]{64}''',
+  '''ApiTests\.cs: ESC[_-]\d{3}''',
+]
