@@ -21,6 +21,9 @@ public sealed class VerificadorSalidaTests
     private static SalidaVerificada Verificar(Usuario usuario, string respuesta, IReadOnlyCollection<string> autorizados, IReadOnlyCollection<string> fuentes, params Cita[] citas) =>
         Verificador.Verificar(usuario, respuesta, citas, autorizados, fuentes, Base, Directorio);
 
+    private static bool CifrasVerificables(string respuesta, string fuente) =>
+        Verificar(Estudiante, respuesta, SoloEst001, [fuente]).Resultado != ResultadoAuditoria.NumeroNoVerificado;
+
     [Theory]
     [InlineData("Andres  Martinez sacó 2.6 en Cálculo")]
     [InlineData("Andrés Martínez perdió la materia")]
@@ -252,7 +255,7 @@ public sealed class VerificadorSalidaTests
     [Trait("SEG", "SEG-10c")]
     public void Los_numeros_de_una_referencia_a_seccion_no_se_verifican_pero_las_demas_cifras_si(string respuesta, string fuente, bool esperado)
     {
-        Assert.Equal(esperado, Verificador.TodosLosNumerosSonVerificables(respuesta, [fuente]));
+        Assert.Equal(esperado, CifrasVerificables(respuesta, fuente));
     }
 
     [Theory]
@@ -284,8 +287,8 @@ public sealed class VerificadorSalidaTests
     [InlineData("0.0", "definitiva 0.0 por inasistencia", true)]
     [InlineData("sin numeros", "", true)]
     [Trait("SEG", "SEG-10")]
-    public void Todos_los_numeros_son_verificables_compara_numeros_completos(string respuesta, string fuente, bool esperado)
+    public void La_verificacion_de_cifras_compara_numeros_completos(string respuesta, string fuente, bool esperado)
     {
-        Assert.Equal(esperado, Verificador.TodosLosNumerosSonVerificables(respuesta, [fuente]));
+        Assert.Equal(esperado, CifrasVerificables(respuesta, fuente));
     }
 }

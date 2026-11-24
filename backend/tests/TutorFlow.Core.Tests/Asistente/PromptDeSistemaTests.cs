@@ -101,6 +101,22 @@ public sealed partial class PromptDeSistemaTests
 
     [Theory]
     [MemberData(nameof(Roles))]
+    [Trait("Hallazgo", "D1")]
+    [Trait("CA", "CA-25")]
+    [Trait("ESC", "ESC-187")]
+    public void D99_D1_la_regla_de_negativa_se_limita_a_otra_persona_concreta(Rol rol)
+    {
+        var pasos = Pasos(rol);
+        var negativa = Textos.Negativa(rol);
+
+        var paso = Assert.Single(pasos, p => p.Contains(negativa, StringComparison.Ordinal) && !p.Contains(Textos.SinInformacion, StringComparison.Ordinal));
+
+        Assert.Contains("otra persona concreta", paso, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Datos ajenos, rankings o comparaciones", Prompt(rol), StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [MemberData(nameof(Roles))]
     [Trait("CA", "CA-20")]
     [Trait("ESC", "ESC-191")]
     [Trait("RF", "P-04")]

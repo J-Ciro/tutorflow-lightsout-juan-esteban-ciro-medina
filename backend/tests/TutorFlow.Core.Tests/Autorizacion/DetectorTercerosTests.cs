@@ -154,9 +154,9 @@ public sealed class DetectorTercerosTests
     [InlineData("estudiante 2", false)]
     [InlineData("mi nota", false)]
     [Trait("SEG", "SEG-04a")]
-    public void Forma_de_id_de_persona_excluye_los_codigos_de_asignatura(string textoNormalizado, bool esperado)
+    public void Forma_de_id_de_persona_ajena_se_detecta_y_los_codigos_de_asignatura_no(string textoNormalizado, bool esperado)
     {
-        Assert.Equal(esperado, DetectorTerceros.TieneFormaDeIdPersona(textoNormalizado, Directorio));
+        Assert.Equal(esperado, Menciona(Est("EST-001"), textoNormalizado));
     }
 
     [Fact]
