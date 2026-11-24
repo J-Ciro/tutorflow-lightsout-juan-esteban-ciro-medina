@@ -1,19 +1,25 @@
 namespace TutorFlow.Api;
 
-public sealed record ResultadoTasa(bool Permitido, int SegundosParaReintentar);
+public sealed record ResultadoTasa(bool Permitido, int SegundosParaReintentar, bool IniciaBloqueo = false);
 
 public sealed class LimitadorTasaPorIp
 {
-    private const int UmbralDeLimpieza = 10_000;
+    private const int UmbralDePurga = 1_000;
+    private const int SegundosEntrePurgas = 10;
     private const int SegundosDeVentana = 60;
     private const int SegundosDeReinicio = 600;
     private const int SegundosDelPrimerBloqueo = 30;
     private const int NivelMaximo = 3;
 
+    private static readonly TimeSpan Ventana = TimeSpan.FromSeconds(SegundosDeVentana);
+    private static readonly TimeSpan Reinicio = TimeSpan.FromSeconds(SegundosDeReinicio);
+    private static readonly TimeSpan EntrePurgas = TimeSpan.FromSeconds(SegundosEntrePurgas);
+
     private readonly Lock _candado = new();
     private readonly Dictionary<string, EstadoDeIp> _porIp = [];
     private readonly int _limite;
     private readonly TimeProvider _tiempo;
+    private long? _ultimaPurga;
 
     public LimitadorTasaPorIp(int limite, TimeProvider tiempo)
     {
@@ -25,7 +31,7 @@ public sealed class LimitadorTasaPorIp
     {
         lock (_candado)
         {
-            var ahora = _tiempo.GetUtcNow();
+            var ahora = _tiempo.GetTimestamp();
             PurgarSiHaceFalta(ahora);
             if (!_porIp.TryGetValue(ip, out var estado))
             {
@@ -37,14 +43,14 @@ public sealed class LimitadorTasaPorIp
         }
     }
 
-    private ResultadoTasa Decidir(EstadoDeIp estado, DateTimeOffset ahora)
+    private ResultadoTasa Decidir(EstadoDeIp estado, long ahora)
     {
-        if (ahora < estado.BloqueadaHasta)
+        if (estado.EstaBloqueada(_tiempo, ahora))
         {
-            return Denegado(SegundosRestantes(estado.BloqueadaHasta, ahora));
+            return new ResultadoTasa(false, estado.SegundosRestantes(_tiempo, ahora));
         }
 
-        estado.DescartarMarcasFueraDeVentana(ahora);
+        estado.DescartarMarcasFueraDeVentana(_tiempo, ahora);
         if (estado.Marcas.Count < _limite)
         {
             estado.Marcas.Enqueue(ahora);
@@ -54,61 +60,73 @@ public sealed class LimitadorTasaPorIp
         return Bloquear(estado, ahora);
     }
 
-    private static ResultadoTasa Bloquear(EstadoDeIp estado, DateTimeOffset ahora)
+    private ResultadoTasa Bloquear(EstadoDeIp estado, long ahora)
     {
         estado.Marcas.Clear();
-        var reinicia = estado.FinUltimoBloqueo is not { } fin || (ahora - fin).TotalSeconds >= SegundosDeReinicio;
+        var reinicia = estado.TiempoDesdeElFinDelUltimoBloqueo(_tiempo, ahora) is not { } transcurrido || transcurrido >= Reinicio;
         estado.Nivel = reinicia ? 1 : Math.Min(estado.Nivel + 1, NivelMaximo);
         var duracion = SegundosDelPrimerBloqueo << (estado.Nivel - 1);
-        estado.BloqueadaHasta = ahora.AddSeconds(duracion);
-        estado.FinUltimoBloqueo = estado.BloqueadaHasta;
-        return Denegado(duracion);
+        estado.IniciarBloqueo(ahora, TimeSpan.FromSeconds(duracion));
+        return new ResultadoTasa(false, duracion, true);
     }
 
-    private static ResultadoTasa Denegado(int segundos) => new(false, segundos);
-
-    private static int SegundosRestantes(DateTimeOffset hasta, DateTimeOffset ahora) =>
-        Math.Max(1, (int)Math.Ceiling((hasta - ahora).TotalSeconds));
-
-    private void PurgarSiHaceFalta(DateTimeOffset ahora)
+    private void PurgarSiHaceFalta(long ahora)
     {
-        if (_porIp.Count < UmbralDeLimpieza)
+        if (_porIp.Count < UmbralDePurga || !HayQuePurgar(ahora))
         {
             return;
         }
 
-        foreach (var (ip, estado) in _porIp.ToList())
+        _ultimaPurga = ahora;
+        foreach (var (ip, estado) in _porIp)
         {
-            if (estado.EstaInactivo(ahora))
+            if (estado.EstaInactivo(_tiempo, ahora))
             {
                 _porIp.Remove(ip);
             }
         }
     }
 
+    private bool HayQuePurgar(long ahora) =>
+        _ultimaPurga is not { } anterior || _tiempo.GetElapsedTime(anterior, ahora) >= EntrePurgas;
+
     private sealed class EstadoDeIp
     {
-        public Queue<DateTimeOffset> Marcas { get; } = new();
+        private long? _inicioDelBloqueo;
+        private TimeSpan _duracionDelBloqueo;
+
+        public Queue<long> Marcas { get; } = new();
 
         public int Nivel { get; set; }
 
-        public DateTimeOffset BloqueadaHasta { get; set; }
-
-        public DateTimeOffset? FinUltimoBloqueo { get; set; }
-
-        public void DescartarMarcasFueraDeVentana(DateTimeOffset ahora)
+        public void IniciarBloqueo(long ahora, TimeSpan duracion)
         {
-            while (Marcas.Count > 0 && (ahora - Marcas.Peek()).TotalSeconds >= SegundosDeVentana)
+            _inicioDelBloqueo = ahora;
+            _duracionDelBloqueo = duracion;
+        }
+
+        public bool EstaBloqueada(TimeProvider tiempo, long ahora) =>
+            _inicioDelBloqueo is { } inicio && tiempo.GetElapsedTime(inicio, ahora) < _duracionDelBloqueo;
+
+        public int SegundosRestantes(TimeProvider tiempo, long ahora) =>
+            Math.Max(1, (int)Math.Ceiling((_duracionDelBloqueo - tiempo.GetElapsedTime(_inicioDelBloqueo!.Value, ahora)).TotalSeconds));
+
+        public TimeSpan? TiempoDesdeElFinDelUltimoBloqueo(TimeProvider tiempo, long ahora) =>
+            _inicioDelBloqueo is { } inicio ? tiempo.GetElapsedTime(inicio, ahora) - _duracionDelBloqueo : null;
+
+        public void DescartarMarcasFueraDeVentana(TimeProvider tiempo, long ahora)
+        {
+            while (Marcas.Count > 0 && tiempo.GetElapsedTime(Marcas.Peek(), ahora) >= Ventana)
             {
                 Marcas.Dequeue();
             }
         }
 
-        public bool EstaInactivo(DateTimeOffset ahora)
+        public bool EstaInactivo(TimeProvider tiempo, long ahora)
         {
-            DescartarMarcasFueraDeVentana(ahora);
-            var sinBloqueoReciente = FinUltimoBloqueo is not { } fin || (ahora - fin).TotalSeconds >= SegundosDeReinicio;
-            return Marcas.Count == 0 && sinBloqueoReciente;
+            DescartarMarcasFueraDeVentana(tiempo, ahora);
+            var desdeElFin = TiempoDesdeElFinDelUltimoBloqueo(tiempo, ahora);
+            return Marcas.Count == 0 && (desdeElFin is null || desdeElFin >= Reinicio);
         }
     }
 }

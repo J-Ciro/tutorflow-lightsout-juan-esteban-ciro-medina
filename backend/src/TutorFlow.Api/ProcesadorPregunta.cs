@@ -47,7 +47,7 @@ public sealed partial class ProcesadorPregunta
         var tasa = _limitadorTasa.Intentar(peticion.Ip);
         return tasa.Permitido
             ? await ProcesarEntradaAsync(contexto, peticion, cancellationToken)
-            : await RechazarPorTasaAsync(contexto, peticion, tasa.SegundosParaReintentar, cancellationToken);
+            : await RechazarPorTasaAsync(contexto, peticion, tasa, cancellationToken);
     }
 
     private async Task<IResult> ProcesarEntradaAsync(HttpContext contexto, DatosPeticion peticion, CancellationToken cancellationToken)
@@ -69,10 +69,15 @@ public sealed partial class ProcesadorPregunta
             : RechazarInvalida(peticion, solicitud.Pregunta, StatusCodes.Status400BadRequest, TituloSolicitudInvalida);
     }
 
-    private async Task<IResult> RechazarPorTasaAsync(HttpContext contexto, DatosPeticion peticion, int segundosParaReintentar, CancellationToken cancellationToken)
+    private async Task<IResult> RechazarPorTasaAsync(HttpContext contexto, DatosPeticion peticion, ResultadoTasa tasa, CancellationToken cancellationToken)
     {
+        if (!tasa.IniciaBloqueo)
+        {
+            return Responder429(contexto, tasa.SegundosParaReintentar);
+        }
+
         var solicitud = await LeerSolicitudParaAuditoriaAsync(contexto, cancellationToken);
-        return Rechazar429(contexto, peticion, solicitud, segundosParaReintentar);
+        return Rechazar429(contexto, peticion, solicitud, tasa.SegundosParaReintentar);
     }
 
     private async Task<SolicitudValidada?> LeerSolicitudParaAuditoriaAsync(HttpContext contexto, CancellationToken cancellationToken)
