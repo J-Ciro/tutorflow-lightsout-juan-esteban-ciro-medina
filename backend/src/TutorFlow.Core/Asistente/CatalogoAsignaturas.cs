@@ -34,6 +34,12 @@ internal static class CatalogoAsignaturas
             .SelectMany(secuencia => TokenizadorTexto.BuscarSecuencias(tokens, secuencia)
                 .Select(inicio => new AparicionDeAsignatura(AmbitoPersonal.Clave(asignatura.Codigo), inicio, inicio + secuencia.Count - 1))))];
 
+    public static List<AparicionDeAsignatura> PrimerasApariciones(IReadOnlyList<TokenTexto> tokens, IReadOnlyList<AsignaturaCatalogo> catalogo) =>
+        [.. Apariciones(tokens, catalogo)
+            .GroupBy(aparicion => aparicion.Clave)
+            .Select(grupo => grupo.MinBy(aparicion => aparicion.Inicio)!)
+            .OrderBy(aparicion => aparicion.Inicio)];
+
     private static bool Aparece(IReadOnlyList<TokenTexto> tokens, string texto)
     {
         var secuencia = TokenizadorTexto.Valores(texto);

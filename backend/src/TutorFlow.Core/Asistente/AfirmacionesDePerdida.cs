@@ -68,8 +68,8 @@ internal sealed class AfirmacionesDePerdida
             return [];
         }
 
-        var nombradas = PrimerasApariciones(tokens, catalogo);
-        var asociadas = nombradas.Select(nombrada => (Nombrada: nombrada, Forma: FormaMasCercana(formas, nombrada))).ToList();
+        var nombradas = CatalogoAsignaturas.PrimerasApariciones(tokens, catalogo);
+        var asociadas = nombradas.Select(nombrada => (Nombrada: nombrada, Forma: FormasDePerdida.MasCercana(formas, nombrada))).ToList();
         var porAsignatura = asociadas
             .Where(asociada => !asociada.Forma.Negada)
             .Select(asociada => new ExigenciaDePerdida(asociada.Nombrada.Clave, PorInasistencia(tokens, nombradas, asociada.Nombrada), Escrita(bloque, tokens, asociada.Nombrada)));
@@ -81,18 +81,6 @@ internal sealed class AfirmacionesDePerdida
 
     private static string Escrita(BloqueDeTexto bloque, IReadOnlyList<TokenTexto> tokens, AparicionDeAsignatura aparicion) =>
         bloque.Texto[tokens[aparicion.Inicio].Inicio..tokens[aparicion.Fin].Fin];
-
-    private static List<AparicionDeAsignatura> PrimerasApariciones(IReadOnlyList<TokenTexto> tokens, IReadOnlyList<AsignaturaCatalogo> catalogo) =>
-        [.. CatalogoAsignaturas.Apariciones(tokens, catalogo)
-            .GroupBy(aparicion => aparicion.Clave)
-            .Select(grupo => grupo.MinBy(aparicion => aparicion.Inicio)!)
-            .OrderBy(aparicion => aparicion.Inicio)];
-
-    private static FormaDePerdida FormaMasCercana(IReadOnlyList<FormaDePerdida> formas, AparicionDeAsignatura asignatura) =>
-        formas.MinBy(forma => (Distancia(forma, asignatura), forma.Fin >= asignatura.Inicio))!;
-
-    private static int Distancia(FormaDePerdida forma, AparicionDeAsignatura asignatura) =>
-        forma.Fin < asignatura.Inicio ? asignatura.Inicio - forma.Fin : Math.Max(0, forma.Inicio - asignatura.Fin);
 
     private static bool PorInasistencia(
         IReadOnlyList<TokenTexto> tokens,

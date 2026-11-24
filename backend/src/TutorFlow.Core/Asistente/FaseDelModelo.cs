@@ -15,6 +15,7 @@ internal sealed class FaseDelModelo
     private readonly EmisorDeResultados _emisor;
     private readonly CierreDeRespuesta _cierre;
     private readonly LectorResumenPropio _lectorResumen;
+    private readonly DesgloseDeFaltas _desglose;
 
     public static FaseDelModelo Ensamblar(DependenciasDeAsistente d, EmisorDeResultados emisor)
     {
@@ -39,6 +40,7 @@ internal sealed class FaseDelModelo
         _emisor = emisor;
         _cierre = cierre;
         _lectorResumen = new LectorResumenPropio(politicaAcceso);
+        _desglose = new DesgloseDeFaltas(politicaAcceso, configuracion.Catalogo);
     }
 
     public async Task<ResultadoPregunta> ResponderAsync(SesionPregunta sesion, CancellationToken limite, CancellationToken cliente)
@@ -107,13 +109,15 @@ internal sealed class FaseDelModelo
     private async Task<EntradaConversacion> PrepararEntradaAsync(SesionPregunta sesion, ContextoUsuario contexto, HerramientasAsistente herramientas, CancellationToken cancellationToken)
     {
         var resumen = await _lectorResumen.LeerAsync(contexto, sesion.Activacion, sesion.Api, sesion.Registro, cancellationToken);
-        var prelectura = await PrelecturaAsync(sesion, contexto, herramientas, cancellationToken);
+        sesion.Desglose = await _desglose.PrepararAsync(sesion, contexto, cancellationToken);
+        var prelectura = sesion.Desglose is null ? await PrelecturaAsync(sesion, contexto, herramientas, cancellationToken) : null;
         foreach (var seccion in sesion.Secciones)
         {
             sesion.Registro.AgregarFuente(ConstructorPrompts.ContenidoEntregado(seccion));
         }
 
-        return new EntradaConversacion(sesion.Entrada.Pregunta, sesion.Secciones, resumen, prelectura, ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario));
+        var prompt = ConstructorPrompts.PromptSistema(contexto.Usuario.Rol, _configuracion.MarcadorCanario);
+        return new EntradaConversacion(sesion.Entrada.Pregunta, sesion.Secciones, resumen, prelectura, prompt, sesion.Desglose is not null);
     }
 
     private async Task<string?> PrelecturaAsync(SesionPregunta sesion, ContextoUsuario contexto, HerramientasAsistente herramientas, CancellationToken cancellationToken)

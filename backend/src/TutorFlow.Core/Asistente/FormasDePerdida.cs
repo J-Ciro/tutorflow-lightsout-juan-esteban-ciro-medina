@@ -6,13 +6,20 @@ internal static class FormasDePerdida
 {
     private const string Ninguna = "ninguna";
     private const string PorInasistencia = "por";
+    private const string Negacion = "no";
 
     private static readonly HashSet<string> Palabras = new(StringComparer.Ordinal)
     {
-        "perdi", "perdio", "perdiste", "perdieron", "perdido", "perdidos", "perdida", "perdidas"
+        "perdi", "perdio", "perdiste", "perdieron", "perdido", "perdidos", "perdida", "perdidas",
+        "reprobe", "reprobo", "reprobaste", "reprobaron", "reprobado", "reprobados", "reprobada", "reprobadas"
     };
 
-    private static readonly HashSet<string> Verbos = new(StringComparer.Ordinal)
+    private static readonly HashSet<string> PalabrasDeAprobacion = new(StringComparer.Ordinal)
+    {
+        "aprobe", "aprobo", "aprobaste", "aprobaron", "aprobado", "aprobados", "aprobada", "aprobadas"
+    };
+
+    private static readonly HashSet<string> Verbos =new(StringComparer.Ordinal)
     {
         "tiene", "tienen", "tengo", "tienes", "tener", "hay", "registra", "registran"
     };
@@ -46,6 +53,17 @@ internal static class FormasDePerdida
         "ha", "han", "has", "he", "hemos", "hay", "tiene", "tienen", "tienes", "tengo", "registra", "registran", "es", "son", "esta", "estan", "fue"
     };
 
+    public static FormaDePerdida MasCercana(IReadOnlyList<FormaDePerdida> formas, AparicionDeAsignatura asignatura) =>
+        formas.MinBy(forma => (Distancia(forma, asignatura), forma.Fin >= asignatura.Inicio))!;
+
+    public static IReadOnlyList<FormaDePerdida> Aprobaciones(IReadOnlyList<string> palabras) =>
+        [.. Enumerable.Range(0, palabras.Count)
+            .Where(indice => PalabrasDeAprobacion.Contains(palabras[indice]))
+            .Select(indice => new FormaDePerdida(indice, indice, false, EstaNegada(palabras, indice, indice), false))];
+
+    private static int Distancia(FormaDePerdida forma, AparicionDeAsignatura asignatura) =>
+        forma.Fin < asignatura.Inicio ? asignatura.Inicio - forma.Fin : Math.Max(0, forma.Inicio - asignatura.Fin);
+
     public static IReadOnlyList<FormaDePerdida> En(IReadOnlyList<string> palabras) =>
         [.. Enumerable.Range(0, palabras.Count).Select(indice => FormaEn(palabras, indice)).OfType<FormaDePerdida>()];
 
@@ -56,8 +74,22 @@ internal static class FormasDePerdida
             return Nominal(palabras, indice);
         }
 
-        return Palabras.Contains(palabras[indice]) ? Construir(palabras, indice, indice, nominal: false) : null;
+        if (Palabras.Contains(palabras[indice]))
+        {
+            return Construir(palabras, indice, indice, nominal: false);
+        }
+
+        return NegacionDeAprobacion(palabras, indice) is { } inicio ? Construir(palabras, inicio, indice, nominal: false) : null;
     }
+
+    private static int? NegacionDeAprobacion(IReadOnlyList<string> palabras, int indice)
+    {
+        var anterior = PalabraPreviaSinAuxiliar(palabras, indice);
+        return PalabrasDeAprobacion.Contains(palabras[indice]) && anterior >= 0 && palabras[anterior] == Negacion ? anterior : null;
+    }
+
+    private static int PalabraPreviaSinAuxiliar(IReadOnlyList<string> palabras, int inicio) =>
+        inicio - 1 - (inicio > 0 && Auxiliares.Contains(palabras[inicio - 1]) ? 1 : 0);
 
     private static bool EsNominal(IReadOnlyList<string> palabras, int indice) =>
         Participios.Contains(palabras[indice]) && indice > 0 && Sustantivos.Contains(palabras[indice - 1]);
@@ -80,7 +112,7 @@ internal static class FormasDePerdida
 
     private static bool NegadaAntes(IReadOnlyList<string> palabras, int inicio)
     {
-        var anterior = inicio - 1 - (inicio > 0 && Auxiliares.Contains(palabras[inicio - 1]) ? 1 : 0);
+        var anterior = PalabraPreviaSinAuxiliar(palabras, inicio);
         return anterior >= 0 && NegacionesPrevias.Contains(palabras[anterior]);
     }
 

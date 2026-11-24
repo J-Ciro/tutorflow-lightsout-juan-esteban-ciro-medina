@@ -9,7 +9,7 @@ public static class FormateadorDatos
     private const string FormatoNota = "0.0";
     private const string FormatoPromedio = "0.00";
     private const string SinCalificar = "sin calificar";
-    private const string MarcaDelimitadorOriginal = "DATOS_NO_CONFIABLES";
+    internal const string MarcaDelimitadorOriginal = "DATOS_NO_CONFIABLES";
     private const string MarcaDelimitadorNeutra = "DATOS NO CONFIABLES";
     private const string SinDefinitivaEncabezado = "Sin definitiva (falta calificar un corte)";
 
@@ -119,7 +119,7 @@ public static class FormateadorDatos
         $"{nota.Nombre} ({nota.Codigo}): corte 1 {Nota(nota.Cortes.Corte1)} (30%), corte 2 {Nota(nota.Cortes.Corte2)} (30%), corte 3 {Nota(nota.Cortes.Corte3)} (40%).";
 
 
-    private static string LineaDeAsistencia(ResultadoAsignatura resultado, bool terceraPersona)
+    internal static string LineaDeAsistencia(ResultadoAsignatura resultado, bool terceraPersona)
     {
         var voz = terceraPersona ? Tercera : Segunda;
         var nombre = resultado.Asignatura.Nombre;

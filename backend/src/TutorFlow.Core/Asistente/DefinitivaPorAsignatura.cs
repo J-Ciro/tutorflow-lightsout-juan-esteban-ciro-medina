@@ -11,6 +11,7 @@ internal sealed partial class DefinitivaPorAsignatura
     private const int PalabrasDelRequisito = 4;
     private const string Definitiva = "definitiva";
     private const string Definitivas = "definitivas";
+    private const string NotaFinal = "final";
 
     private static readonly HashSet<string> Comparadores = new(StringComparer.Ordinal)
     {
@@ -23,13 +24,18 @@ internal sealed partial class DefinitivaPorAsignatura
         ("o", "igual"), ("al", "menos"), ("menos", "de"), ("mas", "de")
     };
 
-    private static readonly HashSet<string> Enlaces = new(StringComparer.Ordinal) { "a", "de", "que" };
+    private static readonly HashSet<string> PalabrasDeEnlace = new(StringComparer.Ordinal)
+    {
+        "definitiva", "definitivas", "nota", "final", "calificacion", "con", "de", "en", "cuya", "es"
+    };
+
+    private static readonly HashSet<string> Enlaces =new(StringComparer.Ordinal) { "a", "de", "que" };
 
     private static readonly HashSet<string> Determinantes = new(StringComparer.Ordinal) { "una", "la" };
 
     private static readonly HashSet<string> Negaciones = new(StringComparer.Ordinal) { "no", "ni", "sin" };
 
-    private static readonly HashSet<string>[] SaltosPrevios = [new(StringComparer.Ordinal) { "nota" }, Determinantes, FormasDePerdida.Auxiliares];
+    private static readonly HashSet<string>[] SaltosPrevios = [new(StringComparer.Ordinal) { "nota", "calificacion" }, Determinantes, FormasDePerdida.Auxiliares];
 
     private readonly IReadOnlyList<AsignaturaCatalogo> _catalogo;
 
@@ -55,11 +61,22 @@ internal sealed partial class DefinitivaPorAsignatura
     public IEnumerable<(string Clave, string Cifra)> ParesDe(string respuesta, DirectorioAcademico directorio)
     {
         var catalogo = CatalogoAsignaturas.Vigente(_catalogo, directorio);
-        return BloquesDeRespuesta.De(respuesta).SelectMany(bloque =>
-        {
-            var tokens = TokenizadorTexto.TokenizarConCifras(bloque.Texto);
-            return Pares(bloque, tokens, CatalogoAsignaturas.Apariciones(tokens, catalogo), hayDefinitiva: true).Select(atribucion => (atribucion.Clave, atribucion.Cifra));
-        });
+        return BloquesDeRespuesta.De(respuesta)
+            .SelectMany(bloque => Atribuciones(bloque, catalogo))
+            .Select(atribucion => (atribucion.Clave, atribucion.Cifra));
+    }
+
+    public bool SinCifrasNiAsignaturas(string respuesta, DirectorioAcademico directorio)
+    {
+        var catalogo = CatalogoAsignaturas.Vigente(_catalogo, directorio);
+        return BloquesDeRespuesta.De(respuesta).All(bloque => SinCifrasNiAsignaturas(bloque, catalogo));
+    }
+
+    private static bool SinCifrasNiAsignaturas(BloqueDeTexto bloque, IReadOnlyList<AsignaturaCatalogo> catalogo)
+    {
+        var tokens = TokenizadorTexto.TokenizarConCifras(bloque.Texto);
+        return CatalogoAsignaturas.Apariciones(tokens, catalogo).Count == 0
+            && !Enumerable.Range(0, tokens.Count).Any(posicion => EsCifraDeNota(tokens, posicion));
     }
 
     private static string? MotivoDe(
@@ -98,7 +115,7 @@ internal sealed partial class DefinitivaPorAsignatura
         var apariciones = CatalogoAsignaturas.Apariciones(tokens, catalogo);
         var hayDefinitiva = Enumerable.Range(0, tokens.Count).Any(indice => EsDefinitiva(tokens, indice) && !EstaNegada(tokens, indice));
         var porCifra = Enumerable.Range(0, tokens.Count)
-            .Where(indice => tokens[indice].Valor == Definitiva && !EstaNegada(tokens, indice))
+            .Where(indice => EsDefinitivaSingular(tokens, indice) && !EstaNegada(tokens, indice))
             .Select(indice => CifraEfectiva(tokens, indice))
             .OfType<int>()
             .SelectMany(cifra => AtribucionMasCercana(bloque, tokens, apariciones, cifra));
@@ -111,8 +128,20 @@ internal sealed partial class DefinitivaPorAsignatura
         IReadOnlyList<AparicionDeAsignatura> apariciones,
         int cifra)
     {
-        var asignatura = apariciones.MinBy(aparicion => (Distancia(aparicion, cifra), aparicion.Inicio > cifra));
+        var asignatura = AnteriorEnlazada(tokens, apariciones, cifra)
+            ?? apariciones.MinBy(aparicion => (Distancia(aparicion, cifra), aparicion.Inicio > cifra));
         return asignatura is null ? [] : [Construir(bloque, tokens, asignatura, cifra, conDefinitiva: true)];
+    }
+
+    private static AparicionDeAsignatura? AnteriorEnlazada(
+        IReadOnlyList<TokenTexto> tokens,
+        IReadOnlyList<AparicionDeAsignatura> apariciones,
+        int cifra)
+    {
+        var anterior = apariciones.Where(aparicion => aparicion.Fin < cifra).MaxBy(aparicion => aparicion.Fin);
+        return anterior is not null && Enumerable.Range(anterior.Fin + 1, cifra - anterior.Fin - 1).All(posicion => PalabrasDeEnlace.Contains(tokens[posicion].Valor))
+            ? anterior
+            : null;
     }
 
     private static IEnumerable<AtribucionDeDefinitiva> Pares(
@@ -145,9 +174,15 @@ internal sealed partial class DefinitivaPorAsignatura
         asignatura.Fin < cifra ? cifra - asignatura.Fin : asignatura.Inicio - cifra;
 
     private static bool EsDefinitiva(IReadOnlyList<TokenTexto> tokens, int indice) =>
-        tokens[indice].Valor is Definitiva or Definitivas;
+        tokens[indice].Valor == Definitivas || EsDefinitivaSingular(tokens, indice);
 
-    private static int? CifraEfectiva(IReadOnlyList<TokenTexto> tokens, int definitiva)
+    private static bool EsDefinitivaSingular(IReadOnlyList<TokenTexto> tokens, int indice) =>
+        tokens[indice].Valor == Definitiva || EsNotaFinal(tokens, indice);
+
+    private static bool EsNotaFinal(IReadOnlyList<TokenTexto> tokens, int indice) =>
+        tokens[indice].Valor == NotaFinal && indice > 0 && tokens[indice - 1].Valor is "nota" or "calificacion";
+
+    internal static int? CifraEfectiva(IReadOnlyList<TokenTexto> tokens, int definitiva)
     {
         var cifra = CifraAsociada(tokens, definitiva);
         return cifra is { } asociada && EsUmbralDeCifra(tokens, asociada) ? SiguienteNoUmbral(tokens, asociada) : cifra;
@@ -173,7 +208,7 @@ internal sealed partial class DefinitivaPorAsignatura
     private static bool SigueARequisito(IReadOnlyList<TokenTexto> tokens, int cifra) =>
         RequisitoPrevio().IsMatch(string.Join(' ', tokens.Take(cifra).TakeLast(PalabrasDelRequisito).Select(token => token.Valor)));
 
-    private static bool EstaNegada(IReadOnlyList<TokenTexto> tokens, int indice)
+    internal static bool EstaNegada(IReadOnlyList<TokenTexto> tokens, int indice)
     {
         var anterior = SaltosPrevios.Aggregate(indice - 1, (posicion, saltables) => Saltar(tokens, posicion, saltables));
         return anterior >= 0 && Negaciones.Contains(tokens[anterior].Valor);

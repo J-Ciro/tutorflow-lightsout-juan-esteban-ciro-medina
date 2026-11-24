@@ -25,6 +25,7 @@ internal sealed class CierreDeRespuesta
     private readonly CitasDeReglasAplicadas _citasDeReglas;
     private readonly AfirmacionesDePerdida _afirmacionesDePerdida;
     private readonly DefinitivaPorAsignatura _definitivaPorAsignatura;
+    private readonly AfirmacionesDeEstado _afirmacionesDeEstado;
 
     public CierreDeRespuesta(
         IBaseConocimiento baseConocimiento,
@@ -40,21 +41,37 @@ internal sealed class CierreDeRespuesta
         _definitivaPorAsignatura = new DefinitivaPorAsignatura(configuracion.Catalogo);
         _citasDeReglas = new CitasDeReglasAplicadas(baseConocimiento, _definitivaPorAsignatura);
         _afirmacionesDePerdida = new AfirmacionesDePerdida(configuracion.Catalogo);
+        _afirmacionesDeEstado = new AfirmacionesDeEstado(configuracion.Catalogo);
     }
 
     public CierreEvaluado Evaluar(SesionPregunta sesion, string texto, EntradaConversacion entrada)
     {
-        if (texto.Trim() == Textos.SinInformacion)
+        var propio = IntroduccionDelModelo(sesion, texto);
+        if (propio.Trim() == Textos.SinInformacion)
         {
-            return CierreEvaluado.Entregable(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion);
+            return SinIntroduccion(sesion, entrada);
         }
 
-        var escritas = EscritasValidas(sesion, texto, entrada);
-        var limpio = Textos.CitasDeTextoFijo(texto) is null ? ReferenciasEscritas.Limpiar(texto, escritas) : texto;
-        return ReferenciasEscritas.TieneContenido(limpio)
+        var escritas = EscritasValidas(sesion, propio, entrada);
+        var limpio = Limpiar(propio, escritas);
+        return ReferenciasEscritas.TieneContenido(limpio) || HayFuga(sesion, limpio, entrada)
             ? Verificar(sesion, limpio, escritas, entrada)
-            : CierreEvaluado.Entregable(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion);
+            : SinIntroduccion(sesion, entrada);
     }
+
+    private static string IntroduccionDelModelo(SesionPregunta sesion, string texto) =>
+        sesion.Desglose is null ? texto : IntroduccionDelDesglose.SinCifras(texto);
+
+    private static string Limpiar(string texto, IReadOnlyList<Cita> escritas) =>
+        Textos.CitasDeTextoFijo(texto) is null ? ReferenciasEscritas.Limpiar(texto, escritas) : texto;
+
+    private CierreEvaluado SinIntroduccion(SesionPregunta sesion, EntradaConversacion entrada) =>
+        sesion.Desglose is null
+            ? CierreEvaluado.Entregable(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion)
+            : Completar(sesion, string.Empty, [], entrada);
+
+    private bool HayFuga(SesionPregunta sesion, string limpio, EntradaConversacion entrada) =>
+        DetectorFugaConfiguracion.HayFuga(limpio, Confidencial(sesion, entrada), sesion.Registro.Fuentes);
 
     private IReadOnlyList<Cita> EscritasValidas(SesionPregunta sesion, string texto, EntradaConversacion entrada)
     {
@@ -95,8 +112,11 @@ internal sealed class CierreDeRespuesta
         var usuario = sesion.Entrada.Usuario;
         var bloques = BloquesDeRespuesta.De(respuesta);
         var resumenes = sesion.Registro.Resumenes;
+        var contexto = new ContextoDeAfirmaciones(usuario, autorizados, sesion.Directorio, resumenes);
         return _afirmacionesDePerdida.Motivo(bloques, usuario, autorizados, sesion.Directorio, resumenes)
-            ?? _definitivaPorAsignatura.Motivo(bloques, usuario, autorizados, sesion.Directorio, resumenes);
+            ?? _afirmacionesDeEstado.Motivos(bloques, contexto)
+            ?? _definitivaPorAsignatura.Motivo(bloques, usuario, autorizados, sesion.Directorio, resumenes)
+            ?? CamposLigados.Motivo(bloques, contexto);
     }
 
     private CierreEvaluado Completar(SesionPregunta sesion, string limpio, IReadOnlyList<Cita> escritas, EntradaConversacion entrada)
@@ -107,15 +127,21 @@ internal sealed class CierreDeRespuesta
             return CierreEvaluado.Entregable(limpio, citasDeTextoFijo, ResultadoAuditoria.Respondida);
         }
 
-        var documentos = CitasDeDocumento(sesion, limpio, escritas, entrada);
+        var completo = ConDesglose(sesion, limpio);
+        var documentos = CitasDeDocumento(sesion, completo, escritas, entrada);
         if (documentos.Count == 0 && !sesion.Registro.UsoDatos)
         {
             return new CierreEvaluado(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, false, true, null);
         }
 
         IReadOnlyList<Cita> citas = [.. documentos.Concat(sesion.Registro.Citas).Distinct()];
-        return CierreEvaluado.Entregable(limpio, citas, ResultadoAuditoria.Respondida);
+        return CierreEvaluado.Entregable(completo, citas, ResultadoAuditoria.Respondida);
     }
+
+    private static string ConDesglose(SesionPregunta sesion, string introduccion) =>
+        sesion.Desglose is not { } desglose
+            ? introduccion
+            : introduccion.Length == 0 ? desglose : $"{introduccion}\n\n{desglose}";
 
     private IReadOnlyList<Cita> CitasDeDocumento(SesionPregunta sesion, string limpio, IReadOnlyList<Cita> escritas, EntradaConversacion entrada)
     {
