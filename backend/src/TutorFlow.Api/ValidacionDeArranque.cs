@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
+using TutorFlow.Core.Asistente;
 using TutorFlow.Infrastructure.Configuracion;
 
 namespace TutorFlow.Api;
@@ -6,7 +7,8 @@ namespace TutorFlow.Api;
 internal sealed partial class ValidacionDeArranque : IStartupFilter
 {
     private static readonly string[] VariablesDePrecio = ["LLM_PRECIO_ENTRADA", "LLM_PRECIO_SALIDA"];
-    private static readonly string[] ClavesDeLimitesOpcionales = ["Limites:PreguntasPorMinutoPorIp", "Limites:PresupuestoDiarioUsd"];
+    private const string ClaveTasaPorIp = "Limites:PreguntasPorMinutoPorIp";
+    private const string ClavePresupuestoDiario = "Limites:PresupuestoDiarioUsd";
 
     private readonly IConfiguration _configuracion;
     private readonly IVariablesEntorno _variables;
@@ -33,26 +35,20 @@ internal sealed partial class ValidacionDeArranque : IStartupFilter
             RegistrarAdvertencia(_logger, advertencia);
         }
 
-        RegistrarLimitesSinTope(efectiva);
-        RegistrarProxies(efectiva);
+        var tasa = TasaEfectiva(efectiva);
+        RegistrarTasaPorIp(_logger, tasa);
+        RegistrarPresupuestoSinTope(efectiva);
         return siguiente;
     }
 
-    private void RegistrarLimitesSinTope(IConfiguration efectiva)
-    {
-        foreach (var clave in ClavesDeLimitesOpcionales.Where(clave => string.IsNullOrWhiteSpace(efectiva[clave])))
-        {
-            RegistrarLimiteSinTope(_logger, clave);
-        }
-    }
+    private static int TasaEfectiva(IConfiguration efectiva) =>
+        (int?)ValidadorDeConfiguracion.Efectivo(efectiva, ClaveTasaPorIp) ?? LimitesAsistente.PreguntasPorMinutoPorIpPorDefecto;
 
-    private void RegistrarProxies(IConfiguration efectiva)
+    private void RegistrarPresupuestoSinTope(IConfiguration efectiva)
     {
-        var ips = ProxyConfiable.Efectivas(efectiva);
-        if (ips.Count > 0)
+        if (string.IsNullOrWhiteSpace(efectiva[ClavePresupuestoDiario]))
         {
-            var texto = string.Join(", ", ips);
-            RegistrarProxyConfiable(_logger, texto);
+            RegistrarLimiteSinTope(_logger, ClavePresupuestoDiario);
         }
     }
 
@@ -67,8 +63,8 @@ internal sealed partial class ValidacionDeArranque : IStartupFilter
     [LoggerMessage(Level = LogLevel.Information, Message = "Límite sin tope: {Clave}")]
     private static partial void RegistrarLimiteSinTope(ILogger logger, string clave);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "IPs de proxy de confianza: {Ips}.")]
-    private static partial void RegistrarProxyConfiable(ILogger logger, string ips);
+    [LoggerMessage(Level = LogLevel.Information, Message = "Tasa por IP: {Preguntas} preguntas por minuto")]
+    private static partial void RegistrarTasaPorIp(ILogger logger, int preguntas);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "{Mensaje}")]
     internal static partial void RegistrarAdvertencia(ILogger logger, string mensaje);

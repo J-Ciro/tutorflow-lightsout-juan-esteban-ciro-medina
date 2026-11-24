@@ -130,11 +130,6 @@ public sealed partial class ProcesadorPregunta
 
     private static IResult Mapear(HttpContext contexto, ResultadoPregunta resultado)
     {
-        if (resultado.Tipo == TipoResultadoPregunta.LimiteIdentidades)
-        {
-            return Responder429(contexto, resultado.SegundosParaReintentar);
-        }
-
         if (resultado.Respuesta is not { } respuesta)
         {
             return Responder503(contexto, resultado.SegundosParaReintentar);

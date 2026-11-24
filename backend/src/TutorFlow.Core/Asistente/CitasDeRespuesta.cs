@@ -9,7 +9,8 @@ internal sealed partial class CitasDeRespuesta
     private static readonly IReadOnlyList<TemaDeSeccion> Temas =
     [
         new(new Cita(ReglasAplicadas.DocumentoEvaluacion, "Sección 2"), ["peso", "pesos", "30%", "40%"]),
-        new(new Cita(ReglasAplicadas.DocumentoEvaluacion, "Sección 3"), ["redondea", "redondean", "redondear", "redondeo", "redondeada", "redondeadas", "cifra decimal"])
+        new(new Cita(ReglasAplicadas.DocumentoEvaluacion, "Sección 3"), ["redondea", "redondean", "redondear", "redondeo", "redondeada", "redondeadas", "cifra decimal"]),
+        new(new Cita(ReglasAplicadas.DocumentoReglamento, Textos.SeccionDerogacion), ["deroga", "derogado", "derogada", "derogo", "derogatoria"])
     ];
 
     private readonly int _apoyoMinimo;
@@ -19,10 +20,14 @@ internal sealed partial class CitasDeRespuesta
         _apoyoMinimo = apoyoMinimo;
     }
 
-    public IReadOnlyList<Cita> EscritasConApoyo(string texto, IReadOnlyList<SeccionDocumento> entregadas, IReadOnlyCollection<Cita> reglasDeDatos)
+    public IReadOnlyList<Cita> EscritasConApoyo(
+        string texto,
+        IReadOnlyList<SeccionDocumento> entregadas,
+        IReadOnlyCollection<Cita> bloqueDeReglas,
+        IReadOnlyCollection<Cita> reglasConCampoUsado)
     {
         var apoyadas = SeccionesConApoyo(texto, entregadas).Select(apoyada => CitaDe(apoyada.Seccion)).ToHashSet();
-        return [.. ExtractorCitas.De(texto).Where(cita => apoyadas.Contains(cita) || reglasDeDatos.Contains(cita))];
+        return [.. ExtractorCitas.De(texto).Where(cita => bloqueDeReglas.Contains(cita) ? reglasConCampoUsado.Contains(cita) : apoyadas.Contains(cita))];
     }
 
     public IReadOnlyList<Cita> Respaldo(string texto, IReadOnlyList<SeccionDocumento> entregadas) =>

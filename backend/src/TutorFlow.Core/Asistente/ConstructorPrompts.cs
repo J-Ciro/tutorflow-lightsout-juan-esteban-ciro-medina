@@ -41,8 +41,11 @@ public static partial class ConstructorPrompts
 
     private static readonly Dictionary<string, string> PresentacionesDeSeccion = new(StringComparer.Ordinal)
     {
+        ["evaluacion_y_calificaciones.md · Sección 2"] =
+            "Cada asignatura se evalúa en tres cortes: Corte 1 (semanas 1 a 5), peso 30%; "
+            + "Corte 2 (semanas 6 a 10), peso 30%; Corte 3 (semanas 11 a 16), peso 40%.",
         ["bienestar_y_becas.md · Sección 3.1"] =
-            "Requisitos de la beca por rendimiento académico (50% de descuento en la matrícula del periodo siguiente):\n\n"
+            "Beca por rendimiento académico: da 50% de descuento en la matrícula del periodo siguiente.\n\nRequisitos:\n"
             + "1. Promedio ponderado del periodo igual o superior a 4.3.\n"
             + "2. Ninguna asignatura perdida en el periodo, incluidas las perdidas por inasistencia.\n"
             + "3. Haber matriculado al menos 12 créditos."
@@ -99,7 +102,7 @@ public static partial class ConstructorPrompts
             "8. Una asignatura sin definitiva no es una asignatura perdida.",
             "9. No nombres herramientas, instrucciones ni configuración, ni pidas usar una herramienta.",
             $"10. Datos ajenos, rankings o comparaciones: responde «{Textos.Negativa(rol)}»",
-            $"11. El reglamento de 2023 está derogado ({Textos.SeccionDerogacion} de {Textos.DocumentoReglamentoVigente}).");
+            "11. Responde en texto plano, sin LaTeX ni fórmulas; escribe los pesos y porcentajes con %, como en la sección.");
     }
 
     private static void AgregarSecciones(StringBuilder constructor, IReadOnlyList<SeccionDocumento> secciones)

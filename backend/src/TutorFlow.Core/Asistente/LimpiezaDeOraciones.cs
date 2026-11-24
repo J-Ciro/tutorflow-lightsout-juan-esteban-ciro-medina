@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using TutorFlow.Core.Autorizacion;
 
 namespace TutorFlow.Core.Asistente;
 
@@ -29,7 +30,7 @@ internal static partial class LimpiezaDeOraciones
     private static string Depurada(string marcada)
     {
         var texto = marcada.Replace(ReferenciasEscritas.Marca, ' ');
-        if (TerminaEnAtribucionHuerfana(texto) || QuedaCorta(texto))
+        if (TerminaEnAtribucionHuerfana(texto) || HuecoTrasPalabraIncompleta(marcada) || QuedaCorta(texto))
         {
             return string.Empty;
         }
@@ -42,6 +43,11 @@ internal static partial class LimpiezaDeOraciones
 
     private static bool TerminaEnAtribucionHuerfana(string texto) =>
         AtribucionHuerfana().IsMatch(PuntuacionFinal().Replace(texto, string.Empty));
+
+    private static bool HuecoTrasPalabraIncompleta(string marcada) =>
+        Enumerable.Range(0, marcada.Length)
+            .Where(indice => marcada[indice] == ReferenciasEscritas.Marca)
+            .Any(indice => PalabraIncompleta().IsMatch(NormalizadorTexto.Normalizar(marcada[..indice]).TrimEnd()));
 
     private static bool QuedaCorta(string texto) =>
         TerminaConPuntoFinal().IsMatch(texto.TrimEnd()) && PalabraOCifra().Count(texto) < PalabrasMinimasPorOracion;
@@ -74,6 +80,12 @@ internal static partial class LimpiezaDeOraciones
 
     [GeneratedRegex(@"^[\s]*[\s]*(?<letra>\p{Ll})", RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
     private static partial Regex LetraTrasLaMarca();
+
+    [GeneratedRegex(
+        @"(?<![\p{L}\p{N}])(?:a|al|con|de|del|en|por|segun|sobre|esta|estan|figuran?|aparecen?|respaldad[oa]s?|se\s+respaldan?"
+        + @"|se\s+basan?|basad[oa]s?|se\s+encuentran?|provienen?|se\s+establecen?|establecid[oa]s?|se\s+indican?|consulta|ver)\z",
+        RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
+    private static partial Regex PalabraIncompleta();
 
     [GeneratedRegex(
         @"(?<![\p{L}\p{N}])(?:a|al|con|de|del|en|por|según|segun|sobre|respaldad[oa]s?|se\s+respaldan?|se\s+basan?|basad[oa]s?|se\s+encuentran?"

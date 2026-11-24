@@ -76,6 +76,6 @@ public sealed class AuditorPeticiones
             false));
     }
 
-    public void RegistrarMultiplesIdentidades(string ipOrigen, IReadOnlyList<string> usuarioIds, bool bloqueada = false) =>
-        _auditoria.RegistrarMultiplesIdentidades(new EventoMultiplesIdentidades(_reloj.AhoraUtc, ipOrigen, usuarioIds) { Bloqueada = bloqueada });
+    public void RegistrarMultiplesIdentidades(string ipOrigen, IReadOnlyList<string> usuarioIds) =>
+        _auditoria.RegistrarMultiplesIdentidades(new EventoMultiplesIdentidades(_reloj.AhoraUtc, ipOrigen, usuarioIds));
 }

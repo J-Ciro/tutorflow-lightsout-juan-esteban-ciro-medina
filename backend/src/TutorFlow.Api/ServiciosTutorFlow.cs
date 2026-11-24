@@ -61,7 +61,7 @@ public static class ServiciosTutorFlow
             .Validate(o => o.Proveedores.Count > 0, "Llm:Proveedores no puede estar vacio");
         servicios.AddOptions<LimitesAsistente>()
             .Configure<IConfiguration>(EnlazadorDeLimites.Enlazar)
-            .Validate(l => l.MaximoCaracteresPregunta > 0 && l.PreguntasPorMinutoPorIp is null or > 0, "Limites invalidos");
+            .Validate(l => l.MaximoCaracteresPregunta > 0 && l.PreguntasPorMinutoPorIp > 0, "Limites invalidos");
         servicios.AddOptions<OpcionesConocimiento>()
             .BindConfiguration(OpcionesConocimiento.Seccion)
             .Validate(o => o.DocumentosVigentes.Count > 0, "Conocimiento:DocumentosVigentes no puede estar vacio")
@@ -78,8 +78,7 @@ public static class ServiciosTutorFlow
         servicios.AddSingleton<LimitadorIdentidades>();
         servicios.AddSingleton(proveedor => new LimitadorTasaPorIp(
             proveedor.GetRequiredService<LimitesAsistente>().PreguntasPorMinutoPorIp,
-            TimeSpan.FromMinutes(1),
-            TimeProvider.System));
+            proveedor.GetRequiredService<TimeProvider>()));
         servicios.AddSingleton(proveedor => ConfiguracionDelAsistente(proveedor, configuracion));
         servicios.AddScoped<PreguntarAsistente>();
         servicios.AddScoped<ProcesadorPregunta>();
@@ -87,6 +86,7 @@ public static class ServiciosTutorFlow
 
     private static void AgregarInfraestructura(IServiceCollection servicios, IConfiguration configuracion)
     {
+        servicios.AddSingleton(TimeProvider.System);
         servicios.AddSingleton<IReloj, RelojSistema>();
         servicios.AddSingleton(proveedor => new ArchivoAuditoriaDiario(
             configuracion[ArchivoAuditoriaDiario.ClaveRuta],

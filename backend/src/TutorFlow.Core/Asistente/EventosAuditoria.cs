@@ -59,7 +59,4 @@ public sealed record EventoAuditoria(
 public sealed record EventoMultiplesIdentidades(
     DateTimeOffset Timestamp,
     string IpOrigen,
-    IReadOnlyList<string> UsuarioIds)
-{
-    public bool Bloqueada { get; init; }
-}
+    IReadOnlyList<string> UsuarioIds);

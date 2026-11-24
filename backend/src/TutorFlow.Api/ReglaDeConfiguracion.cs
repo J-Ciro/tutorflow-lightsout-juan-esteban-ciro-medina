@@ -48,7 +48,6 @@ internal sealed partial record ReglaDeConfiguracion(
         new("Limites:PresupuestoDiarioUsd", TipoDeValor.Decimal, new RangoNumerico(0m, MaximoDecimal, true), "decimal mayor que 0 y hasta 1000"),
         Entero("Limites:MaximoIdentidadesPorIp", 1, 100),
         Entero("Limites:VentanaIdentidadesMinutos", 1, 1440),
-        new("Limites:BloquearMultiplesIdentidades", TipoDeValor.Booleano, default, "true o false"),
         Precio("LLM_PRECIO_ENTRADA"),
         Precio("LLM_PRECIO_SALIDA")
     ];
