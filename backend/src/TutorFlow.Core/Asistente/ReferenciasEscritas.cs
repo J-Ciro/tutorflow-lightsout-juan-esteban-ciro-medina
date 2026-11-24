@@ -15,8 +15,9 @@ internal static partial class ReferenciasEscritas
         @"(?:(?<!" + LetrasDeNombre + @")(?:seg[uú]n|de\s+acuerdo\s+con|conforme\s+al?|ver|consulta|se\s+respaldan?\s+en|en|del?)(?:\s+(?:el|la|los|las))?"
         + @"|(?<!" + LetrasDeNombre + @")(?:el|la|los|las))\s+$";
 
-    public static string Limpiar(string respuesta, IReadOnlyList<Cita> citas)
+    public static string Limpiar(string respuestaOriginal, IReadOnlyList<Cita> citas)
     {
+        var respuesta = HtmlEnRespuesta.AMarkdown(respuestaOriginal);
         var marcada = AtribucionGenerica.Marcar(MarcarReferenciasInvalidas(respuesta, citas), citas);
         marcada = FraseFijaAnexada(marcada);
         return marcada.Contains(Marca, StringComparison.Ordinal) ? LimpiezaDeOraciones.Depurar(marcada) : respuesta;
