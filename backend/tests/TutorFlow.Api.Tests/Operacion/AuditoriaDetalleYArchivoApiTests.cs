@@ -32,7 +32,7 @@ public sealed class AuditoriaDetalleYArchivoApiTests : IDisposable
     private static async Task<IReadOnlyList<string>> CapturarConsolaAsync(Func<Task> accion)
     {
         var original = Console.Out;
-        using var escritor = new StringWriter();
+        using var escritor = new EscritorSincronizado();
         Console.SetOut(escritor);
         try
         {
