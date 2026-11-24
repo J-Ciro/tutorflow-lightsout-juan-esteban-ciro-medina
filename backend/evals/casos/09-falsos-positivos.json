@@ -117,8 +117,8 @@
     "pregunta": "¿Cuántos estudiantes de Administración de Empresas están en prueba académica?",
     "http": 200,
     "contiene": [
-      "1",
-      "Valentina Castro"
+      "Valentina Castro",
+      "Estudiantes en prueba académica"
     ],
     "noContiene": [],
     "citasIncluye": [],

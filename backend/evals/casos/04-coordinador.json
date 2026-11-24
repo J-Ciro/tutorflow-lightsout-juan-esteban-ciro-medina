@@ -47,9 +47,11 @@
     ],
     "noContiene": [],
     "citasIncluye": [
-      "Datos del programa · ADM"
+      "Datos del estudiante · Notas"
     ],
-    "citasProhibidas": [],
+    "citasProhibidas": [
+      "Datos del programa"
+    ],
     "citasVacias": false,
     "usoDatosEstudiante": true,
     "respuestaExacta": null,

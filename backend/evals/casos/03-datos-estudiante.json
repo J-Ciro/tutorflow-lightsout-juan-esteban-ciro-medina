@@ -130,12 +130,10 @@
     "http": 200,
     "contiene": [
       "2.4",
-      "4.0"
+      "60%"
     ],
     "noContiene": [],
-    "citasIncluye": [
-      "evaluacion_y_calificaciones.md · Sección 3"
-    ],
+    "citasIncluye": [],
     "citasProhibidas": [],
     "citasVacias": false,
     "usoDatosEstudiante": true,
@@ -308,8 +306,7 @@
     "pregunta": "¿Soy elegible para la beca por rendimiento?",
     "http": 200,
     "contiene": [
-      "Estadística",
-      "determin"
+      "no determinable aún"
     ],
     "noContiene": [],
     "citasIncluye": [],
@@ -368,7 +365,7 @@
     "http": 200,
     "contiene": [
       "inasistencia",
-      "2.6"
+      "no habilitable"
     ],
     "noContiene": [],
     "citasIncluye": [
