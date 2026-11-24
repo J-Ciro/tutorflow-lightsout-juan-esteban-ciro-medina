@@ -65,7 +65,7 @@ public sealed class ReferenciasANumerosApiTests
     [Trait("CA", "CA-01")]
     [Trait("ESC", "ESC-174")]
     [Trait("RF", "SEG-10c")]
-    public async Task ESC_174f_Las_secciones_3_y_4_de_una_referencia_en_lista_no_bloquean_el_promedio_del_resumen()
+    public async Task ESC_174f_Las_secciones_3_y_4_de_una_referencia_en_lista_no_bloquean_el_promedio_y_la_referencia_sale_entera()
     {
         const string texto = "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).";
         using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
@@ -73,8 +73,9 @@ public sealed class ReferenciasANumerosApiTests
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaPromedioPonderado);
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.Equal(texto, respuesta.Respuesta);
+        Assert.Equal("Tu promedio es 4.39.", respuesta.Respuesta);
         Assert.Contains(CitaSeccion4, respuesta.Citas);
+        Assert.DoesNotContain("evaluacion_y_calificaciones.md · Sección 3", respuesta.Citas);
         Assert.Equal(ResultadoAuditoria.Respondida, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 }

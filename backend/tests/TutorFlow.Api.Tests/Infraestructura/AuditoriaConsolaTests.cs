@@ -157,5 +157,7 @@ public sealed class AuditoriaConsolaTests
         var json = UnicaLinea(salida, "multiples_identidades");
         Assert.Contains("10.0.0.5", json.GetRawText(), StringComparison.Ordinal);
         Assert.Contains("EST-004", json.GetRawText(), StringComparison.Ordinal);
+        Assert.False(json.TryGetProperty("bloqueada", out _));
+        Assert.DoesNotContain("bloqueada", json.GetRawText(), StringComparison.OrdinalIgnoreCase);
     }
 }

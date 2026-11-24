@@ -36,15 +36,20 @@ scripts:
   - type: afterResponse
     language: text/javascript
     code: |-
-      pm.test("ESC-084d la petición 101 no recibe 429", () => pm.expect(pm.response.code).to.not.eql(429));
+      pm.test("ESC-084d la petición 101, por debajo de 600 por minuto, no recibe 429 (D-72)", () => pm.expect(pm.response.code).to.not.eql(429));
       pm.test("ESC-084d la petición 101 tiene el código que tendría sola (403 por identidad inválida)", () => pm.response.to.have.status(403));
-      pm.test("ESC-084d las 100 peticiones previas no recibieron 429 ni 503", () => {
+      pm.test("ESC-084d las 100 peticiones previas, por debajo de 600 por minuto, no recibieron 429 ni 503", () => {
         const estados = JSON.parse(pm.variables.get("rafagaPrevia"));
         pm.expect(estados).to.have.lengthOf(100);
         pm.expect(estados.filter((e) => e === 429 || e === 503)).to.have.lengthOf(0);
       });
       pm.test("ESC-084d cada petición previa tiene el código que tendría sola (403)", () => {
         JSON.parse(pm.variables.get("rafagaPrevia")).forEach((e) => pm.expect(e).to.eql(403));
+      });
+      pm.test("ESC-084d la ráfaga de 101 peticiones queda por debajo del umbral de 600 por minuto", () => {
+        const enviadas = JSON.parse(pm.variables.get("rafagaPrevia")).length + 1;
+        pm.expect(enviadas).to.eql(101);
+        pm.expect(enviadas).to.be.below(600);
       });
       pm.test("ESC-084d la respuesta no incluye Retry-After", () => pm.expect(pm.response.headers.has("Retry-After")).to.be.false);
       pm.test("ESC-084d la respuesta 403 es una salida del contrato", () => {

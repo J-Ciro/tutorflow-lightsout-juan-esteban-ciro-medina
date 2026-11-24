@@ -129,7 +129,7 @@ public sealed class PreguntasDeQ10ApiTests
     [Trait("CA", "CA-01")]
     [Trait("ESC", "ESC-194")]
     [Trait("D", "D-53")]
-    public async Task P6_con_la_herramienta_de_programa_cita_Articulo_6_Seccion_3_y_Articulo_5_y_los_datos_del_programa()
+    public async Task P6_con_la_herramienta_de_programa_cita_solo_el_Articulo_5_y_los_datos_del_programa()
     {
         const string texto = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true, configuracion: ConUmbralesPorDefecto());
@@ -137,7 +137,7 @@ public sealed class PreguntasDeQ10ApiTests
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaP6);
 
         Assert.Equal(200, respuesta.Estado);
-        Assert.Equal([Articulo6, Seccion3, Articulo5, ProgramaAdm], respuesta.Citas);
+        Assert.Equal([Articulo5, ProgramaAdm], respuesta.Citas);
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public sealed class PreguntasDeQ10ApiTests
         var respuesta = await fabrica.PreguntarCoordinadorAsync("COORD-02", PreguntaP6);
 
         Assert.Equal(texto, respuesta.Respuesta);
-        Assert.Equal([Articulo6, Seccion3, Articulo5, ProgramaAdm], respuesta.Citas);
+        Assert.Equal([Articulo5, ProgramaAdm], respuesta.Citas);
         Assert.DoesNotContain(respuesta.Citas, c => c.StartsWith("bienestar_y_becas.md", StringComparison.Ordinal));
     }
 

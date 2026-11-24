@@ -12,9 +12,13 @@ public sealed partial class PresentacionDeSeccionYEjemplosApiTests
     private const string FuenteBienestar1 = "bienestar_y_becas.md · Sección 1";
     private const string PreguntaP7 = "¿Cuál es el horario de atención de Bienestar?";
     private const string PreguntaP8 = "¿Qué requisitos tiene la beca por rendimiento académico?";
-    private const string EncabezadoPresentado = "Requisitos de la beca por rendimiento académico (50% de descuento en la matrícula del periodo siguiente):";
+    private const string EncabezadoPresentado = "Beca por rendimiento académico: da 50% de descuento en la matrícula del periodo siguiente.";
     private const string EncabezadoOriginal = "Descuento del 50% en la matrícula del periodo siguiente. Requisitos:";
-    private const string ContenidoPresentado = EncabezadoPresentado + "\n\n1. Promedio ponderado del periodo igual o superior a 4.3.\n2. Ninguna asignatura perdida en el periodo, incluidas las perdidas por inasistencia.\n3. Haber matriculado al menos 12 créditos.";
+    private const string ContenidoPresentado = EncabezadoPresentado + "\n\nRequisitos:\n1. Promedio ponderado del periodo igual o superior a 4.3.\n2. Ninguna asignatura perdida en el periodo, incluidas las perdidas por inasistencia.\n3. Haber matriculado al menos 12 créditos.";
+    private const string FuenteSec2 = "evaluacion_y_calificaciones.md · Sección 2";
+    private const string FuenteSec3 = "evaluacion_y_calificaciones.md · Sección 3";
+    private const string PreguntaP4 = "¿Cómo se calcula la nota definitiva de una asignatura?";
+    private const string ProsaDeLaSeccion2 = "Cada asignatura se evalúa en tres cortes: Corte 1 (semanas 1 a 5), peso 30%; Corte 2 (semanas 6 a 10), peso 30%; Corte 3 (semanas 11 a 16), peso 40%.";
 
     private static readonly SeccionDocumento OriginalDeLa31 = BaseConocimientoFalsa.Vigente().Secciones
         .Single(s => s.Documento == "bienestar_y_becas.md" && s.Seccion == "Sección 3.1");
@@ -44,6 +48,36 @@ public sealed partial class PresentacionDeSeccionYEjemplosApiTests
 
         Assert.Contains(ContenidoPresentado, bloque.Cuerpo, StringComparison.Ordinal);
         Assert.DoesNotContain(EncabezadoOriginal, bloque.Cuerpo, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-23")]
+    [Trait("ESC", "ESC-198")]
+    [Trait("D", "D-73")]
+    public async Task ESC_198h1_El_bloque_de_la_Seccion_3_1_abre_con_el_beneficio_del_50_por_ciento()
+    {
+        var bloque = await BloqueEntregadoAsync("EST-004", PreguntaP8, FuenteBeca31);
+
+        Assert.StartsWith(EncabezadoPresentado, bloque.Cuerpo.TrimStart(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-23")]
+    [Trait("ESC", "ESC-198")]
+    [Trait("D", "D-73")]
+    public async Task ESC_198h3_El_bloque_de_la_Seccion_2_trae_la_prosa_con_porcentajes_y_sin_tabla_y_el_de_la_Seccion_3_el_texto_original()
+    {
+        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => "Revisa el detalle."), conocimientoReal: true);
+
+        await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaP4);
+
+        var bloques = GuionesLlm.Bloques(Assert.Single(fabrica.Llm.Solicitudes));
+        var seccion2 = Assert.Single(bloques, b => b.Fuente == FuenteSec2).Cuerpo;
+        var seccion3 = Assert.Single(bloques, b => b.Fuente == FuenteSec3).Cuerpo;
+        Assert.Contains(ProsaDeLaSeccion2, seccion2, StringComparison.Ordinal);
+        Assert.DoesNotContain("|", seccion2, StringComparison.Ordinal);
+        Assert.Contains("definitiva = 0.3 × corte 1 + 0.3 × corte 2 + 0.4 × corte 3", seccion3, StringComparison.Ordinal);
+        Assert.Contains("La definitiva se redondea a una cifra decimal", seccion3, StringComparison.Ordinal);
     }
 
     [Fact]

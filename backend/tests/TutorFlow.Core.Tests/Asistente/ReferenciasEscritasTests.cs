@@ -79,6 +79,34 @@ public sealed class ReferenciasEscritasTests
     }
 
     [Theory]
+    [InlineData("Requisitos: promedio 4.3 o más. Estos requisitos están en reglamento_academico_2025.md · Artículo 3, aunque no se mencionan en las secciones entregadas.", "Requisitos: promedio 4.3 o más.")]
+    [InlineData("Requisitos: promedio 4.3 o más. Figuran en Documento.md · Sección 2.", "Requisitos: promedio 4.3 o más.")]
+    [InlineData("Requisitos: promedio 4.3 o más. Estos requisitos aparecen en Documento.md · Sección 2, aunque no se mencionan.", "Requisitos: promedio 4.3 o más.")]
+    [InlineData("Requisitos: promedio 4.3 o más. Estos requisitos figuran en Documento.md · Sección 2.", "Requisitos: promedio 4.3 o más.")]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-178")]
+    [Trait("D", "D-73")]
+    public void ESC_178m_La_oracion_con_un_verbo_de_ubicacion_sin_complemento_tras_eliminar_la_referencia_sale_entera(string respuesta, string esperada)
+    {
+        var resultado = Limpiar(respuesta, [Beca31]);
+
+        Assert.Equal(esperada, resultado);
+    }
+
+    [Fact]
+    [Trait("CA", "CA-14")]
+    [Trait("ESC", "ESC-178")]
+    [Trait("D", "D-73")]
+    public void ESC_178m_Una_oracion_con_la_referencia_valida_tras_esta_se_conserva()
+    {
+        const string respuesta = "Requisitos: promedio 4.3 o más. Estos requisitos están en bienestar_y_becas.md · Sección 3.1.";
+
+        var resultado = Limpiar(respuesta, [Beca31]);
+
+        Assert.Equal(respuesta, resultado);
+    }
+
+    [Theory]
     [InlineData("Según el reglamento evaluación y calificaciones.md · Sección 4 tu promedio es 4.39.", "Tu promedio es 4.39.")]
     [InlineData("Según el documento evaluación y calificaciones.md · Sección 4 tu promedio es 4.39.", "Tu promedio es 4.39.")]
     [InlineData("Tu promedio es 4.39. Esta información proviene del documento de evaluación.", "Tu promedio es 4.39.")]
@@ -184,17 +212,16 @@ public sealed class ReferenciasEscritasTests
     [Fact]
     [Trait("CA", "CA-14")]
     [Trait("ESC", "ESC-178")]
-    [Trait("COMP", "COMP-02")]
-    public async Task ESC_178e_Una_referencia_escrita_valida_del_bloque_de_reglas_se_conserva()
+    [Trait("D", "D-73")]
+    public async Task ESC_178e_La_referencia_a_Secciones_3_y_4_sin_campo_definitiva_sale_entera_y_solo_queda_la_Seccion_4()
     {
         const string texto = "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Secciones 3 y 4).";
         var escenario = Con(Fijo(texto), IndiceConLasReglas());
 
         var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedio);
 
-        Assert.Equal(texto, resultado.Respuesta!.Respuesta);
-        Assert.Contains(Sec3, resultado.Respuesta.Citas);
-        Assert.Contains(Sec4, resultado.Respuesta.Citas);
+        Assert.Equal("Tu promedio es 4.39.", resultado.Respuesta!.Respuesta);
+        Assert.Equal([Texto(Sec4)], CitasDeDocumento(resultado.Respuesta));
     }
 
     [Fact]

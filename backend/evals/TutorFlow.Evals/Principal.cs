@@ -40,7 +40,8 @@ public static class Principal
             int.Parse(valores.GetValueOrDefault("--pausa-ms", PausaPorDefectoMs.ToString(System.Globalization.CultureInfo.InvariantCulture)), System.Globalization.CultureInfo.InvariantCulture),
             int.Parse(valores.GetValueOrDefault("--umbral-p95-ms", UmbralP95PorDefectoMs.ToString(System.Globalization.CultureInfo.InvariantCulture)), System.Globalization.CultureInfo.InvariantCulture),
             valores.GetValueOrDefault("--filtro"),
-            faseV);
+            faseV,
+            valores.GetValueOrDefault("--artefactos"));
     }
 
     private static Dictionary<string, string> ParesDeArgumentos(string[] args) =>
@@ -59,8 +60,8 @@ public static class Principal
     private static async Task<List<ResultadoCaso>> Ejecutar(OpcionesEvals opciones, List<CasoEval> casos)
     {
         using var cliente = new HttpClient { BaseAddress = new Uri(opciones.Url), Timeout = TimeSpan.FromSeconds(60) };
-        IEjecutor ejecutor = opciones.Offline ? new EjecutorEnProceso() : new EjecutorHttp(cliente, opciones.PausaMs);
         var llave = Environment.GetEnvironmentVariable("LLM_API_KEY");
+        IEjecutor ejecutor = ElegirEjecutor(opciones, cliente, llave);
         var resultados = new List<ResultadoCaso>();
         for (var corrida = 1; corrida <= opciones.Corridas; corrida++)
         {
@@ -71,6 +72,18 @@ public static class Principal
         }
 
         return resultados;
+    }
+
+    private static IEjecutor ElegirEjecutor(OpcionesEvals opciones, HttpClient cliente, string? llave)
+    {
+        if (opciones.FaseV)
+        {
+            var carpeta = opciones.Artefactos ?? Path.Combine(Path.GetTempPath(), "tutorflow-fase-v", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture));
+            Console.WriteLine($"Artefactos de la fase V (fuera del repositorio): {carpeta}");
+            return new EjecutorFaseV(opciones.Offline, carpeta, llave);
+        }
+
+        return opciones.Offline ? new EjecutorEnProceso() : new EjecutorHttp(cliente, opciones.PausaMs);
     }
 
     private static async Task<ResultadoCaso> EjecutarCaso(IEjecutor ejecutor, CasoEval caso, int corrida, string? llave)

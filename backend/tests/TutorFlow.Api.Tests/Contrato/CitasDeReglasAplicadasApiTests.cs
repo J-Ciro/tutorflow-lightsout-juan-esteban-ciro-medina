@@ -48,7 +48,7 @@ public sealed class CitasDeReglasAplicadasApiTests
     [Trait("ESC", "ESC-177")]
     [Trait("ESC", "ESC-006")]
     [Trait("RF", "COMP-02")]
-    public async Task ESC_177d_Q10_6_cita_Articulo_6_Seccion_3_y_Articulo_5_con_los_datos_del_programa()
+    public async Task ESC_177d_Q10_6_cita_solo_el_Articulo_5_por_perdida_por_valor_con_los_datos_del_programa()
     {
         const string texto = "Valentina Castro: Microeconomía (1.8) y Estadística (2.3).";
         using var fabrica = new FabricaApi(llm: ClienteLlmDoble.ConsultaDatos(redactar: _ => texto), conocimientoReal: true);
@@ -57,7 +57,7 @@ public sealed class CitasDeReglasAplicadasApiTests
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
-        Assert.Equal([Articulo6, Seccion3, Articulo5, ProgramaAdm], respuesta.Citas);
+        Assert.Equal([Articulo5, ProgramaAdm], respuesta.Citas);
         Assert.True(respuesta.UsoDatosEstudiante);
     }
 

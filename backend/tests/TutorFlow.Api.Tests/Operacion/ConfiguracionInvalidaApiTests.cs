@@ -83,8 +83,6 @@ public sealed class ConfiguracionInvalidaApiTests
         { "LLM_PRECIO_SALIDA", "1e-3", ReglaPrecio },
         { "Llm:Proveedores:anthropic:Modelos:0:PrecioEntradaPorMillon", "-1", ReglaPrecio },
         { "Llm:Proveedores:anthropic:Modelos:0:PrecioSalidaPorMillon", "1000.01", ReglaPrecio },
-        { "Limites:BloquearMultiplesIdentidades", "si", "true o false" },
-        { "Limites:BloquearMultiplesIdentidades", "1", "true o false" }
     };
 
     public static TheoryData<string, string, string> ValoresConCaracteresEspeciales => new()

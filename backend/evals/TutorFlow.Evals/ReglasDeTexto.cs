@@ -19,6 +19,8 @@ public static partial class ReglasDeTexto
         "se indica", "se indican", "consulta", "ver"
     ];
 
+    private static readonly string[] MarcasDeLatex = [@"\[", @"\(", @"\frac", @"\times", "$"];
+
     private static readonly Dictionary<string, string> DocumentoPorDescriptor = new()
     {
         ["reglamento academico 2025"] = Textos.DocumentoReglamentoVigente,
@@ -35,6 +37,12 @@ public static partial class ReglasDeTexto
 
     public static IEnumerable<string> OracionesTruncadas(string respuesta) =>
         Oraciones(respuesta).Where(TerminaEnPreposicionOAtribucion).Select(o => $"oración truncada: '{o.Trim()}'");
+
+    public static IEnumerable<string> Latex(string respuesta) =>
+        MarcasDeLatex.Where(marca => respuesta.Contains(marca, StringComparison.Ordinal)).Select(marca => $"LaTeX: la respuesta contiene '{marca}'");
+
+    public static IEnumerable<string> HuecosTrasUbicacion(string respuesta) =>
+        HuecoTrasUbicacion().Matches(SinTildes(respuesta)).Select(m => $"hueco tras un verbo de ubicación: '{m.Value.Trim()}'");
 
     public static IEnumerable<string> ReferenciasSinCita(string respuesta, IReadOnlyList<CitaEval> citas)
     {
@@ -69,6 +77,12 @@ public static partial class ReglasDeTexto
         var ultimasDos = palabras.Length > 1 ? $"{palabras[^2]} {ultima}" : ultima;
         return Preposiciones.Contains(ultima) || ClausulasDeAtribucion.Contains(ultima) || ClausulasDeAtribucion.Contains(ultimasDos);
     }
+
+    private static string SinTildes(string texto) =>
+        texto.ToLowerInvariant().Replace('á', 'a').Replace('é', 'e').Replace('í', 'i').Replace('ó', 'o').Replace('ú', 'u');
+
+    [GeneratedRegex(@"\b(?:esta|estan|figura|figuran|aparece|aparecen)\s*(?:[,;:.!?)]|$)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Multiline, matchTimeoutMilliseconds: TiempoLimiteMs)]
+    private static partial Regex HuecoTrasUbicacion();
 
     [GeneratedRegex(@"(?<=[.!?;])\s+|\r?\n", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: TiempoLimiteMs)]
     private static partial Regex CorteDeOracion();

@@ -48,6 +48,8 @@ public static class Evaluador
         fallos.AddRange(Globales(caso, salida, cuerpo, llave));
         fallos.AddRange(ReglasDeTexto.OracionesTruncadas(salida.Respuesta!).Select(f => Criterios.Etiquetar(Criterios.Texto, f)));
         fallos.AddRange(ReglasDeTexto.ReferenciasSinCita(salida.Respuesta!, salida.Citas).Select(f => Criterios.Etiquetar(Criterios.Texto, f)));
+        fallos.AddRange(ReglasDeTexto.Latex(salida.Respuesta!).Select(f => Criterios.Etiquetar(Criterios.Texto, f)));
+        fallos.AddRange(ReglasDeTexto.HuecosTrasUbicacion(salida.Respuesta!).Select(f => Criterios.Etiquetar(Criterios.Texto, f)));
         return fallos;
     }
 
