@@ -18,6 +18,7 @@ jobs:
   commits:
     name: "ESC-117 CA-10 commits conformes al hook commit-msg"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
@@ -43,6 +44,7 @@ jobs:
   limites-specs:
     name: "INT-023 limites de tamano de la documentacion"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
@@ -53,6 +55,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
@@ -70,6 +73,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
@@ -90,6 +94,7 @@ jobs:
 
   evals-offline:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
@@ -106,6 +111,7 @@ jobs:
 
   llave-llm:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     outputs:
       presente: ${{ steps.revisar.outputs.presente }}
     steps:
@@ -123,6 +129,7 @@ jobs:
     needs: llave-llm
     if: needs.llave-llm.outputs.presente == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
@@ -166,6 +173,7 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
@@ -196,6 +204,7 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
