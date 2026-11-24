@@ -289,3 +289,11 @@ Intervenir no descalifica; esconderlo sí.
 - **Por qué:** el evaluador usará su propio modelo y llave; un costo en 0 sin aviso es un dato falso y viola el principio 7 de la constitución (configuración visible).
 - **Costo:** ~2 min humanos.
 - **Prevención:** D-105. El precio de cualquier modelo se puede dar con `LLM_PRECIO_ENTRADA_POR_MILLON` y `LLM_PRECIO_SALIDA_POR_MILLON`, con una tabla de modelos habituales como respaldo. Un modelo sin precio produce una advertencia exacta al arrancar, en lugar de un 0 silencioso.
+
+### INT-036 · 2026-11-24 · El precio no sale de variables ni de tablas escritas a mano
+- **Fase:** spec
+- **Qué pasó:** D-105 (commit `426b711`) resolvía el precio de cualquier modelo con `LLM_PRECIO_ENTRADA` y `LLM_PRECIO_SALIDA` más una tabla en `appsettings.json`.
+- **Qué hizo el humano:** *"Pero no tiene sentido agregar esas variables de LLM_PRECIO LLM PRECIO SALIDA y demas por que a la final los preicos pueden varios por modelo, el modelo tal vez ya deja de estar deprecado y se usara alguno difrente y demas, entonces pro ello no creo que sea la mejor soluicion"*. Eligió descargar el precio del catálogo público al arrancar.
+- **Por qué:** los precios y los modelos cambian; un precio escrito a mano envejece y obliga a reconfigurar.
+- **Costo:** ~2 min humanos.
+- **Prevención:** D-105 se reemplaza. El precio del modelo en uso se toma al arrancar del catálogo público de OpenRouter, la tabla queda solo como respaldo sin red y el arranque avisa si no hay precio.
