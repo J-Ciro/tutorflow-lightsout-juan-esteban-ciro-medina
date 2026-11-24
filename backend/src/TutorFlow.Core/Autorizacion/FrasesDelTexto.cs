@@ -29,6 +29,9 @@ internal sealed class FrasesDelTexto(string textoNormalizado)
             Enumerable.Range(0, relleno).All(salto => rellenos.Contains(Palabra(indice + salto)))
             && EmpiezaAlgunaEn(indice + relleno, destinos));
 
+    public IReadOnlyList<string> PalabrasDesde(int indice) =>
+        [.. _palabras.Skip(Math.Max(indice, 0))];
+
     private string Palabra(int indice) =>
         indice >= 0 && indice < _palabras.Count ? _palabras[indice] : string.Empty;
 

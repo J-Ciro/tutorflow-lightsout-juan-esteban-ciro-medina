@@ -12,7 +12,17 @@ public static class DetectorCapacidadAjena
     private static bool CumpleActorYCapacidad(Usuario usuario, FrasesDelTexto frases, DirectorioAcademico directorio) =>
         frases.Contiene(Actores(usuario, directorio))
         && (frases.Contiene(VocabularioCapacidadAjena.PermisosYSimulacion)
-            || (frases.Contiene(Capacidad(usuario)) && PideContenido(frases)));
+            || ((frases.Contiene(Capacidad(usuario)) || TenenciaSobrePersona(frases)) && PideContenido(frases)));
+
+    private static bool TenenciaSobrePersona(FrasesDelTexto frases) =>
+        frases.Ocurrencias(VocabularioCapacidadAjena.CapacidadDeTenencia).Any(ocurrencia => SobrePersona(frases.PalabrasDesde(ocurrencia.Fin)));
+
+    private static bool SobrePersona(IReadOnlyList<string> resto) =>
+        !(resto.Count > 0 && resto[0] == VocabularioCapacidadAjena.ConjuncionQue)
+        && TemaEsPersona(resto.SkipWhile(palabra => !VocabularioCapacidadAjena.PreposicionesDeTema.Contains(palabra)).Skip(1).FirstOrDefault());
+
+    private static bool TemaEsPersona(string? tema) =>
+        tema is null || VocabularioCapacidadAjena.PalabrasDePersona.Contains(tema);
 
     private static bool CumpleEstudianteConPermisos(Usuario usuario, string texto, FrasesDelTexto frases, DirectorioAcademico directorio) =>
         usuario.Rol == Rol.Coordinador
@@ -29,10 +39,10 @@ public static class DetectorCapacidadAjena
         .. VocabularioCapacidadAjena.ContenidoQueSigue
     ];
 
-    private static IEnumerable<string> Capacidad(Usuario usuario) =>
+    private static string[] Capacidad(Usuario usuario) =>
         usuario.Rol == Rol.Coordinador
-            ? [.. VocabularioCapacidadAjena.Capacidad, .. VocabularioCapacidadAjena.CapacidadDeTenencia, .. VocabularioCapacidadAjena.CapacidadDelCoordinador]
-            : [.. VocabularioCapacidadAjena.Capacidad, .. VocabularioCapacidadAjena.CapacidadDeTenencia];
+            ? [.. VocabularioCapacidadAjena.Capacidad, .. VocabularioCapacidadAjena.CapacidadDelCoordinador]
+            : VocabularioCapacidadAjena.Capacidad;
 
     private static IEnumerable<string> Actores(Usuario usuario, DirectorioAcademico directorio) =>
     [
