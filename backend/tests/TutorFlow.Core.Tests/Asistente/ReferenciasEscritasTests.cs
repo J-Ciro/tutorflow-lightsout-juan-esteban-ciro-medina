@@ -1,4 +1,3 @@
-using System.Reflection;
 using TutorFlow.Core.Asistente;
 using TutorFlow.Core.Autorizacion;
 using TutorFlow.Core.Conocimiento;
@@ -9,8 +8,6 @@ namespace TutorFlow.Core.Tests.Asistente;
 
 public sealed class ReferenciasEscritasTests
 {
-    private const string TipoDeLaLimpieza = "TutorFlow.Core.Asistente.ReferenciasEscritas";
-    private const string MetodoDeLaLimpieza = "Limpiar";
     private const string PreguntaNotaMinima = "¿Cuál es la nota mínima para aprobar una asignatura?";
     private const string PreguntaPromedio = "¿Cuál es mi promedio ponderado del periodo?";
     private static readonly Usuario Est001 = new(Rol.Estudiante, "EST-001");
@@ -40,14 +37,7 @@ public sealed class ReferenciasEscritasTests
         { [], "Asignaturas aprobadas:\n- Inglés III (Documento.md)\n- Bases de Datos", "Asignaturas aprobadas:\n- Inglés III\n- Bases de Datos" }
     };
 
-    private static string Limpiar(string respuesta, IReadOnlyList<Cita> citas)
-    {
-        var tipo = typeof(PreguntarAsistente).Assembly.GetType(TipoDeLaLimpieza)
-            ?? throw new InvalidOperationException($"Core no define {TipoDeLaLimpieza} (plan §10, D-37).");
-        var metodo = tipo.GetMethod(MetodoDeLaLimpieza, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, [typeof(string), typeof(IReadOnlyList<Cita>)])
-            ?? throw new InvalidOperationException($"{TipoDeLaLimpieza} no define static string {MetodoDeLaLimpieza}(string respuesta, IReadOnlyList<Cita> citas).");
-        return (string)metodo.Invoke(null, [respuesta, citas])!;
-    }
+    private static string Limpiar(string respuesta, IReadOnlyList<Cita> citas) => ReferenciasEscritas.Limpiar(respuesta, citas);
 
     private static string Texto(Cita cita) => $"{cita.Documento} · {cita.Seccion}";
 
