@@ -54,7 +54,8 @@ internal sealed class PreparadorDelBloque
         var vigente = CatalogoAsignaturas.Vigente(_catalogo, sesion.Directorio);
         var claves = CatalogoAsignaturas.CodigosNombrados(sesion.Entrada.Pregunta, vigente, sesion.Directorio.CodigosAsignatura);
         var nombres = vigente.Where(asignatura => claves.Contains(AmbitoPersonal.Clave(asignatura.Codigo))).Select(asignatura => asignatura.Nombre).ToList();
-        return new SeleccionDelBloque(CamposDePersona.De(palabras), claves, nombres, contexto.Usuario.Rol == Rol.Coordinador);
+        var habilitacion = palabras.Any(palabra => palabra is "habilitar" or "habilitable");
+        return new SeleccionDelBloque(CamposDePersona.De(palabras), claves, nombres, habilitacion, contexto.Usuario.Rol == Rol.Coordinador);
     }
 
     private IReadOnlyList<string> PersonasDelBloque(SesionPregunta sesion, ContextoUsuario contexto, IReadOnlyList<string> palabras)

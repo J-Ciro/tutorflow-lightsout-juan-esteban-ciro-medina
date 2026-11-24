@@ -94,13 +94,13 @@ internal static partial class PodaDeOraciones
     {
         var tokens = TokenizadorTexto.Valores(oracion);
         var nombres = NombresSueltos(contexto);
-        return DetectorTerceros.PersonasMencionadas(string.Join(' ', tokens), contexto.Directorio).Count > 0
+        var ids = contexto.Directorio.Estudiantes.Select(estudiante => estudiante.Id).ToHashSet();
+        return DetectorTerceros.PersonasMencionadas(string.Join(' ', tokens), contexto.Directorio).Any(ids.Contains)
             || tokens.Any(nombres.Contains);
     }
 
     private static HashSet<string> NombresSueltos(ContextoDePoda contexto) =>
         [.. contexto.Directorio.Estudiantes.Select(estudiante => estudiante.Nombre)
-            .Concat(contexto.Directorio.Coordinadores.Select(coordinador => coordinador.Nombre))
             .SelectMany(TokenizadorTexto.Valores)];
 
     [GeneratedRegex(@"\s*\(\s*[\p{L}\p{N}_-]+\.md\s*·[^)]*\)", RegexOptions.CultureInvariant, TiempoLimiteRegex.Milisegundos)]
