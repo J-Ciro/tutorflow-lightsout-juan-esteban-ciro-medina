@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using TutorFlow.Core.Asistente;
 
 namespace TutorFlow.Infrastructure.Llm;
@@ -10,10 +11,10 @@ public sealed class ClienteLlmNoConfigurado : IClienteLlm
 
 public static class FabricaClienteLlm
 {
-    public static IClienteLlm Crear(ProveedorResuelto proveedor, string? llave, HttpClient httpClient) => proveedor.Adaptador switch
+    public static IClienteLlm Crear(ProveedorResuelto proveedor, string? llave, HttpClient httpClient, ILogger? logger = null) => proveedor.Adaptador switch
     {
-        AdaptadorLlm.Anthropic => new ClienteLlmAnthropic(httpClient, proveedor, llave ?? string.Empty),
-        AdaptadorLlm.CompatibleOpenAi => new ClienteLlmCompatibleOpenAi(httpClient, proveedor, llave),
+        AdaptadorLlm.Anthropic => new ClienteLlmAnthropic(httpClient, proveedor, llave ?? string.Empty, logger),
+        AdaptadorLlm.CompatibleOpenAi => new ClienteLlmCompatibleOpenAi(httpClient, proveedor, llave, logger),
         _ => new ClienteLlmNoConfigurado()
     };
 }

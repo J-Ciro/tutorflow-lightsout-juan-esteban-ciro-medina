@@ -4,6 +4,7 @@ using Anthropic;
 using Anthropic.Core;
 using Anthropic.Exceptions;
 using Anthropic.Models.Messages;
+using Microsoft.Extensions.Logging;
 using TutorFlow.Core.Asistente;
 
 namespace TutorFlow.Infrastructure.Llm;
@@ -12,17 +13,20 @@ public sealed class ClienteLlmAnthropic : IClienteLlm, IDisposable
 {
     private const string MotivoRechazo = "refusal";
     private const int ReintentosMaximos = 0;
+    private const int MinimoEstadoDeError = 400;
     private const string CampoTemperatura = "temperature";
     private const string EncabezadoRetryAfter = "Retry-After";
     private const string MensajeDelProveedor = "El proveedor del LLM respondió con un error.";
 
     private readonly AnthropicClient _cliente;
     private readonly string _modelo;
+    private readonly ILogger? _logger;
     private string? _retryAfterDelProveedor;
 
-    public ClienteLlmAnthropic(HttpClient httpClient, ProveedorResuelto proveedor, string llave)
+    public ClienteLlmAnthropic(HttpClient httpClient, ProveedorResuelto proveedor, string llave, ILogger? logger = null)
     {
         _modelo = proveedor.Modelo;
+        _logger = logger;
         _cliente = new AnthropicClient
         {
             HttpClient = httpClient,
@@ -61,7 +65,20 @@ public sealed class ClienteLlmAnthropic : IClienteLlm, IDisposable
     {
         var respuesta = await siguiente(peticion, cancellationToken);
         _retryAfterDelProveedor = RetryAfterDe(respuesta);
+        await RegistrarErrorAsync(respuesta, cancellationToken);
         return respuesta;
+    }
+
+    private async Task RegistrarErrorAsync(HttpResponseMessage respuesta, CancellationToken cancellationToken)
+    {
+        if ((int)respuesta.StatusCode < MinimoEstadoDeError)
+        {
+            return;
+        }
+
+        await respuesta.Content.LoadIntoBufferAsync(cancellationToken);
+        var cuerpo = await respuesta.Content.ReadAsStringAsync(cancellationToken);
+        DiagnosticoDelProveedor.Registrar(_logger, (int)respuesta.StatusCode, cuerpo);
     }
 
     private static string? RetryAfterDe(HttpResponseMessage respuesta) =>

@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace TutorFlow.Evals;
 
-public sealed record EntornoFaseV(string FechaUtc, string Commit, string Proveedor, string Modelo, string Temperatura, string Semilla, string ContextoDeOllama)
+public sealed record EntornoFaseV(string FechaUtc, string Commit, string Proveedor, string Modelo, string Temperatura, string ContextoDeOllama)
 {
     private const string NoDisponible = "n/a";
     private const string ProveedorOffline = "doble (offline)";
@@ -13,7 +13,6 @@ public sealed record EntornoFaseV(string FechaUtc, string Commit, string Proveed
     private const string ModeloAnthropic = "claude-haiku-5-5";
     private const string ModeloDelProveedor = "(por defecto del proveedor)";
     private const string TemperaturaPorDefecto = "0";
-    private const string SemillaPorDefecto = "1";
     private const int TiempoDeGitMs = 5000;
     private const int LongitudMinimaDelHash = 7;
     private const int LongitudMaximaDelHash = 40;
@@ -36,7 +35,6 @@ public sealed record EntornoFaseV(string FechaUtc, string Commit, string Proveed
             proveedor,
             ModeloDe(proveedor),
             Variable("Llm__Temperatura", TemperaturaPorDefecto),
-            Variable("Llm__Semilla", SemillaPorDefecto),
             ContextoDe(proveedor));
     }
 

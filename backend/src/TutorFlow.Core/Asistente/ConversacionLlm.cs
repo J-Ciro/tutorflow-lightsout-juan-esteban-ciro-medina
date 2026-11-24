@@ -152,8 +152,7 @@ internal sealed class ConversacionLlm
             [.. estado.Mensajes],
             HerramientasAsistente.Definir(estado.Contexto.Usuario.Rol),
             _limites.MaximoTokensSalida,
-            _configuracion.Ajustes.Temperatura,
-            _configuracion.Ajustes.Semilla);
+            _configuracion.Ajustes.Temperatura);
 
     private sealed class Turnos(ContextoUsuario contexto, RegistroConsultas registro, List<MensajeLlm> mensajes, string promptSistema)
     {

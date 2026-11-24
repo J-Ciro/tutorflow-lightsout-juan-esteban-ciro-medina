@@ -3,6 +3,7 @@ using System.ClientModel.Primitives;
 using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using OpenAI;
 using TutorFlow.Core.Asistente;
 
@@ -19,10 +20,12 @@ public sealed class ClienteLlmCompatibleOpenAi : IClienteLlm
     private readonly IChatClient _cliente;
     private readonly string _modelo;
     private readonly bool _controlaContexto;
+    private readonly ILogger? _logger;
 
-    public ClienteLlmCompatibleOpenAi(HttpClient httpClient, ProveedorResuelto proveedor, string? llave)
+    public ClienteLlmCompatibleOpenAi(HttpClient httpClient, ProveedorResuelto proveedor, string? llave, ILogger? logger = null)
     {
         _modelo = proveedor.Modelo;
+        _logger = logger;
         _controlaContexto = proveedor.Proveedor == ProveedorLlm.Ollama;
         var opciones = new OpenAIClientOptions
         {
@@ -41,7 +44,6 @@ public sealed class ClienteLlmCompatibleOpenAi : IClienteLlm
             ModelId = _modelo,
             MaxOutputTokens = solicitud.MaximoTokensSalida,
             Temperature = (float)solicitud.Temperatura,
-            Seed = solicitud.Semilla,
             Tools = [.. solicitud.Herramientas.Select(Declarar)]
         };
         try
@@ -51,9 +53,13 @@ public sealed class ClienteLlmCompatibleOpenAi : IClienteLlm
         }
         catch (ClientResultException excepcion)
         {
+            DiagnosticoDelProveedor.Registrar(_logger, excepcion.Status, CuerpoDe(excepcion));
             throw new DependenciaNoDisponibleException(MensajeDelProveedor, RetryAfterDe(excepcion));
         }
     }
+
+    private static string? CuerpoDe(ClientResultException excepcion) =>
+        excepcion.GetRawResponse()?.Content?.ToString();
 
     private static string? RetryAfterDe(ClientResultException excepcion) =>
         excepcion.Status == (int)HttpStatusCode.TooManyRequests && excepcion.GetRawResponse() is { } respuesta && respuesta.Headers.TryGetValue(EncabezadoRetryAfter, out var valor)

@@ -29,8 +29,6 @@ public static class ServiciosTutorFlow
     private const int PuntajeRelativoMinimoPorDefecto = 55;
     private const int PuntajeRelativoRelevantePorDefecto = 40;
     private const string ClaveTemperatura = "Llm:Temperatura";
-    private const string ClaveSemilla = "Llm:Semilla";
-    private const int SemillaPorDefecto = 1;
     internal const string ClaveSeccionLimites = "Limites";
     private const string ClaveTraceId = "traceId";
     private const string VariableLlaveLlm = "LLM_API_KEY";
@@ -110,13 +108,15 @@ public static class ServiciosTutorFlow
             EntornoDesde(proveedor.GetRequiredService<IVariablesEntorno>(), configuracion),
             proveedor.GetRequiredService<IOptions<OpcionesLlm>>().Value));
         servicios.AddHttpClient(NombreClienteLlm)
+            .RemoveAllLoggers()
             .ConfigureHttpClient((proveedor, cliente) =>
                 cliente.Timeout = TimeSpan.FromSeconds(proveedor.GetRequiredService<LimitesAsistente>().TimeoutLlmSegundos));
         servicios.AddSingleton<IHttpMessageHandlerBuilderFilter>(new SinRedireccionesLlm(NombreClienteLlm));
         servicios.AddScoped<IClienteLlm>(proveedor => FabricaClienteLlm.Crear(
             proveedor.GetRequiredService<ProveedorResuelto>(),
             proveedor.GetRequiredService<IVariablesEntorno>().Leer(VariableLlaveLlm),
-            proveedor.GetRequiredService<IHttpClientFactory>().CreateClient(NombreClienteLlm)));
+            proveedor.GetRequiredService<IHttpClientFactory>().CreateClient(NombreClienteLlm),
+            proveedor.GetRequiredService<ILoggerFactory>().CreateLogger("TutorFlow.Llm")));
     }
 
     private static EntornoLlm EntornoDesde(IVariablesEntorno variables, IConfiguration configuracion)
@@ -161,8 +161,7 @@ public static class ServiciosTutorFlow
 
     internal static AjustesDelModelo AjustesDelModelo(IConfiguration configuracion) =>
         new(
-            ValidadorDeConfiguracion.Efectivo(configuracion, ClaveTemperatura) ?? 0m,
-            Entero(configuracion, ClaveSemilla, SemillaPorDefecto));
+            ValidadorDeConfiguracion.Efectivo(configuracion, ClaveTemperatura) ?? 0m);
 
     private static int Entero(IConfiguration configuracion, string clave, int porDefecto) =>
         (int?)ValidadorDeConfiguracion.Efectivo(configuracion, clave) ?? porDefecto;

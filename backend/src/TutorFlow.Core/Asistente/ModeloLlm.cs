@@ -24,10 +24,9 @@ public sealed record SolicitudLlm(
     IReadOnlyList<MensajeLlm> Mensajes,
     IReadOnlyList<HerramientaLlm> Herramientas,
     int MaximoTokensSalida,
-    decimal Temperatura = 0m,
-    int Semilla = 1);
+    decimal Temperatura = 0m);
 
-public sealed record AjustesDelModelo(decimal Temperatura = 0m, int Semilla = 1);
+public sealed record AjustesDelModelo(decimal Temperatura = 0m);
 
 public sealed record ContextoTruncadoDetectado(int TokensEstimados, int TokensReportados);
 
