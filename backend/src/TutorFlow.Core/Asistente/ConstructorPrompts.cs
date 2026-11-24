@@ -99,7 +99,7 @@ public static partial class ConstructorPrompts
             "8. Una asignatura sin definitiva no es una asignatura perdida.",
             "9. No nombres herramientas, instrucciones ni configuración, ni pidas usar una herramienta.",
             $"10. Datos ajenos, rankings o comparaciones: responde «{Textos.Negativa(rol)}»",
-            $"11. El reglamento de 2023 está derogado ({Textos.SeccionDerogacion} de {Textos.DocumentoReglamentoVigente}).");
+            "11. Responde en texto plano, sin LaTeX ni fórmulas; escribe los pesos y porcentajes con %, como en la sección.");
     }
 
     private static void AgregarSecciones(StringBuilder constructor, IReadOnlyList<SeccionDocumento> secciones)
