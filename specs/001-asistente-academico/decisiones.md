@@ -3,7 +3,7 @@
 > Regla: cada decisión ocupa como máximo 3 líneas (decisión · por qué · estado). Una corrección actualiza la regla en `spec.md` o `plan.md` y deja aquí su D; la historia está en git.
 
 Origen: D-01…D-29 aprobadas por el humano; D-30…D-40 y D-53, decisiones del orquestador; D-41…D-52, plan de la ronda 4 aprobado por el humano; D-54…D-64, INT-020…INT-022; D-65, ambigüedades de QA; D-66, arbitraje de la ronda 4; D-67, INT-024 (humano).
-D-68 y D-69, INT-025 (humano), sustituidas por D-72; D-70, INT-027 (humano); D-71, decisión del orquestador; D-72, INT-030 (humano); D-73, fase V de cierre (orquestador, con INT-030).
+D-68 y D-69, INT-025 (humano), sustituidas por D-72; D-70, INT-027 (humano); D-71, decisión del orquestador; D-72, INT-030 (humano); D-73, fase V de cierre (orquestador, con INT-030); D-74, hallazgos de QA tras la fase A de D-73 (orquestador, con INT-030).
 Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitution.md). D-11, D-12, D-18 y D-19 no existen.
 
 ## Decisiones
@@ -97,6 +97,9 @@ Ninguna cambia el contrato ni la matriz de [`constitution.md`](../../constitutio
 - **D-73** · (Orquestador, fase V de cierre, INT-030) V-1: una cita escrita de una sección del bloque solo vale con su campo usado. V-4: sin campo usado, 0 reglas aplicadas, y con datos leídos, sin respaldo; la pérdida por valor conserva el Art. 5 de Q10 #6. V-2: P-08 (texto plano, sin LaTeX) y Sec. 2 en prosa con `%`.
   V-3: el prompt no menciona el 2023 (con `2023` el Art. 3 se entrega y se cita por tema), la Sec. 3.1 abre con el 50% y §10 (7) elimina la oración con un hueco tras `está(n)`. M-4: la fase V guarda texto crudo y secciones entregadas. Por qué: P3, P4 y P8 fallaban 0/5 por citas copiadas, LaTeX y una frase mutilada.
   Estado: vigente; evaluado por backend-dotnet y frontend-react (INT-030); descartado recortar la línea de reglas (peor que filtrar en el cierre); pérdida por valor aprobada por el humano; presentaciones medidas en la fase V (P4 y P8 5/5 o se revierten). Ajusta D-28, D-31, D-49 (1), D-56 y D-58.
+- **D-74** · (Orquestador, INT-030) La lista cerrada de §6.5 suma formas verbales: Inasistencia `faltar`, `faltaste`, `faltado`; Habilitación `habilitarla(s)`; No habilitable `no puedes habilitar(la)`, `no se puede habilitar`; `falta`, `faltan` y `faltaba` siguen fuera. ESC-174 f sigue a ESC-178 e (V-1). La fase V corre en proceso (plan §15.2, M-4).
+  Por qué: "Puedes faltar 5 clases más" (ESC-027) y "No puedes habilitar" (ESC-032) quedaban sin cita con un LLM real; el texto crudo no viaja por HTTP. Descartadas por costo y falsos positivos: raíces (`falt` captura "le falta calificar") y campos declarados por el LLM.
+  Estado: vigente; elegida la más simple (lista cerrada ampliada), pendiente de evaluación por backend-dotnet y frontend-react (INT-030). No cambia contrato ni matriz. Ajusta D-53 y D-73.
 
 ## Riesgos y su decisión
 
@@ -110,6 +113,7 @@ Ningún riesgo queda aceptado salvo D-01 y, por D-72 (INT-030), el umbral compar
 | Citas de P2 y P5 dependientes de la palabra "definitiva" | Eliminado: campo definitiva por valor | P2 sin la palabra; Q10 #5 mínima | D-56 | CA-22, ESC-198 e, f |
 | Cita de P6 dependiente de `perdidas` | Eliminado: pérdida por valor (pares iguales a definitivas perdidas) da el `Artículo 5` | ESC-177 d, ESC-194 g, ESC-170 d, e y fase V de P6 | D-56, D-73 | CA-01, CA-14, ESC-197 |
 | P3, P6 o el coordinador con citas de más copiadas de "Reglas aplicadas" o por orden fijo (V-1, V-4) | Eliminado: cita del bloque solo con campo usado; sin campo, 0 reglas aplicadas; con datos, sin respaldo | ESC-177 j, k, ESC-178 e, ESC-198 f2; fase V P3 {Art. 11} 5/5 | D-73 | CA-14, CA-22 |
+| Respuesta correcta en forma verbal sin cita (Art. 11, Art. 7) o falso campo por `falta` en singular | Mitigado: formas verbales mínimas en la lista cerrada; `falta`, `faltan` y `faltaba` excluidos | ESC-027 y ESC-032 con su redacción natural; unitaria de §6.5: "le falta calificar el corte 3" con el Art. 11 en el bloque no lo cita; fase V P3 {Art. 11} 5/5 | D-74 | CA-02, CA-14 |
 | P4 con LaTeX y sin `%`; P8 sin 50% y con una frase mutilada (V-2, V-3) | Mitigado: P-08, Sec. 2 en prosa, Sec. 3.1 con el beneficio primero, prompt sin 2023 y §10 (7) en el hueco | ESC-178 m, ESC-191, ESC-198 h1, h3, j, j2; fase V P4 y P8 5/5 sin bajar otra (si no, se revierten las presentaciones) | D-73 | CA-01, CA-20 |
 | Texto crudo distinto entre corridas con temperatura 0 y semilla (caché de prompt de Ollama) | Mitigado: umbrales 5/5 que no se bajan y artefactos por corrida para diagnosticar | ESC-197 g: 50 JSON con texto crudo y secciones entregadas | D-52, D-73 | CA-01 |
 | Par asignatura-cifra falso sin "definitiva" | Eliminado: se verifica contra definitiva, cortes y acumulada | 2 casos que fallan y 3 que pasan | D-64 | CA-17, CA-22, ESC-198 g |
