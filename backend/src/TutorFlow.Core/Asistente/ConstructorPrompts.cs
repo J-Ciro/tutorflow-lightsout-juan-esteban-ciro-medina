@@ -39,6 +39,10 @@ public static partial class ConstructorPrompts
         </ejemplos>
         """;
 
+    private const string FormulaDeDefinitiva = "definitiva = 0.3 × corte 1 + 0.3 × corte 2 + 0.4 × corte 3";
+
+    private const string FormulaDeDefinitivaEnPorcentajes = "definitiva = 30% × corte 1 + 30% × corte 2 + 40% × corte 3";
+
     private static readonly Dictionary<string, string> PresentacionesDeSeccion = new(StringComparer.Ordinal)
     {
         ["evaluacion_y_calificaciones.md · Sección 2"] =
@@ -60,7 +64,8 @@ public static partial class ConstructorPrompts
     }
 
     internal static string ContenidoEntregado(SeccionDocumento seccion) =>
-        PresentacionesDeSeccion.GetValueOrDefault($"{seccion.Documento} · {seccion.Seccion}") ?? $"{seccion.Titulo}. {seccion.Texto}";
+        PresentacionesDeSeccion.GetValueOrDefault($"{seccion.Documento} · {seccion.Seccion}")
+        ?? $"{seccion.Titulo}. {seccion.Texto}".Replace(FormulaDeDefinitiva, FormulaDeDefinitivaEnPorcentajes, StringComparison.Ordinal);
 
     public static string Instrucciones(string promptSistema) => BloqueDeEjemplos().Replace(promptSistema, string.Empty);
 
