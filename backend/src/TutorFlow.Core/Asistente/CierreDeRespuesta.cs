@@ -51,10 +51,13 @@ internal sealed class CierreDeRespuesta
 
         var escritas = EscritasValidas(sesion, texto, entrada);
         var limpio = Textos.CitasDeTextoFijo(texto) is null ? ReferenciasEscritas.Limpiar(texto, escritas) : texto;
-        return ReferenciasEscritas.TieneContenido(limpio)
+        return ReferenciasEscritas.TieneContenido(limpio) || HayFuga(sesion, limpio, entrada)
             ? Verificar(sesion, limpio, escritas, entrada)
             : CierreEvaluado.Entregable(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion);
     }
+
+    private bool HayFuga(SesionPregunta sesion, string limpio, EntradaConversacion entrada) =>
+        DetectorFugaConfiguracion.HayFuga(limpio, Confidencial(sesion, entrada), sesion.Registro.Fuentes);
 
     private IReadOnlyList<Cita> EscritasValidas(SesionPregunta sesion, string texto, EntradaConversacion entrada)
     {

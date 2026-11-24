@@ -10,14 +10,32 @@ public sealed record MaterialConfidencial(
 public static class DetectorFugaConfiguracion
 {
     public const int PalabrasMinimasDeFragmento = 8;
+    public const int CaracteresMinimosDelMarcador = 8;
 
     public static bool HayFuga(string respuesta, MaterialConfidencial material, IReadOnlyCollection<string> textosEntregados) =>
-        Contiene(respuesta, material.Marcador)
-        || material.NombresDeHerramientas.Any(nombre => Contiene(respuesta, nombre))
+        ContieneAlgunSecreto(respuesta, Secretos(material))
         || ComparteFragmentoConfidencial(respuesta, material.TextosConfidenciales, textosEntregados);
 
-    private static bool Contiene(string texto, string valor) =>
-        texto.Contains(valor, StringComparison.OrdinalIgnoreCase);
+    private static IEnumerable<string> Secretos(MaterialConfidencial material) =>
+        [PrefijoDelMarcador(material.Marcador), FormateadorDatos.MarcaDelimitadorOriginal, .. material.NombresDeHerramientas];
+
+    private static string PrefijoDelMarcador(string marcador)
+    {
+        var compacto = Compactar(marcador);
+        return compacto[..Math.Min(compacto.Length, CaracteresMinimosDelMarcador)];
+    }
+
+    private static bool ContieneAlgunSecreto(string respuesta, IEnumerable<string> secretos)
+    {
+        var compacta = Compactar(respuesta);
+        return secretos.Select(Compactar).Where(secreto => secreto.Length > 0).Any(secreto => compacta.Contains(secreto, StringComparison.Ordinal));
+    }
+
+    private static string Compactar(string texto) =>
+        string.Concat(texto.Where(caracter => !EsSeparadorOInvisible(caracter))).ToLowerInvariant();
+
+    private static bool EsSeparadorOInvisible(char caracter) =>
+        caracter is '_' or '-' or '.' || char.GetUnicodeCategory(caracter) == System.Globalization.UnicodeCategory.Format;
 
     private static bool ComparteFragmentoConfidencial(
         string respuesta,

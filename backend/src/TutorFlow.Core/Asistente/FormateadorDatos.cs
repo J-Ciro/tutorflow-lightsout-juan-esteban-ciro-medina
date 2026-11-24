@@ -9,7 +9,7 @@ public static class FormateadorDatos
     private const string FormatoNota = "0.0";
     private const string FormatoPromedio = "0.00";
     private const string SinCalificar = "sin calificar";
-    private const string MarcaDelimitadorOriginal = "DATOS_NO_CONFIABLES";
+    internal const string MarcaDelimitadorOriginal = "DATOS_NO_CONFIABLES";
     private const string MarcaDelimitadorNeutra = "DATOS NO CONFIABLES";
     private const string SinDefinitivaEncabezado = "Sin definitiva (falta calificar un corte)";
 
