@@ -5,6 +5,8 @@ const os = require("os");
 const REDACCIONES = [
   [/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "[correo-redactado]"],
   [/sk-[A-Za-z0-9_-]{16,}/g, "[llave-redactada]"],
+  [/AIza[A-Za-z0-9_-]{30,}/g, "[llave-redactada]"],
+  [/gsk_[A-Za-z0-9_-]{16,}/g, "[llave-redactada]"],
   [/(LLM_API_KEY["'=:\s]+)[^\s"',}]+/g, "$1[llave-redactada]"],
 ];
 
