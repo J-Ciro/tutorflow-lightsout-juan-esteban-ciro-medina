@@ -10,7 +10,7 @@ public sealed class CitasDeReglasAplicadasTests
 {
     private const string EncabezadoDeReglas = "Reglas aplicadas a estos datos:";
     private const string PreguntaNormativa = "¿Qué dice el reglamento sobre la habilitación?";
-    private const string PreguntaPerdidas ="¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
+    private const string PreguntaPerdidas = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
     private const int MaximoDeReglasPorPeticion = 3;
     private static readonly Usuario Est001 = new(Rol.Estudiante, "EST-001");
     private static readonly Usuario Est002 = new(Rol.Estudiante, "EST-002");

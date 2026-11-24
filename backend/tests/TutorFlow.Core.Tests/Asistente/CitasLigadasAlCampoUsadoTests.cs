@@ -9,7 +9,7 @@ namespace TutorFlow.Core.Tests.Asistente;
 public sealed class CitasLigadasAlCampoUsadoTests
 {
     private const string PreguntaNormativa = "¿Qué dice el reglamento sobre la habilitación?";
-    private const string PreguntaQ10Dos ="¿Cuál es mi promedio ponderado del periodo?";
+    private const string PreguntaQ10Dos = "¿Cuál es mi promedio ponderado del periodo?";
     private const string PreguntaQ10Seis = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
     private const string LineaDeDefinitivas = "Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0.";
     private const string Sec3 = "evaluacion_y_calificaciones.md · Sección 3";
