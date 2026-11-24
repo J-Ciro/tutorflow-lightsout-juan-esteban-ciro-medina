@@ -32,6 +32,8 @@ Una tarea por área: `backend/tests/TutorFlow.Core.Tests`, `backend/tests/TutorF
 ## 3. Verificación (`qa-calidad` fase V)
 Un subagente que **no** implementó ejecuta, sobre la rama integrada: `dotnet build -warnaserror`, `dotnet test`, evals offline, `docker compose up` con la prueba de humo, y la colección de Postman contra la API levantada (`postman collection run postman/collections/tutorflow -e "postman/environments/local.environment.yaml"`, sin `--delay-request`: D-70, desde `backend/`). Devuelve la **salida cruda** de cada comando. Tú comparas esa salida con lo que reportaron los implementadores; cualquier diferencia es un incidente en `REPORTE.md`.
 
+**Solo lo afectado (INT-034).** Se ejecuta lo que el diff puede cambiar: las pruebas de los archivos de prueba modificados y las que ejercitan clases de producción modificadas o sus dependientes (`dotnet test --filter`); del LLM real, solo las preguntas cuyo camino toca el cambio; Postman, Docker y cobertura solo si el diff los toca. Una validación ya hecha sobre código que no cambió no se repite. El informe lista qué se ejecutó y qué se omitió, con el porqué de cada omisión. La suite completa la corre el CI.
+
 ## 4. Auditoría (en paralelo)
 Lanza en el mismo mensaje `seguridad` y `qa-calidad` (fase B) sobre `git diff develop...HEAD`. Solo reciben la spec y el diff.
 

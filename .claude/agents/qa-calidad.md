@@ -28,6 +28,8 @@ Escribes las pruebas desde la **especificación**, no desde el código: tu traba
 
 ## Fase V · Verificación independiente (no modificas archivos)
 Sobre la rama integrada, ejecuta y devuelve la **salida cruda** (líneas de resumen sin reinterpretar) de: `dotnet build -warnaserror`, `dotnet test`, `dotnet run --project evals/TutorFlow.Evals -- --offline`, `docker compose up -d --build` con la prueba de humo (`/api/salud` 200 y una pregunta ajena 403) y la colección de Postman contra la API levantada sin `--delay-request` (D-70: con los valores por defecto, la ráfaga no debe recibir 429). En Windows, envía cuerpos JSON con tildes desde un archivo UTF-8 (`--data-binary @archivo`). Al terminar, `docker compose down` sin borrar volúmenes. No corriges: reportas.
+
+**Solo lo afectado (INT-034).** Se ejecuta lo que el diff puede cambiar: las pruebas de los archivos de prueba modificados y las que ejercitan clases de producción modificadas o sus dependientes (`dotnet test --filter`); del LLM real, solo las preguntas cuyo camino toca el cambio; Postman, Docker y cobertura solo si el diff los toca. Una validación ya hecha sobre código que no cambió no se repite. El informe lista qué se ejecutó y qué se omitió, con el porqué de cada omisión. La suite completa la corre el CI.
 Con el LLM real ejecutas las 10 preguntas de ejemplo 3 veces. Cada defecto observado (respuesta bloqueada siendo legítima, dato esperado omitido, cita de más, texto truncado o atribución equivocada) se reporta con su causa raíz: el verificador que actuó y el fragmento, los datos y secciones entregados al modelo y su texto crudo. Ningún defecto se clasifica como "riesgo del modelo" sin esa evidencia, y un defecto abierto impide el APROBADO (INT-020).
 
 ## Fase V (frontend)
