@@ -18,7 +18,7 @@ internal sealed partial class CitasDeReglasAplicadas
     {
         [Definitiva] = ["definitiva", "definitivas"],
         [Promedio] = ["promedio", "promedios"],
-        [new Cita(Reglamento, Textos.SeccionPerdidaPorInasistencia)] = ["inasistencia", "inasistencias", "faltas", "faltar", "faltaste", "faltado"],
+        [new Cita(Reglamento, Textos.SeccionPerdidaPorInasistencia)] = [.. FormasDePerdida.Inasistencias, "faltas", "faltar", "faltaste", "faltado"],
         [new Cita(ReglasAplicadas.DocumentoBienestar, Textos.SeccionBecaPorRendimiento)] = ["beca", "becas"],
         [new Cita(Reglamento, Textos.SeccionNotaMinima)] =
         [
