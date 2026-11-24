@@ -195,7 +195,7 @@ internal sealed partial class DefinitivaPorAsignatura
             .FirstOrDefault();
 
     private static bool EsUmbralDeCifra(IReadOnlyList<TokenTexto> tokens, int cifra) =>
-        PrecedidaDeComparador(tokens, cifra) || SigueARequisito(tokens, cifra);
+        PrecedidaDeComparador(tokens, cifra) || SigueARequisito(tokens, cifra) || UmbralNormativo.Es(tokens, cifra);
 
     private static bool PrecedidaDeComparador(IReadOnlyList<TokenTexto> tokens, int cifra) =>
         TerminaComparador(tokens, cifra - 1) || (cifra > 0 && Enlaces.Contains(tokens[cifra - 1].Valor) && TerminaComparador(tokens, cifra - 2));
