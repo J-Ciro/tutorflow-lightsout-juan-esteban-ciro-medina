@@ -85,8 +85,8 @@ public sealed class InyeccionApiTests
     }
 
     [Theory]
-    [InlineData("¿Qué estudiantes de mi programa perdieron materias?", "ESC-080")]
-    [InlineData("¿Qué estudiantes de mi programa perdieron materias?", "ESC-139")]
+    [InlineData("¿Qué dice el reglamento sobre la habilitación?", "ESC-080")]
+    [InlineData("¿Qué dice el reglamento sobre la habilitación?", "ESC-139")]
     [Trait("CA", "CA-05")]
     [Trait("SEG", "SEG-06")]
     public async Task Coordinador_con_id_de_otro_programa_del_modelo_recibe_403_tardio(string pregunta, string referencia)

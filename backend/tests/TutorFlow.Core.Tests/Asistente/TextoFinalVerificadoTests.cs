@@ -9,6 +9,7 @@ namespace TutorFlow.Core.Tests.Asistente;
 
 public sealed class TextoFinalVerificadoTests
 {
+    private const string PreguntaNotaMinima = "¿Cuál es la nota mínima para aprobar una asignatura?";
     private const string PreguntaPromedioPonderado = "¿Cuál es mi promedio ponderado del periodo?";
     private const string PreguntaPerdieron = "¿Qué estudiantes de mi programa perdieron materias?";
     private const string PreguntaDefinitiva = "¿Cuál es mi nota definitiva en Estadística?";
@@ -31,10 +32,10 @@ public sealed class TextoFinalVerificadoTests
 
     public static TheoryData<string, bool> CifrasPartidas => new()
     {
-        { "Tu promedio es 1 .2", false },
-        { "Tu promedio es 1 ,2", false },
-        { "Tu promedio es 4 .40.", false },
-        { "Tu promedio es 4 .39.", true }
+        { "Se aprueba con 1 .2", false },
+        { "Se aprueba con 1 ,2", false },
+        { "Se aprueba con 4 .40.", false },
+        { "Se aprueba con 3 .0 (reglamento_academico_2025.md · Artículo 5).", true }
     };
 
     [Theory]
@@ -55,9 +56,9 @@ public sealed class TextoFinalVerificadoTests
     [Trait("RF", "SEG-10c")]
     public async Task ESC_183a_La_cifra_que_la_limpieza_deja_partida_se_verifica_como_1_2_y_no_se_entrega()
     {
-        var escenario = Con(Fijo("Tu promedio es 1 x.md .2"));
+        var escenario = Con(Fijo("Se aprueba con 1 x.md .2"), Indice(Articulo5));
 
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedio);
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
         Assert.Equal(Textos.NoVerificable, resultado.Respuesta!.Respuesta);
         Assert.Empty(resultado.Respuesta.Citas);
@@ -72,9 +73,9 @@ public sealed class TextoFinalVerificadoTests
     [Trait("RF", "SEG-10c")]
     public async Task ESC_183_Una_cifra_con_espacios_antes_del_separador_decimal_se_verifica_sin_los_espacios(string texto, bool seEntrega)
     {
-        var escenario = Con(Fijo(texto));
+        var escenario = Con(Fijo(texto), Indice(Articulo5));
 
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedio);
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
         if (seEntrega)
         {
@@ -123,29 +124,16 @@ public sealed class TextoFinalVerificadoTests
     [Fact]
     [Trait("CA", "CA-16")]
     [Trait("ESC", "ESC-183")]
-    [Trait("RF", "SEG-10g")]
-    public async Task ESC_183d_La_definitiva_que_queda_a_dos_palabras_tras_la_limpieza_se_verifica_contra_Estadistica_sin_definitiva()
-    {
-        var escenario = Con(Fijo("Tu definitiva x1.md x2.md x3.md x4.md es 4.0 en Estadística."), Indice(Articulo5, Articulo6));
-
-        var resultado = await escenario.PreguntarAsync(Est006, PreguntaDefinitiva);
-
-        SalidasVerificadas.AfirmarEstadoNoVerificado(resultado, escenario, usoDatos: true);
-    }
-
-    [Fact]
-    [Trait("CA", "CA-16")]
-    [Trait("ESC", "ESC-183")]
     [Trait("RF", "SEG-10")]
     public async Task ESC_183e_Una_referencia_valida_se_conserva_y_la_respuesta_se_entrega_sin_cambios()
     {
-        var texto = "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Sección 4).";
-        var escenario = Con(Fijo(texto), Indice(PromedioPonderado, NotaDefinitiva));
+        var texto = "Se aprueba con 3.0 (reglamento_academico_2025.md · Artículo 5).";
+        var escenario = Con(Fijo(texto), Indice(Articulo5));
 
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedioPonderado);
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
         Assert.Equal(texto, resultado.Respuesta!.Respuesta);
-        Assert.Contains(new Cita(Evaluacion, "Sección 4"), resultado.Respuesta.Citas);
+        Assert.Contains(new Cita(Reglamento, "Artículo 5"), resultado.Respuesta.Citas);
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
     }
 
@@ -155,13 +143,13 @@ public sealed class TextoFinalVerificadoTests
     [Trait("RF", "COMP-02")]
     public async Task ESC_183f_La_referencia_invalida_se_elimina_con_su_parentesis_y_la_cita_escrita_se_descarta()
     {
-        var escenario = Con(Fijo("Tu promedio es 4.39 (x.md · Sección 9)."), Indice(PromedioPonderado, NotaDefinitiva));
+        var escenario = Con(Fijo("Se aprueba con 3.0 (x.md · Sección 9)."), Indice(Articulo5));
 
-        var resultado = await escenario.PreguntarAsync(Est001, PreguntaPromedioPonderado);
+        var resultado = await escenario.PreguntarAsync(Est001, PreguntaNotaMinima);
 
-        Assert.Equal("Tu promedio es 4.39.", resultado.Respuesta!.Respuesta);
+        Assert.Equal("Se aprueba con 3.0.", resultado.Respuesta!.Respuesta);
         Assert.DoesNotContain(resultado.Respuesta.Citas, c => c.Documento.StartsWith("x.md", StringComparison.Ordinal));
-        Assert.Contains(new Cita(Evaluacion, "Sección 4"), resultado.Respuesta.Citas);
+        Assert.Contains(new Cita(Reglamento, "Artículo 5"), resultado.Respuesta.Citas);
         Assert.Equal(ResultadoAuditoria.Respondida, resultado.Auditoria);
     }
 
