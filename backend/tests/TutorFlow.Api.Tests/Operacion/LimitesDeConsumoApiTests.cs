@@ -1,5 +1,4 @@
 using TutorFlow.Pruebas.Soporte;
-using System.Diagnostics;
 using TutorFlow.Api.Tests.Dobles;
 using TutorFlow.Core.Asistente;
 
@@ -7,14 +6,14 @@ namespace TutorFlow.Api.Tests.Operacion;
 
 public sealed class TimeoutTotalApiTests
 {
-    private const string TimeoutTotalSegundos = "2";
-    private static readonly TimeSpan DemoraPorLlamada = TimeSpan.FromMilliseconds(600);
-    private static readonly TimeSpan MargenSobreElTimeout = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan DemoraPorLlamada = TimeSpan.FromSeconds(6);
+    private static readonly TimeSpan TimeoutLlm = TimeSpan.FromSeconds(20);
+    private static readonly TimeSpan DemoraDeLaApi = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan CotaDe158a = TimeSpan.FromSeconds(21);
+    private static readonly TimeSpan CotaDe158b = TimeSpan.FromSeconds(27);
     private const int LlamadasConHerramienta = 4;
     private const int MaximoDeLlamadas = 4;
-
-    private static Dictionary<string, string?> ConTimeout() =>
-        new() { ["Limites:TimeoutLlmSegundos"] = TimeoutTotalSegundos };
+    private const string Pregunta = "¿Cuál es mi promedio?";
 
     [Fact]
     [Trait("CA", "CA-07")]
@@ -22,18 +21,17 @@ public sealed class TimeoutTotalApiTests
     [Trait("SEG", "SEG-13")]
     public async Task ESC_158a_El_timeout_desde_el_inicio_de_la_fase_del_llm_cubre_todas_las_llamadas_y_no_se_reinicia_por_llamada()
     {
-        var llm = new ClienteLlmLento(DemoraPorLlamada, LlamadasConHerramienta);
-        using var fabricaLenta = new FabricaApi(clienteLlm: llm, configuracion: ConTimeout());
-        _ = fabricaLenta.Services;
-        var reloj = Stopwatch.StartNew();
+        var reloj = new RelojControlado();
+        var llm = new ClienteLlmLento(reloj, DemoraPorLlamada, LlamadasConHerramienta);
+        using var fabrica = new FabricaApi(clienteLlm: llm, reloj: reloj);
+        _ = fabrica.Services;
 
-        var respuesta = await fabricaLenta.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
+        var respuesta = await reloj.AvanzarHastaQueTermine(fabrica.PreguntarEstudianteAsync("EST-001", Pregunta));
 
-        reloj.Stop();
         Afirmaciones.ProblemDetails(respuesta, 503);
-        Assert.True(reloj.Elapsed < TimeSpan.FromSeconds(int.Parse(TimeoutTotalSegundos)) + MargenSobreElTimeout, $"tardó {reloj.Elapsed}");
+        Assert.True(reloj.Transcurrido < CotaDe158a, $"transcurrió {reloj.Transcurrido}");
         Assert.True(llm.Llamadas <= MaximoDeLlamadas, $"llamadas: {llm.Llamadas}");
-        Assert.Equal(ResultadoAuditoria.Error, Assert.Single(fabricaLenta.Auditoria.Eventos).Resultado);
+        Assert.Equal(ResultadoAuditoria.Error, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 
     [Fact]
@@ -43,19 +41,16 @@ public sealed class TimeoutTotalApiTests
     [Trait("D", "D-71")]
     public async Task ESC_158b_La_api_lenta_y_el_llm_que_nunca_responde_dan_503_con_el_total_de_ambas_fases_sin_acumular_mas()
     {
-        var demoraApi = TimeSpan.FromSeconds(1);
-        var timeoutLlm = TimeSpan.FromSeconds(int.Parse(TimeoutTotalSegundos));
-        var api = new ApiAcademicaDoble { Interceptor = (metodo, ct) => metodo == "ObtenerEstudiante" ? Task.Delay(demoraApi, ct) : Task.CompletedTask };
-        using var fabrica = new FabricaApi(api: api, clienteLlm: new ClienteLlmLento(TimeSpan.FromMinutes(5), 0), configuracion: ConTimeout());
+        var reloj = new RelojControlado();
+        var api = new ApiAcademicaDoble { Interceptor = (metodo, ct) => metodo == "ObtenerEstudiante" ? reloj.Pausar(DemoraDeLaApi, ct) : Task.CompletedTask };
+        using var fabrica = new FabricaApi(api: api, clienteLlm: new ClienteLlmLento(reloj, TimeSpan.FromMinutes(5), 0), reloj: reloj);
         _ = fabrica.Services;
-        var reloj = Stopwatch.StartNew();
 
-        var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", "¿Cuál es mi promedio?");
+        var respuesta = await reloj.AvanzarHastaQueTermine(fabrica.PreguntarEstudianteAsync("EST-001", Pregunta));
 
-        reloj.Stop();
         Afirmaciones.ProblemDetails(respuesta, 503);
-        Assert.True(reloj.Elapsed >= demoraApi + timeoutLlm, $"tardó {reloj.Elapsed}");
-        Assert.True(reloj.Elapsed < demoraApi + timeoutLlm + MargenSobreElTimeout, $"tardó {reloj.Elapsed}");
+        Assert.True(reloj.Transcurrido >= DemoraDeLaApi + TimeoutLlm, $"transcurrió {reloj.Transcurrido}");
+        Assert.True(reloj.Transcurrido < CotaDe158b, $"transcurrió {reloj.Transcurrido}");
         Assert.Equal(ResultadoAuditoria.Error, Assert.Single(fabrica.Auditoria.Eventos).Resultado);
     }
 }

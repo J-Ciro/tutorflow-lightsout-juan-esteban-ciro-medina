@@ -11,12 +11,14 @@ namespace TutorFlow.Api.Tests.Dobles;
 
 public sealed class ClienteLlmLento : IClienteLlm
 {
+    private readonly RelojControlado _reloj;
     private readonly TimeSpan _demora;
     private readonly int _llamadasConHerramienta;
     private int _llamadas;
 
-    public ClienteLlmLento(TimeSpan demora, int llamadasConHerramienta)
+    public ClienteLlmLento(RelojControlado reloj, TimeSpan demora, int llamadasConHerramienta)
     {
+        _reloj = reloj;
         _demora = demora;
         _llamadasConHerramienta = llamadasConHerramienta;
     }
@@ -26,7 +28,7 @@ public sealed class ClienteLlmLento : IClienteLlm
     public async Task<RespuestaLlm> CompletarAsync(SolicitudLlm solicitud, CancellationToken cancellationToken)
     {
         var numero = Interlocked.Increment(ref _llamadas) - 1;
-        await Task.Delay(_demora, cancellationToken);
+        await _reloj.Pausar(_demora, cancellationToken);
         return numero < _llamadasConHerramienta
             ? new RespuestaLlm(null, [new LlamadaHerramienta($"lenta-{numero}", solicitud.Herramientas[0].Nombre, "{}")], ConsumoRealista.UsoDe(solicitud, ClienteLlmDoble.UsoPorDefecto.Salida), false)
             : new RespuestaLlm("Respuesta de prueba.", [], ConsumoRealista.UsoDe(solicitud, ClienteLlmDoble.UsoPorDefecto.Salida), false);

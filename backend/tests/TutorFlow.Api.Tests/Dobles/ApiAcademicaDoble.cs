@@ -24,7 +24,7 @@ public sealed class ApiAcademicaDoble : IApiAcademica
 
     public static ApiAcademicaDoble Caida() => new() { Interceptor = (_, _) => throw new HttpRequestException("api academica caida en http://localhost:4000") };
 
-    public static ApiAcademicaDoble QueNuncaResponde() => new() { Interceptor = (_, ct) => Task.Delay(Timeout.Infinite, ct) };
+    public static ApiAcademicaDoble QueNuncaResponde(RelojControlado reloj) => new() { Interceptor = (_, ct) => reloj.Pausar(Timeout.InfiniteTimeSpan, ct) };
 
     public async Task<Estudiante?> ObtenerEstudianteAsync(string id, CancellationToken cancellationToken)
     {
