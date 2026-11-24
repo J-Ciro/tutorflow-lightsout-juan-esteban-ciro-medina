@@ -35,27 +35,27 @@ public sealed class AuditoriaJsonConsola : IAuditoria
     private static Dictionary<string, object?> Proyectar(EventoAuditoria evento)
     {
         var proyeccion = CamposDe(evento);
-        if (evento.IdSolicitado is { } idSolicitado)
-        {
-            proyeccion["idSolicitado"] = idSolicitado;
-        }
-
-        if (evento.Reintento)
-        {
-            proyeccion["reintento"] = true;
-        }
-
-        if (evento.ContextoTruncado)
-        {
-            proyeccion["contextoTruncado"] = true;
-        }
-
-        if (evento.PrecioDesconocido)
-        {
-            proyeccion["precioDesconocido"] = true;
-        }
-
+        AgregarSiPresente(proyeccion, "idSolicitado", evento.IdSolicitado);
+        AgregarBandera(proyeccion, "reintento", evento.Reintento);
+        AgregarBandera(proyeccion, "contextoTruncado", evento.ContextoTruncado);
+        AgregarBandera(proyeccion, "precioDesconocido", evento.PrecioDesconocido);
         return proyeccion;
+    }
+
+    private static void AgregarSiPresente(Dictionary<string, object?> proyeccion, string nombre, string? valor)
+    {
+        if (valor is not null)
+        {
+            proyeccion[nombre] = valor;
+        }
+    }
+
+    private static void AgregarBandera(Dictionary<string, object?> proyeccion, string nombre, bool activa)
+    {
+        if (activa)
+        {
+            proyeccion[nombre] = true;
+        }
     }
 
     private static Dictionary<string, object?> CamposDe(EventoAuditoria evento) =>
