@@ -9,7 +9,8 @@ internal sealed partial class CitasDeRespuesta
     private static readonly IReadOnlyList<TemaDeSeccion> Temas =
     [
         new(new Cita(ReglasAplicadas.DocumentoEvaluacion, "Sección 2"), ["peso", "pesos", "30%", "40%"]),
-        new(new Cita(ReglasAplicadas.DocumentoEvaluacion, "Sección 3"), ["redondea", "redondean", "redondear", "redondeo", "redondeada", "redondeadas", "cifra decimal"])
+        new(new Cita(ReglasAplicadas.DocumentoEvaluacion, "Sección 3"), ["redondea", "redondean", "redondear", "redondeo", "redondeada", "redondeadas", "cifra decimal"]),
+        new(new Cita(ReglasAplicadas.DocumentoReglamento, Textos.SeccionDerogacion), ["deroga", "derogado", "derogada", "derogo", "derogatoria"])
     ];
 
     private readonly int _apoyoMinimo;

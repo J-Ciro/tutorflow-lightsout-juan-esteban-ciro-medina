@@ -145,7 +145,8 @@ public sealed class PreguntarAsistente
     {
         var pregunta = sesion.Entrada.Pregunta;
         var contexto = new ContextoUsuario(sesion.Entrada.Usuario, sesion.Directorio);
-        sesion.Secciones = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(pregunta), _limites.MaximoSeccionesRecuperadas);
+        var recuperadas = _baseConocimiento.BuscarSecciones(ConsultaDeRecuperacion.DeTexto(pregunta), _limites.MaximoSeccionesRecuperadas);
+        sesion.Secciones = SeccionDeDerogacion.Agregar(recuperadas, pregunta, _baseConocimiento);
         var activacion = ActivadorResumenPropio.Evaluar(contexto, pregunta, CatalogoAsignaturas.Vigente(_configuracion.Catalogo, sesion.Directorio));
         if (_relevancia.PeriodoNoDisponible(contexto, pregunta, activacion))
         {
