@@ -5,7 +5,7 @@ internal static class ProximidadDeFrases
     public static bool Hay(IEnumerable<OcurrenciaDeFrase> primeras, IReadOnlyCollection<OcurrenciaDeFrase> segundas, int maximoEntre) =>
         primeras.Any(primera => Cercanas(primera, segundas, maximoEntre));
 
-    public static bool Cercanas(OcurrenciaDeFrase primera, IEnumerable<OcurrenciaDeFrase> segundas, int maximoEntre) =>
+    private static bool Cercanas(OcurrenciaDeFrase primera, IEnumerable<OcurrenciaDeFrase> segundas, int maximoEntre) =>
         segundas.Any(segunda => PalabrasEntre(primera, segunda) is >= 0 and var entre && entre <= maximoEntre);
 
     private static int PalabrasEntre(OcurrenciaDeFrase primera, OcurrenciaDeFrase segunda)
