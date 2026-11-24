@@ -7,8 +7,8 @@ public sealed class FormasVerbalesD74ApiTests
     private const string Articulo6 = "reglamento_academico_2025.md · Artículo 6";
     private const string Articulo7 = "reglamento_academico_2025.md · Artículo 7";
     private const string Articulo11 = "reglamento_academico_2025.md · Artículo 11";
-    private const string PreguntaSinTerminoDeFaltas = "¿Cómo voy en Bases de Datos?";
-    private const string PreguntaHabilitar = "¿Puedo habilitar Bases de Datos?";
+    private const string PreguntaSinTerminoDeFaltas = "¿Qué dice el reglamento sobre la habilitación?";
+    private const string PreguntaHabilitar = "¿Qué dice el reglamento sobre la habilitación?";
 
     public static TheoryData<string, string> FormasDeInasistencia => new()
     {
@@ -32,7 +32,7 @@ public sealed class FormasVerbalesD74ApiTests
     public async Task ESC_027_Las_formas_verbales_de_inasistencia_citan_el_Articulo_11(string forma, string texto)
     {
         Assert.NotEmpty(forma);
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.LeeNotasYAsistencia(_ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaSinTerminoDeFaltas);
 
@@ -49,7 +49,7 @@ public sealed class FormasVerbalesD74ApiTests
     public async Task ESC_032_Las_formas_verbales_de_no_habilitar_citan_los_Articulos_7_y_6(string forma, string texto)
     {
         Assert.NotEmpty(forma);
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.LeeNotasYAsistencia(_ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-002", PreguntaHabilitar);
 
@@ -66,14 +66,14 @@ public sealed class FormasVerbalesD74ApiTests
     public async Task Le_falta_calificar_el_corte_3_no_cita_el_Articulo_11_aunque_este_en_las_reglas_aplicadas()
     {
         const string texto = "A Bases de Datos le falta calificar el corte 3.";
-        using var fabrica = new FabricaApi(llm: GuionesLlm.SinHerramientas(_ => texto), conocimientoReal: true);
+        using var fabrica = new FabricaApi(llm: ClienteLlmDoble.LeeNotasYAsistencia(_ => texto), conocimientoReal: true);
 
         var respuesta = await fabrica.PreguntarEstudianteAsync("EST-001", PreguntaSinTerminoDeFaltas);
 
         Assert.Equal(200, respuesta.Estado);
         Assert.Equal(texto, respuesta.Respuesta);
         Assert.DoesNotContain(Articulo11, respuesta.Citas);
-        var reglas = GuionesLlm.ResumenOSinDatos(Assert.Single(fabrica.Llm.Solicitudes), "Bases de Datos").Split('\n').Last(l => l.StartsWith("Reglas aplicadas", StringComparison.Ordinal));
-        Assert.Contains(Articulo11, reglas, StringComparison.Ordinal);
+        var reglas = GuionesLlm.Bloques(fabrica.Llm.Solicitudes[^1]).SelectMany(b => b.Cuerpo.Split((char)10)).Where(l => l.StartsWith("Reglas aplicadas", StringComparison.Ordinal));
+        Assert.Contains(reglas, l => l.Contains(Articulo11, StringComparison.Ordinal));
     }
 }
