@@ -24,7 +24,6 @@ public sealed class ConfiguracionInvalidaApiTests
         { "g", "Limites:MaximoSeccionesRecuperadas", "7", Invalida("Limites:MaximoSeccionesRecuperadas", "7", "entero de 1 a 6") },
         { "h", PresupuestoDiario, "0", Invalida(PresupuestoDiario, "0", ReglaPresupuesto) },
         { "i", PresupuestoDiario, "0,5", Invalida(PresupuestoDiario, "0,5", ReglaPresupuesto) },
-        { "j", "LLM_PRECIO_ENTRADA", "-1", Invalida("LLM_PRECIO_ENTRADA", "-1", ReglaPrecio) },
         { "k", CodigoBd, "bd203", Invalida(CodigoBd, "bd203", ReglaFormatoCodigo) },
         { "l", "Autorizacion:Asignaturas:7:Codigo", "BD-203", Invalida("Autorizacion:Asignaturas:7:Codigo", "BD-203", "código duplicado de Autorizacion:Asignaturas:2:Codigo") },
         { "m", "Autorizacion:Asignaturas:6:Nombre", "", Invalida("Autorizacion:Asignaturas:6:Nombre", "", "nombre vacío") }
@@ -76,11 +75,6 @@ public sealed class ConfiguracionInvalidaApiTests
         { PresupuestoDiario, "1e-3", ReglaPresupuesto },
         { PresupuestoDiario, "1000.01", ReglaPresupuesto },
         { PresupuestoDiario, "abc", ReglaPresupuesto },
-        { "LLM_PRECIO_ENTRADA", "1000.01", ReglaPrecio },
-        { "LLM_PRECIO_ENTRADA", "0,5", ReglaPrecio },
-        { "LLM_PRECIO_ENTRADA", "abc", ReglaPrecio },
-        { "LLM_PRECIO_SALIDA", "-0.01", ReglaPrecio },
-        { "LLM_PRECIO_SALIDA", "1e-3", ReglaPrecio },
         { "Llm:Proveedores:anthropic:Modelos:0:PrecioEntradaPorMillon", "-1", ReglaPrecio },
         { "Llm:Proveedores:anthropic:Modelos:0:PrecioSalidaPorMillon", "1000.01", ReglaPrecio },
     };
@@ -132,7 +126,7 @@ public sealed class ConfiguracionInvalidaApiTests
     [Trait("CA", "CA-15")]
     [Trait("ESC", "ESC-181")]
     [Trait("RF", "RNF-05")]
-    public void ESC_181j_El_precio_invalido_recibido_por_variable_de_entorno_tambien_impide_arrancar()
+    public void ESC_181j_LLM_PRECIO_ENTRADA_ya_no_existe_y_un_valor_invalido_no_impide_arrancar()
     {
         var entorno = EntornoConLlave();
         entorno["LLM_PRECIO_ENTRADA"] = "-1";
@@ -140,7 +134,8 @@ public sealed class ConfiguracionInvalidaApiTests
 
         var resultado = ResultadoArranque.De(fabrica);
 
-        AfirmarArranqueFallido(resultado, Invalida("LLM_PRECIO_ENTRADA", "-1", ReglaPrecio));
+        Assert.True(resultado.Arranco);
+        Assert.DoesNotContain(resultado.LineasDeLaConsola, l => l.Contains("LLM_PRECIO_ENTRADA", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -171,14 +166,14 @@ public sealed class ConfiguracionInvalidaApiTests
         var resultado = Iniciar(new Dictionary<string, string?>
         {
             ["Limites:TimeoutLlmSegundos"] = "0",
-            ["LLM_PRECIO_SALIDA"] = "-1",
+            ["Llm:Proveedores:anthropic:Modelos:0:PrecioSalidaPorMillon"] = "-1",
             [CodigoBd] = "bd203"
         });
 
         AfirmarArranqueFallido(
             resultado,
             Invalida("Limites:TimeoutLlmSegundos", "0", "entero de 1 a 60"),
-            Invalida("LLM_PRECIO_SALIDA", "-1", ReglaPrecio),
+            Invalida("Llm:Proveedores:anthropic:Modelos:0:PrecioSalidaPorMillon", "-1", ReglaPrecio),
             Invalida(CodigoBd, "bd203", ReglaFormatoCodigo));
     }
 

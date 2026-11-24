@@ -90,8 +90,15 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
     private static IBaseConocimiento? ElegirConocimiento(IBaseConocimiento? conocimiento, bool real) =>
         real ? null : conocimiento ?? BaseConocimientoFalsa.Vigente();
 
+    public const string ClaveUrlCatalogoPrecios = "Llm:CatalogoPrecios:Url";
+
     public static Dictionary<string, string?> Precios(string entrada, string salida) =>
-        new Dictionary<string, string?> { ["LLM_PRECIO_ENTRADA"] = entrada, ["LLM_PRECIO_SALIDA"] = salida };
+        new()
+        {
+            [ClaveUrlCatalogoPrecios] = "",
+            ["Llm:Proveedores:anthropic:Modelos:0:PrecioEntradaPorMillon"] = entrada,
+            ["Llm:Proveedores:anthropic:Modelos:0:PrecioSalidaPorMillon"] = salida
+        };
 
     public async Task<RespuestaApi> PreguntarAsync(string rol, string id, string pregunta, string ip = IpPorDefecto, IReadOnlyDictionary<string, string>? encabezados = null)
     {
@@ -150,12 +157,14 @@ public sealed class FabricaApi : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Production");
         builder.UseContentRoot(Path.Combine(DatosReferencia.RutaRepositorio(), "backend", "src", "TutorFlow.Api"));
-        foreach (var (clave, valor) in _configuracion)
+        var ajustes = new Dictionary<string, string?>(_configuracion);
+        ajustes.TryAdd(ClaveUrlCatalogoPrecios, string.Empty);
+        foreach (var (clave, valor) in ajustes)
         {
             builder.UseSetting(clave, valor);
         }
 
-        builder.ConfigureAppConfiguration((_, configuracion) => configuracion.AddInMemoryCollection(_configuracion));
+        builder.ConfigureAppConfiguration((_, configuracion) => configuracion.AddInMemoryCollection(ajustes));
         builder.ConfigureLogging(logging =>
         {
             logging.SetMinimumLevel(LogLevel.Trace);
