@@ -70,6 +70,7 @@ Salvo que se indique otra cosa: configuración por defecto (600 por minuto); rel
 | ESC-142 e `@alterno` | Igual que (d) | Una tanda más en el segundo 929 (corrida 1) o 930 (corrida 2) | 929: 429 con `Retry-After: 120` (599 s desde el fin del bloqueo, en 330); 930: `Retry-After: 30` (600 s: la escalada se reinicia) | SEG-13, D-72 |
 | ESC-142 f `@alterno` | 600 preguntas en el segundo 0 | Una pregunta en el 59.9 (corrida 1) o en el 60 (corrida 2) | 59.9: 429 con `Retry-After: 30` (las 600 siguen en la ventana); 60: 200 (una marca de hace 60 s exactos ya no cuenta) | SEG-13, D-72 |
 | ESC-142 g `@abuso` `@operacion` | Tandas en 0 y 30, más 50 preguntas en el segundo 10 | — | Exactamente 2 eventos 429: la 601.ª de cada tanda, con `bloqueoSegundos` 30 y 60; 0 eventos de las 50 del segundo 10 (siguen con 429 `Retry-After: 20`) | RF-08, D-81 |
+| ESC-142 h `@abuso` `@operacion` | Unitaria; 50.000 IPs vigentes, entre ellas la del evaluador | Una IP nueva en los segundos 0 y 30; 601 del evaluador en el 0 | IP nueva: 200 sin registrarse; ≤ 50.000 entradas; 1 advertencia `Limitador por IP lleno` por minuto; el evaluador sigue contando (601.ª → 429); 0 × 429 por el tope | SEG-13, D-104 |
 
 - ESC-048 · retirado (D-72)
 - ESC-049 · retirado (D-72)

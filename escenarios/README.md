@@ -51,14 +51,14 @@ Los IDs son globales e inmutables: una feature nueva toma el siguiente bloque de
 | --- | --- | --- | --- |
 | [01-preguntas-ejemplo.md](001-asistente-academico/01-preguntas-ejemplo.md) | Las 10 preguntas de Q10 y la fase V | ESC-001…010, ESC-197 | CA-01 |
 | [02-reglamento.md](001-asistente-academico/02-reglamento.md) | Reglamento vigente y derogado | ESC-011…019 | CA-03 (ESC-011…016), CA-14 (ESC-017…019) |
-| [03-datos-estudiante.md](001-asistente-academico/03-datos-estudiante.md) | Cálculos, resumen propio y formato normativo | ESC-020…034, ESC-154, ESC-155, ESC-172, ESC-189 | CA-02, CA-14, CA-18 |
-| [04-coordinador.md](001-asistente-academico/04-coordinador.md) | Programa del coordinador y prelectura | ESC-040…046, ESC-135, ESC-136, ESC-190 | CA-02, CA-04, CA-19 |
+| [03-datos-estudiante.md](001-asistente-academico/03-datos-estudiante.md) | Cálculos, resumen propio, formato normativo, datos de personas escritos por el backend (D-98) y datos de referencia (plan §14) | ESC-020…034, ESC-154, ESC-155, ESC-172, ESC-189 | CA-02, CA-14, CA-17, CA-18, CA-27 |
+| [04-coordinador.md](001-asistente-academico/04-coordinador.md) | Programa del coordinador, prelectura y bloques | ESC-040…046, ESC-135, ESC-136, ESC-190 | CA-02, CA-04, CA-17, CA-19 |
 | [05-permisos.md](001-asistente-academico/05-permisos.md) | Permisos, normalización, homoglifos y capacidades de otro rol | ESC-036…039, ESC-050…066, ESC-130…134, ESC-137…139, ESC-149, ESC-186, ESC-187, ESC-196, ESC-199 a1–a9, b | CA-04, CA-12, CA-24 |
 | [06-inyeccion-y-abuso.md](001-asistente-academico/06-inyeccion-y-abuso.md) | Inyección, fugas e IDs en la salida | ESC-070…089, ESC-145…147, ESC-157, ESC-161, ESC-163, ESC-173, ESC-174, ESC-176 | CA-05 |
 | [07-sin-informacion.md](001-asistente-academico/07-sin-informacion.md) | No invención: umbral, exenciones, respaldo y apoyo | ESC-090…094, ESC-165…171 | CA-06, CA-14 |
 | [08-contrato-y-operacion.md](001-asistente-academico/08-contrato-y-operacion.md) | Contrato, límites, auditoría, despliegue y CI | ESC-047, ESC-068, ESC-100…119, ESC-142, ESC-143, ESC-144, ESC-148, ESC-150…153, ESC-158…160, ESC-180 (retirados: ESC-048, 049, 067, 069, 095) | CA-07…CA-11, CA-13 |
 | [09-falsos-positivos-y-suplantacion.md](001-asistente-academico/09-falsos-positivos-y-suplantacion.md) | Sin falsos 403 y suplantación auditada | ESC-097, ESC-120…129, ESC-140, ESC-141 (retirados: ESC-098, 099) | CA-08, CA-12 |
-| [10-verificacion-de-datos.md](001-asistente-academico/10-verificacion-de-datos.md) | Texto final verificado, pérdidas, definitivas y reintento | ESC-035, ESC-175, ESC-179, ESC-183…185, ESC-193, ESC-199 g1–g4, h1, h2 | CA-06, CA-16, CA-17, CA-21 |
+| [10-verificacion-de-datos.md](001-asistente-academico/10-verificacion-de-datos.md) | Texto final verificado, pérdidas, definitivas y reintento (segunda línea de D-98) | ESC-035, ESC-175, ESC-179, ESC-183…185, ESC-193, ESC-199 g1–g4, h1, h2 | CA-06, CA-16, CA-17, CA-21, CA-26 |
 | [11-citas-y-limpieza.md](001-asistente-academico/11-citas-y-limpieza.md) | Citas, recuperación y limpieza de referencias | ESC-156, ESC-162, ESC-164, ESC-177, ESC-178, ESC-194, ESC-195, ESC-198 | CA-01, CA-14, CA-22 |
 | [12-configuracion-y-proveedor.md](001-asistente-academico/12-configuracion-y-proveedor.md) | Configuración, prompt y proveedor del LLM | ESC-181, ESC-182, ESC-188, ESC-191, ESC-192, ESC-199 c1, c2, d, e1–e5, f | CA-15, CA-20, CA-23 |
 

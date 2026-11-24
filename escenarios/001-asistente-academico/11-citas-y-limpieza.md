@@ -6,7 +6,8 @@ Salvo que se indique otra cosa:
 
 - base de conocimiento real con `PuntajeRelativoMinimo` 55, `PuntajeRelativoRelevante` 40, `RelevanciaMinima` 2 y `ApoyoMinimoRespaldo` 2;
 - API académica doble con `mock-api/datos.json`; LLM doble sin herramientas; "documento" = citas de documento de `citas`;
-- bloques "Reglas aplicadas": EST-001 y EST-004 [Sec. 3, Sec. 4, Art. 11, Sec. 3.1]; EST-005 [Sec. 3, Sec. 4, Art. 11, Sec. 3.1, Art. 5, Art. 6, Art. 20]; ADM [Art. 5, Art. 6, Art. 20, Sec. 3].
+- bloques "Reglas aplicadas": EST-001 y EST-004 [Sec. 3, Sec. 4, Art. 11, Sec. 3.1]; EST-005 [Sec. 3, Sec. 4, Art. 11, Sec. 3.1, Art. 5, Art. 6, Art. 20]; ADM [Art. 5, Art. 6, Art. 20, Sec. 3];
+- **modo bloque (D-98):** en las filas con un activador de COMP-07 o COMP-08 y un texto del modelo sobre la persona, son unitarias de la limpieza y de las citas con el texto, sin interruptor de la poda (plan §15.4); de punta a punta ese texto se poda y las citas salen del bloque (ESC-189 t, v, ESC-198 f4).
 
 Notación en [`README.md`](../README.md#notación).
 
@@ -14,7 +15,7 @@ Notación en [`README.md`](../README.md#notación).
 
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
-| ESC-156 a `@alterno` | COORD-01; el doble propone Art. 5 y Sec. 4 e invoca el detalle con EST-004 | "¿Qué estudiantes de mi programa perdieron materias?" | 403; citas exactamente [Art. 22] | COMP-02 |
+| ESC-156 a `@alterno` | COORD-01; el doble propone Art. 5 y Sec. 4 e invoca el detalle con EST-004 | "¿Qué dice el reglamento sobre la habilitación?" (sin prelectura: hay herramientas) | 403; citas exactamente [Art. 22] | COMP-02 |
 | ESC-156 b | EST-001; mismas citas propuestas | "¿Qué dice el reglamento sobre el uso de parqueaderos?" | 200; citas [] (termina en COMP-03 sin invocar al doble) | COMP-02, COMP-03 |
 | ESC-156 c | EST-001; doble "Andres Martinez sacó 2.6 en Cálculo" y las mismas citas | "¿Cuál es mi promedio?" | 200 NEG; citas exactamente [Art. 22], sin reglas aplicadas aunque se leyó el resumen | SEG-10b, D-31 |
 | ESC-162 `@abuso` | EST-001; el doble propone una cita por cada sección del índice | "¿Cuál es el horario de atención de Bienestar?" | Toda cita de documento está entre las secciones entregadas en esa petición (registradas por el doble), tampoco por respaldo; sin Datos del estudiante (sin lectura no hay reglas aplicadas) | SEG-10a |
@@ -110,7 +111,10 @@ Notación en [`README.md`](../README.md#notación).
 | ESC-198 e | EST-001 | Q10 #2 sin citas → "Tu promedio es 4.39. Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0." | Sin cambios; documento exactamente [Sec. 4, Sec. 3] (pares = definitivas; los 4 pares pasan por D-64) | D-56, D-64 |
 | ESC-198 f1 | EST-004 | Q10 #5 → "Contabilidad: 3.9." | Documento exactamente [Sec. 3] | D-56 |
 | ESC-198 f2 | EST-004 | Q10 #5 → "3.9." | "3.9." se entrega; documento [] (sin campo usado, sin reglas aplicadas ni respaldo con datos leídos); datos [Notas, Asistencia] | D-63 F4, D-73 |
-| ESC-198 f3 | EST-004 | Q10 #5 → "11." | COMP-03; citas []; uso true; `sin_informacion` | D-63 F4 |
+| ESC-198 f3 | EST-004 | Q10 #5 → "11." | COMP-03; citas []; uso true; `sin_informacion` (con la poda: solo el bloque, como f4) | D-63 F4 |
+| ESC-198 f4 `@abuso` | EST-004; doble repite | Q10 #5 → "Tu nota definitiva en Contabilidad es 3.9 (reglamento_academico_2025.md · Artículo 5)." | Oración podada; respuesta = bloque "Datos de Camilo Rojas (EST-004)\nDefinitivas: Contabilidad 3.9"; documento exactamente [Sec. 3]; 1 llamada | D-98, D-101 |
+| ESC-198 f5 `@feliz` | EST-005; doble | "¿Perdí Estadística?" → "Una asignatura se pierde con definitiva menor a 3.0 (reglamento_academico_2025.md · Artículo 5)." | La oración se conserva (impersonal y citada); bloque "Estado de Estadística: perdida con definitiva 2.3, habilitable"; documento ⊇ [Art. 5] (campo usado por `perdida` del bloque) | D-98, D-101 |
+| ESC-198 f6 `@abuso` | EST-004 sin activador; doble que invoca `consultar_notas` y responde | "¿Cómo me fue en el periodo?" → "Contabilidad: 3.9 (reglamento_academico_2025.md · Artículo 5)." | Sin bloque; el Art. 5 (fuera del bloque de EST-004, sin campo usado) se descarta; documento exactamente [Sec. 3] | D-101 |
 | ESC-198 g1 `@abuso` | EST-004; doble repite | Q10 #5 → "Contabilidad: 3.3." | TNV; citas []; `estado_no_verificado` con `reintento: true` (3.3 pasa SEG-10c por Microeconomía; Contabilidad: 3.9 y cortes 3.6, 3.9, 4.1) | D-64 |
 | ESC-198 g2 | EST-006; doble repite | "¿Cómo voy en Estadística?" → "Estadística: 4.2." | Igual que (g1) (4.2 es Contabilidad; Estadística sin definitiva, cortes 3.9 y 4.1, acumulada 2.4) | D-64 |
 | ESC-198 g3 | EST-004; doble invoca `consultar_cortes` con `asignatura` "Contabilidad" y luego responde | Q10 #5 → "Contabilidad 3.6 en el primer corte." | Sin cambios: 3.6 es su corte 1 y llega en el resultado de `consultar_cortes`. Sin esa llamada (doble repite): TNV; citas []; `numero_no_verificado` con `reintento: true` (el resumen no lleva cortes) | D-64, D-65 G1 |
@@ -120,6 +124,8 @@ Notación en [`README.md`](../README.md#notación).
 | ESC-198 h3 | EST-001; doble registra | Q10 #4 | El bloque de la Sec. 2 trae exactamente la prosa de plan §7.6, sin la tabla; el de la Sec. 3, la presentación de plan §7.6: contiene "30%" y "40%" y no contiene "0.3" ni "0.4" | D-73, D-90 |
 | ESC-198 h2 | EST-001; doble registra | Q10 #7 | El bloque de la Sec. 1 trae exactamente la presentación de plan §7.6: "edificio B, piso 2" en la misma oración que "8:00 a 17:00" | D-89 |
 | ESC-198 h4 `@alterno` | Prueba unitaria | Presentaciones de la Sec. 1 y la Sec. 3 frente a los originales | Toda cifra y raíz está en el original (con `30%` ↔ `0.3` y `40%` ↔ `0.4`); el correo es literal; un doble que responde "La definitiva es 0.3 × corte 1…" con la Sec. 3 entregada pasa SEG-10c | D-89, D-90 |
+| ESC-198 h5 `@feliz` | EST-001 | Q10 #7 → "Bienestar atiende de lunes a viernes de 8:00 a 17:00 y sábados de 8:00 a 12:00 (bienestar_y_becas.md · Sección 1)." | Termina con la línea "Lugar: edificio B, piso 2."; `citas` [bienestar · Sec. 1] | COMP-01, D-100 |
+| ESC-198 h6 `@alterno` | EST-001 | Q10 #7 → el texto de (h5) con "en el edificio B, piso 2" | Sin cambios (0 líneas anexadas); `citas` igual que en (h5) | COMP-01, D-100 |
 | ESC-198 i | Prueba unitaria; y EST-001 con el doble que copia EJ-2 | Bloque de ejemplos de ambos roles; abuso de la nota ESC-198 i | 4 ejemplos con EJ-1…EJ-4; 0 cifras del bloque presentes en el índice, en plan §14 o en `preguntas_ejemplo.json`; `documento_ejemplo.md` fuera del índice. Abuso: TNV con `numero_no_verificado` | D-58 |
 | ESC-198 j | Prueba unitaria | Presentación de la Sec. 3.1 frente a `reglamento/bienestar_y_becas.md` | Cada cifra (`50%`, `4.3`, `12`, `1`, `2`, `3`) y raíz (requ, beca, rend, acad, desc, matr, peri, sigu, prom, pond, igua, supe, ning, asig, perd, incl, inas, habe, meno, cred) está en el original; falla si se agrega una que no esté | D-58 |
 | ESC-198 j2 | Prueba unitaria | Presentación de la Sec. 2 frente a `reglamento/evaluacion_y_calificaciones.md` | Cada cifra (`30%`, `40%`, `1`, `5`, `6`, `10`, `11`, `16`, `2`, `3`) y raíz (cada, asig, eval, tres, cort, sema, peso) está en el original | D-73 |

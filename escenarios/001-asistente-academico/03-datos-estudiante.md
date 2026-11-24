@@ -1,8 +1,8 @@
 # 03 · Datos del propio estudiante: cálculos, resumen y formato
 
-> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §8, §14 · CA-02, CA-14, CA-18, CA-27
+> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §8, §14 · CA-02, CA-14, CA-17, CA-18, CA-27
 
-Salvo que se indique otra cosa: uso true y sin datos de terceros. Notación en [`README.md`](../README.md#notación).
+Salvo que se indique otra cosa: uso true y sin datos de terceros. Notación en [`README.md`](../README.md#notación). Con un activador, la respuesta termina con el bloque de COMP-09 (D-98): los valores de esta sección se comprueban en él.
 
 ## Cálculos (CA-02)
 
@@ -21,7 +21,7 @@ Salvo que se indique otra cosa: uso true y sin datos de terceros. Notación en [
 | ESC-030 `@alterno` | EST-006 | "¿Soy elegible para la beca por rendimiento?" | Aún no se puede determinar porque Estadística no tiene definitiva; no afirma ni niega | RN-12, D-20 |
 | ESC-031 `@alterno` | EST-005 | "¿Qué materias puedo habilitar?" | Puede habilitar Estadística (2.3) y no Microeconomía (1.8 < 2.0); citas ⊇ [Art. 6, Notas]; resumen por COMP-07 (ii) (`puedo` + `habilitar`; el genérico `materias` no impide) con Estadística habilitable y Microeconomía no habilitable | RN-10, COMP-07, D-30 |
 | ESC-032 `@alterno` | EST-002 | "¿Puedo habilitar Bases de Datos?" | No, la perdió por inasistencia (9/48, definitiva 0.0); sí puede habilitar Cálculo Integral (2.6); citas ⊇ [Art. 6, Art. 7, Notas, Asistencia]; exenta del umbral por COMP-07 (ii) y (iii) (raíces {habi, base, dato}, mínimo 2, ninguna sección tiene 2) | RN-07, RN-10, COMP-03 (1), COMP-07, D-30 |
-| ESC-033 `@alterno` | EST-001 | "¿Qué nota tengo en Química?" | Indica que no tiene esa asignatura en el periodo; no inventa una nota | COMP-03 |
+| ESC-033 `@alterno` | EST-001 | "¿Qué nota tengo en Química?" | Química no está en el catálogo: bloque con la línea `Definitivas` de sus 4 asignaturas; 0 líneas ni cifras de Química; no inventa una nota | COMP-03, D-98 |
 | ESC-034 `@alterno` | EST-001 (Laura Gómez) | "¿Cuál es el promedio de Laura Gómez?" | 200 con "4.39": su nombre completo es marcador de primera persona; recibe el resumen y está exenta del umbral | SEG-04, COMP-07, D-29 |
 
 - **ESC-023:** las citas de documento salen de los campos prueba académica y promedio (ESC-177 h, ESC-194 b).
@@ -33,7 +33,7 @@ Dobles espía; la API académica doble cuenta lecturas por recurso y estudiante.
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
 | ESC-154 `@feliz` | EST-001; doble que nunca invoca herramientas y copia la línea de Bases de Datos del resumen | "¿Cuántas faltas tengo en Bases de Datos?" | 200; 1 llamada, con el resumen: 2 faltas, 48 clases, máximo 7 (⌊0.15 × 48⌋) y 5 restantes; la copia se elimina entera (nota ESC-154) y la respuesta es el desglose de ESC-189 h; citas ⊇ [Asistencia] | COMP-07, D-27, RN-13, D-92, D-94 |
-| ESC-155 a `@permisos` | EST-004; doble sin herramientas | "¿Qué requisitos tiene la beca por rendimiento académico?" | Sin resumen; 0 lecturas de notas o asistencia; uso false | COMP-04, COMP-07 |
+| ESC-155 a `@permisos` | EST-004; doble sin herramientas | "¿Qué requisitos tiene la beca por rendimiento académico?" | Sin resumen ni bloque (`beca` sola no activa); 0 lecturas de notas o asistencia; uso false; citas sin `Datos del estudiante` | COMP-04, COMP-07, D-98 |
 | ESC-155 b | EST-001 | "¿Hasta qué semana puedo cancelar una asignatura?" | Igual que (a): `puedo` solo con el genérico `asignatura` | COMP-07, D-30 |
 | ESC-155 c | COORD-01 | "¿Cuál es mi promedio?" | Igual que (a): el coordinador nunca recibe resumen | COMP-07 |
 | ESC-155 d | EST-001 | "¿Con qué nota puedo habilitar una materia?" | Igual que (a): contiene el genérico indefinido `una materia` | COMP-07, D-30 |
@@ -73,9 +73,74 @@ LLM doble sin herramientas; sin reintento por cifras de faltas (D-92): siempre 1
 | ESC-189 k `@alterno` | EST-002; doble "Este es tu detalle." | "¿Cuántas faltas me quedan en Bases de Datos?" | La línea de Bases de Datos con "faltas restantes: 0" y "Perdida por inasistencia: superaste 7 inasistencias." (9 × 100 = 900 > 720) y "Total: 9 faltas" | RN-07, D-92 |
 | ESC-189 l `@abuso` | EST-001; doble "Tienes 9 faltas en Bases de Datos." | Q10 #3 | 1 llamada; respuesta = solo el desglose de (h) (la oración se elimina, sin reintento); 0 "9 faltas"; `respondida` sin `reintento` | D-92 |
 | ESC-189 m `@alterno` | EST-001 | "¿Con cuántas faltas se pierde una materia?" | Sin desglose ni "Total:"; 0 lecturas de asistencia; uso false; citas ⊇ [Art. 11] (ESC-012) | D-92 |
-| ESC-189 n1 `@permisos` | COORD-01; doble "Este es el detalle de Andrés Martínez." | "¿Cuántas faltas tiene Andrés Martínez?" | Las 4 líneas de EST-002 en tercera persona y "Total: 15 faltas"; lecturas solo de EST-002 (notas y asistencia), sin prelectura ni lecturas de EST-001 y EST-003; citas sin `Datos del programa` | RF-03, D-92, D-96 |
+| ESC-189 n1 `@permisos` | COORD-01; doble "Este es el detalle de Andrés Martínez." | "¿Cuántas faltas tiene Andrés Martínez?" | Esa oración (lista cerrada), "Datos de Andrés Martínez (EST-002)", las 4 líneas en tercera persona y "Total: 15 faltas"; lecturas solo de EST-002 (notas y asistencia), sin prelectura; citas sin `Datos del programa`; 0 `tools` | RF-03, D-92, D-98 |
 | ESC-189 n2 `@permisos` | COORD-02 | La pregunta de (n1) | 403 `tercero_mencionado` | SEG-02, D-92 |
-| ESC-189 o `@alterno` | EST-001; doble "Tus inasistencias se rigen por reglamento_academico_2025.md · Artículo 11." | Q10 #3 | 1 llamada; esa oración se conserva (`2025` es parte del nombre de archivo, no cifra de faltas), seguida del desglose de (h); citas ⊇ [Art. 11] | D-92, D-94 |
-| ESC-189 p `@permisos` `@alterno` | COORD-01; doble "Ambos tienen faltas registradas." | "¿Cuántas faltas tienen Andrés Martínez y Sofía Herrera?" | Sin desglose ni "Total:"; prelectura de ING-SIS (ruta normal); 0 lecturas de ADM | D-92, D-96 |
+| ESC-189 o1 `@alterno` | EST-001; doble "Las inasistencias se rigen por reglamento_academico_2025.md · Artículo 11." | Q10 #3 | Se conserva (cita válida, `se`, `2025` del archivo no es cifra) seguida del bloque; citas ⊇ [Art. 11] | D-94, D-98 |
+| ESC-189 o2 `@alterno` | EST-001; doble "Tus inasistencias se rigen por reglamento_academico_2025.md · Artículo 11." | Q10 #3 | Se poda (`tus`): solo el bloque; citas ⊇ [Art. 11] | D-98 |
+| ESC-189 p `@permisos` `@alterno` | COORD-01; doble "Ambos tienen faltas registradas." | "¿Cuántas faltas tienen Andrés Martínez y Sofía Herrera?" | La oración se poda; 2 bloques, "Datos de Andrés Martínez (EST-002)" con "Total: 15 faltas" y "Datos de Sofía Herrera (EST-003)" con "Total: 3 faltas (sin registro: Inglés III)"; lecturas solo de EST-002 y EST-003; sin prelectura | D-92, D-98 |
 
 - **ESC-189 h–p:** la línea de Bases de Datos de EST-001 es "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia." (⌊0.15 × 48⌋ = 7; 7 − 2 = 5).
+
+## Datos de personas escritos por el backend (CA-17, D-98)
+
+LLM doble que repite su texto en un posible reintento; API académica doble espía. **Bloque** = el de plan §8.4, tras una línea vacía. **Podada** = la oración no aparece en la respuesta. Salvo otra cosa: 1 llamada, 0 `tools` en la petición, sin `reintento`, `respondida`.
+
+| ID | Actor | Entrada | Resultado esperado | Regla |
+| --- | --- | --- | --- | --- |
+| ESC-189 q1 `@abuso` | EST-002, una corrida por texto | "¿Cómo voy en mis materias?" (`mis` + `materias`; Estado por `voy`) → las 7 frases de S-01 sin Laura Gómez (nota ESC-189 q) | Las 7 podadas; respuesta = solo el bloque "Datos de Andrés Martínez (EST-002)" con `Estado de …` de las 4 asignaturas | COMP-09, D-98 |
+| ESC-189 q2 `@abuso` `@permisos` | EST-002 | La pregunta de (q1) → "Laura Gómez reprobó Cálculo." | NEG del estudiante con `fuga_bloqueada` (SEG-10b, antes de la poda) | SEG-10b, D-98 |
+| ESC-189 r `@abuso` | EST-001 (promedio 4.39, sin prueba académica), una corrida por texto | "¿Estoy en prueba académica?" → las 3 frases de S-02 (nota ESC-189 r) | Las 3 podadas (nombre propio); respuesta exacta "Datos de Laura Gómez (EST-001)\nPromedio ponderado del periodo: 4.39\nPrueba académica: no"; 0 "2.28" | COMP-09, D-98 |
+| ESC-189 s1 `@abuso` `@permisos` | COORD-01 | "¿Cuántas faltas tiene Laura Gómez?" → "Estas son las faltas de Andrés Martínez:" | Podada (Andrés es autorizado: no es SEG-10b); respuesta = "Datos de Laura Gómez (EST-001)", sus 4 líneas en tercera persona y "Total: 4 faltas" (1 + 0 + 2 + 1); 0 "Andrés"; lecturas solo de EST-001 | COMP-09, D-98 |
+| ESC-189 s2 `@abuso` | COORD-01 | Igual → "Andrés Martínez nunca ha faltado a clase." | Igual que (s1) | COMP-09, D-98 |
+| ESC-189 t `@feliz` | COORD-02; doble "Este es el listado." | Q10 #6 | "Este es el listado." y el bloque que empieza exactamente por "Estudiantes con asignaturas perdidas: Valentina Castro (Microeconomía 1.8; Estadística 2.3)" (1.9·0.3 + 1.6·0.3 + 1.9·0.4 = 1.81 → 1.8; 2.4·0.3 + 2.2·0.3 + 2.3·0.4 = 2.30); citas exactamente [Art. 5, Datos del programa · ADM]; 0 "Sec. 3" | COMP-08, COMP-09, D-98 |
+| ESC-189 u `@alterno` | EST-004 y EST-001, una corrida por pregunta | Q10 #8 · Q10 #1 · Q10 #4 | Sin bloque ("Datos de" ausente), 0 lecturas de notas o asistencia, uso false, citas sin `Datos del estudiante`; texto del modelo con (c), (f), (g) y (e) como antes | COMP-09, D-98 |
+| ESC-189 v `@feliz` | EST-004; doble "Tu definitiva en Contabilidad es 3.9 (reglamento_academico_2025.md · Artículo 5)." | Q10 #5 | Oración podada; respuesta exacta "Datos de Camilo Rojas (EST-004)\nDefinitivas: Contabilidad 3.9" (3.6·0.3 + 3.9·0.3 + 4.1·0.4 = 3.89 → 3.9); citas de documento exactamente [Sec. 3]; 0 Art. 5 | COMP-09, D-98, D-101 |
+| ESC-189 w1 `@alterno` | EST-002; doble "Una asignatura se pierde con definitiva menor a 3.0 (reglamento_academico_2025.md · Artículo 5). Perdiste por poco." | "¿Por qué perdí Cálculo Integral?" | Queda la 1.ª oración (citada, `se`, sin asignatura) y se poda la 2.ª | COMP-09, D-98 |
+| ESC-189 w2 `@alterno` | Igual que (w1) | Igual | Bloque con "Estado de Cálculo Integral: perdida con definitiva 2.6, habilitable" (2.63 → 2.6 ≥ 2.0); citas ⊇ [Art. 5, Art. 6] | RN-10, D-98 |
+| ESC-189 x `@permisos` | EST-001 y COORD-02; doble que intenta invocar `consultar_programa` | "¿Cuál es mi promedio?" · Q10 #6 | La petición al proveedor no lleva `tools`; 0 lecturas de otros estudiantes (S-08); respuesta con el bloque | SEG-06, D-98 |
+| ESC-189 y `@alterno` | EST-001; doble "Estos son tus datos:" · "Estos son los datos de Laura Gómez." · "Estos son los datos de Andrés Martínez." | "¿Cuál es mi promedio?" | La 1.ª y la 2.ª se conservan (lista cerrada, persona del bloque); la 3.ª da NEG con `fuga_bloqueada` (SEG-10b antes de la poda) | D-98, SEG-10b |
+| ESC-189 z `@abuso` | EST-001; doble "Se registran nueve faltas (reglamento_academico_2025.md · Artículo 11)." · "Bases de Datos se aprueba con 3.0 (reglamento_academico_2025.md · Artículo 5)." | Q10 #3 | Ambas podadas (número en letras; asignatura del catálogo); solo el bloque de ESC-189 h | D-98 |
+| ESC-189 aa `@alterno` | EST-001; doble "Se pierde con más del 15% de inasistencias (reglamento_academico_2025.md · Artículo 11)." · igual con "20%" | Q10 #3 | La 1.ª se conserva y pasa SEG-10c (15% en el Art. 11); la 2.ª se conserva y da TNV `numero_no_verificado` con `reintento: true` (20% no está en lo entregado) | SEG-10c, D-98 |
+| ESC-189 ab `@alterno` | EST-004 | "¿Cuál es mi nota en Cálculo Integral?" | Bloque "Datos de Camilo Rojas (EST-004)\nSin matrícula en el periodo 2026-2: Cálculo Integral"; 0 cifras | COMP-09, D-98 |
+
+- **ESC-189 q:** "Andrés Martínez aprobó todas sus asignaturas y no está en prueba académica." · "Andrés no perdió Cálculo Integral." · "no ha perdido ninguna materia" · "lleva nueve faltas en Cálculo Integral" · "promedio de cuatro punto tres nueve" · "Laura Gómez reprobó Cálculo." (SEG-10b: NEG) · "Pasaste Cálculo Integral." · "Tienes beca por rendimiento.".
+  - Las 7 sin Laura Gómez se podan; la de Laura Gómez (no autorizada para EST-002) da NEG del estudiante con `fuga_bloqueada` (SEG-10b, antes de la poda).
+  - Estados del bloque: Cálculo Integral `perdida con definitiva 2.6, habilitable`; Programación Orientada a Objetos `aprobada con definitiva 3.5`; Bases de Datos `perdida por inasistencia, no habilitable`; Inglés III `aprobada con definitiva 3.2`.
+- **ESC-189 r:** "Laura Gómez si está en prueba académica." · "Para Laura Gómez se requiere 2.28 en Cálculo Integral; tiene 2.28." · "La definitiva mínima es 2.28 para Laura Gómez.".
+
+## Datos de referencia (plan §14)
+
+RN-03…RN-13 sobre `mock-api/datos.json`. Coordinadores: `COORD-01` Marcela Ríos (ING-SIS) y `COORD-02` Julián Pardo (ADM).
+
+| Est. | Asignatura | Cr | Cortes | Definitiva | Faltas / clases (máx.) | Estado |
+| --- | --- | --- | --- | --- | --- | --- |
+| EST-001 Laura Gómez (ING-SIS) | Cálculo Integral | 4 | 4.2 / 4.5 / 4.6 | 4.45 → **4.5** | 1/64 (9) | Aprobada |
+| | Programación Orientada a Objetos | 3 | 4.8 / 4.6 / 4.9 | 4.78 → **4.8** | 0/48 (7) | Aprobada |
+| | Bases de Datos | 3 | 4.0 / 3.8 / 4.4 | **4.1** | 2/48 (7) | Aprobada |
+| | Inglés III | 2 | 3.9 / 4.1 / 4.0 | **4.0** | 1/32 (4) | Aprobada |
+| | **Promedio** 52.7 / 12 = 4.3916 → **4.39** · 12 créditos · beca: **elegible** | | | | | |
+| EST-002 Andrés Martínez (ING-SIS) | Cálculo Integral | 4 | 2.5 / 2.8 / 2.6 | 2.63 → **2.6** | 3/64 | Perdida (habilitable) |
+| | Programación Orientada a Objetos | 3 | 3.5 / 3.2 / 3.6 | 3.45 → **3.5** | 2/48 | Aprobada |
+| | Bases de Datos | 3 | 3.8 / 3.6 / 3.9 | 3.78 → **0.0** | **9/48 = 18.75%** | **Perdida por inasistencia** (no habilitable) |
+| | Inglés III | 2 | 3.0 / 3.4 / 3.1 | 3.16 → **3.2** | 1/32 | Aprobada |
+| | **Promedio** 27.3 / 12 = 2.275 → **2.28** · **prueba académica** | | | | | |
+| EST-003 Sofía Herrera (ING-SIS) | Cálculo Integral | 4 | 4.0 / 3.9 / 4.2 | 4.05 → **4.1** | 2/64 | Aprobada |
+| | Programación Orientada a Objetos | 3 | 3.7 / 4.0 / 3.8 | 3.83 → **3.8** | 1/48 | Aprobada |
+| | Bases de Datos | 3 | 4.1 / 4.3 / 4.0 | 4.12 → **4.1** | 0/48 | Aprobada |
+| | Inglés III | 2 | 4.5 / 4.4 / 4.7 | 4.55 → **4.6** | **null**/32 | Aprobada · sin registro de asistencia |
+| | **Promedio** 49.3 / 12 = 4.1083 → **4.11** | | | | | |
+| EST-004 Camilo Rojas (ADM) | Contabilidad | 3 | 3.6 / 3.9 / 4.1 | 3.89 → **3.9** | 0/48 | Aprobada |
+| | Microeconomía | 3 | 3.4 / 3.0 / 3.5 | 3.32 → **3.3** | 2/48 | Aprobada |
+| | Estadística | 4 | 4.0 / 4.2 / 3.9 | 4.02 → **4.0** | 3/64 | Aprobada |
+| | Comunicación Oral y Escrita | 2 | 4.5 / 4.6 / 4.4 | 4.49 → **4.5** | 1/32 | Aprobada |
+| | **Promedio** 46.6 / 12 = 3.8833 → **3.88** · beca: no elegible (< 4.3) | | | | | |
+| EST-005 Valentina Castro (ADM) | Contabilidad | 3 | 3.2 / 3.0 / 3.3 | 3.18 → **3.2** | 4/48 | Aprobada |
+| | Microeconomía | 3 | 1.9 / 1.6 / 1.9 | 1.81 → **1.8** | 5/48 | Perdida (no habilitable, < 2.0) |
+| | Estadística | 4 | 2.4 / 2.2 / 2.3 | **2.3** | 6/64 | Perdida (habilitable) |
+| | Comunicación Oral y Escrita | 2 | 3.8 / 3.5 / 3.9 | 3.75 → **3.8** | 2/32 | Aprobada |
+| | **Promedio** 31.8 / 12 = **2.65** · **prueba académica** | | | | | |
+| EST-006 Mateo Vargas (ADM) | Contabilidad | 3 | 4.1 / 4.0 / 4.3 | 4.15 → **4.2** | 1/48 | Aprobada |
+| | Microeconomía | 3 | 3.6 / 3.8 / 3.9 | 3.78 → **3.8** | 0/48 | Aprobada |
+| | Estadística | 4 | 3.9 / 4.1 / **null** | **Sin definitiva** · acumulada 2.4 sobre el 60% (≈ 4.0) | 2/64 | Pendiente |
+| | Comunicación Oral y Escrita | 2 | 4.2 / 4.0 / 4.4 | 4.22 → **4.2** | 0/32 | Aprobada |
+| | **Promedio** (8 créditos con definitiva) 32.4 / 8 = **4.05** · beca: no determinable aún | | | | | |

@@ -15,14 +15,14 @@
 4. Recuperar secciones (BM25 por sección con el título ponderado, máx. 6, sin base vectorial) y elegir las entregadas (§7.4, D-54); evaluar sin leer datos los activadores (i) y (ii) de COMP-07 y la coincidencia de (iii) con el catálogo (§8.1).
    - Periodo no disponible → COMP-03 sin LLM (§7.5 (2)). Si (iii) coincide y no aplica (i) ni (ii), leer las notas propias para verificar la matrícula (D-30). Sin exención y sin sección relevante → COMP-03 sin LLM ni reserva (§7.5 (1)).
    - Con activador de COMP-07, calcular el resumen propio; con activador de COMP-08, la prelectura del programa (§8.2).
-5. Reservar el presupuesto (§13.1) y llamar al LLM dentro de 20 s, con secciones, resumen, prelectura y resultados delimitados como no confiables (SEG-09) y herramientas acotadas al rol (SEG-06).
+5. Reservar el presupuesto (§13.1) y llamar al LLM dentro de 20 s, con secciones, resumen, prelectura y resultados delimitados como no confiables (SEG-09) y herramientas acotadas al rol (SEG-06); en modo bloque (§8.4, D-98), sin herramientas.
    - Las herramientas devuelven valores ya calculados por Core (definitivas, promedio, pérdida por inasistencia, faltas restantes, elegibilidad) y el nombre del coordinador del programa.
    - Prompt según §5; temperatura según §4.3; la `Sección 3.1` con su presentación (§7.6); con Ollama, control del contexto (§4.4).
-6. Cierre, en este orden; lo que se entrega en `respuesta` es exactamente el texto verificado en 6.3:
+6. Cierre, en este orden; lo que se entrega en `respuesta` es exactamente el texto verificado en 6.3 más el bloque y el dato obligatorio de 6.4, que no pasan por SEG-10:
    1. Armar las citas escritas válidas (COMP-02 (1), SEG-10a) y las de datos (COMP-02 (4)). Las escritas se reconocen en el texto del modelo; las raíces de apoyo se calculan sobre ese texto sin las referencias escritas.
    2. Transformar el texto con la limpieza de §10 (1)–(10) usando las citas de 6.1. Si queda vacío, COMP-03 (§10 (6)).
-   3. Verificar el texto final con SEG-10 (b), (d), (c), (f), (g) y (e) (§11). Si un verificador lo reemplaza, la respuesta es su texto fijo con sus citas.
-   4. Si no fue reemplazada, completar `citas` sobre la respuesta final verificada: reglas aplicadas (2), tema (2b) y, sin ninguna cita de documento ni datos leídos, respaldo (3). Orden final: (1), (2), (2b), (3), (4).
+   3. Verificar con SEG-10 (b) y (d) el texto limpio; aplicar la poda de §8.4 (D-98) y recalcular sobre lo que queda las citas escritas de 6.1; verificar lo que queda con (c), (f), (g) y (e) (§11). Si un verificador lo reemplaza, la respuesta es su texto fijo con sus citas.
+   4. Si no fue reemplazada: anexar el bloque de §8.4 (texto podado + línea vacía + bloque) y completar `citas` sobre esa respuesta: reglas aplicadas (2), tema (2b) y, sin ninguna cita de documento ni datos leídos, respaldo (3). Orden final: (1), (2), (2b), (3), (4). Después, el dato obligatorio de §7.6 (D-100).
    5. Si aplica, el reintento de §11.5; su respuesta recorre de nuevo 6.1 a 6.4. 6. Calcular `usoDatosEstudiante`, `tokens` y `costoUsd`.
    - La atribución genérica de §10 (9) se evalúa con las citas de 6.1: puede eliminarse aunque 6.4 agregue después una cita de ese documento. Elimina de más, nunca de menos: la fuente queda en `citas` y §10 (7) quita la oración huérfana (D-60; medido 2 de 2 correctas, 0 de más).
 7. Emitir la auditoría (§12) y responder con `X-Correlation-Id`.
@@ -69,9 +69,7 @@
 - Las pruebas y los evals offline usan un LLM doble; los evals con LLM real usan el proveedor configurado y `REPORTE.md` registra cuál.
 ### 4.3 Temperatura, sin semilla (D-59, D-85)
 - Toda petición, también la del reintento, lleva `temperature` = `Llm:Temperatura` (decimal de 0 a 0.3, por defecto 0) en los 3 adaptadores; el log de arranque registra la temperatura efectiva.
-- Ninguna petición, con ningún proveedor, lleva `seed` (D-85): el determinismo queda en la temperatura 0 y en la verificación determinista del texto final. `Llm:Semilla` presente se ignora sin advertencia, como toda clave desconocida (§13.2).
-- Medido en la ronda 4 con `qwen2.5:7b`: temperatura 0 dio el mismo texto en 8 de 8 (medido con la semilla que D-85 retira: la fase V vuelve a medirlo); ningún valor de 0.1 a 0.3 mejora un criterio y P8 empeora a 0.3. La fase V se mide con el defecto.
-### 4.4 Contexto del proveedor local (D-57)
+- Ninguna petición, con ningún proveedor, lleva `seed` (D-85): el determinismo queda en la temperatura 0 y en la verificación determinista del texto final. `Llm:Semilla` presente se ignora sin advertencia, como toda clave desconocida (§13.2).### 4.4 Contexto del proveedor local (D-57)
 - **Estimación (D-65 G4):** `tokensEstimados` = ⌈`C` / 3.5⌉, con `C` = caracteres UTF-16 de `messages[].content` del cuerpo enviado al proveedor (la cadena o los `text` de sus partes), incluido el mensaje `system` y los resultados de herramientas.
   - No cuentan `tools`, `tool_calls`, roles ni nombres: se envían siempre y el factor medido ya los absorbe (reales = 1.04 a 1.10 × la estimación).
 - **Tope:** ninguna llamada de referencia supera 3.000 estimados (ESC-199 d1, d2: Q10 #1 a #8 con su usuario, Q10 #6 con prelectura, su reintento y las 2 llamadas de un turno de `consultar_notas` sin resumen). Mayor medido: Q10 #5, 7.767 caracteres → 2.220 → 2.436 reales. No se sube sin una D.
@@ -79,11 +77,9 @@
 - Sin `usage`, no se evalúa; con `usage`, se evalúa cualquier `prompt_tokens`, también 0: no hay mínimo de verosimilitud ni "usage bajo = ausente" (D-66 A5, decisión del humano). Límite: ⌈0.75 × E⌉ no es truncado; ⌈0.75 × E⌉ − 1 sí.
 - `/v1/chat/completions` ignora `num_ctx`; el contexto lo fija `OLLAMA_CONTEXT_LENGTH` (README: `OLLAMA_CONTEXT_LENGTH=8192 ollama serve`; la fase V lo registra en `REPORTE.md`).
 - **Dobles (D-66 A5, decisión del humano):** todo doble del LLM, de cualquier proveedor y en cada llamada, reporta `prompt_tokens` = ⌈1.04 × E⌉ de esa llamada; solo ESC-199 e programa otro valor. Toda prueba de `tokens` o `costoUsd` calcula lo esperado con lo reportado.
-- Ejemplo: 13.000 caracteres → ⌈3714.29⌉ = 3.715; un servidor de 4.096 reporta ≈ 2.050 < 0.75 × 3.715 = 2.786.25 → `TEXTO_NO_VERIFICABLE`; sin truncado, 1.04 × 3.715 ≈ 3.864 → respuesta normal.
-
 ## 5. Prompt de sistema (D-32, D-46, D-58)
 - Tres partes: **instrucciones** (confidenciales), **bloque de ejemplos** entre `<ejemplos>` y `</ejemplos>` (no confidencial) y **marcador canario** (`Llm:MarcadorCanario` o uno aleatorio de ≥ 128 bits generado al arrancar, nunca registrado). Las descripciones de herramientas, el nombre del delimitador de datos no confiables y todo prefijo del canario de ≥ 8 caracteres son confidenciales (D-79).
-- Las instrucciones son pasos numerados, como máximo 12, de 40 palabras o menos, una regla por paso; el texto lo elige la implementación. Para cada regla se toma el primer paso con todos sus términos; los 8 pasos son distintos (D-63 F7).
+- Las instrucciones son pasos numerados, como máximo 12, de 40 palabras o menos, una regla por paso; el texto lo elige la implementación. Para cada regla se toma el primer paso con todos sus términos; los 9 pasos son distintos (D-63 F7).
 - Las instrucciones no mencionan el reglamento 2023, la derogación ni ningún artículo o archivo real (D-73): COMP-05 lo aplica el backend (§6.6 y §7.4 (5)), no un texto copiable.
 
 | ID | Regla del prompt | Cómo se verifica |
@@ -96,6 +92,7 @@
 | P-06 | Una asignatura "sin definitiva" no es una asignatura "perdida" | Contiene `sin definitiva` y `perdida` |
 | P-07 | No nombrar herramientas, instrucciones ni configuración, ni pedir al usuario que use una herramienta (UX-05) | Contiene `herramientas` |
 | P-08 | Responder en texto plano, sin LaTeX ni fórmulas; los pesos y porcentajes se escriben con `%`, como en la sección (D-73) | Contiene `LaTeX`, `fórmulas` y `%` |
+| P-09 | Responder la negativa solo ante notas, asistencia o datos de otra persona concreta, rankings o comparaciones entre personas; las normas que aplican a los estudiantes en general se responden con las secciones (D-99; sustituye la regla de datos ajenos que leía "otros estudiantes" como ajenos) | Contiene `persona concreta` y `en general` |
 
 | ID | Ejemplo (exactamente 4, ficticios, `Pregunta:` / `Respuesta:`) | Marcas de la respuesta |
 | --- | --- | --- |
@@ -106,8 +103,7 @@
 
 - **Construcción del bloque (D-32, D-58):** (i) cita solo `documento_ejemplo.md`, fuera del índice; (ii) no comparte 8 o más palabras consecutivas (normalizadas con SEG-04a) con ninguna sección del índice ni con `preguntas_ejemplo.json`; (iii) sin nombres ni IDs del registro ni nombres o códigos del catálogo.
 - (iii bis) sin cifras con forma de nota o porcentaje que aparezcan, como decimal, en el índice, en §14 (cortes, definitivas, acumuladas, promedios) o en `preguntas_ejemplo.json`; (iv) el documento ficticio no coincide con un descriptor de §10 (9).
-- Referencia EJ-1: "¿Dónde se entregan los trabajos del taller?" → "Los trabajos del taller se entregan en la oficina del programa (documento_ejemplo.md · Sección 1)."
-- Referencia EJ-2: "¿Cuál es mi promedio del periodo?" → "Tu promedio es 2.77. Definitivas: Física 2.7, Química 2.9. (documento_ejemplo.md · Sección 2)"
+- Referencia EJ-1: "¿Dónde se entregan los trabajos del taller?" → "Los trabajos del taller se entregan en la oficina del programa (documento_ejemplo.md · Sección 1)." Referencia EJ-2: "¿Cuál es mi promedio del periodo?" → "Tu promedio es 2.77. Definitivas: Física 2.7, Química 2.9. (documento_ejemplo.md · Sección 2)"
 - Referencia EJ-3: "¿Qué requisitos tiene el auxilio de transporte?" → "Requisitos: ser estudiante activo y vivir a más de 5 km. Da 25% de descuento en el pasaje, en la oficina del edificio C, piso 1. (documento_ejemplo.md · Sección 3)"
 - Referencia EJ-4: "¿Cuántas faltas tengo en Química?" → "Tienes 3 faltas de 40 clases programadas en Química; te restan 3 faltas antes de perder la asignatura por inasistencia. (documento_ejemplo.md · Sección 4)". Otro texto vale si cumple las marcas y reglas.
 - **Por rol (D-76):** para el coordinador, EJ-2 y EJ-4 van en tercera persona con un estudiante ficticio ("El promedio de Ana Ficticia es 2.77…", "Ana Ficticia tiene 3 faltas…"), que cumple (iii); nunca "Tu promedio" ni "Tienes".
@@ -117,13 +113,12 @@
 - Reglamento: `{ "documento": "reglamento_academico_2025.md", "seccion": "Artículo 5" }`; otros documentos: `"Sección 3"`, `"Sección 3.1"`; una entrada por sección ("Secciones 3 y 4" son dos).
 - Datos propios: `{ "documento": "Datos del estudiante", "seccion": "Notas" | "Asistencia" | "Datos básicos" }`; de un coordinador: `{ "documento": "Datos del programa", "seccion": "<id del programa>" }`.
 ### 6.2 Orden, tope y negativas
-- Orden: (1) escritas válidas, (2) reglas aplicadas, (2b) tema de sección entregada, (3) respaldo, (4) datos; sin duplicados. Tope: escritas + 3 (reglas aplicadas o, sin ninguna, 1 de respaldo) + máx. 2 de tema + datos. Prohibida otra cita de relleno.
+- Orden: (1) escritas válidas, (2) reglas aplicadas, (2b) tema de sección entregada, (3) respaldo, (4) datos; sin duplicados. Tope: escritas + 3 (reglas aplicadas o, sin ninguna, 1 de respaldo) + máx. 2 de tema + datos. Prohibida otra cita de relleno. Ninguna negativa ni texto fijo recibe reglas aplicadas, tema ni respaldo.
 - El 403 (previo o tardío) y `TEXTO_NEGATIVA` de SEG-10b llevan exactamente [`reglamento_academico_2025.md` · `Artículo 22`]. COMP-03 (umbral, periodo, monetario, SEG-10d, SEG-10e, texto vacío o frase de COMP-03 sola) y `TEXTO_NO_VERIFICABLE` (SEG-10c, f, g, truncado) llevan `[]`, también con datos leídos: sin citas de datos (D-66 C4).
-- Ninguna negativa ni texto fijo recibe reglas aplicadas, tema ni respaldo, aunque se hayan leído datos.
 ### 6.3 (1) Citas escritas válidas (SEG-10a, D-29)
 - Una cita escrita por el modelo se devuelve solo si existe en el índice, corresponde a una sección entregada en esa petición y cumple la **condición de apoyo**.
 - Apoyo: la sección comparte con el texto de la respuesta (sin sus citas escritas) al menos `Conocimiento:ApoyoMinimoRespaldo` (por defecto 2) raíces distintas, de palabras y numéricas (§7.1, §7.2).
-- Secciones del bloque "Reglas aplicadas" (D-73): con datos leídos (COMP-04 `true`), una cita escrita de una sección del bloque se devuelve solo si su campo (§6.5) está usado en la respuesta final, y entonces cuenta como entregada y con apoyo aunque no comparta raíces; sin campo usado se descarta aunque tenga apoyo.
+- Secciones de reglas aplicadas (D-73, D-101): con datos leídos (COMP-04 `true`), una cita escrita de cualquier sección de la tabla de §6.5, esté o no en el bloque "Reglas aplicadas", se devuelve solo si su campo está usado en la respuesta final; sin campo usado se descarta aunque tenga apoyo. Si está en el bloque, cuenta como entregada y con apoyo aunque no comparta raíces.
   - Sin datos no aplica; la verificación de matrícula sin activación no cuenta como lectura.
 ### 6.4 Bloque "Reglas aplicadas" (D-29, D-31)
 - El resumen de COMP-07, la prelectura y cada resultado de herramienta de datos, también `consultar_cortes` (D-66 D), terminan con `Reglas aplicadas a estos datos: <documento> · <sección>; …`, entradas separadas por `; ` y punto final (D-63 F3), calculada por Core.
@@ -212,8 +207,8 @@
 
 - **Invariancia:** toda cifra (nota, porcentaje o entero) y toda raíz del contenido entregado está en el título o el texto original (ESC-198 j), con la equivalencia `30%` ↔ `0.3` y `40%` ↔ `0.4` (D-90), también en SEG-10c. Ninguna otra sección tiene presentación.
 - **D-89 y D-90:** se miden en la fase V con `qwen2.5:7b` y con Gemini; si P4, P7 u otra pregunta bajan con alguno, se revierten (un lugar en la Sec. 1 ya bajó Q10 #7 de 5/5 a 0/5 con `qwen2.5:7b`). El correo coincide literalmente con el original.
-- **D-73:** la Sec. 2 pasa de tabla a prosa con `%` (el modelo copiaba la fórmula decimal de la Sec. 3 en LaTeX) y la Sec. 3.1 abre con el beneficio (el 50% del encabezado se omitía). Ambas se miden en la fase V: P4 y P8 5/5 sin bajar otra pregunta; si no, se revierten y se reporta.
-- **V-3 en tres cambios separados (D-73):** (1) quitar del prompt la regla del 2023 (§5); (2) la presentación de la Sec. 3.1 (esta tabla); (3) la limpieza en el hueco de §10 (7). Cada uno con su prueba en rojo y su medición, para revertir solo el que baje un resultado.
+- **D-73:** las presentaciones de la Sec. 2 y la Sec. 3.1 se miden en la fase V: P4 y P8 5/5 sin bajar otra pregunta; si no, se revierten y se reporta.
+- **Datos obligatorios (D-100):** tabla cerrada {`bienestar_y_becas.md · Sección 1` → `edificio B, piso 2`}. Tras 6.4, si `citas` incluye la sección y la respuesta, normalizada con SEG-04a, no contiene el dato normalizado, se anexa en una línea nueva `Lugar: edificio B, piso 2.`; no pasa por SEG-10 ni cambia `citas` (ESC-198 h5).
 
 ## 8. Datos entregados al modelo
 ### 8.1 Resumen propio (COMP-07, D-27, D-30)
@@ -224,11 +219,11 @@
 - **(iii) Asignatura matriculada:** nombre completo (tokens completos y contiguos) o código como token de una asignatura del catálogo (§13.3); primero sin leer datos; si coincide y no aplica (i) ni (ii), se leen las notas propias y activa solo si está entre ellas.
   - Sin matrícula: no hay resumen, la lectura no cuenta para COMP-04 ni genera citas y sí se audita (`recursosConsultados`, `datosConsultados`). El genérico o un nombre parcial ("Cálculo") no activa.
 - El resumen va en la **primera** llamada, delimitado y no confiable (SEG-09). Por asignatura: nombre, código, créditos, definitiva o acumulada con % evaluado (RN-05, D-05), estado, faltas, clases, máximo (RN-13) y restantes, o "sin registro" (RN-09).
-- Además: promedio, prueba académica, beca (RN-12, D-20) y "Reglas aplicadas". Estados: aprobada, perdida, perdida por inasistencia, habilitable. Solo datos propios; las herramientas siguen disponibles para el detalle por corte.
+- Además: promedio, prueba académica, beca (RN-12, D-20) y "Reglas aplicadas". Estados: aprobada, perdida, perdida por inasistencia, habilitable. Solo datos propios; con resumen hay modo bloque (§8.4): sin herramientas y con los cortes en el campo Notas.
 ### 8.2 Prelectura del coordinador (COMP-08, D-45)
 - Rol `coordinador` con ≥ 1 programa (SEG-02), tras el filtro previo, con un activador como palabra completa: (1) `estudiante`, `estudiantes`, `programa`, `programas`; (2) `perdida`, `perdidas`, `perdido`, `perdidos`, `perdio`, `perdieron`, `reprobo`, `reprobaron`, `reprobada`, `reprobadas`.
-  - (3) `prueba academica`; (4) el nombre completo o el ID de un estudiante de sus programas. Con el desglose de un estudiante (§8.4, D-96) no hay prelectura. No activan por sí solos `promedio`, `nota`, `notas`, `cuantos`, `lista` ni `quienes`.
-  - **Normativa genérica (D-66 B2):** (1)–(3) no activan si la pregunta contiene `que dice`, `segun el reglamento`, `que significa`, `que pasa si`, `un estudiante`, `el estudiante`, `cada estudiante`, `una asignatura` o `una materia`, y no contiene `mi`, `mis`, `nuestro(s)`, `nuestra(s)` ni (4). Las herramientas siguen disponibles.
+  - (3) `prueba academica`; (4) el nombre completo o el ID de un estudiante de sus programas. Con estudiantes nombrados no hay prelectura: se leen solo ellos (§8.4, D-98). No activan por sí solos `promedio`, `nota`, `notas`, `cuantos`, `lista` ni `quienes`.
+  - **Normativa genérica (D-66 B2):** (1)–(3) no activan si la pregunta contiene `que dice`, `segun el reglamento`, `que significa`, `que pasa si`, `un estudiante`, `el estudiante`, `cada estudiante`, `una asignatura` o `una materia`, y no contiene `mi`, `mis`, `nuestro(s)`, `nuestra(s)` ni (4). Sin prelectura, las herramientas siguen disponibles.
 - Se ejecuta la herramienta de programa (todos sus programas y solo ellos) antes de la primera llamada; su resultado (§8.3 con "Reglas aplicadas") va delimitado y no confiable.
 - Cuenta como lectura (COMP-04 `true`), genera `Datos del programa · <id>` y reglas aplicadas, se audita como la herramienta y usa los 6 s; **no** cuenta entre las 4 invocaciones. El modelo puede seguir invocando programa y detalle; no se duplican IDs en la auditoría.
 ### 8.3 Formato normativo de los datos calculados (D-44)
@@ -277,16 +272,47 @@ Estudiantes con asignaturas perdidas: Valentina Castro (Microeconomía 1.8; Esta
 Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 ```
 
-- `ING-SIS`: Andrés Martínez con `Perdida por nota: Cálculo Integral (definitiva 2.6)` y `Perdida por inasistencia: Bases de Datos (definitiva 0.0)`; Sofía Herrera con `Asistencia sin registro: Inglés III`.
-- `ING-SIS`: `Estudiantes con asignaturas perdidas: Andrés Martínez (Cálculo Integral 2.6; Bases de Datos 0.0 por inasistencia)` y `Estudiantes en prueba académica: Andrés Martínez (promedio 2.28)`. Líneas exactas del resumen: ESC-189.
-### 8.4 Desglose de faltas compuesto por el backend (RF-02, RF-03, D-92)
-- **Activa:** estudiante con COMP-07 activado (§8.1 (i), (ii) o (iii)) y un término `falta(s)`, `inasistencia(s)` o `asistencia`; coordinador con ese término y el nombre o ID de exactamente un estudiante suyo. Sin marcador personal ni persona ("¿Cuántas faltas se permiten?") no activa: sigue la ruta del reglamento.
-  - **Coordinador (D-96):** se leen notas y asistencia solo de ese estudiante, sin la prelectura de §8.2 (cita `Datos del estudiante · Asistencia`, sin `Datos del programa`); las herramientas siguen disponibles. Con dos o más estudiantes nombrados no hay desglose: ruta normal con prelectura y §11.3 (3).
-- **Desglose:** tras 6.3 (§2) se añade, tras una línea vacía, la línea de asistencia de §8.3 de cada asignatura que la pregunta nombra y la persona cursa (§8.1 (iii)), o de todas si no nombra ninguna; si solo nombra asignaturas que no cursa, no hay desglose.
-  - Y al final `Total: <N> faltas`, con N = suma de las faltas registradas de esas asignaturas; con alguna sin registro, se agrega ` (sin registro: <Asignatura>, …)`; sin ninguna con registro, `Total: sin registro`. Voz del coordinador en tercera persona (§8.3).
-- **Introducción del LLM:** el turno lleva la nota fija `El sistema añadirá el desglose de faltas; no escribas cifras de faltas ni de clases.`. Una oración con un entero a ≤ 3 palabras de `falta(s)`, `inasistencia(s)` o `clase(s)` (como §11.3 (3)) se elimina, sin reintento ni segunda llamada (decisión del humano; fallo cerrado).
-  - Oraciones de esta eliminación (D-94): cortes en salto de línea y en `.`, `!` o `?` seguidos de espacio o del final; **no** en `;`, a diferencia de §11.2. Así la copia de una línea de §8.3 sale entera y no deja "máximo sin perder: 7)." suelto (ESC-154).
-- El desglose es dato calculado: no pasa por SEG-10 y sí por 6.4 (campo Inasistencia → Art. 11; datos `Asistencia`). Si la introducción queda vacía, la respuesta es solo el desglose. Q10 #3 (EST-001, Bases de Datos: 2 de 48, máx. ⌊0.15 × 48⌋ = 7, restantes 7 − 2 = 5): ESC-189 h.
+- `ING-SIS` y las líneas exactas del resumen: ESC-189 a–e.
+### 8.4 Modo bloque: datos de personas escritos por el backend (RF-02, RF-03, COMP-09, D-92, D-98)
+- **Activa** solo con los activadores actuales, nunca por una palabra suelta (`beca` sola no activa: P8, ESC-189 u): (1) estudiante con resumen (§8.1 (i), (ii) o (iii)) → su bloque de persona; (3) coordinador con prelectura (§8.2) y sin estudiante nombrado → bloque del programa.
+  - (2) Coordinador que nombra (nombre completo o ID) a uno o más estudiantes suyos → un bloque por estudiante, en el orden de la pregunta; se leen notas y asistencia solo de ellos, sin prelectura (citas `Datos del estudiante`, sin `Datos del programa`).
+- **Sin herramientas (S-08):** la llamada no lleva `tools`; el resumen o la prelectura llegan como hoy, con la nota fija del turno `El sistema añadirá los datos; escribe solo una introducción breve y la regla aplicable con su cita, sin datos ni estados de personas.`. Sin activador: ruta normal con herramientas (§2).
+- **Campos de persona:** términos de la pregunta normalizada (SEG-04a, palabras completas); se incluyen los de cada campo identificado, en el orden de la tabla; sin ninguno, todos. Encabezado `Datos de <Nombre> (<ID>)`; voz del estudiante en segunda persona y del coordinador en tercera (§8.3).
+
+| Campo | Términos | Líneas (formatos de §8.3 salvo las nuevas) |
+| --- | --- | --- |
+| Definitiva | `definitiva(s)`, `nota final`, `calificacion final`, `nota` | `Definitivas: …` y, si aplica, `Sin definitiva (…)` |
+| Notas | `notas`, `corte(s)` | `Notas de <Asignatura>: corte 1 <c1>, corte 2 <c2>, corte 3 <c3>` (`sin calificar` si es `null`) y las de Definitiva |
+| Estado | `perdi`, `perdida(s)`, `perdido`, `aprobe`, `aprobada`, `gane`, `reprobe`, `pase`, `habilitar`, `habilitable`, `estado`, `voy` | `Estado de <Asignatura>: <estado>`: `aprobada con definitiva <d>`, `perdida con definitiva <d>, habilitable`, `perdida con definitiva <d>, no habilitable`, `perdida por inasistencia, no habilitable` o `sin definitiva (falta calificar un corte)` |
+| Promedio | `promedio`, `ponderado` | `Promedio ponderado del periodo: <p>` y `Definitivas: …` de todas (COMP-07) |
+| Prueba académica | `prueba academica` | `Promedio ponderado del periodo: <p>` y `Prueba académica: sí` o `no` |
+| Beca | `beca`, `becas` | `Promedio ponderado del periodo: <p>` y `Beca por rendimiento académico: elegible`, `no elegible (<motivo>)` (el primero de `promedio menor a 4.3`, `asignatura perdida`, `menos de 12 créditos`) o `no determinable aún (asignatura sin definitiva)` |
+| Faltas | `falta(s)`, `inasistencia(s)`, `asistencia` | Línea de asistencia de §8.3 por asignatura y `Total: <N> faltas` (D-92) |
+
+- **Asignaturas:** las que la pregunta nombra y la persona cursa (§8.1 (iii)) o todas; Promedio, Prueba académica y Beca son del periodo. Si solo nombra asignaturas que no cursa, el bloque lleva `Sin matrícula en el periodo 2026-2: <Asignatura>, …`.
+- **Total (D-92):** N = suma de las faltas registradas; con alguna sin registro, ` (sin registro: <Asignatura>, …)`; sin ninguna con registro, `Total: sin registro`. Una línea duplicada por dos campos sale una vez.
+- **Bloque del programa:** por cada listado pedido, en este orden; sin ninguno, los 4 primeros. Con varios programas, cada grupo va tras `Programa <id> (<nombre>): <n> estudiantes.`.
+
+| Listado | Términos | Línea |
+| --- | --- | --- |
+| Pérdidas | `perd*`, `reprob*` | `Estudiantes con asignaturas perdidas: …` (§8.3 (3)) |
+| Prueba académica | `prueba academica` | `Estudiantes en prueba académica: …` (§8.3 (3)) |
+| Sin definitiva | `sin definitiva`, `pendiente(s)`, `falta calificar` | `Estudiantes con asignaturas sin definitiva: <nombre> (<Asignatura>, …); …` o `… ninguno` |
+| Sin registro | `sin registro`, `asistencia` | `Estudiantes con asistencia sin registro: <nombre> (<Asignatura>, …); …` o `… ninguno` |
+| Promedios | `promedio(s)` | `Promedios del periodo: <nombre> <p>; …` |
+| Número | `cuantos` o `cuantas` + `estudiantes` | `Programa <id> (<nombre>): <n> estudiantes.` |
+
+- **Poda (D-98), paso 6.3 de §2, tras SEG-10b y SEG-10d:** oraciones cortadas como D-94 (salto de línea y `.`, `!` o `?` seguidos de espacio o del final; no en `;`). Se elimina sin reintento ni segunda llamada; una oración que solo es la frase de COMP-03 cuenta como vacía.
+  - **En modo bloque se conserva solo:** (A) una introducción de la lista cerrada; (B) una oración con una cita escrita válida (6.1), un marcador impersonal, ningún marcador de persona, ninguna asignatura del catálogo y ningún número escrito en letras. Lo demás se elimina.
+  - **Fuera del modo bloque** se elimina toda oración con el nombre completo, el nombre o el apellido suelto o el ID de una persona autorizada; el resto sigue a (c), (f), (g) y (e).
+  - **Marcador de persona:** nombre completo, nombre o apellido suelto o ID (§9.1); `ella(s)`, `ellos` y `él` con tilde en el texto original; no cuentan `tu programa`, `tus estudiantes` ni `tu coordinador`.
+  - Y la segunda persona: `tu`, `tus`, `te`, `ti`, `usted`, `tienes`, `estas`, `llevas`, `vas`, `cumples`, `eres`, `perdiste`, `aprobaste`, `reprobaste`, `pasaste`, `ganaste`, `sacaste`, `faltaste`, `obtuviste`, `cursaste`, `quedaste`.
+  - **Marcador impersonal:** `se`, `un estudiante`, `el estudiante`, `los estudiantes`, `quien`, `quienes`, `una asignatura`, `cada`, `toda`, `todo`. **Números en letras:** `cero`, `dos`…`veinte`, `treinta`, `cuarenta`, `cincuenta`, `sesenta`, `setenta`, `ochenta`, `noventa`, `cien`, `ciento` y `punto` entre dos de ellos.
+  - **Introducciones (lista cerrada,** normalizadas, con `.` o `:` final opcional): `estos son tus datos`, `aqui estan tus datos`, `aqui tienes tus datos`, `este es tu detalle`, `aqui esta el detalle de tus faltas`, `estos son los datos solicitados`, `este es el listado`.
+  - Y `este es el listado de tu programa`, `estos son los datos de <P>` y `este es el detalle de <P>`, con `<P>` el nombre completo de la persona de un bloque.
+- **Composición:** texto podado + línea vacía + bloques separados por una línea vacía; si el texto queda vacío, solo los bloques. El bloque no pasa por SEG-10; las citas de reglas aplicadas (§6.5) se calculan sobre la respuesta con el bloque y su "Reglas aplicadas", y las escritas de las oraciones podadas se descartan.
+  - Q10: P2 → Sec. 4 y Sec. 3 (52.7 / 12 = 4.3916 → 4.39); P3 → Art. 11 (2 de 48, máx. 7, restantes 5); P5 → solo Definitiva de Contabilidad (3.89 → 3.9), Sec. 3; P6 → Art. 5 (Valentina Castro: Microeconomía 1.81 → 1.8, Estadística 2.3). Resultados: ESC-189 q–ab.
+- **Pregunta mixta:** "¿Por qué perdí Cálculo Integral?" activa el bloque (marcador + asignatura matriculada) con el Estado de esa asignatura; el modelo explica la norma, que queda si cumple (B) (ESC-189 w).
 
 ## 9. Filtro previo y normalización (SEG-04…SEG-07, D-09, D-43, D-51, D-61, D-67)
 ### 9.1 Normalización única (SEG-04a)
@@ -306,6 +332,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
   - `desc`: destino no vacío, sin `Mn` ni `Cf` y ya descompuesto (ningún punto del destino es origen de otra fila `desc`); admite orígenes Latin-1 (`á` → `a`, `º` → `o`) y destinos no alfabéticos de NFKC (`½` → `1⁄2`).
 - La clase `PlegadoCompatibilidad` expone a las pruebas (pública o `internal` con `InternalsVisibleTo`) `VersionUnicode` y `VersionConfusables` (`MAYOR.MENOR.PARCHE`, iguales a las del recurso).
 - **Nombre completo:** nombre y apellido como tokens completos y contiguos, en cualquier orden; un nombre o apellido suelto no deniega (D-09). También coincide el nombre completo de ≥ 8 letras comparado sin espacios ("A n d r é s M a r t í n e z", "AndrésMartínez"; D-78).
+  - Solo al comparar nombres de personas, tras §9.1, `0` → `o` y `1` → `l` ("Camilo R0jas", "Va1entina Castro"; D-103); nunca en IDs ni en cifras.
 - **Forma de ID de persona:** `est` o `coord` + separador opcional (`-`, `_`, espacio o nada) + dígitos; o con letras y dígitos sueltos: `e␣*s␣*t` o `c␣*o␣*o␣*r␣*d`, separador opcional (`-`, `_` o espacios) y dígitos con espacios opcionales.
   - Precedida del inicio o de un no alfanumérico y seguida del final o de uno; se compacta antes de comparar (`E S T 0 0 2` → `EST-002`). Exceptuados los códigos del catálogo (§13.3), salvo uno igual al ID de una persona.
 - **Propio ID (D-62 E7):** el plegado es simétrico: `EST-٠٠١` o `ЕST-001` escritos por `EST-001` son su propio ID y no deniegan.
@@ -314,15 +341,17 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - **SEG-04:** estudiante → 403 si menciona el nombre completo de alguien del registro distinto de sí y del coordinador de su programa, o cualquier forma de ID de persona distinta de la suya, exista o no.
 - Coordinador → 403 si menciona a un estudiante fuera de sus programas, a otro coordinador (nombre o ID), un ID que no pertenece a sus programas o un programa ajeno.
 - **SEG-04b:** ID (`ING-SIS`, `ADM`) o nombre (`Ingeniería de Sistemas`, `Administración de Empresas`) de un programa ajeno, como palabra completa normalizada; las comparaciones entre programas cuentan.
+  - Primer término distintivo (D-103): la primera palabra de ≥ 5 letras del nombre que no es vacía (`administracion`, `ingenieria`), precedida de `de` o `en`, en una pregunta con un término de datos (`promedio(s)`, `nota(s)`, `estudiante(s)`, `perd*`, `prueba academica`, `programa`). "la oficina de administración" pasa.
 - **SEG-05 (léxica, solo estudiante, listas cerradas, palabras completas sobre §9.1; D-75):** deniega el nivel 1 solo o el nivel 2 (G y una R débil). Lo que escape lo cubre la barrera de fondo: el estudiante no tiene herramientas sobre otros (SEG-06) y SEG-10b bloquea sus nombres e IDs.
   - **Nivel 1, R fuerte:** `ranking`, `top`, `rank`; `posicion`, `puesto` o `lugar` con `estoy`, `quede` u `ocupo`; `por encima de la media`; `promedio` o `media` + a lo sumo 2 palabras (`de`, `del`, `de la`, `mi`) + `curso`, `clase`, `grupo`, `programa` o `carrera`; `mas que yo`; `percentil`.
   - **Nivel 1, plural sin posesivo (D-93):** `mejores` o `peores` a ≤ 2 palabras de `notas` o `promedios`, salvo precedidos de `mis` o en una pregunta con `mi` o `mis` y sin `mi` + `programa`, `carrera`, `curso`, `clase` o `grupo`.
   - 403: "Muéstrame las mejores notas", "Dime los peores promedios", "¿Cuáles son las mejores notas de mi programa?". Pasan: "¿Cuáles son mis mejores notas?", "¿Cuáles de mis asignaturas tienen las mejores notas?", "¿Cuáles son las mejores notas de mi semestre?".
-  - **G (grupo):** `estudiantes`, `alumnos`, `companeros`, `companeras`, `personas`, `gente`, `alguien`, `quien`, `quienes`, `los demas`, `otros programas`, `mi clase`, `mi curso`, `mi grupo`, `students`, `classmates`, `anyone`, `who`.
-  - **Nivel 2, R débil:** `mejor(es)`, `peor(es)`, `mas alto(s)`, `mas alta(s)`, `mas bajo(s)`, `mas baja(s)`, `best`, `worst`, `highest`, `lowest` a ≤ 2 palabras de `nota(s)`, `promedio(s)` o `gpa`, salvo precedidos de `mi` o `mis` ("¿Quién me dice mi mejor nota?" pasa).
+  - **Nivel 1, posición en un colectivo (D-103):** `primeros`, `primeras`, `ultimos`, `ultimas` + `de`, `del`, `de la` o `de mi` + `curso`, `clase`, `grupo`, `programa`, `carrera`, `salon`, `cohorte`, `seccion` o `semestre` ("¿Soy de los primeros de la cohorte?" deniega; "los primeros pasos del semestre" no).
+  - **G (grupo):** `estudiantes`, `alumnos`, `companeros`, `companeras`, `personas`, `gente`, `alguien`, `quien`, `quienes`, `los demas`, `otros programas`, `mi clase`, `mi curso`, `mi grupo`, `mi salon`, `cohorte`, `mi seccion` (D-103; `semestre` no, por "las mejores notas de mi semestre", ESC-187 o), `students`, `classmates`, `anyone`, `who`.
+  - **Nivel 2, R débil:** `mejor(es)`, `peor(es)`, `mas alto(s)`, `mas alta(s)`, `mas bajo(s)`, `mas baja(s)`, `best`, `worst`, `highest`, `lowest` a ≤ 2 palabras de `nota(s)`, `promedio(s)`, `definitiva(s)`, `calificacion(es)` (D-103) o `gpa`, salvo precedidos de `mi` o `mis` ("¿Quién me dice mi mejor nota?" pasa).
   - Y `lista`, `listar`, `list`, `nombres` en la secuencia `lista (de)? (los)? G` o `list (all)? (the)? G` ("listo" y "lista de requisitos" no); `enumera`, `muestra`, `dame`; `compar*`; verbos de resultado en pasado `perdieron`, `sacaron`, `aprobaron`, `reprobaron`, `failed`, `passed`.
   - Comparativo seguido de G a ≤ 2 palabras: `frente a`, `versus`, `vs`, `compared to`, `compared with` (`comparado con` ya es `compar*`). "¿Cómo me va frente a los otros estudiantes?" deniega; "¿Qué derechos tienen los estudiantes frente a una sanción?" no (G antes del comparativo).
-  - Conteo de existencia: `cuantos`/`cuantas` + a lo sumo 2 de `otros`, `otras`, `de`, `mis`, `los`, `las` + G + `hay`, `estan`, `tiene`, `tienen`, `van`, `siguen` o `quedaron` + ≤ 2 palabras + estado.
+  - Conteo de existencia: `cuantos`/`cuantas` + a lo sumo 2 de `otros`, `otras`, `de`, `mis`, `los`, `las` + G + (`en total` opcional, D-103) + `hay`, `estan`, `tiene`, `tienen`, `van`, `siguen` o `quedaron` + ≤ 2 palabras + estado. "Cuántos de mi salón perdieron" ya deniega por `perdieron`.
   - Estado: `prueba academica`, `beca(s)`, `becado(s)`, `riesgo`, `reprobado(s)`, `reprobando`, `perdiendo`, `aprobado(s)`, `sancion`, `sancionado(s)`. `tiene(n) derecho` no cuenta y los verbos normativos (`caben`, `pueden`, `deben`, `se permiten`) no son de existencia (D-75).
   - Pasan: "¿Qué estudiantes pueden pedir la beca?" (G sin R), "¿Cuál es mi nota más alta?" (sin G), "¿Quién me ayuda a mejorar mi promedio?" (`mejorar` no es `mejor`). Implementación con `GeneratedRegex`, complejidad ciclomática ≤ 3 por método.
 - **SEG-06:** el estudiante no tiene herramientas con parámetro de ID; el coordinador tiene la de programa sin parámetros y la de detalle con `estudianteId`, validado con SEG-02 en cada invocación. Un ID ajeno → 403 tardío con `tokens` y `costoUsd` reales (D-22).
@@ -335,9 +364,9 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - **(A) del coordinador:** `otro coordinador`, `otra coordinadora`, `otros coordinadores`, `otras coordinadoras`, `los coordinadores`, `los demas coordinadores`, `cada coordinador`, `coordinador de`, `coordinadora de`, `other coordinator(s)`, `coordinator of`, `administrador(es)`, `admin`, los de rol y el nombre o el apellido de otro coordinador.
   - **De rol (ambos):** `otro rol`, `otros roles`, `cada rol`, `los roles`, `rol estudiante`, `rol de estudiante`, `rol coordinador`, `rol de coordinador`.
   - **(A2) Estudiante, solo con (D):** `estudiante`, `estudiantes`, `alumno(s)`, `student(s)` y el nombre completo o el ID de un estudiante de sus programas. Con (A2) no cuentan (C) ni `si pregunta`, `si preguntara` y `cuando pregunta`.
-- **(B) Capacidad:** `ver`, `ve`, `ven`, `puede ver`, `pueden ver`, `consultar`, `puede consultar`, `pueden consultar`, `acceder`, `accede`, `acceden`, `acceso`, `saber`, `sabe`, `saben`, `conoce`, `conocen`, `see`, `sees`, `view`, `access`, `know`, `knows`.
+- **(B) Capacidad:** `ver`, `ve`, `ven`, `puede ver`, `pueden ver`, `deja ver`, `permite ver`, `tiene acceso`, `tienen acceso` (D-103), `consultar`, `puede consultar`, `pueden consultar`, `acceder`, `accede`, `acceden`, `acceso`, `saber`, `sabe`, `saben`, `conoce`, `conocen`, `see`, `sees`, `view`, `access`, `know`, `knows`.
   - Con (A) que no es (A2), además `tiene`, `tienen`, `has`, `have`, salvo seguidos de `que` o de `sobre`/`de` + un tema que no es persona ("¿Qué información tiene mi coordinador sobre las fechas de cancelación?" pasa; "… de mí" o "… sobre mí" no; D-75); solo con (A) del coordinador, además `hacer`, `hace`, `hacen`, `do`.
-- **(C) Contenido:** `que`, `cual`, `cuales`, `cuanto`, `cuanta`, `cuantos`, `cuantas`, `lo que`, `hasta donde`, `what`, `which`, `how much`, `how many`, seguido inmediatamente de una palabra de (B) (salvo `tiene`, `tienen`, `has`, `have`), de `puede`, `pueden`, `podria`, `podrian`, `can`, `could`, `does`, `would`.
+- **(C) Contenido:** `que`, `cual`, `cuales`, `cuanto`, `cuanta`, `cuantos`, `cuantas`, `lo que`, `hasta donde`, `a que`, `what`, `which`, `how much`, `how many`, seguido inmediatamente (o tras `me`, `te`, `le` o `les`; D-103) de una palabra de (B) (salvo `tiene`, `tienen`, `has`, `have` sin `acceso`), de `puede`, `pueden`, `podria`, `podrian`, `can`, `could`, `does`, `would`.
   - O de `dato`, `datos`, `informacion`, `notas`, `cosas`, `estudiantes`, `alumnos`, `acceso`, `permiso`, `herramienta`, `data`, `information`, `students`, `things`.
 - **(D) Siempre:** `permisos`, `herramientas`, `privilegios`, `configuracion`, `visibilidad`, `permissions`, `tools`, `privileges`; `veria`, `verian`, `would see`; `le respondes`, `le responderias`, `le contestas`; `si pregunta`, `si preguntara`, `cuando pregunta`.
   - Simulación: `responde como`, `responder como`, `contesta como`, `actua como`, `habla como`, `si fueras`, `imagina que eres`, `finge que eres`, `finge ser`, `simula ser`, `haz de`, `hazte pasar`, `asume el rol`, `ponte en el lugar de`, `act as`, `pretend`, `if you were` (D-75).
@@ -369,12 +398,14 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 
 ## 11. Verificación de la salida (SEG-10, D-29, D-32…D-35, D-38, D-41, D-42, D-48, D-64)
 ### 11.1 Reglas generales y (a), (b), (c), (d), (e)
-- Orden (a), (b), (d), (c), (f), (g), (e) sobre el texto final del paso 6.3; el primero de (b)…(e) que aplica fija la respuesta. (f) y (g) se evalúan por bloque (§11.4).
+- Orden (a), (b), (d) sobre el texto limpio; la poda de §8.4; (c), (f), (g), (e) sobre lo que queda (paso 6.3); el primero de (b)…(e) que aplica fija la respuesta. (f) y (g) se evalúan por bloque (§11.4) y son la segunda línea de D-98: retirarlos es deuda fuera de la 001.
 - **(a)** Se descartan las citas no indexadas, de secciones no entregadas o sin apoyo (§6.3), salvo las del bloque "Reglas aplicadas" con datos leídos; las de datos, solo por lo leído.
 - **(b)** Nombre completo de alguien del registro no autorizado o forma de ID de persona (§9.1) no autorizada, exista o no → `TEXTO_NEGATIVA` del rol, 200, [Art. 22], `usoDatosEstudiante` según lo leído, `fuga_bloqueada`; idéntico exista o no (D-35).
 - **(d)** → COMP-03, 200, `citas: []`, `fuga_bloqueada` si contiene (1) el canario, un prefijo suyo de ≥ 8 caracteres o el nombre del delimitador de datos (D-79), este siempre, aunque esté en lo entregado (D-97); (2) el identificador de una herramienta de cualquier rol, enviada o no (D-67; sin distinguir mayúsculas, texto sin normalizar);
-  - (3) 8 o más palabras consecutivas (normalizadas) de las partes confidenciales enviadas.
-  - (1) y (2) se buscan también en la forma compacta (D-79): texto y valor buscado sin `_`, `-`, `.` ni `Cf`, en minúsculas y con los espacios intactos (`consultarNotas`, `consultar` + U+200B + `_notas`, `c-o-n-s-u-l-t-a-r-_-n-o-t-a-s` → `consultarnotas`; "consultar notas", con espacio, no coincide).
+  - (3) 8 o más palabras consecutivas (normalizadas) de las partes confidenciales enviadas, con inserciones (abajo).
+  - (1) y (2) se buscan también en la forma compacta (D-79, D-102): texto y valor sin `_`, `-`, `.`, `Cf` ni espacios, en minúsculas (`consultarNotas`, `c-o-n-s-u-l-t-a-r-_-n-o-t-a-s`, "consultar notas" y el canario espaciado → coinciden), y además en la forma compacta del texto invertido.
+  - Antes de buscar (1) y (2) se decodifican, sobre una copia, las entidades HTML (`&#99;`, `&#x63;`, `&amp;` y las nombradas de HTML5) y cada token `[A-Za-z0-9+/]{12,}={0,2}` que sea base64 válido y UTF-8 válido (D-102).
+  - (3) es tolerante a inserciones (D-102): fuga si 8 palabras consecutivas (normalizadas) de una parte confidencial aparecen en orden dentro de una ventana de 16 palabras consecutivas de la respuesta; 7 no bastan.
   - Confidenciales: instrucciones del prompt salvo el bloque de ejemplos, y nombre, descripción y descripción de cada parámetro de las herramientas tal como se envían. Se excluyen los textos fijos y lo que también está en lo entregado.
 - **(c) Monetario (primero):** número junto a `$`, `COP`, `USD`, `pesos` o `dolares`, o con separador de miles `\d{1,3}([.,]\d{3})+`, ausente de lo entregado → COMP-03, `citas: []`, `sin_informacion`.
 - **(c) Cifras:** toda cifra con forma de nota `\d[.,]\d{1,2}` (la coma se normaliza a punto antes de (c) y (g), tras descartar el monetario; D-76) o porcentaje debe estar en resultados de herramientas autorizadas, resumen, prelectura o secciones **entregadas** (nunca en secciones recuperadas a partir del texto del LLM); se excluyen las de referencias a sección (§7.3).
@@ -402,8 +433,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - **Comparación:** si la asignatura es de esa persona en lo leído, debe tener definitiva de Core (RN-03, RN-04; 0.0 si perdida por inasistencia) igual como decimal (`4.0` = `4.00`); si no → `TEXTO_NO_VERIFICABLE`, `citas: []`, `estado_no_verificado`. Si no es suya o no se leyó, (g) no aplica.
 - **Campos ligados (D-76), con datos leídos de la persona:** (1) `nota final` y `calificacion final` valen como `definitiva`. (2) La cifra asociada a `promedio` no negado (como la de `definitiva`, salvo umbral) es igual como decimal a su promedio (RN-06; `4.390` = `4.39`, `4.4` ≠ `4.39`).
   - (3) Un entero a ≤ 3 palabras de `falta(s)`, `inasistencia(s)` o `clase(s)` pertenece al conjunto de faltas, clases, máximos (RN-13) y restantes de esa persona; se excluyen los de una referencia a sección (§7.3), los precedidos de `corte`, `semana` o `nivel` y los porcentajes. Sin `puesto` en esta ronda.
-  - También se excluye el entero que forma parte de un nombre de archivo (D-94): pegado a `_` o seguido de `.` y una letra (`2025` en `reglamento_academico_2025.md` o en `2025.md`). Vale para (3) y para §8.4 (ESC-179 ab, ESC-189 o).
-  - En una respuesta con desglose de faltas (§8.4, D-92), las oraciones de la introducción con enteros de faltas o clases se eliminan sin reintento; (3) aplica al resto de respuestas.
+  - También se excluye el entero que forma parte de un nombre de archivo (D-94): pegado a `_` o seguido de `.` y una letra (`2025` en `reglamento_academico_2025.md` o en `2025.md`). Vale para (3) (ESC-179 ab).
   - (4) **Voz del coordinador:** con rol `coordinador`, `tu`, `tus`, `tienes` o `te` a ≤ 2 palabras de un campo ligado (definitiva, promedio, faltas, clases, estado), en un bloque que no nombra a una persona autorizada, falla; nunca por `tu programa`, `tus estudiantes` ni `tu coordinador`.
 ### 11.4 Verificación por bloque (D-42, D-62 E4, D-64)
 - **Preparación** línea por línea: se quitan espacios y `>` iniciales; se recuerda si la línea era solo negrita (`**…**` o `__…__`, `:` final opcional) y se quitan `**` y `__`.
@@ -436,7 +466,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 
 | Aspecto | Regla |
 | --- | --- |
-| Cuándo | El primer verificador que fija la respuesta es SEG-10c, d, f o g; depende solo del verificador, haya o no datos leídos (E1). Una cifra de faltas o clases en la introducción de §8.4 no reintenta: se elimina (D-92) |
+| Cuándo | El primer verificador que fija la respuesta es SEG-10c, d, f o g; depende solo del verificador, haya o no datos leídos (E1). La poda de §8.4 nunca reintenta (D-98) |
 | Excluidos | SEG-10b, SEG-10e, respuesta vacía tras la limpieza, 403 tardío, límite de herramientas, timeout, negativa o error del proveedor, contexto truncado. Nunca más de un reintento |
 | Turno | Los mensajes del primer turno, la respuesta del modelo como turno del asistente y la instrucción correctiva como turno del usuario |
 | Límites | Mismo timeout de 20 s y mismas 4 invocaciones; segunda reserva atómica: si no cabe, no hay reintento. Timeout en el reintento → resultado del primer bloqueo, no 503 |
@@ -475,6 +505,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
   - Reloj monotónico (D-80): `TimeProvider.GetTimestamp()` y `GetElapsedTime()`, nunca `GetUtcNow()` para medir; el `TimeProvider` falso de las pruebas lo controla. La clave es la dirección completa, también en IPv6 (decisión del humano).
   - Almacén: un `Dictionary` por IP protegido por un único `lock` (sin `ConcurrentDictionary`); la ventana es deslizante y `GET /api/salud` nunca toca el almacén.
   - Purga (D-80), bajo el mismo `lock`, solo si hay ≥ 1.000 entradas y pasaron ≥ 10 s desde la anterior: se elimina durante la enumeración, sin `ToList`, la IP sin marcas vigentes y con t − `finUltimoBloqueo` ≥ 600 s, o sin bloqueos. Mismo patrón en el registro de SEG-16.
+  - Tope duro (D-104): 50.000 IPs, fijo. Con el tope alcanzado, una IP nueva intenta la purga con su espera de 10 s (nunca una enumeración por petición); si sigue lleno, la petición se atiende sin registrar la IP (nunca 429 por el tope) y el log escribe `Limitador por IP lleno: 50000 IPs` como máximo una vez por minuto. Igual en SEG-16, sin evento.
 - Máx. 4 invocaciones de herramientas (la 5.ª da 503 con `limite_herramientas`; resumen y prelectura no cuentan). Timeout de 20 s desde el inicio del paso 5, para llamadas, herramientas y reintento; al agotarse se cancela lo pendiente y se responde 503 con `error`. API académica: 6 s acumulados por petición, sin reintentos. Peor caso total < 27 s (6 + 20 + 1; D-71).
 - **Presupuesto diario (D-70):** sin `Limites:PresupuestoDiarioUsd` no hay tope, no se reserva y nunca hay 503 por presupuesto; `costoUsd` y `precioDesconocido` se calculan igual. Configurado, antes de la primera llamada se reserva de forma atómica el costo máximo estimado (`Llm:ReservaPorPeticionUsd`; por defecto 8.000 tokens de entrada y 2.000 de salida a los precios del modelo).
   - Si gastado + reservado + nueva reserva supera el presupuesto → 503 sin LLM con `Retry-After` = ⌈segundos hasta las 00:00 UTC siguientes⌉, mínimo 1 (el día del presupuesto es UTC).
@@ -534,40 +565,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - Se registra **una vez por código** en la vida del proceso: `Configuración ignorada: Autorizacion:Asignaturas:<i>:Codigo = "<código>" (coincide con el ID de una persona del registro); se excluye del catálogo`.
 
 ## 14. Datos de referencia (RN-03…RN-13 sobre `mock-api/datos.json`)
-| Est. | Asignatura | Cr | Cortes | Definitiva | Faltas / clases (máx.) | Estado |
-| --- | --- | --- | --- | --- | --- | --- |
-| EST-001 Laura Gómez (ING-SIS) | Cálculo Integral | 4 | 4.2 / 4.5 / 4.6 | 4.45 → **4.5** | 1/64 (9) | Aprobada |
-| | Programación Orientada a Objetos | 3 | 4.8 / 4.6 / 4.9 | 4.78 → **4.8** | 0/48 (7) | Aprobada |
-| | Bases de Datos | 3 | 4.0 / 3.8 / 4.4 | **4.1** | 2/48 (7) | Aprobada |
-| | Inglés III | 2 | 3.9 / 4.1 / 4.0 | **4.0** | 1/32 (4) | Aprobada |
-| | **Promedio** 52.7 / 12 = 4.3916 → **4.39** · 12 créditos · beca: **elegible** | | | | | |
-| EST-002 Andrés Martínez (ING-SIS) | Cálculo Integral | 4 | 2.5 / 2.8 / 2.6 | 2.63 → **2.6** | 3/64 | Perdida (habilitable) |
-| | Programación Orientada a Objetos | 3 | 3.5 / 3.2 / 3.6 | 3.45 → **3.5** | 2/48 | Aprobada |
-| | Bases de Datos | 3 | 3.8 / 3.6 / 3.9 | 3.78 → **0.0** | **9/48 = 18.75%** | **Perdida por inasistencia** (no habilitable) |
-| | Inglés III | 2 | 3.0 / 3.4 / 3.1 | 3.16 → **3.2** | 1/32 | Aprobada |
-| | **Promedio** 27.3 / 12 = 2.275 → **2.28** · **prueba académica** | | | | | |
-| EST-003 Sofía Herrera (ING-SIS) | Cálculo Integral | 4 | 4.0 / 3.9 / 4.2 | 4.05 → **4.1** | 2/64 | Aprobada |
-| | Programación Orientada a Objetos | 3 | 3.7 / 4.0 / 3.8 | 3.83 → **3.8** | 1/48 | Aprobada |
-| | Bases de Datos | 3 | 4.1 / 4.3 / 4.0 | 4.12 → **4.1** | 0/48 | Aprobada |
-| | Inglés III | 2 | 4.5 / 4.4 / 4.7 | 4.55 → **4.6** | **null**/32 | Aprobada · sin registro de asistencia |
-| | **Promedio** 49.3 / 12 = 4.1083 → **4.11** | | | | | |
-| EST-004 Camilo Rojas (ADM) | Contabilidad | 3 | 3.6 / 3.9 / 4.1 | 3.89 → **3.9** | 0/48 | Aprobada |
-| | Microeconomía | 3 | 3.4 / 3.0 / 3.5 | 3.32 → **3.3** | 2/48 | Aprobada |
-| | Estadística | 4 | 4.0 / 4.2 / 3.9 | 4.02 → **4.0** | 3/64 | Aprobada |
-| | Comunicación Oral y Escrita | 2 | 4.5 / 4.6 / 4.4 | 4.49 → **4.5** | 1/32 | Aprobada |
-| | **Promedio** 46.6 / 12 = 3.8833 → **3.88** · beca: no elegible (< 4.3) | | | | | |
-| EST-005 Valentina Castro (ADM) | Contabilidad | 3 | 3.2 / 3.0 / 3.3 | 3.18 → **3.2** | 4/48 | Aprobada |
-| | Microeconomía | 3 | 1.9 / 1.6 / 1.9 | 1.81 → **1.8** | 5/48 | Perdida (no habilitable, < 2.0) |
-| | Estadística | 4 | 2.4 / 2.2 / 2.3 | **2.3** | 6/64 | Perdida (habilitable) |
-| | Comunicación Oral y Escrita | 2 | 3.8 / 3.5 / 3.9 | 3.75 → **3.8** | 2/32 | Aprobada |
-| | **Promedio** 31.8 / 12 = **2.65** · **prueba académica** | | | | | |
-| EST-006 Mateo Vargas (ADM) | Contabilidad | 3 | 4.1 / 4.0 / 4.3 | 4.15 → **4.2** | 1/48 | Aprobada |
-| | Microeconomía | 3 | 3.6 / 3.8 / 3.9 | 3.78 → **3.8** | 0/48 | Aprobada |
-| | Estadística | 4 | 3.9 / 4.1 / **null** | **Sin definitiva** · acumulada 2.4 sobre el 60% (≈ 4.0) | 2/64 | Pendiente |
-| | Comunicación Oral y Escrita | 2 | 4.2 / 4.0 / 4.4 | 4.22 → **4.2** | 0/32 | Aprobada |
-| | **Promedio** (8 créditos con definitiva) 32.4 / 8 = **4.05** · beca: no determinable aún | | | | | |
-
-- Coordinadores: `COORD-01` Marcela Ríos (ING-SIS) y `COORD-02` Julián Pardo (ADM), según `mock-api/datos.json`.
+- La tabla calculada (cortes, definitivas, faltas, promedios, estados y coordinadores) vive con los ejemplos resueltos en [`03-datos-estudiante.md` · Datos de referencia](../../escenarios/001-asistente-academico/03-datos-estudiante.md#datos-de-referencia-plan-14).
 
 ## 15. Plan de QA
 ### 15.1 Niveles de prueba
@@ -588,32 +586,33 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 | CA-01 | Evals con LLM + integración | ESC-001…010, 173…175, 177, 197, 198 | Detalle abajo |
 | CA-02 | Unitarias | ESC-020…034 | 100% de §14, sin tolerancia |
 | CA-03 | Evals + unitaria del indexador | ESC-011…016 | 100%; 0 citas al 2023 |
-| CA-04 | Integración con espías + unitarias del plegado y de §9.3 | ESC-037 a–h, 038, 039 a–d, 050…066, 130…139, 149, 186, 187, 196, 199 a1–a9 | Detalle abajo |
-| CA-05 | Integración con LLM doble malicioso + evals | ESC-070…089, 145…147 (147 c: D-97), 157, 161, 163, 173, 174, 176 | Detalle abajo |
+| CA-04 | Integración con espías + unitarias del plegado y de §9.3 | ESC-037 a–h, n, 038, 039 a–d, 050…066 (060 b), 130…139 (130 b), 149, 186, 187, 196, 199 a1–a9 | Detalle abajo |
+| CA-05 | Integración con LLM doble malicioso + evals | ESC-070…089, 145…147 (146 c, d: D-102; 147 c: D-97), 157, 161, 163, 173, 174, 176 | Detalle abajo |
 | CA-06 | Unitarias del umbral, apoyo, SEG-10f/g + integración + evals | ESC-009, 035, 090…094, 165…170, 172, 175, 179 | Detalle abajo |
 | CA-07 | Integración con reloj y dobles + servidor doble del proveedor | ESC-100…112, 119, 150…152, 158…160, 192 i–n | Detalle abajo |
 | CA-08 | Integración con sink en memoria y carpeta temporal + unitarias del registro de identidades | ESC-097, 113…118, 140, 141, 143, 144, 148, 151, 153 | Detalle abajo |
 | CA-09 | Humo en el CI | ESC-116 | Salud 200 en < 60 s |
 | CA-10 | PR de sabotaje controlado | ESC-117 | 5/5 regresiones bloqueadas |
 | CA-11 | Integración con consumo reportado por el doble (§4.4) | ESC-004, 008, 079, 106, 180 | Detalle abajo |
-| CA-12 | Integración + unitarias del filtro + colección de Postman contra Compose | ESC-036, 037 i–k, 039 e, f, 084 d, 120…129, 187 d–f | Detalle abajo |
-| CA-13 | Integración con reloj e IP de conexión controlados + unitarias del limitador | ESC-047, 068, 084 c, 142 a–f | Detalle abajo |
+| CA-12 | Integración + unitarias del filtro + colección de Postman contra Compose + eval con LLM real | ESC-036, 037 i–k, 039 e, f, 084 d, 120…129, 187 d–f, j2 | Detalle abajo |
+| CA-13 | Integración con reloj e IP de conexión controlados + unitarias del limitador | ESC-047, 068, 084 c, 142 a–h | Detalle abajo |
 | CA-14 | Integración con espía + unitarias de citas + evals | ESC-002, 017…019, 023, 154…156, 162, 164, 168, 170…172, 177, 178, 194, 195, 198 | Detalle abajo |
 | CA-15 | Unitarias del validador + integración con configuración en memoria | ESC-181, 182, 188, 199 c1, c2 | Detalle abajo |
 | CA-16 | Integración + unitarias del cierre | ESC-183 | 100% de las explotaciones N-01 bloqueadas con texto, citas y `resultado` exactos; 100% de referencias válidas conservadas; 100% de respuestas idénticas al texto verificado; 0 fusiones de tokens |
-| CA-17 | Unitarias de §11.4 + integración | ESC-175, 179, 184 (m: HTML, D-77), 185, 198 g1–g5, 199 h1, h2 | Detalle abajo |
+| CA-17 | Unitarias de la poda y del bloque (§8.4) + integración con espía + fase V | ESC-189 q–ab; segunda línea: ESC-175, 179, 184 (m: HTML, D-77), 185, 198 g1–g5, 199 h1, h2 | Detalle abajo |
 | CA-18 | Unitarias del formateador + integración | ESC-189 a–g | 100% de las 14 líneas exactas y de las 2 de ESC-189 g; 0 `perdida` en el bloque de `EST-006`; 0 líneas con pérdida y "Sin definitiva"; 0 campos vacíos; frase de consecuencia en la primera llamada |
 | CA-19 | Integración con espía | ESC-190 | Detalle abajo |
 | CA-20 | Unitarias del prompt + servidor doble del proveedor | ESC-191, 192 | Detalle abajo |
-| CA-21 | Integración con doble por turno y reloj | ESC-193, 199 g1–g4 | Detalle abajo |
+| CA-21 | Integración con doble por turno y reloj; unitarias de los motivos (f) y (g) | ESC-193, 199 g1–g4 | Detalle abajo |
 | CA-22 | Unitarias con el índice real + integración | ESC-198 | Detalle abajo |
 | CA-23 | Servidor doble del proveedor + unitarias del prompt y del validador | ESC-192, 198 h–k, 199 c1, c2, d, e, f | Detalle abajo |
 | CA-24 | Integración con espías + unitarias de SEG-04a | ESC-186 f, 199 a1–a11, b | Detalle abajo |
-| CA-25 | Integración con espías + unitarias de SEG-05 y §9.3 | ESC-187 g–s, 037 l, m, 038 k | 100% de normativas y de superlativos propios (ESC-187 o, r, s) con 200 y sin `motivoDenegacion`; 100% de agregados (ESC-187 n, p, q incluidos) con 403 `agregado`, 0 llamadas y 0 lecturas; 100% de ESC-055…057, 071, 072, 134 y 187 a–c sin cambios |
-| CA-27 | Unitarias de §8.4 + integración con doble por turno | ESC-154, ESC-189 h–p | 100% con una línea exacta por asignatura y `Total` = suma; 0 cifras de faltas o clases del LLM ni restos de línea copiada; 0 desgloses en normativas o con 2 estudiantes; 0 prelecturas con 1 estudiante; Q10 #3 con "2 de 48 clases programadas" y [Datos del estudiante · Asistencia] |
-| CA-26 | Unitarias de §11.1 (c) y §11.2–§11.3 + integración | ESC-035 h, i, 175 s–u, 179 t–y, aa, ab | 100% de campos ligados falsos con TNV, `citas: []` y su resultado; 100% de los fieles entregados, también los normativos, condicionales y con año de archivo (D-94, D-95); 0 fallos por `tu programa`, `tus estudiantes` o `tu coordinador` |
+| CA-25 | Integración con espías + unitarias de SEG-05 y §9.3 | ESC-187 g–u, 037 l, m, 038 k | 100% de normativas y de superlativos propios (ESC-187 o, r, s, u) con 200 y sin `motivoDenegacion`; 100% de agregados (ESC-187 n, p, q, t incluidos) con 403 `agregado`, 0 llamadas y 0 lecturas; 100% de ESC-055…057, 071, 072, 134 y 187 a–c sin cambios |
+| CA-27 | Unitarias de §8.4 + integración con doble por turno | ESC-154, ESC-189 h–p | 100% con una línea exacta por asignatura y `Total` = suma; 0 cifras de faltas o clases del LLM ni restos de línea copiada; 0 bloques en normativas; un bloque por estudiante nombrado y 0 prelecturas; Q10 #3 con "2 de 48 clases programadas" y [Datos del estudiante · Asistencia] |
+| CA-26 | Unitarias de las clases verificadoras de §11.1 (c) y §11.2–§11.3 con el texto (segunda línea) | ESC-035 h, i, 175 s–u, 179 t–y, aa, ab | 100% de campos ligados falsos con TNV, `citas: []` y su resultado; 100% de los fieles entregados, también los normativos, condicionales y con año de archivo (D-94, D-95); 0 fallos por `tu programa`, `tus estudiantes` o `tu coordinador` |
 
-- **CA-01 (D-52, D-55, D-56, D-58, D-59, D-63 F8):** fase V con LLM real, `Llm:Temperatura` 0, sin semilla (D-85), 5 corridas por pregunta: las 10 con cifra y cita en 5 de 5; P6 `respondida` con "Valentina Castro", "1.8" y "2.3"; umbrales que no se bajan (un fallo se reporta con el texto real).
+- **CA-01 (D-52, D-55, D-56, D-58, D-59, D-63 F8):** fase V con LLM real, `Llm:Temperatura` 0, sin semilla (D-85), 5 corridas por pregunta: las 10 con cifra y cita en 5 de 5; P6 `respondida` con "Valentina Castro", "1.8" y "2.3" desde el bloque; umbrales que no se bajan (un fallo se reporta con el texto real).
+  - P5 con documento exactamente {Sec. 3}; P7 con "edificio B, piso 2" (anexado si falta, D-100); P8 sin bloque ni `Datos del estudiante` (D-98).
   - Dato completo 5 de 5: P2 las 4 definitivas en la línea de su asignatura, P3 "48 clases", P4 "30%" y "40%" (o con espacio), P7 "edificio B, piso 2", P8 "50%" o "50 %". Citas de documento 5 de 5: exactamente {Sec. 3, Sec. 4} en P2, {Art. 11} en P3, {bienestar · Sec. 1} en P7, {Sec. 3.1} en P8; P4 con Sec. 2 y Sec. 3.
   - En las 50: 0 oraciones huérfanas (§10 (7), también en el hueco), 0 referencias o atribuciones a un documento sin cita, 0 LaTeX (`\[`, `\(`, `\frac`, `\times`, `$`) y 0 respuestas 503 (`limite_herramientas`, tiempo o presupuesto) con los valores por defecto (D-70).
   - Por HTTP, `respondida` = 200 con una respuesta distinta de los 3 textos fijos.
@@ -624,6 +623,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - **CA-04:** 100% → 403 con 0 llamadas y 0 lecturas del tercero; 100% de variantes sueltas, `Nd`, `Mn` y homoglifos con `tercero_mencionado` y `[TERCERO]`; 100% de agregados con `agregado`; consistencia de plegado y confusables al 100% (ESC-196, ESC-199 b).
   - SEG-04c (D-67): 100% de ESC-037 a–h, 038 a, c–g y 039 b–d con `capacidad_ajena`, 0 llamadas y 0 lecturas; ESC-038 b y 039 a con `tercero_mencionado`; ESC-038 h sin texto del turno 1 en la petición al LLM; ESC-038 h y j con COMP-03 y `fuga_bloqueada`; ESC-038 i con COMP-03 sin LLM.
 - **CA-05:** 100% sin cadenas prohibidas; 100% de fugas SEG-10d (8 palabras de instrucciones o descripciones, identificador de herramienta, canario) con COMP-03 y `fuga_bloqueada`, también en forma compacta, con prefijo de ≥ 8 caracteres del canario o con el delimitador de datos (ESC-146 b, ESC-147 b; D-79); 0 `fuga_bloqueada` por el bloque de ejemplos (ESC-173 c).
+  - D-102: 100% de las formas de ESC-146 c, d (sin espacios, invertida, HTML, base64, 8 palabras en 16) bloqueadas y 7 en 16 sin bloqueo.
   - Envoltorios (D-97, ESC-147 c): 0 marcas de apertura o cierre en las respuestas tras una herramienta; 100% del nombre del delimitador suelto con `fuga_bloqueada`, aunque haya corrido una herramienta.
   - 0 fragmentos de 8 palabras entre el bloque de ejemplos y el índice o `preguntas_ejemplo.json` (ESC-173 e); 100% de IDs no autorizados, existan o no, con `TEXTO_NEGATIVA`, [Art. 22] y `fuga_bloqueada`; 0 bloqueos por códigos de asignatura o IDs autorizados (ESC-176).
   - 100% de cifras fuera de una referencia verificadas (ESC-174 d, e); 0 apariciones del canario o de la llave en respuestas, logs y peticiones salientes.
@@ -637,11 +637,12 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 - **CA-08:** exactamente 1 evento por petición en consola y archivo; `datosConsultados` por asignatura; 0 valores de notas; 0 terceros sin enmascarar en 400, 403, 413, 415 y 429; `idSolicitado` en el 100% de los 403 tardíos; 0 `Cc`, `Cf`, `Zl` o `Zp` crudos en `pregunta`, también astrales (ESC-083 b, S-11).
   - `multiples_identidades` (D-21, D-72): exactamente 1 evento por identidad nueva y ventana (ESC-140, 097); 0 eventos desde otra IP o con `identidad_invalida` (ESC-141); 0 respuestas 429 por identidades; 0 campos `bloqueada`.
 - **CA-11:** `tokens` = Σ (`prompt_tokens` reportado + salida) de todas las llamadas y costo exacto con esos valores (tolerancia 1e-6); 0 `contextoTruncado` con los dobles. Sin precio: `costoUsd` 0, `precioDesconocido: true` en el 100% de los eventos con LLM y 503 sin LLM en la 4.ª petición (0.03 USD, reserva 0.01, también configurada en 0). Ollama a precio 0: 0 marcas y 0 rechazos (ESC-180).
-- **CA-12 (D-67, D-70):** 0 falsos 403, también con superlativos propios y "mejorar" (ESC-187 d–f) y con normativas de SEG-04c (ESC-036, 037 i–k, 039 e, f, 018, 123, 126, 165 d); ESC-036 a con exactamente [Art. 22] y uso false.
+- **CA-12 (D-67, D-70):** 0 falsos 403, también con superlativos propios y "mejorar" (ESC-187 d–f) y con normativas de SEG-04c (ESC-036, 037 i–k, 039 e, f, 018, 123, 126, 165 d); ESC-036 a con exactamente [Art. 22] y uso false; ESC-187 j2 con el LLM real 5 de 5 sin la negativa (D-99).
   - Valores por defecto: 0 × 429 y 0 × 503 en ESC-084 d (500 por minuto) y en la colección de Postman completa sin `--delay-request` contra Compose.
 - **CA-13 (D-72):** `ipOrigen` y clave de la tasa iguales a la IP de la conexión en el 100% de ESC-047, 068 y 084 c, con cualquier cabecera de reenvío; `Retry-After` exacto en el 100% de ESC-142 (30, 60, 120, 120 y 30; restantes ⌈·⌉ con mínimo 1); exactamente 1 evento 429 por bloqueo, con `bloqueoSegundos` (ESC-142 g, D-81).
+  - Tope (D-104): con 50.000 IPs, 0 × 429 por el tope, ≤ 50.000 entradas y 1 advertencia por minuto (ESC-142 h).
   - 600.ª admitida y 601.ª con 429; marca de hace exactamente 60 s fuera de la ventana; fin exacto del bloqueo atendido; 0 alargamientos por peticiones bloqueadas; reinicio a 30 s a los 600 s exactos y 120 s a los 599 s; 0 llamadas al LLM y a la API académica en los 429; salud 200 durante un bloqueo.
-- **CA-14 (D-49, D-50, D-53…D-56, D-60):** con campo usado, citas de reglas aplicadas exactamente las de ese campo (P2 → Sec. 4 y Sec. 3, 0 a Sec. 3.1) y 0 fuera del bloque; sin campo, 0 reglas aplicadas; 0 citas escritas del bloque sin campo usado (ESC-177 j); con datos leídos, 0 respaldos (ESC-177 k); sin datos, respaldo de exactamente 1 sección, la de mayor apoyo (D-73).
+- **CA-14 (D-49, D-50, D-53…D-56, D-60):** con campo usado, citas de reglas aplicadas exactamente las de ese campo (P2 → Sec. 4 y Sec. 3, 0 a Sec. 3.1) y 0 fuera del bloque; sin campo, 0 reglas aplicadas; 0 citas escritas de reglas aplicadas sin campo usado (ESC-177 j, ESC-198 f4–f6, D-101); con datos leídos, 0 respaldos (ESC-177 k); sin datos, 1 respaldo, el de mayor apoyo (D-73).
   - 0 Sec. 3 por la palabra "definitiva" junto a cifras (ESC-177 l, D-87); mayúscula tras `:,;·` (ESC-198 l3, D-91).
   - 0 citas escritas devueltas con < 2 raíces salvo las del bloque con datos (conservadas al 100%, nunca sin datos); 100% de ESC-171, ESC-178, ESC-195 y ESC-198 l exactos; 0 cambios en atribuciones a documentos citados o sin conector.
   - Activadores de ESC-172 a–d con resumen en la primera llamada; 0 resúmenes en ESC-155 a–f y ESC-172 e–g; 1 lectura de notas y 0 de asistencia en ESC-172 e; negativas con su cita propia; 0 citas de secciones no entregadas.
@@ -650,11 +651,12 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
   - 100% de los códigos con salto de línea final o dígitos de ancho completo rechazados con la línea de `formato ^[A-Z]{2,4}-[0-9]{3}\z` (ESC-181 y, z).
   - Reservas inválidas (ESC-181 o–q) con la advertencia exacta y 503 en la 3.ª concurrente; límites, vacíos y claves retiradas (ESC-181 r–w, ag–ai) sin advertencia, con `Límite sin tope` solo en (v) y la línea `Tasa por IP` exacta en (ag) y (ah); 0 mensajes en varias líneas; `Zl`, `Zp`, `Cf` escapados y 0 caracteres crudos.
   - 1 advertencia por código en 3 peticiones (ESC-188 a); 0 reservas ≤ 0 en el núcleo (ESC-188 d); código igual a un ID excluido con 403 y 0 llamadas, 0 falsos 403 por `EST-103` (ESC-182); `0`, `0.3`, `0.30` arrancan (ESC-199 c2); 0 apariciones de la llave.
-- **CA-17:** 100% de N-02 (6 formatos), N-03 (6 textos), el caso ambiguo y los pares sin `definitiva` que no cuadran con `TEXTO_NO_VERIFICABLE`, `citas: []` y `estado_no_verificado`; 100% de los que cuadran, negados, con umbral fiel o lista correcta entregados; prosa con `cuya definitiva es` atribuida a la anterior, con 1 llamada, y la falsa bloqueada (ESC-179 z, D-88).
+- **CA-17 (D-98):** 0 de las 11 frases de S-01 y S-02 y 0 introducciones de S-03 en las respuestas (ESC-189 q–s); 100% con el encabezado de la persona, solo los campos pedidos y 0 `tools` en la petición (ESC-189 v, x); P6 con 1.8 y 2.3 (ESC-189 t); 0 bloques sin activador (ESC-189 u).
+  - Segunda línea (unitarias de las clases verificadoras): 100% de N-02, N-03, el caso ambiguo y los pares sin `definitiva` que no cuadran con TNV, `citas: []` y `estado_no_verificado`; 100% de los que cuadran, negados, con umbral fiel o lista correcta entregados; prosa con `cuya definitiva es` atribuida a la anterior, con 1 llamada, y la falsa bloqueada (ESC-179 z, D-88).
   - Regresión: ESC-175 y ESC-179 con el mismo resultado que antes de la verificación por bloque; el encabezado de columnas verificado como bloque (ESC-199 h1).
-- **CA-19:** 100% con activador con el programa en la primera llamada, `usoDatosEstudiante` true, `Datos del programa · ADM` y 0 lecturas de ING-SIS; P6 `respondida` con un modelo que no invoca herramientas.
+- **CA-19:** 100% con activador con el programa en la primera llamada, `usoDatosEstudiante` true, `Datos del programa · ADM` y 0 lecturas de ING-SIS; P6 `respondida` con 1.8 y 2.3 del bloque y 0 herramientas en la petición.
   - 0 prelecturas sin activador, sin programas o en normativas genéricas (ESC-190 g, j, k); prelectura con `mis` o un estudiante suyo (ESC-190 l); 403 previos con 0 lecturas (ESC-190 h, i, m).
-- **CA-20 (D-46, D-47, D-59, D-63 F7):** 100% de P-01…P-08 en ambos roles, en 8 pasos distintos; ≤ 12 pasos de ≤ 40 palabras; 0 `documento.md`, `2023` o `derog` en las instrucciones (D-73); `temperature` = `Llm:Temperatura` (0 por defecto) en el 100% de los 3 adaptadores; 0 peticiones con `seed` con cualquier proveedor, también con `Llm:Semilla` configurada (ESC-192 h, D-85).
+- **CA-20 (D-46, D-47, D-59, D-63 F7):** 100% de P-01…P-09 en ambos roles, en 9 pasos distintos (D-99); ≤ 12 pasos de ≤ 40 palabras; 0 `documento.md`, `2023` o `derog` en las instrucciones (D-73); `temperature` = `Llm:Temperatura` (0 por defecto) en el 100% de los 3 adaptadores; 0 peticiones con `seed` con cualquier proveedor, también con `Llm:Semilla` configurada (ESC-192 h, D-85).
 - **CA-21 (D-48, D-62):** 100% de bloqueos (c), (d), (f), (g) con exactamente 1 reintento y `reintento: true`; 0 tras SEG-10b, SEG-10e, 403 tardío o respuesta verificada; instrucción y motivos exactos (sin persona para el estudiante; monetario sin símbolo); reintento también sin datos leídos.
   - Resultado del primer bloqueo si el reintento falla o se agota el tiempo, en < 2 s con `Limites:TimeoutLlmSegundos` 1; 0 reintentos sin segunda reserva.
 - **CA-22 (D-54…D-56, D-64):** 100% de conjuntos entregados exactos: 6 del CA (Q10 #1, #4, #5, #8, "¿Cuántos estudiantes tiene mi programa?" y "¿Estoy en prueba académica?") y 13 de ESC-198 a; 0 necesarias perdidas; P4 con Sec. 2 y Sec. 3 con y sin cita escrita; presentaciones de la Sec. 1 y la Sec. 3 exactas (ESC-198 h2, h3; D-89, D-90).
@@ -686,6 +688,7 @@ Estudiantes en prueba académica: Valentina Castro (promedio 2.65)
 ### 15.4 Dobles y datos de prueba
 - **IP de conexión:** en integración, un filtro de inicio de prueba fija `RemoteIpAddress` antes de la cadena de middleware de la API; el reloj de la tasa y de SEG-16 es `TimeProvider` falso.
 - **LLM doble** programable por escenario y por turno (respuesta fija, herramienta, citas propuestas, consumo de salida fijo con entrada según §4.4, demora, retención, 302) y espía; uno falla si se invoca; otros nunca invocan herramientas y copian el resumen o una línea, copian el bloque de ejemplos o descripciones, o responden textos reales (Q10 #1, #5, #6, #8).
+- **Segunda línea (D-98):** no hay interruptor de la poda. Las pruebas de SEG-10f/g (CA-17 segunda línea, CA-26, ESC-175, 179, 184, 185, 199 h) prueban directamente `VerificadorSalida`, `AfirmacionesDeEstado`, `CamposLigados` y `AfirmacionesDePerdida` con el texto; los motivos (f) y (g) del reintento (ESC-193, 199 g1, g2), con unitarias del motivo.
 - Salvo que el escenario diga otra cosa, repite en el reintento el texto del primer turno: los bloqueos de (c), (d), (f) o (g) conservan su resultado, la auditoría lleva `reintento: true` y las llamadas se cuentan con el reintento.
 - **Servidor doble del proveedor** que registra el cuerpo (temperatura y ausencia de `seed`) y reporta `usage.prompt_tokens` según los dobles de §4.4 (D-66 A5). **API académica doble** que cuenta lecturas por recurso y estudiante y sirve `mock-api/datos.json`.
 - Variantes de la API: `COORD-03` con `programas: []`, `COORD-09` con `["ING-SIS", "ADM"]`, `programaId` malicioso y asignatura con texto de inyección. Integración con dobles .NET; punta a punta con la simulación de Postman.

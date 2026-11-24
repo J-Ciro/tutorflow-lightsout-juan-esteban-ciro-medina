@@ -1,12 +1,15 @@
 # 10 · Verificación de los datos en la salida y reintento
 
-> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §2 paso 6, §11 · CA-06, CA-16, CA-17, CA-21, CA-26
+> Spec: [`spec.md`](../../specs/001-asistente-academico/spec.md) · Plan: [`plan.md`](../../specs/001-asistente-academico/plan.md) §2 paso 6, §11, §15.4 · CA-06, CA-16, CA-17 (segunda línea), CA-21, CA-26
 
 Salvo que se indique otra cosa:
 
 - base de conocimiento real; API académica doble con `mock-api/datos.json`;
 - el LLM doble responde en el reintento el mismo texto que en el primer turno, así que todo bloqueo de (c), (d), (f) o (g) lleva `reintento: true`;
-- `\n` es un salto de línea y `\|` una barra vertical; "real" = texto copiado de una corrida o de la auditoría N-01…N-07.
+- `\n` es un salto de línea y `\|` una barra vertical; "real" = texto copiado de una corrida o de la auditoría N-01…N-07;
+- **segunda línea (D-98):** la poda de plan §8.4 elimina antes de (c), (f), (g) y (e) las oraciones sobre personas;
+- sin interruptor de la poda (plan §15.4), las filas de Pérdidas y Definitivas con una oración sobre una persona, y ESC-183 d, e, son unitarias de las clases verificadoras con el texto; las de Reintento con una persona prueban el motivo (unitaria) y, de punta a punta, el reintento es el de CA-21;
+- las de SEG-10b y SEG-10d (ESC-183 b, c, ESC-035 f, ESC-193 c, f) van antes de la poda y no cambian. De punta a punta, ESC-189 q–ab.
 
 Estados de plan.md §14. Notación en [`README.md`](../README.md#notación).
 
@@ -14,12 +17,12 @@ Estados de plan.md §14. Notación en [`README.md`](../README.md#notación).
 
 | ID | Actor | Entrada | Resultado esperado | Regla |
 | --- | --- | --- | --- | --- |
-| ESC-183 a `@abuso` | EST-001; doble real "Tu promedio es 1 x.md .2" | "¿Cuál es mi promedio?" | La limpieza deja "Tu promedio es 1 .2"; la cifra partida se verifica como `1.2`, que no está en el resumen → 200 TNV; citas []; `numero_no_verificado`. Unitaria de la limpieza con []: exactamente "Tu promedio es 1 .2" | SEG-10c, D-41 |
+| ESC-183 a `@abuso` | EST-001; doble "Se aprueba con 1 x.md .2" (forma real de N-01) | "¿Cuál es la nota mínima para aprobar una asignatura?" | La limpieza deja "Se aprueba con 1 .2"; la cifra partida se verifica como `1.2`, que no está en lo entregado → 200 TNV; citas []; `numero_no_verificado`. Unitaria de la limpieza con []: exactamente "Se aprueba con 1 .2" | SEG-10c, D-41 |
 | ESC-183 b `@abuso` | EST-001; doble real "Tu promedio es 4.39, igual que EST a.md 002." | "¿Cuál es mi promedio?" | El texto final "…EST 002." tiene una forma de ID no autorizada → 200 NEG del estudiante; [Art. 22]; `fuga_bloqueada`; sin `reintento`. Unitaria con []: "Compárate con EST a.md 002." → exactamente "Compárate con EST 002." | SEG-10b, D-48 |
 | ESC-183 c `@abuso` | COORD-01; herramienta de programa; doble real "Valentina b.md Castro (EST a.md 005) tiene Microeconomía perdida." | "¿Qué estudiantes de mi programa perdieron materias?" | Texto final "Valentina Castro (EST 005) …": EST-005 es de ADM → 200 NEG del coordinador; [Art. 22]; `fuga_bloqueada` | SEG-10b |
 | ESC-183 d `@abuso` | EST-006; doble real "Tu definitiva x1.md x2.md x3.md x4.md es 4.0 en Estadística." | "¿Cuál es mi nota definitiva en Estadística?" | Texto final "Tu definitiva es 4.0 en Estadística.": 4.0 pasa SEG-10c (acumulada equivalente) pero Estadística no tiene definitiva → 200 TNV; citas []; `estado_no_verificado` | SEG-10g, D-41 |
 | ESC-183 e `@feliz` | EST-001; doble "Tu promedio es 4.39 (evaluacion_y_calificaciones.md · Sección 4)." | "¿Cuál es mi promedio ponderado del periodo?" | Sin cambios; citas exactamente [Sec. 4, Notas, Asistencia]; `respondida` | COMP-02, D-53 |
-| ESC-183 f `@alterno` | EST-001; doble "Tu promedio es 4.39 (x.md · Sección 9)." | Igual | "Tu promedio es 4.39."; citas exactamente [Sec. 4, Notas, Asistencia] (la Sec. 4 entra por el campo promedio); `respondida` | plan §10 (4), (5) |
+| ESC-183 f `@alterno` | EST-001; doble "Se aprueba con 3.0 (x.md · Sección 9)." | "¿Cuál es la nota mínima para aprobar una asignatura?" | Exactamente "Se aprueba con 3.0."; citas exactamente [Art. 5] (respaldo, sin datos); `respondida` | plan §10 (4), (5) |
 | ESC-183 g `@alterno` | EST-001; doble "Bienestar atiende de lunes a viernes de 8:00 a 17:00 (Documento.md · Sección 11)." | "¿Cuál es el horario de atención de Bienestar?" | SEG-10 recibe exactamente "Bienestar atiende de lunes a viernes de 8:00 a 17:00." y la `respuesta` es ese texto | D-41 |
 
 ## Pérdidas (SEG-10f, CA-06, CA-17)
@@ -167,5 +170,5 @@ LLM doble programable por turno.
 | ESC-199 g3 | EST-001 | "¿Cuánto cuesta la matrícula?" → "La matrícula cuesta $1.500.000." | Motivo "el valor 1.500.000 no está en las fuentes"; COMP-03 con `reintento: true` | D-62 E3 |
 | ESC-199 g4 | EST-001 (sin datos leídos) | "¿Cuál es la nota mínima para aprobar una asignatura?" → "Se aprueba con 3.5 (reglamento_academico_2025.md · Artículo 5)." | Motivo "la cifra 3.5 no está en los datos ni en las secciones entregados"; hay reintento aunque no se leyeron datos; TNV con `reintento: true`. Ningún motivo contiene "de tu" | D-62 E1 |
 
-- **ESC-193 f:** (1) "Andres Martinez sacó 2.6 en Cálculo" (SEG-10b); (2) "EST 099 tiene un promedio de 4.39." (SEG-10b); (3) tutorías con "Las tutorías se agendan escribiendo al buzón virtual de la decanatura." (SEG-10e); (4) detalle con EST-004 (403 tardío); (5) "Tu promedio es 4.39." (verificada).
+- **ESC-193 f:** (1) "Andres Martinez sacó 2.6 en Cálculo" (SEG-10b); (2) "EST 099 tiene un promedio de 4.39." (SEG-10b); (3) tutorías con "Las tutorías se agendan escribiendo al buzón virtual de la decanatura." (SEG-10e); (4) detalle con EST-004 con la pregunta de ESC-139, sin bloque (403 tardío); (5) "Tu promedio es 4.39." (verificada).
 - **ESC-193 g:** mensaje nuevo: "Tu respuesta anterior no se pudo verificar: la afirmación de pérdida de Mateo Vargas en Estadística no coincide con los datos entregados. Responde de nuevo usando solo los datos y las secciones entregados."
