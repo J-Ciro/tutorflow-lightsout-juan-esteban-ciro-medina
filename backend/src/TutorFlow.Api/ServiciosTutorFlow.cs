@@ -76,7 +76,8 @@ public static class ServiciosTutorFlow
         servicios.AddSingleton<LimitadorIdentidades>();
         servicios.AddSingleton(proveedor => new LimitadorTasaPorIp(
             proveedor.GetRequiredService<LimitesAsistente>().PreguntasPorMinutoPorIp,
-            proveedor.GetRequiredService<TimeProvider>()));
+            proveedor.GetRequiredService<TimeProvider>(),
+            AdvertirPor(proveedor.GetRequiredService<ILoggerFactory>().CreateLogger("TutorFlow.Limitador"))));
         servicios.AddSingleton(proveedor => ConfiguracionDelAsistente(proveedor, configuracion));
         servicios.AddScoped<PreguntarAsistente>();
         servicios.AddScoped<ProcesadorPregunta>();

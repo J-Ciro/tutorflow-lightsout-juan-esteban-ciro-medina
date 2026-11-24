@@ -10,7 +10,10 @@ public sealed class LimitadorTasaPorIp
     private const int SegundosDeReinicio = 600;
     private const int SegundosDelPrimerBloqueo = 30;
     private const int NivelMaximo = 3;
+    private const int TopeDeIps = 50_000;
+    private const int SegundosEntreAdvertencias = 60;
 
+    private static readonly TimeSpan EntreAdvertencias = TimeSpan.FromSeconds(SegundosEntreAdvertencias);
     private static readonly TimeSpan Ventana = TimeSpan.FromSeconds(SegundosDeVentana);
     private static readonly TimeSpan Reinicio = TimeSpan.FromSeconds(SegundosDeReinicio);
     private static readonly TimeSpan EntrePurgas = TimeSpan.FromSeconds(SegundosEntrePurgas);
@@ -19,12 +22,15 @@ public sealed class LimitadorTasaPorIp
     private readonly Dictionary<string, EstadoDeIp> _porIp = [];
     private readonly int _limite;
     private readonly TimeProvider _tiempo;
+    private readonly Action<string> _advertir;
     private long? _ultimaPurga;
+    private long? _ultimaAdvertencia;
 
-    public LimitadorTasaPorIp(int limite, TimeProvider tiempo)
+    public LimitadorTasaPorIp(int limite, TimeProvider tiempo, Action<string>? advertir = null)
     {
         _limite = limite;
         _tiempo = tiempo;
+        _advertir = advertir ?? (_ => { });
     }
 
     public ResultadoTasa Intentar(string ip)
@@ -32,15 +38,43 @@ public sealed class LimitadorTasaPorIp
         lock (_candado)
         {
             var ahora = _tiempo.GetTimestamp();
-            PurgarSiHaceFalta(ahora);
-            if (!_porIp.TryGetValue(ip, out var estado))
+            if (!_porIp.ContainsKey(ip) && _porIp.Count >= TopeDeIps)
             {
-                estado = new EstadoDeIp();
-                _porIp[ip] = estado;
+                AdvertirAlmacenLleno(ahora);
             }
 
-            return Decidir(estado, ahora);
+            PurgarSiHaceFalta(ahora);
+            var estado = ObtenerOAtenderSinRegistrar(ip);
+            return estado is null ? new ResultadoTasa(true, 0) : Decidir(estado, ahora);
         }
+    }
+
+    private EstadoDeIp? ObtenerOAtenderSinRegistrar(string ip)
+    {
+        if (_porIp.TryGetValue(ip, out var existente))
+        {
+            return existente;
+        }
+
+        if (_porIp.Count >= TopeDeIps)
+        {
+            return null;
+        }
+
+        var nuevo = new EstadoDeIp();
+        _porIp[ip] = nuevo;
+        return nuevo;
+    }
+
+    private void AdvertirAlmacenLleno(long ahora)
+    {
+        if (_ultimaAdvertencia is { } anterior && _tiempo.GetElapsedTime(anterior, ahora) < EntreAdvertencias)
+        {
+            return;
+        }
+
+        _ultimaAdvertencia = ahora;
+        _advertir($"Limitador por IP lleno: {TopeDeIps} IPs");
     }
 
     private ResultadoTasa Decidir(EstadoDeIp estado, long ahora)
