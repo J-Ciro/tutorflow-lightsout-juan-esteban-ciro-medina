@@ -10,7 +10,7 @@ namespace TutorFlow.Core.Tests.Asistente;
 public sealed class CitasD73Tests
 {
     private const string DesgloseDeBasesDeDatos = "Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7). Si superas 7 inasistencias pierdes la asignatura por inasistencia.\nTotal: 2 faltas";
-    private const string PreguntaFaltas ="¿Cuántas faltas tengo en Bases de Datos?";
+    private const string PreguntaFaltas = "¿Cuántas faltas tengo en Bases de Datos?";
     private const string PreguntaContabilidad = "¿Qué nota definitiva tengo en Contabilidad?";
     private const string PreguntaPerdidas = "¿Qué estudiantes de mi programa tienen alguna asignatura perdida?";
     private const string PreguntaEstudiantesDelPrograma = "¿Cuántos estudiantes tiene mi programa?";
