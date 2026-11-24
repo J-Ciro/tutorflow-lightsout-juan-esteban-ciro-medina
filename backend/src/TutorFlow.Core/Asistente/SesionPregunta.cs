@@ -39,4 +39,6 @@ internal sealed class SesionPregunta(
     public IReadOnlyList<SeccionDocumento> Secciones { get; set; } = [];
 
     public ActivacionResumen Activacion { get; set; } = ActivacionResumen.Ninguna;
+
+    public string? Desglose { get; set; }
 }

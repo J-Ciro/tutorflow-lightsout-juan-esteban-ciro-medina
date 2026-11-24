@@ -119,7 +119,7 @@ public static class FormateadorDatos
         $"{nota.Nombre} ({nota.Codigo}): corte 1 {Nota(nota.Cortes.Corte1)} (30%), corte 2 {Nota(nota.Cortes.Corte2)} (30%), corte 3 {Nota(nota.Cortes.Corte3)} (40%).";
 
 
-    private static string LineaDeAsistencia(ResultadoAsignatura resultado, bool terceraPersona)
+    internal static string LineaDeAsistencia(ResultadoAsignatura resultado, bool terceraPersona)
     {
         var voz = terceraPersona ? Tercera : Segunda;
         var nombre = resultado.Asignatura.Nombre;

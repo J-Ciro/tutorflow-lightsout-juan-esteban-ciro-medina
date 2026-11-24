@@ -28,10 +28,13 @@ internal static class ActivadorPrelectura
         && programas.Count > 0
         && (MencionaEstudianteDeSusProgramas(contexto, palabras, programas) || ActivaPorPalabras(palabras));
 
-    public static bool MencionaEstudianteDeSusProgramas(ContextoUsuario contexto, IReadOnlyList<string> palabras, IReadOnlyList<string> programas)
+    public static bool MencionaEstudianteDeSusProgramas(ContextoUsuario contexto, IReadOnlyList<string> palabras, IReadOnlyList<string> programas) =>
+        EstudiantesMencionadosDeSusProgramas(contexto, palabras, programas).Count > 0;
+
+    public static IReadOnlyList<string> EstudiantesMencionadosDeSusProgramas(ContextoUsuario contexto, IReadOnlyList<string> palabras, IReadOnlyList<string> programas)
     {
         var propios = contexto.Directorio.Estudiantes.Where(estudiante => programas.Contains(estudiante.ProgramaId)).Select(estudiante => estudiante.Id).ToHashSet();
-        return DetectorTerceros.PersonasMencionadas(string.Join(' ', palabras), contexto.Directorio).Any(propios.Contains);
+        return [.. DetectorTerceros.PersonasMencionadas(string.Join(' ', palabras), contexto.Directorio).Where(propios.Contains).Distinct()];
     }
 
     private static bool ActivaPorPalabras(IReadOnlyList<string> palabras)

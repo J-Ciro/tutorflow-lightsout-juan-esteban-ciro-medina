@@ -46,6 +46,19 @@ internal sealed class CierreDeRespuesta
 
     public CierreEvaluado Evaluar(SesionPregunta sesion, string texto, EntradaConversacion entrada)
     {
+        if (sesion.Desglose is null)
+        {
+            return EvaluarTexto(sesion, texto, entrada);
+        }
+
+        var introduccion = IntroduccionDelDesglose.SinCifras(texto);
+        return introduccion.Length == 0 || introduccion == Textos.SinInformacion
+            ? Completar(sesion, string.Empty, [], entrada)
+            : EvaluarTexto(sesion, introduccion, entrada);
+    }
+
+    private CierreEvaluado EvaluarTexto(SesionPregunta sesion, string texto, EntradaConversacion entrada)
+    {
         if (texto.Trim() == Textos.SinInformacion)
         {
             return CierreEvaluado.Entregable(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion);
@@ -115,15 +128,21 @@ internal sealed class CierreDeRespuesta
             return CierreEvaluado.Entregable(limpio, citasDeTextoFijo, ResultadoAuditoria.Respondida);
         }
 
-        var documentos = CitasDeDocumento(sesion, limpio, escritas, entrada);
+        var completo = ConDesglose(sesion, limpio);
+        var documentos = CitasDeDocumento(sesion, completo, escritas, entrada);
         if (documentos.Count == 0 && !sesion.Registro.UsoDatos)
         {
             return new CierreEvaluado(Textos.SinInformacion, [], ResultadoAuditoria.SinInformacion, false, true, null);
         }
 
         IReadOnlyList<Cita> citas = [.. documentos.Concat(sesion.Registro.Citas).Distinct()];
-        return CierreEvaluado.Entregable(limpio, citas, ResultadoAuditoria.Respondida);
+        return CierreEvaluado.Entregable(completo, citas, ResultadoAuditoria.Respondida);
     }
+
+    private static string ConDesglose(SesionPregunta sesion, string introduccion) =>
+        sesion.Desglose is not { } desglose
+            ? introduccion
+            : introduccion.Length == 0 ? desglose : $"{introduccion}\n\n{desglose}";
 
     private IReadOnlyList<Cita> CitasDeDocumento(SesionPregunta sesion, string limpio, IReadOnlyList<Cita> escritas, EntradaConversacion entrada)
     {

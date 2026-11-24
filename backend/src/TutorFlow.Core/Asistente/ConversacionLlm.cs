@@ -24,7 +24,8 @@ internal sealed record EntradaConversacion(
     IReadOnlyList<SeccionDocumento> Secciones,
     ResumenEntregado? Resumen,
     string? Prelectura,
-    string PromptSistema);
+    string PromptSistema,
+    bool ConDesglose = false);
 
 internal sealed class ConversacionLlm
 {
@@ -57,7 +58,7 @@ internal sealed class ConversacionLlm
         var estado = new Turnos(
             contexto,
             registro,
-            [ConstructorPrompts.MensajeInicial(entrada.Pregunta, entrada.Secciones, entrada.Resumen, entrada.Prelectura)],
+            [ConstructorPrompts.MensajeInicial(entrada.Pregunta, entrada.Secciones, entrada.Resumen, entrada.Prelectura, entrada.ConDesglose)],
             entrada.PromptSistema);
         return await CorrerAsync(estado, cancellationToken);
     }

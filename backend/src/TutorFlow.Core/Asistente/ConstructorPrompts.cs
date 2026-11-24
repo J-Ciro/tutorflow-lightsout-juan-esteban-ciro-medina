@@ -17,6 +17,8 @@ public static partial class ConstructorPrompts
 
     private const string EncabezadoPrelectura = "Datos de los estudiantes de tus programas, calculados por el sistema:";
 
+    private const string NotaDelDesglose = "El sistema añadirá el desglose de faltas; no escribas cifras de faltas ni de clases.";
+
 
     private const string BloqueDeEjemplosDelEstudiante = """
         <ejemplos>
@@ -96,7 +98,7 @@ public static partial class ConstructorPrompts
 
     public static string Instrucciones(string promptSistema) => BloqueDeEjemplos().Replace(promptSistema, string.Empty);
 
-    internal static MensajeLlm MensajeInicial(string pregunta, IReadOnlyList<SeccionDocumento> secciones, ResumenEntregado? resumen, string? prelectura = null)
+    internal static MensajeLlm MensajeInicial(string pregunta, IReadOnlyList<SeccionDocumento> secciones, ResumenEntregado? resumen, string? prelectura = null, bool conDesglose = false)
     {
         var constructor = new StringBuilder();
         AgregarBloque(constructor, resumen is null ? null : EncabezadoResumen, resumen is null ? null : FormateadorDatos.Delimitar(Textos.FuenteResumenPropio, resumen.Texto));
@@ -104,8 +106,17 @@ public static partial class ConstructorPrompts
 
         AgregarSecciones(constructor, secciones);
         constructor.AppendLine();
+        AgregarNota(constructor, conDesglose);
         constructor.Append($"Pregunta: {pregunta}");
         return new MensajeLlm(RolMensaje.Usuario, constructor.ToString(), null, []);
+    }
+
+    private static void AgregarNota(StringBuilder constructor, bool conDesglose)
+    {
+        if (conDesglose)
+        {
+            constructor.AppendLine(NotaDelDesglose);
+        }
     }
 
     private static void AgregarBloque(StringBuilder constructor, string? encabezado, string? contenido)
