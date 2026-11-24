@@ -34,7 +34,7 @@ public sealed class CitasDeReglasAplicadasTests
     public static TheoryData<string, string, string, string[]> PreguntasDeQ10ConResumen => new()
     {
         { "EST-001", "¿Cuál es mi promedio ponderado del periodo?", "Tu promedio es 4.39. Definitivas: Cálculo Integral 4.5, Programación Orientada a Objetos 4.8, Bases de Datos 4.1, Inglés III 4.0.", ["S4", "S3"] },
-        { "EST-001", "¿Cuántas faltas tengo en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", ["A11"] },
+        { "EST-001", "¿Cuántas clases puedo perder en Bases de Datos?", "Bases de Datos: 2 faltas de 48 clases.", ["A11"] },
         { "EST-004", "¿Qué nota definitiva tengo en Contabilidad?", "Contabilidad: 3.9.", ["S3"] }
     };
 
@@ -213,7 +213,7 @@ public sealed class CitasDeReglasAplicadasTests
     {
         var escenario = Con(Fijo("Bases de Datos: 2 faltas de 48 clases."), IndiceConLasReglas());
 
-        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuántas faltas tengo en Bases de Datos?");
+        var resultado = await escenario.PreguntarAsync(Est001, "¿Cuántas clases puedo perder en Bases de Datos?");
 
         Assert.Equal(Esperadas(Art11, DatosNotas, DatosAsistencia), resultado.Respuesta!.Citas.ToArray());
         Assert.True(resultado.Respuesta.UsoDatosEstudiante);

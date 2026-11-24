@@ -205,6 +205,8 @@ public sealed class ActivadoresResumenPropioTests
         Assert.Single(escenario.Llm.Solicitudes);
         Assert.Contains(MarcaEst001, escenario.Llm.TextoDeLlamada(0), StringComparison.Ordinal);
         Assert.True(resultado.Respuesta!.UsoDatosEstudiante);
+        Assert.Contains("Bases de Datos: faltas 2 de 48 clases programadas (faltas restantes: 5; máximo sin perder: 7).", resultado.Respuesta.Respuesta, StringComparison.Ordinal);
+        Assert.DoesNotContain("Puedes faltar 5 clases", resultado.Respuesta.Respuesta, StringComparison.Ordinal);
         Assert.Contains(new Cita(Textos.DocumentoDatosEstudiante, "Asistencia"), resultado.Respuesta.Citas);
     }
 
