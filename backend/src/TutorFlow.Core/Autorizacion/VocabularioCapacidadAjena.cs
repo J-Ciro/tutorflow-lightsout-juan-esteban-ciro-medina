@@ -34,7 +34,7 @@ internal static class VocabularioCapacidadAjena
     public static readonly string[] Capacidad =
     [
         "ver", "ve", "ven", "consultar", "acceder", "accede", "acceden", "acceso", "saber", "sabe",
-        "saben", "conoce", "conocen", "see", "sees", "view", "access", "know", "knows"
+        "saben", "conoce", "conocen", "deja ver", "permite ver", "te deja ver", "te permite ver", "see", "sees", "view", "access", "know", "knows"
     ];
 
     public static readonly string[] CapacidadDeTenencia = ["tiene", "tienen", "has", "have"];
